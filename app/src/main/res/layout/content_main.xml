@@ -14,6 +14,7 @@
     tools:context="com.example.neutrino.maze.MainActivity">
 
     <TextView
+        android:id="@+id/tv_wifi"
         android:text="Hello World!"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
