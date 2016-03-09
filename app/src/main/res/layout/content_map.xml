@@ -19,6 +19,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/tvHeading"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/IDC7.1-01-A-001-Model-1" />
+        android:src="@drawable/idc71_fl01" />
 
 </RelativeLayout>
