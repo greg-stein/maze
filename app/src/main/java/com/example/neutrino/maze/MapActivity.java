@@ -43,8 +43,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MapActivity.this.stepY += 0.005;//(float) (Math.cos(Math.toRadians(-currentDegree)) * moveFactor);
-                MapActivity.this.stepX += 0;//(float) (Math.sin(Math.toRadians(-currentDegree)) * moveFactor);
+                MapActivity.this.stepY += (float) (Math.cos(Math.toRadians(currentDegree)) * moveFactor);
+                MapActivity.this.stepX += (float) (Math.sin(Math.toRadians(currentDegree)) * moveFactor);
             }
         });
 
@@ -83,8 +83,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         RotateAnimation ra = new RotateAnimation(
                 currentDegree,
                 -degree,
-                Animation.RELATIVE_TO_SELF, 0.5f + stepX,
-                Animation.RELATIVE_TO_SELF, 0.5f + stepY
+                Animation.RELATIVE_TO_SELF, 0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f
         );
 
         TranslateAnimation ta = new TranslateAnimation(
