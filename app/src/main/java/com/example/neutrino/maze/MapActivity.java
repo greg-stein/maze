@@ -6,12 +6,21 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.view.View;
 import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
 import android.view.animation.RotateAnimation;
+import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 public class MapActivity extends AppCompatActivity implements SensorEventListener {
+
+    private float stepX = 0f;
+    private float stepY = 0f;
+    private float currentX = 0f;
+    private float currentY = 0f;
+    private float moveFactor = 0.01f;
 
     // define the display assembly compass picture
     private ImageView image;
@@ -31,6 +40,13 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
         // our compass image
         image = (ImageView) findViewById(R.id.imageViewCompass);
+        image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MapActivity.this.stepY += 0.005;//(float) (Math.cos(Math.toRadians(-currentDegree)) * moveFactor);
+                MapActivity.this.stepX += 0;//(float) (Math.sin(Math.toRadians(-currentDegree)) * moveFactor);
+            }
+        });
 
         // TextView that will tell the user what degree is he heading
         tvHeading = (TextView) findViewById(R.id.tvHeading);
@@ -64,24 +80,29 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
         tvHeading.setText("Heading: " + Float.toString(degree) + " degrees");
 
-        // create a rotation animation (reverse turn degree degrees)
         RotateAnimation ra = new RotateAnimation(
                 currentDegree,
                 -degree,
-                Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF,
-                0.5f);
+                Animation.RELATIVE_TO_SELF, 0.5f + stepX,
+                Animation.RELATIVE_TO_SELF, 0.5f + stepY
+        );
 
-        // how long the animation will take place
-        ra.setDuration(210);
+        TranslateAnimation ta = new TranslateAnimation(
+                Animation.RELATIVE_TO_SELF, currentX, Animation.RELATIVE_TO_SELF, stepX,
+                Animation.RELATIVE_TO_SELF, currentY, Animation.RELATIVE_TO_SELF, stepY
+        );
 
-        // set the animation after the end of the reservation status
-        ra.setFillAfter(true);
+        AnimationSet animationSet = new AnimationSet(true);
+        animationSet.addAnimation(ta);
+        animationSet.addAnimation(ra);
+        animationSet.setFillAfter(true);
+        animationSet.setDuration(210);
 
-        // Start the animation
-        image.startAnimation(ra);
+        image.startAnimation(animationSet);
+
         currentDegree = -degree;
-
+        currentX = stepX;
+        currentY = stepY;
     }
 
     @Override
