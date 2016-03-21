@@ -6,7 +6,7 @@ Current status: POC - WIP. No other work planned.
 
 ### Plan for POC ###
 
-* Create hello world sample app - DONE
+* Create hello world sample app - [b]DONE[\b]
 * Implement scan for accessible HS and acquire signal strength + MAC addresses - DONE
 * Implement map rotation depending on Magnetic (!) North - DONE
 * "Walking simulation": tap screen for moving forward - <-- we are here
