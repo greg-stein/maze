@@ -16,9 +16,6 @@ import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
-
 public class MapActivity extends AppCompatActivity implements SensorEventListener {
 
     // current (X, Y)
