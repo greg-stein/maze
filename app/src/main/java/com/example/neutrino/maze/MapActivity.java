@@ -1,29 +1,45 @@
 package com.example.neutrino.maze;
 
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
+import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
+
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 public class MapActivity extends AppCompatActivity implements SensorEventListener {
 
-    private float stepX = 0f;
-    private float stepY = 0f;
+    // current (X, Y)
     private float currentX = 0f;
     private float currentY = 0f;
+    // new (X, Y)
+    private float stepX = 0f;
+    private float stepY = 0f;
+    // The point to rotate map around
+    private float pivotX = 0.5f;
+    private float pivotY = 0.9f;
+    // Map north angle
+    private float mapNorth = 0.0f;
+    // One human step
     private float moveFactor = 0.01f;
 
-    // define the display assembly compass picture
+    // Holds map graphic
     private ImageView image;
+
+    // Where is the map's north
+    private EditText ui_MapNorth;
 
     // record the compass picture angle turned
     private float currentDegree = 0f;
@@ -31,14 +47,27 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     // device sensor manager
     private SensorManager mSensorManager;
 
-    TextView tvHeading;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        // our compass image
+        ui_MapNorth = (EditText) findViewById(R.id.map_north);
+        ui_MapNorth.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                try {
+                    mapNorth = Float.parseFloat(s.toString());
+                } catch (NumberFormatException nfe) {
+                    mapNorth = 0.0f;
+                }
+            }
+        });
         image = (ImageView) findViewById(R.id.imageViewCompass);
         image.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -47,9 +76,6 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 MapActivity.this.stepX += (float) (Math.sin(Math.toRadians(currentDegree)) * moveFactor);
             }
         });
-
-        // TextView that will tell the user what degree is he heading
-        tvHeading = (TextView) findViewById(R.id.tvHeading);
 
         // initialize your android device sensor capabilities
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -62,6 +88,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         // for the system's orientation sensor registered listeners
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
                 SensorManager.SENSOR_DELAY_GAME);
+        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR),
+                SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     @Override
@@ -75,34 +103,42 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     @Override
     public void onSensorChanged(SensorEvent event) {
 
-        // get the angle around the z-axis rotated
-        float degree = Math.round(event.values[0]);
+        switch (event.sensor.getType()) {
+            case Sensor.TYPE_ORIENTATION: {
+                // get the angle around the z-axis rotated
+                float degree = Math.round(event.values[0] + mapNorth);
 
-        tvHeading.setText("Heading: " + Float.toString(degree) + " degrees");
+                RotateAnimation ra = new RotateAnimation(
+                        currentDegree,
+                        -degree,
+                        Animation.RELATIVE_TO_SELF, pivotX,
+                        Animation.RELATIVE_TO_SELF, pivotY
+                );
 
-        RotateAnimation ra = new RotateAnimation(
-                currentDegree,
-                -degree,
-                Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF, 0.5f
-        );
+                TranslateAnimation ta = new TranslateAnimation(
+                        Animation.RELATIVE_TO_SELF, currentX, Animation.RELATIVE_TO_SELF, stepX,
+                        Animation.RELATIVE_TO_SELF, currentY, Animation.RELATIVE_TO_SELF, stepY
+                );
 
-        TranslateAnimation ta = new TranslateAnimation(
-                Animation.RELATIVE_TO_SELF, currentX, Animation.RELATIVE_TO_SELF, stepX,
-                Animation.RELATIVE_TO_SELF, currentY, Animation.RELATIVE_TO_SELF, stepY
-        );
+                AnimationSet animationSet = new AnimationSet(true);
+                animationSet.addAnimation(ta);
+                animationSet.addAnimation(ra);
+                animationSet.setFillAfter(true);
+                animationSet.setDuration(210);
 
-        AnimationSet animationSet = new AnimationSet(true);
-        animationSet.addAnimation(ta);
-        animationSet.addAnimation(ra);
-        animationSet.setFillAfter(true);
-        animationSet.setDuration(210);
+                image.startAnimation(animationSet);
 
-        image.startAnimation(animationSet);
-
-        currentDegree = -degree;
-        currentX = stepX;
-        currentY = stepY;
+                currentDegree = -degree;
+                currentX = stepX;
+                currentY = stepY;
+                break;
+            }
+            case Sensor.TYPE_STEP_DETECTOR: {
+                stepY += (float) (Math.cos(Math.toRadians(currentDegree)) * moveFactor);
+                stepX += (float) (Math.sin(Math.toRadians(currentDegree)) * moveFactor);
+                break;
+            }
+        }
     }
 
     @Override
