@@ -1,13 +1,21 @@
 package com.example.neutrino.maze;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -15,6 +23,10 @@ import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.util.HashMap;
+import java.util.List;
 
 public class MapActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -32,11 +44,23 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     // One human step
     private float moveFactor = 0.01f;
 
+    // How much pixels occupy one meter
+    private float mapScale = 10.0f;
+    // Cell size 5x5 meters. The whole floor plan is divided into cells
+    private float cellSize = 5.0f; //meters
+    private HashMap<String, Float>[][] signalAt;
+
+    WifiManager mWifiManager;
+
     // Holds map graphic
-    private ImageView image;
+    private ImageView iv_FloorPlan;
 
     // Where is the map's north
-    private EditText ui_MapNorth;
+    private EditText et_MapNorth;
+    // Current position on the map
+    private TextView tv_Position;
+    // Number of available APs
+    private TextView tv_APs;
 
     // record the compass picture angle turned
     private float currentDegree = 0f;
@@ -44,17 +68,42 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     // device sensor manager
     private SensorManager mSensorManager;
 
+    // Identifies if access to gui controls is OK
+    private boolean mIsGuiInitialized = false;
+    private final BroadcastReceiver mWifiScanReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context c, Intent intent) {
+            if ((mIsGuiInitialized) && (intent.getAction() == WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
+                List<ScanResult> mScanResults = mWifiManager.getScanResults();
+                try {
+                    tv_APs.setText(String.valueOf(mScanResults.size()));
+                } catch (Exception e) {
+                    Snackbar exceptionSnackbar = Snackbar.make(findViewById(R.id.coordinatorLayout), e.getMessage(), Snackbar.LENGTH_SHORT);
+                    exceptionSnackbar.show();
+                }
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        ui_MapNorth = (EditText) findViewById(R.id.map_north);
-        ui_MapNorth.addTextChangedListener(new TextWatcher() {
+        tv_APs = (TextView) findViewById(R.id.tv_APs);
+        mWifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
+        mWifiManager.startScan();
+
+        et_MapNorth = (EditText) findViewById(R.id.map_north);
+        et_MapNorth.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -65,8 +114,21 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 }
             }
         });
-        image = (ImageView) findViewById(R.id.imageViewCompass);
-        image.setOnClickListener(new View.OnClickListener() {
+
+        tv_Position = (TextView) findViewById(R.id.tv_coord);
+        iv_FloorPlan = (ImageView) findViewById(R.id.imageViewCompass);
+        iv_FloorPlan.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    tv_Position.setText("[" + String.valueOf((int)event.getX()) + ":"
+                            + String.valueOf((int)event.getY()) + "]");
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                }
+                return false; // Allow click
+            }
+        });
+        iv_FloorPlan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 MapActivity.this.stepY += (float) (Math.cos(Math.toRadians(currentDegree)) * moveFactor);
@@ -76,6 +138,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
         // initialize your android device sensor capabilities
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mIsGuiInitialized = true;
     }
 
     @Override
@@ -87,6 +150,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 SensorManager.SENSOR_DELAY_GAME);
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR),
                 SensorManager.SENSOR_DELAY_FASTEST);
+        registerReceiver(mWifiScanReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
     }
 
     @Override
@@ -95,6 +159,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
         // to stop the listener and save battery
         mSensorManager.unregisterListener(this);
+        unregisterReceiver(mWifiScanReceiver);
     }
 
     @Override
@@ -123,7 +188,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 animationSet.setFillAfter(true);
                 animationSet.setDuration(210);
 
-                image.startAnimation(animationSet);
+                iv_FloorPlan.startAnimation(animationSet);
 
                 currentDegree = -degree;
                 currentX = stepX;

@@ -2,6 +2,7 @@
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinatorLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
@@ -21,10 +22,28 @@
 
             <EditText
                 android:id="@+id/map_north"
-                android:layout_width="match_parent"
+                android:text="000"
+                android:layout_width="wrap_content"
                 android:inputType="number"
                 android:layout_height="match_parent" />
 
+            <TextView
+                android:id="@+id/tv_coord"
+                android:text="[00:00]"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" />
+
+            <TextView
+                android:id="@+id/tv_APs"
+                android:text="00"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" />
+
+            <ToggleButton
+                android:id="@+id/btn_set_pos"
+                android:text="SetPos"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
         </android.support.v7.widget.Toolbar>
 
 
