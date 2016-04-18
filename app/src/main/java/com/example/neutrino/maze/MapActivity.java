@@ -12,6 +12,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.graphics.Matrix;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -25,6 +26,7 @@ import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 import android.widget.Toolbar;
 
 import java.util.HashMap;
@@ -64,6 +66,10 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     private TextView tv_Position;
     // Number of available APs
     private TextView tv_APs;
+    // For simulating steps
+    private FloatingActionButton fab_Mail;
+    // Enables pedometer for moving on map
+    private ToggleButton tb_EnablePedometer;
 
     // record the compass picture angle turned
     private float currentDegree = 0f;
@@ -96,11 +102,16 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
+        fab_Mail = (FloatingActionButton) findViewById(R.id.fab_mail);
+        tv_Position = (TextView) findViewById(R.id.tv_coord);
+        iv_FloorPlan = (ImageView) findViewById(R.id.imageViewCompass);
         tv_APs = (TextView) findViewById(R.id.tv_APs);
+        et_MapNorth = (EditText) findViewById(R.id.map_north);
+        tb_EnablePedometer = (ToggleButton) findViewById(R.id.tb_enable_pedometer);
+
         mWifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
         mWifiManager.startScan();
 
-        et_MapNorth = (EditText) findViewById(R.id.map_north);
         et_MapNorth.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -120,19 +131,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
             }
         });
 
-        tv_Position = (TextView) findViewById(R.id.tv_coord);
-        iv_FloorPlan = (ImageView) findViewById(R.id.imageViewCompass);
-//        iv_FloorPlan.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//                    UpdateLocation();
-//                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-//                }
-//                return false; // Allow click
-//            }
-//        });
-        iv_FloorPlan.setOnClickListener(new View.OnClickListener() {
+        fab_Mail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 MapActivity.this.stepY += (float) (Math.cos(Math.toRadians(currentDegree)) * moveFactor);
@@ -218,8 +217,10 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 break;
             }
             case Sensor.TYPE_STEP_DETECTOR: {
-                stepY += (float) (Math.cos(Math.toRadians(currentDegree)) * moveFactor);
-                stepX += (float) (Math.sin(Math.toRadians(currentDegree)) * moveFactor);
+                if (tb_EnablePedometer.isChecked()) {
+                    stepY += (float) (Math.cos(Math.toRadians(currentDegree)) * moveFactor);
+                    stepX += (float) (Math.sin(Math.toRadians(currentDegree)) * moveFactor);
+                }
                 break;
             }
         }

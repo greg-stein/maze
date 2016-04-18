@@ -39,14 +39,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent" />
 
-            <TextView
-                android:id="@+id/tv_debug"
-                android:text="N/A"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
-
             <ToggleButton
-                android:id="@+id/btn_set_pos"
+                android:id="@+id/tb_enable_pedometer"
                 android:text="SetPos"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent" />
@@ -59,7 +53,7 @@
     <include layout="@layout/content_map" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/fab_mail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
