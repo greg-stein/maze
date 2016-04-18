@@ -29,6 +29,7 @@ import android.widget.Toolbar;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MapActivity extends AppCompatActivity implements SensorEventListener {
 
@@ -46,11 +47,11 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     // One human step
     private float moveFactor = 0.01f;
 
-    // How much pixels occupy one meter
-    private float mapScale = 10.0f;
+    // How many pixels occupies one meter
+    private int mapScale = 10;
     // Cell size 5x5 meters. The whole floor plan is divided into cells
-    private float cellSize = 5.0f; //meters
-    private HashMap<String, Float>[][] signalAt;
+    private int cellSize = 5; //meters
+    private Map<String, Float>[][] sigMap;
 
     WifiManager mWifiManager;
 
@@ -81,6 +82,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 List<ScanResult> mScanResults = mWifiManager.getScanResults();
                 try {
                     tv_APs.setText(String.valueOf(mScanResults.size()));
+                    mWifiManager.startScan();
                 } catch (Exception e) {
                     Snackbar exceptionSnackbar = Snackbar.make(findViewById(R.id.coordinatorLayout), e.getMessage(), Snackbar.LENGTH_SHORT);
                     exceptionSnackbar.show();
@@ -120,40 +122,45 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
         tv_Position = (TextView) findViewById(R.id.tv_coord);
         iv_FloorPlan = (ImageView) findViewById(R.id.imageViewCompass);
-        iv_FloorPlan.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    //TODO: Calculate real (X, Y) after translation and rotation
-                    float[] currentPosition = {event.getX(), event.getY()};
-                    float[] mappedPosition = new float[2];
-                    Matrix matrix = new Matrix();
-
-                    matrix.postRotate(-currentDegree, iv_FloorPlan.getWidth() * pivotX,
-                            iv_FloorPlan.getHeight() * pivotY);
-                    int toolbarHeight = findViewById(R.id.toolbar).getHeight();
-                    matrix.postTranslate(-stepX * iv_FloorPlan.getWidth(),
-                            -(stepY * iv_FloorPlan.getHeight() + toolbarHeight));
-                    matrix.mapPoints(mappedPosition, currentPosition);
-
-                    tv_Position.setText("[" + String.valueOf((int)mappedPosition[0]) + ":"
-                            + String.valueOf((int)mappedPosition[1]) + "]");
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                }
-                return false; // Allow click
-            }
-        });
+//        iv_FloorPlan.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//                    UpdateLocation();
+//                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+//                }
+//                return false; // Allow click
+//            }
+//        });
         iv_FloorPlan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 MapActivity.this.stepY += (float) (Math.cos(Math.toRadians(currentDegree)) * moveFactor);
                 MapActivity.this.stepX += (float) (Math.sin(Math.toRadians(currentDegree)) * moveFactor);
+                UpdateLocation();
             }
         });
 
         // initialize your android device sensor capabilities
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mIsGuiInitialized = true;
+    }
+
+    private void UpdateLocation() {
+        //Calculate real (X, Y) after translation and rotation
+        float[] currentPosition = {pivotX * iv_FloorPlan.getWidth(), pivotY * iv_FloorPlan.getHeight()};
+        float[] mappedPosition = new float[2];
+        Matrix matrix = new Matrix();
+
+        matrix.postRotate(-currentDegree, iv_FloorPlan.getWidth() * pivotX,
+                iv_FloorPlan.getHeight() * pivotY);
+        int toolbarHeight = findViewById(R.id.toolbar).getHeight();
+        matrix.postTranslate(-stepX * iv_FloorPlan.getWidth(),
+                -(stepY * iv_FloorPlan.getHeight() + toolbarHeight));
+        matrix.mapPoints(mappedPosition, currentPosition);
+
+        tv_Position.setText("[" + String.valueOf(toCellMetric((int)mappedPosition[0])) + ":"
+                + String.valueOf(toCellMetric((int)mappedPosition[1])) + "]");
     }
 
     @Override
@@ -221,5 +228,9 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // not in use
+    }
+
+    private int toCellMetric(int px) {
+        return (px/mapScale)/cellSize;
     }
 }
