@@ -10,6 +10,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +25,7 @@ import android.view.animation.TranslateAnimation;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toolbar;
 
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +72,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
     // Identifies if access to gui controls is OK
     private boolean mIsGuiInitialized = false;
+
     private final BroadcastReceiver mWifiScanReceiver = new BroadcastReceiver() {
 
         @Override
@@ -121,8 +124,20 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    tv_Position.setText("[" + String.valueOf((int)event.getX()) + ":"
-                            + String.valueOf((int)event.getY()) + "]");
+                    //TODO: Calculate real (X, Y) after translation and rotation
+                    float[] currentPosition = {event.getX(), event.getY()};
+                    float[] mappedPosition = new float[2];
+                    Matrix matrix = new Matrix();
+
+                    matrix.postRotate(-currentDegree, iv_FloorPlan.getWidth() * pivotX,
+                            iv_FloorPlan.getHeight() * pivotY);
+                    int toolbarHeight = findViewById(R.id.toolbar).getHeight();
+                    matrix.postTranslate(-stepX * iv_FloorPlan.getWidth(),
+                            -(stepY * iv_FloorPlan.getHeight() + toolbarHeight));
+                    matrix.mapPoints(mappedPosition, currentPosition);
+
+                    tv_Position.setText("[" + String.valueOf((int)mappedPosition[0]) + ":"
+                            + String.valueOf((int)mappedPosition[1]) + "]");
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                 }
                 return false; // Allow click
