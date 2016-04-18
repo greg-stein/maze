@@ -39,11 +39,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent" />
 
+            <TextView
+                android:id="@+id/tv_debug"
+                android:text="N/A"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" />
+
             <ToggleButton
                 android:id="@+id/btn_set_pos"
                 android:text="SetPos"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent" />
+
         </android.support.v7.widget.Toolbar>
 
 
