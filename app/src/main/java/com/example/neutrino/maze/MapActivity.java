@@ -4,20 +4,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Matrix;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
-import android.graphics.Matrix;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
@@ -27,13 +26,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-import android.widget.Toolbar;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MapActivity extends AppCompatActivity implements SensorEventListener {
+
+    private final int MAX_LEVEL = 100;
 
     // current (X, Y)
     private float currentX = 0f;
@@ -53,7 +51,13 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     private int mapScale = 10;
     // Cell size 5x5 meters. The whole floor plan is divided into cells
     private int cellSize = 5; //meters
-    private Map<String, Float>[][] sigMap;
+    // Stores signal levels for all accessible APs at each entry
+    private Cell[][] sigMap;
+    // Current position in sigMap
+    private int currentCellX;
+    private int currentCellY;
+    // Holds latest scan results to compare
+    private Cell lastScan;
 
     WifiManager mWifiManager;
 
@@ -80,15 +84,28 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     // Identifies if access to gui controls is OK
     private boolean mIsGuiInitialized = false;
 
+    private int scanIndex = 0;
+
     private final BroadcastReceiver mWifiScanReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context c, Intent intent) {
             if ((mIsGuiInitialized) && (intent.getAction() == WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
-                List<ScanResult> mScanResults = mWifiManager.getScanResults();
                 try {
-                    tv_APs.setText(String.valueOf(mScanResults.size()));
+                    List<ScanResult> scanResults = mWifiManager.getScanResults();
                     mWifiManager.startScan();
+                    scanIndex++;
+
+                    //HashMap<String, Integer> currentCellSignals = new HashMap<>(MAX_SIGNALS_PER_CELL);
+
+                    lastScan.clear();
+                    for (ScanResult scanResult : scanResults) {
+                        int level = WifiManager.calculateSignalLevel(scanResult.level, MAX_LEVEL);
+                        lastScan.addSignal(scanResult.BSSID, level);
+                    }
+
+                    // #5:[34]
+                    tv_APs.setText("#" + scanIndex + ":[" + String.valueOf(scanResults.size()) + "]");
                 } catch (Exception e) {
                     Snackbar exceptionSnackbar = Snackbar.make(findViewById(R.id.coordinatorLayout), e.getMessage(), Snackbar.LENGTH_SHORT);
                     exceptionSnackbar.show();
@@ -108,6 +125,12 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         tv_APs = (TextView) findViewById(R.id.tv_APs);
         et_MapNorth = (EditText) findViewById(R.id.map_north);
         tb_EnablePedometer = (ToggleButton) findViewById(R.id.tb_enable_pedometer);
+
+
+        int mapCellsX = toCellMetric(iv_FloorPlan.getWidth());
+        int mapCellsY = toCellMetric(iv_FloorPlan.getHeight());
+        sigMap = new Cell[mapCellsX][mapCellsY];
+        lastScan = new Cell();
 
         mWifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
         mWifiManager.startScan();
@@ -158,8 +181,10 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 -(stepY * iv_FloorPlan.getHeight() + toolbarHeight));
         matrix.mapPoints(mappedPosition, currentPosition);
 
-        tv_Position.setText("[" + String.valueOf(toCellMetric((int)mappedPosition[0])) + ":"
-                + String.valueOf(toCellMetric((int)mappedPosition[1])) + "]");
+        currentCellX = toCellMetric((int)mappedPosition[0]);
+        currentCellY = toCellMetric((int)mappedPosition[1]);
+        tv_Position.setText("pos:[" + String.valueOf(currentCellX) + ":"
+                + String.valueOf(currentCellY) + "]");
     }
 
     @Override
