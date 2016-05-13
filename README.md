@@ -12,8 +12,8 @@ Current status: POC - WIP. No other work planned. We are THIS close to IDC POC r
 * Walking on map according to Pedometer (HW for POC - will work only on Nexus) - **DONE**
 * Asynchronous Wifi scan including all APs - **DONE**
 * Fix griding (separation of map into tiles, consistency during moving from cell to cell, incl. map rotation) **DONE**
-* Draw cells whose signal values were set **<-- we are here**
-* Persistency - serialize/deserialize SigMap into file 
+* Draw cells whose signal values were set **DONE**
+* Persistency - serialize/deserialize SigMap into file **<-- we are here**
 * Feature (nice to have): tap on screen to set current position
 * Actual THE THING - find correct location (cell) according to signals scan
 * [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
