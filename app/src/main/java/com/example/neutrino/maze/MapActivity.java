@@ -1,16 +1,23 @@
 package com.example.neutrino.maze;
 
+import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -18,12 +25,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -47,23 +57,21 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     // One human step
     private float moveFactor = 0.01f;
 
-    // How many pixels occupies one meter
-    private int mapScale = 10;
-    // Cell size 5x5 meters. The whole floor plan is divided into cells
-    private int cellSize = 5; //meters
     // Stores signal levels for all accessible APs at each entry
     private Cell[][] sigMap;
     // Current position in sigMap
-    private int currentCellX;
-    private int currentCellY;
+    private int currentCellX = 0;
+    private int currentCellY = 0;
     // Holds latest scan results to compare
     private Cell lastScan;
 
     WifiManager mWifiManager;
 
     // Holds map graphic
-    private ImageView iv_FloorPlan;
+    private CellsImageView iv_FloorPlan;
 
+    // Save cell signals to internal DB
+    private Button b_SaveCell;
     // Where is the map's north
     private EditText et_MapNorth;
     // Current position on the map
@@ -84,6 +92,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     // Identifies if access to gui controls is OK
     private boolean mIsGuiInitialized = false;
 
+    // Counter for scan indices
     private int scanIndex = 0;
 
     private final BroadcastReceiver mWifiScanReceiver = new BroadcastReceiver() {
@@ -95,8 +104,6 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                     List<ScanResult> scanResults = mWifiManager.getScanResults();
                     mWifiManager.startScan();
                     scanIndex++;
-
-                    //HashMap<String, Integer> currentCellSignals = new HashMap<>(MAX_SIGNALS_PER_CELL);
 
                     lastScan.clear();
                     for (ScanResult scanResult : scanResults) {
@@ -114,6 +121,10 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         }
     };
 
+    //Size of cellMap
+    private int mMapCellsX;
+    private int mMapCellsY;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,19 +132,24 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
         fab_Mail = (FloatingActionButton) findViewById(R.id.fab_mail);
         tv_Position = (TextView) findViewById(R.id.tv_coord);
-        iv_FloorPlan = (ImageView) findViewById(R.id.imageViewCompass);
+        iv_FloorPlan = (CellsImageView) findViewById(R.id.imageViewCompass);
         tv_APs = (TextView) findViewById(R.id.tv_APs);
         et_MapNorth = (EditText) findViewById(R.id.map_north);
         tb_EnablePedometer = (ToggleButton) findViewById(R.id.tb_enable_pedometer);
+        b_SaveCell = (Button) findViewById(R.id.b_save_cell);
 
-
-        int mapCellsX = toCellMetric(iv_FloorPlan.getWidth());
-        int mapCellsY = toCellMetric(iv_FloorPlan.getHeight());
-        sigMap = new Cell[mapCellsX][mapCellsY];
         lastScan = new Cell();
 
         mWifiManager = (WifiManager)getSystemService(Context.WIFI_SERVICE);
         mWifiManager.startScan();
+
+        b_SaveCell.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sigMap[currentCellX][currentCellY] = lastScan;
+                lastScan = new Cell();
+            }
+        });
 
         et_MapNorth.addTextChangedListener(new TextWatcher() {
             @Override
@@ -157,21 +173,38 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         fab_Mail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MapActivity.this.stepY += (float) (Math.cos(Math.toRadians(currentDegree)) * moveFactor);
-                MapActivity.this.stepX += (float) (Math.sin(Math.toRadians(currentDegree)) * moveFactor);
-                UpdateLocation();
+                stepY += (float) (Math.cos(Math.toRadians(currentDegree)) * moveFactor);
+                stepX += (float) (Math.sin(Math.toRadians(currentDegree)) * moveFactor);
+                updateLocation();
             }
         });
 
         // initialize your android device sensor capabilities
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mIsGuiInitialized = true;
+
+        ViewTreeObserver vto = iv_FloorPlan.getViewTreeObserver();
+        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+            @Override
+            public void onGlobalLayout() {
+                iv_FloorPlan.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                mMapCellsX = iv_FloorPlan.getWidthInCells();
+                mMapCellsY = iv_FloorPlan.getHeightInCells();
+                sigMap = new Cell[mMapCellsX][mMapCellsY];
+                iv_FloorPlan.setCells(sigMap);
+
+                int toolbarHeight = findViewById(R.id.toolbar).getHeight();
+                iv_FloorPlan.setCellsOffsetY(toolbarHeight);
+            }
+        });
     }
 
-    private void UpdateLocation() {
+    private void updateLocation() {
         //Calculate real (X, Y) after translation and rotation
         float[] currentPosition = {pivotX * iv_FloorPlan.getWidth(), pivotY * iv_FloorPlan.getHeight()};
         float[] mappedPosition = new float[2];
+                
         Matrix matrix = new Matrix();
 
         matrix.postRotate(-currentDegree, iv_FloorPlan.getWidth() * pivotX,
@@ -181,8 +214,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 -(stepY * iv_FloorPlan.getHeight() + toolbarHeight));
         matrix.mapPoints(mappedPosition, currentPosition);
 
-        currentCellX = toCellMetric((int)mappedPosition[0]);
-        currentCellY = toCellMetric((int)mappedPosition[1]);
+        currentCellX = iv_FloorPlan.toCellMetric((int) mappedPosition[0]);
+        currentCellY = iv_FloorPlan.toCellMetric((int) mappedPosition[1]);
         tv_Position.setText("pos:[" + String.valueOf(currentCellX) + ":"
                 + String.valueOf(currentCellY) + "]");
     }
@@ -245,6 +278,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 if (tb_EnablePedometer.isChecked()) {
                     stepY += (float) (Math.cos(Math.toRadians(currentDegree)) * moveFactor);
                     stepX += (float) (Math.sin(Math.toRadians(currentDegree)) * moveFactor);
+                    updateLocation();
                 }
                 break;
             }
@@ -254,9 +288,5 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // not in use
-    }
-
-    private int toCellMetric(int px) {
-        return (px/mapScale)/cellSize;
     }
 }
