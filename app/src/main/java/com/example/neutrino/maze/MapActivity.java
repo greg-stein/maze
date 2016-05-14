@@ -5,12 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -32,16 +27,22 @@ import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.List;
 
 public class MapActivity extends AppCompatActivity implements SensorEventListener {
-
+    private final int STEP_LENGTH = 76; // as per google average step length is 30 inches
     private final int MAX_LEVEL = 100;
+    private final String SIGNALS_MAP_FILE = "sigmap.wad"; // :)
 
     // current (X, Y)
     private float currentX = 0f;
@@ -55,7 +56,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     // Map north angle
     private float mapNorth = 0.0f;
     // One human step
-    private float moveFactor = 0.01f;
+    private float moveFactor = 0.015f;
 
     // Stores signal levels for all accessible APs at each entry
     private Cell[][] sigMap;
@@ -114,12 +115,16 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                     // #5:[34]
                     tv_APs.setText("#" + scanIndex + ":[" + String.valueOf(scanResults.size()) + "]");
                 } catch (Exception e) {
-                    Snackbar exceptionSnackbar = Snackbar.make(findViewById(R.id.coordinatorLayout), e.getMessage(), Snackbar.LENGTH_SHORT);
-                    exceptionSnackbar.show();
+                    ShowError(e);
                 }
             }
         }
     };
+
+    private void ShowError(Exception e) {
+        Snackbar exceptionSnackbar = Snackbar.make(findViewById(R.id.coordinatorLayout), e.getMessage(), Snackbar.LENGTH_SHORT);
+        exceptionSnackbar.show();
+    }
 
     //Size of cellMap
     private int mMapCellsX;
@@ -191,13 +196,72 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 iv_FloorPlan.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 mMapCellsX = iv_FloorPlan.getWidthInCells();
                 mMapCellsY = iv_FloorPlan.getHeightInCells();
-                sigMap = new Cell[mMapCellsX][mMapCellsY];
+
+                // Failed to load from saved state? Create new one.
+                if (loadSigMap() == false) {
+                    sigMap = new Cell[mMapCellsX][mMapCellsY];
+                }
                 iv_FloorPlan.setCells(sigMap);
 
                 int toolbarHeight = findViewById(R.id.toolbar).getHeight();
-                iv_FloorPlan.setCellsOffsetY(toolbarHeight);
+                iv_FloorPlan.setCellsOffsetY(toolbarHeight); 
             }
         });
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        saveSigMap();
+    }
+
+//    @Override
+//    public void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//
+//        loadSigMap();
+//    }
+
+//    @Override
+//    public void onSaveInstanceState(Bundle savedInstanceState) {
+//        super.onSaveInstanceState(savedInstanceState);
+//
+//        saveSigMap();
+//    }
+
+    private void saveSigMap() {
+        Context context = getApplicationContext();
+        FileOutputStream fos = null;
+
+        try {
+            File f = context.getFilesDir();
+            fos = context.openFileOutput(SIGNALS_MAP_FILE, Context.MODE_PRIVATE);
+            ObjectOutputStream os = new ObjectOutputStream(fos);
+            os.writeObject(sigMap);
+            os.close();
+            fos.close();
+        } catch (IOException e) {
+            ShowError(e);
+            e.printStackTrace();
+        }
+    }
+
+    private boolean loadSigMap() {
+        Context context = getApplicationContext();
+        FileInputStream fis = null;
+        try {
+            fis = context.openFileInput(SIGNALS_MAP_FILE);
+            ObjectInputStream is = new ObjectInputStream(fis);
+            sigMap = (Cell[][]) is.readObject();
+            is.close();
+            fis.close();
+        } catch (IOException | ClassNotFoundException e) {
+            ShowError(e);
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     private void updateLocation() {

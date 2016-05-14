@@ -1,16 +1,16 @@
 package com.example.neutrino.maze;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by neutrino on 4/21/2016.
  */
-public class Cell {
+public class Cell implements Serializable {
     public static final int MAX_SIGNALS = 100;
 
     private Map<String, Integer> mSignals;
-    private boolean mHasData;
 
     public Cell() {
         mSignals = new HashMap<String, Integer>(MAX_SIGNALS);
