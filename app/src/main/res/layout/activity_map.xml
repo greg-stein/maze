@@ -27,18 +27,23 @@
                 android:inputType="number"
                 android:layout_height="match_parent" />
 
-            <TextView
-                android:id="@+id/tv_coord"
-                android:text="[00:00]"
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+                android:layout_height="wrap_content" android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tv_APs"
-                android:text="00"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+                <TextView
+                    android:id="@+id/tv_coord"
+                    android:text="[00:00]"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
 
+                <TextView
+                    android:id="@+id/tv_APs"
+                    android:text="00"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" />
+
+            </LinearLayout>
             <ToggleButton
                 android:id="@+id/tb_enable_pedometer"
                 android:text="SetPos"
@@ -48,6 +53,12 @@
             <Button
                 android:id="@+id/b_save_cell"
                 android:text="save"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" />
+
+            <Button
+                android:id="@+id/b_find_cell"
+                android:text="find"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent" />
 

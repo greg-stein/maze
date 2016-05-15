@@ -73,6 +73,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
     // Save cell signals to internal DB
     private Button b_SaveCell;
+    // Find cell based on scan results
+    private Button b_FindCell;
     // Where is the map's north
     private EditText et_MapNorth;
     // Current position on the map
@@ -142,6 +144,7 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
         et_MapNorth = (EditText) findViewById(R.id.map_north);
         tb_EnablePedometer = (ToggleButton) findViewById(R.id.tb_enable_pedometer);
         b_SaveCell = (Button) findViewById(R.id.b_save_cell);
+        b_FindCell = (Button) findViewById(R.id.b_find_cell);
 
         lastScan = new Cell();
 
@@ -153,6 +156,14 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
             public void onClick(View v) {
                 sigMap[currentCellX][currentCellY] = lastScan;
                 lastScan = new Cell();
+            }
+        });
+
+        b_FindCell.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Cell similarCell = findSimilarCell(lastScan);
+                iv_FloorPlan.setHighlightedCell(similarCell);
             }
         });
 
@@ -204,7 +215,8 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
                 iv_FloorPlan.setCells(sigMap);
 
                 int toolbarHeight = findViewById(R.id.toolbar).getHeight();
-                iv_FloorPlan.setCellsOffsetY(toolbarHeight); 
+                iv_FloorPlan.setCellsOffsetY(toolbarHeight);
+                updateLocation();
             }
         });
     }
@@ -215,20 +227,6 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
 
         saveSigMap();
     }
-
-//    @Override
-//    public void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//
-//        loadSigMap();
-//    }
-
-//    @Override
-//    public void onSaveInstanceState(Bundle savedInstanceState) {
-//        super.onSaveInstanceState(savedInstanceState);
-//
-//        saveSigMap();
-//    }
 
     private void saveSigMap() {
         Context context = getApplicationContext();
@@ -352,5 +350,29 @@ public class MapActivity extends AppCompatActivity implements SensorEventListene
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // not in use
+    }
+
+    private Cell findSimilarCell(Cell cell) {
+        if (null == cell) return null;
+        if (null == sigMap) return null;
+        if (sigMap.length == 0) return null;
+
+        Cell similarCell = null;
+        int maxLikelihood = Integer.MAX_VALUE; // the higher the value the least the likelihood
+
+        for (int x = 0; x < mMapCellsX; x++) {
+            for (int y = 0; y < mMapCellsY; y++) {
+                Cell currentCell = sigMap[x][y];
+                if (null != currentCell && currentCell.hasData()) {
+                    int likelihood = currentCell.compareTo(cell);
+                    if (maxLikelihood > likelihood) {
+                        similarCell = currentCell;
+                        maxLikelihood = likelihood;
+                    }
+                }
+            }
+        }
+
+        return similarCell;
     }
 }

@@ -9,8 +9,6 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
-import java.io.InvalidClassException;
-
 /**
  * Created by neutrino on 5/2/2016.
  */
@@ -18,11 +16,14 @@ public class CellsImageView extends ImageView {
 //    private final int CELL_CORNER_RADIUS = 3;
     // Cells map
     private Cell[][] mCells = null;
+    // Cell to highlight in the sigmap
+    private Cell mHighlightedCell = null;
     // Size of Cells map
     private int mCellsX;
     private int mCellsY;
     // Paint for cells inited in ctor
-    private Paint cellPaint;
+    private Paint mCellPaint;
+    private Paint mHlCellPaint;
     // Where the cells start in relation to map origin
     private int mCellsOffsetX = 0;
     private int mCellsOffsetY = 0;
@@ -38,10 +39,14 @@ public class CellsImageView extends ImageView {
     public CellsImageView(Context context, AttributeSet attrs, int defStyleRes) {
         super(context, attrs, defStyleRes);
         setWillNotDraw(false);
-        cellPaint = new Paint();
-        cellPaint.setColor(Color.GREEN);
-        cellPaint.setStrokeWidth(2);
-        cellPaint.setStyle(Paint.Style.STROKE);
+        mCellPaint = new Paint();
+        mCellPaint.setColor(Color.GREEN);
+        mCellPaint.setStrokeWidth(2);
+        mCellPaint.setStyle(Paint.Style.STROKE);
+        mHlCellPaint = new Paint();
+        mHlCellPaint.setColor(Color.RED);
+        mHlCellPaint.setStrokeWidth(5);
+        mHlCellPaint.setStyle(Paint.Style.STROKE);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -51,15 +56,21 @@ public class CellsImageView extends ImageView {
 
         if (null == mCells) return;
         if (mCells.length == 0) return;
+        Paint paint;
 
         for (int x = 0; x < getWidthInCells(); x++) {
             for (int y = 0; y < getHeightInCells(); y++) {
                 Cell cell = mCells[x][y];
                 if (null != cell && cell.hasData()) {
-                    // DrawRoundRect is too slow
-//                    canvas.drawRoundRect(toPxMetric(x), toPxMetric(y), toPxMetric(x + 1) - 3, toPxMetric(y + 1) - 3, CELL_CORNER_RADIUS, CELL_CORNER_RADIUS, cellPaint);
+                    if (cell == getHighlightedCell()) {
+                        paint = mHlCellPaint;
+                    } else {
+                        paint = mCellPaint;
+                    }
+
                     canvas.drawRect(toPxMetric(x) + mCellsOffsetX, toPxMetric(y) + mCellsOffsetY,
-                            toPxMetric(x+1)-3 + mCellsOffsetX, toPxMetric(y+1)-3 + mCellsOffsetY, cellPaint);
+                            toPxMetric(x + 1) - 3 + mCellsOffsetX, toPxMetric(y + 1) - 3 + mCellsOffsetY, paint);
+
                 }
             }
         }
@@ -136,5 +147,13 @@ public class CellsImageView extends ImageView {
 
     public void setCellSize(int mCellSize) {
         this.mCellSize = mCellSize;
+    }
+
+    public Cell getHighlightedCell() {
+        return mHighlightedCell;
+    }
+
+    public void setHighlightedCell(Cell mHighlightedCell) {
+        this.mHighlightedCell = mHighlightedCell;
     }
 }
