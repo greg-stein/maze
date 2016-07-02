@@ -5,17 +5,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_main"
     tools:context="com.example.neutrino.maze.MainActivity">
 
-    <TextView
-        android:id="@+id/tv_wifi"
-        android:text="Hello World!"
+    <com.example.neutrino.maze.FloorPlanView
+        android:id="@+id/ui_MapContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 </RelativeLayout>

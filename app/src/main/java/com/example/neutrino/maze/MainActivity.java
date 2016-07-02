@@ -1,59 +1,29 @@
 package com.example.neutrino.maze;
 
-import android.content.Context;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
-import java.util.List;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 public class MainActivity extends AppCompatActivity {
+
+    private FloorPlanView uiMapContainer;
+    private Toolbar uiToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                TextView t = (TextView) findViewById(R.id.tv_wifi);
-                t.setText(getWifiStrength());
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-            }
-        });
-    }
-
-    public String getWifiStrength() {
-        final int MAX_LEVEL = 100;
-
-        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        String sWifiStrength = "";
-
-        // Level of a Scan Result
-        List<ScanResult> wifiList = wifiManager.getScanResults();
-        for (ScanResult scanResult : wifiList) {
-            int level = WifiManager.calculateSignalLevel(scanResult.level, MAX_LEVEL);
-            sWifiStrength += "SignalStrength=" + level + " SSID=" + scanResult.SSID + " MAC=" + scanResult.BSSID + "\n";
-        }
-
-        return sWifiStrength;
-//        // Level of current connection
-//        int rssi = wifiManager.getConnectionInfo().getRssi();
-//        int level = WifiManager.calculateSignalLevel(rssi, 5);
-//        System.out.println("Level is " + level + " out of 5");
+        uiMapContainer = (FloorPlanView)  findViewById(R.id.ui_MapContainer);
+//        uiMapContainer = new FloorPlanView(this);
+//        setContentView(uiMapContainer);
+        uiToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(uiToolbar);
     }
 
     @Override
