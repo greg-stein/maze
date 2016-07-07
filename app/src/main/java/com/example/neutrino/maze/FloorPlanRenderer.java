@@ -12,8 +12,7 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
-    private Triangle mTriangle;
-//    private Square   mSquare;
+    private Wall mWall;
 
     public volatile float mAngle;
 
@@ -28,10 +27,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        // initialize a triangle
-        mTriangle = new Triangle();
-        // initialize a square
-//        mSquare = new Square();
+        // initialize a wall
+        mWall = new Wall();
     }
 
     @Override
@@ -66,7 +63,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
 
         // Draw triangle
-        mTriangle.draw(scratch);
+        //mTriangle.draw(scratch);
+        mWall.draw(scratch);
     }
 
     public static int loadShader(int type, String shaderCode){
