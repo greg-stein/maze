@@ -62,9 +62,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // for the matrix multiplication product to be correct.
         Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
 
+        GlEngine glEngine = new GlEngine(1);
+        glEngine.registerQuad(mWall);
         // Draw triangle
         //mTriangle.draw(scratch);
-        mWall.draw(scratch);
+        glEngine.draw(scratch);
     }
 
     public static int loadShader(int type, String shaderCode){
