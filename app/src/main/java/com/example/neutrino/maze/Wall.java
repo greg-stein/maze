@@ -1,6 +1,7 @@
 package com.example.neutrino.maze;
 
 import android.graphics.Point;
+import android.graphics.PointF;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
@@ -24,9 +25,9 @@ public class Wall {
 
     private int mVertexBufferPosition;
     private int mIndexBufferPosition;
-    
-    private float mA[] = {-0.5f,  0.5f};
-    private float mB[] = {0.5f,   -0.5f};
+
+    private final PointF mA = new PointF(-0.5f, 0.5f);
+    private final PointF mB = new PointF(0.5f, -0.5f);
     private float mWidth = 0.05f;
 
     public Wall() {
@@ -34,22 +35,22 @@ public class Wall {
     }
 
     private void calcCoords() {
-        float[] vector = {mA[0]-mB[0], mA[1]-mB[1]};
+        float[] vector = {mA.x - mB.x, mA.y - mB.y};
         float magnitude = (float) Math.sqrt(vector[0]*vector[0] + vector[1]*vector[1]);
         float[] identityVector = {vector[0]/magnitude, vector[1]/magnitude};
         float[] orthogonalIdentityVector = {identityVector[1], -identityVector[0]};
 
-        mCoords[0] = mA[0] + mWidth * orthogonalIdentityVector[0];
-        mCoords[1] = mA[1] + mWidth * orthogonalIdentityVector[1];
+        mCoords[0] = mA.x + mWidth * orthogonalIdentityVector[0];
+        mCoords[1] = mA.y + mWidth * orthogonalIdentityVector[1];
 
-        mCoords[3] = mA[0] - mWidth * orthogonalIdentityVector[0];
-        mCoords[4] = mA[1] - mWidth * orthogonalIdentityVector[1];
+        mCoords[3] = mA.x - mWidth * orthogonalIdentityVector[0];
+        mCoords[4] = mA.y - mWidth * orthogonalIdentityVector[1];
 
-        mCoords[6] = mB[0] + mWidth * orthogonalIdentityVector[0];
-        mCoords[7] = mB[1] + mWidth * orthogonalIdentityVector[1];
+        mCoords[6] = mB.x + mWidth * orthogonalIdentityVector[0];
+        mCoords[7] = mB.y + mWidth * orthogonalIdentityVector[1];
 
-        mCoords[9] = mB[0] - mWidth * orthogonalIdentityVector[0];
-        mCoords[10] = mB[1] - mWidth * orthogonalIdentityVector[1];
+        mCoords[9] = mB.x - mWidth * orthogonalIdentityVector[0];
+        mCoords[10] = mB.y - mWidth * orthogonalIdentityVector[1];
     }
 
     public void putCoords(FloatBuffer vertexBuffer) {
@@ -68,5 +69,23 @@ public class Wall {
 
     public void setWidth(float mWidth) {
         this.mWidth = mWidth;
+    }
+
+    public PointF getA() {
+        return mA;
+    }
+
+    public void setA(float x, float y) {
+        this.mA.x = x;
+        this.mA.y = y;
+    }
+
+    public PointF getB() {
+        return mB;
+    }
+
+    public void setB(float x, float y) {
+        this.mB.x = x;
+        this.mB.y = y;
     }
 }
