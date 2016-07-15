@@ -55,6 +55,9 @@ public class Wall {
 
     public void putCoords(FloatBuffer vertexBuffer) {
         mVertexBufferPosition = vertexBuffer.position();
+        for (int i = 0; i < mDrawOrder.length; i++) {
+            mDrawOrder[i] += mVertexBufferPosition/GlEngine.COORDS_PER_VERTEX;
+        }
         vertexBuffer.put(mCoords);
     }
 

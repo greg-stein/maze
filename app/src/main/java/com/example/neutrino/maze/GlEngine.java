@@ -11,9 +11,9 @@ import java.nio.ShortBuffer;
  * Created by Greg Stein on 7/12/2016.
  */
 public class GlEngine {
-    static final int COORDS_PER_VERTEX = 3;
-    static final int ORDER_INDICES_PER_QUAD = 6;
-    static final int VERTICES_PER_QUAD = 4;
+    public static final int COORDS_PER_VERTEX = 3;
+    public static final int ORDER_INDICES_PER_QUAD = 6;
+    public static final int VERTICES_PER_QUAD = 4;
 
     private int mQuadsNum = 0;
     private int mLastCoordsIndex = 0;
