@@ -11,14 +11,12 @@ import java.nio.ShortBuffer;
  */
 public class Wall {
     // number of coordinates per vertex in this array
-    static final int COORDS_PER_VERTEX = 3;
-    static float mCoords[] = {
-            // in counterclockwise order:
-            -0.5f,  0.6f, 0.0f,   // top left
-            -0.5f,  0.5f, 0.0f,   // bottom left
-            0.5f,   0.5f, 0.0f,   // bottom right
-            0.5f,   0.6f, 0.0f,   // top right
-    };
+    private static final int COORDS_PER_VERTEX = 3;
+    private static final int VERTICES_NUM = 4; // it's a rect after all
+    private static final float DEFAULT_WIDTH = 0.05f;
+    private static final float DEFAULT_COORDS_SOURCE = 0.5f;
+
+    private final float mCoords[] = new float[COORDS_PER_VERTEX * VERTICES_NUM];
 
     private final short mDrawOrder[] = { 0, 1, 2,   // first triangle
                                          1, 2, 3 }; // second triangle
@@ -26,11 +24,30 @@ public class Wall {
     private int mVertexBufferPosition;
     private int mIndexBufferPosition;
 
-    private final PointF mA = new PointF(-0.5f, 0.5f);
-    private final PointF mB = new PointF(0.5f, -0.5f);
-    private float mWidth = 0.05f;
+    private final PointF mA = new PointF(0, 0);
+    private final PointF mB = new PointF(0, 0);
+    private float mWidth;
 
     public Wall() {
+        init(-DEFAULT_COORDS_SOURCE, DEFAULT_COORDS_SOURCE, DEFAULT_COORDS_SOURCE,
+                -DEFAULT_COORDS_SOURCE, DEFAULT_WIDTH);
+    }
+
+    public Wall(float x1, float y1, float x2, float y2)
+    {
+        init(x1, y1, x2, y2, DEFAULT_WIDTH);
+    }
+
+    public Wall(float x1, float y1, float x2, float y2, float width) {
+        init(x1, y1, x2, y2, width);
+    }
+
+    private void init(float x1, float y1, float x2, float y2, float width) {
+        mA.x = x1;
+        mA.y = y1;
+        mB.x = x2;
+        mB.y = y2;
+        mWidth = width;
         calcCoords();
     }
 

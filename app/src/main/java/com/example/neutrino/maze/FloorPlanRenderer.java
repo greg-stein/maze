@@ -12,8 +12,6 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
-    private Wall mWall;
-
     public volatile float mAngle;
 
     // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
@@ -27,8 +25,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        // initialize a wall
-        mWall = new Wall();
     }
 
     @Override
@@ -62,10 +58,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // for the matrix multiplication product to be correct.
         Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
 
-        GlEngine glEngine = new GlEngine(1);
-        glEngine.registerQuad(mWall);
-        // Draw triangle
-        //mTriangle.draw(scratch);
+        GlEngine glEngine = new GlEngine(3);
+        glEngine.registerQuad(new Wall(-0.5f, 0.4f, -0.2f, 0.4f));
+        glEngine.registerQuad(new Wall(0.5f, 0.4f, 0.2f, 0.4f));
+        glEngine.registerQuad(new Wall(0.0f, 0.0f, 0.0f, 0.3f, 0.02f));
+
         glEngine.draw(scratch);
     }
 
