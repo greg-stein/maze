@@ -1,11 +1,15 @@
 package com.example.neutrino.maze;
 
+import android.opengl.GLES10;
 import android.opengl.GLES20;
+import android.opengl.GLU;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+
+import javax.microedition.khronos.opengles.GL;
 
 /**
  * Created by Greg Stein on 7/12/2016.
@@ -21,7 +25,7 @@ public class GlEngine {
 
     private final FloatBuffer vertexBuffer;
     private final ShortBuffer indexBuffer;
-
+    
     private final String vertexShaderCode =
             // This matrix member variable provides a hook to manipulate
             // the coordinates of the objects that use this vertex shader
@@ -52,6 +56,7 @@ public class GlEngine {
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 0.0f };
 
+    @GlTrace
     public GlEngine(int quadsNum) {
         ByteBuffer bb = ByteBuffer.allocateDirect(quadsNum * VERTICES_PER_QUAD *
                 COORDS_PER_VERTEX * 4); // 4 bytes per float
@@ -80,6 +85,7 @@ public class GlEngine {
         mQuadsNum++;
     }
 
+    @GlTrace
     public void draw(float[] mvpMatrix) {
         GLES20.glUseProgram(mProgram);
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
@@ -95,7 +101,7 @@ public class GlEngine {
 
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
         GLES20.glUniform4fv(mColorHandle, 1, color, 0);
-
+        
         // get handle to shape's transformation matrix
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
         // Pass the projection and view transformation to the shader
