@@ -20,6 +20,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private final float[] mViewMatrix = new float[16];
     private final float[] mRotationMatrix = new float[16];
 
+    private GLSurfaceView mGlView;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -92,24 +93,19 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         glEngine.draw(scratch);
     }
 
-    public static int loadShader(int type, String shaderCode){
-
-        // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
-        // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
-        int shader = GLES20.glCreateShader(type);
-
-        // add the source code to the shader and compile it
-        GLES20.glShaderSource(shader, shaderCode);
-        GLES20.glCompileShader(shader);
-
-        return shader;
+    protected void runOnGlThread(Runnable runnable) {
+        mGlView.queueEvent(runnable);
     }
-
+    
     public float getAngle() {
         return mAngle;
     }
 
     public void setAngle(float angle) {
         mAngle = angle;
+    }
+
+    public void setGlView(GLSurfaceView glView) {
+        this.mGlView = glView;
     }
 }

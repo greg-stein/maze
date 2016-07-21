@@ -25,6 +25,7 @@ public class FloorPlanView extends GLSurfaceView {
         setEGLContextClientVersion(2);
         // Set the Renderer for drawing on the GLSurfaceView
         setRenderer(mRenderer);
+        mRenderer.setGlView(this);
     }
 
     public void updateAngle(float degree) {
