@@ -14,6 +14,8 @@ public class GlEngine {
     public static final int COORDS_PER_VERTEX = 3;
     public static final int ORDER_INDICES_PER_QUAD = 6;
     public static final int VERTICES_PER_QUAD = 4;
+    public static final int SIZE_OF_FLOAT = Float.SIZE/Byte.SIZE;
+    public static final int SIZE_OF_SHORT = Short.SIZE/Byte.SIZE;
 
     private int mQuadsNum = 0;
     private int mLastCoordsIndex = 0;
@@ -54,12 +56,12 @@ public class GlEngine {
 
     public GlEngine(int quadsNum) {
         ByteBuffer bb = ByteBuffer.allocateDirect(quadsNum * VERTICES_PER_QUAD *
-                COORDS_PER_VERTEX * 4); // 4 bytes per float
+                COORDS_PER_VERTEX * SIZE_OF_FLOAT);
         bb.order(ByteOrder.nativeOrder()); // device hardware's native byte order
         vertexBuffer = bb.asFloatBuffer();
 
         ByteBuffer bb2 = ByteBuffer.allocateDirect(quadsNum *
-                ORDER_INDICES_PER_QUAD * 2); // 2 bytes per short
+                ORDER_INDICES_PER_QUAD * SIZE_OF_SHORT);
         bb2.order(ByteOrder.nativeOrder());
         indexBuffer = bb2.asShortBuffer();
 
