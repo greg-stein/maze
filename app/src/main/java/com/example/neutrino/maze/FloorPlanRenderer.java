@@ -21,6 +21,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private final float[] mRotationMatrix = new float[16];
 
     private GLSurfaceView mGlView;
+    private GlEngine mGlEngine;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -72,9 +73,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         float[] scratch = new float[16];
 
-        // Redraw background color
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
@@ -85,18 +83,13 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // for the matrix multiplication product to be correct.
         Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
 
-        GlEngine glEngine = new GlEngine(3);
-        glEngine.registerQuad(new Wall(-0.5f, 0.4f, -0.2f, 0.4f));
-        glEngine.registerQuad(new Wall(0.5f, 0.4f, 0.2f, 0.4f));
-        glEngine.registerQuad(new Wall(0.0f, 0.0f, 0.0f, 0.3f, 0.02f));
-
-        glEngine.draw(scratch);
+        if (mGlEngine != null) mGlEngine.render(scratch);
     }
 
     protected void runOnGlThread(Runnable runnable) {
         mGlView.queueEvent(runnable);
     }
-    
+
     public float getAngle() {
         return mAngle;
     }
@@ -107,5 +100,18 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public void setGlView(GLSurfaceView glView) {
         this.mGlView = glView;
+    }
+
+    public void handleTouch() {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                mGlEngine = new GlEngine(10);
+                mGlEngine.registerQuad(new Wall(-0.5f, 0.4f, -0.2f, 0.4f));
+                mGlEngine.registerQuad(new Wall(0.5f, 0.4f, 0.2f, 0.4f));
+                mGlEngine.registerQuad(new Wall(0.0f, 0.0f, 0.0f, 0.3f, 0.02f));
+                mGlEngine.uploadBuffersToGpu();
+            }
+        });
     }
 }

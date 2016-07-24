@@ -19,7 +19,7 @@ public class Wall {
     private final float mCoords[] = new float[COORDS_PER_VERTEX * VERTICES_NUM];
 
     private final short mDrawOrder[] = { 0, 1, 2,   // first triangle
-                                         1, 2, 3 }; // second triangle
+            1, 2, 3 }; // second triangle
 
     private int mVertexBufferPosition;
     private int mIndexBufferPosition;

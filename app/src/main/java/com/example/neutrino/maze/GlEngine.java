@@ -16,6 +16,7 @@ public class GlEngine {
     public static final int VERTICES_PER_QUAD = 4;
     public static final int SIZE_OF_FLOAT = Float.SIZE/Byte.SIZE;
     public static final int SIZE_OF_SHORT = Short.SIZE/Byte.SIZE;
+    private static final int BUFFERS_COUNT = 1;
 
     private int mQuadsNum = 0;
     private int mLastCoordsIndex = 0;
@@ -23,6 +24,9 @@ public class GlEngine {
 
     private final FloatBuffer vertexBuffer;
     private final ShortBuffer indexBuffer;
+
+    private final int[] mVerticesBufferId = new int[BUFFERS_COUNT];
+    private final int[] mIndicesBufferId = new int[BUFFERS_COUNT];
 
     private final String vertexShaderCode =
             // This matrix member variable provides a hook to manipulate
@@ -53,6 +57,7 @@ public class GlEngine {
 
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 0.0f };
+    private boolean mDataInitNeeded = true;
 
     public GlEngine(int quadsNum) {
         ByteBuffer bb = ByteBuffer.allocateDirect(quadsNum * VERTICES_PER_QUAD *
@@ -95,18 +100,41 @@ public class GlEngine {
         mQuadsNum++;
     }
 
-    public void draw(float[] mvpMatrix) {
+    public void copyToGpu(FloatBuffer vertices) {
+        GLES20.glGenBuffers(BUFFERS_COUNT, mVerticesBufferId, 0);
+
+        // Copy vertices data into GPU memory
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mVerticesBufferId[0]);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.capacity() * SIZE_OF_FLOAT, vertices, GLES20.GL_STATIC_DRAW);
+
+        // Cleanup buffer
+        vertices.limit(0);
+        vertices = null;
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+    }
+
+    public void copyToGpu(ShortBuffer indices) {
+        GLES20.glGenBuffers(BUFFERS_COUNT, mIndicesBufferId, 0);
+
+        // Copy vertices data into GPU memory
+        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mIndicesBufferId[0]);
+        GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.capacity() * SIZE_OF_SHORT, indices, GLES20.GL_STATIC_DRAW);
+
+        // Cleanup buffer
+        indices.limit(0);
+        indices = null;
+        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    public void render(float[] mvpMatrix) {
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mVerticesBufferId[0]);
         GLES20.glUseProgram(mProgram);
+
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
         GLES20.glEnableVertexAttribArray(mPositionHandle);
-
-        // Reset positions of buffers for consuming in GL
-        vertexBuffer.position(0);
-        indexBuffer.position(0);
-
-        // Prepare the triangle coordinate data
-        GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX,
-                GLES20.GL_FLOAT, false, vertexStride, vertexBuffer);
+        GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, 0);
 
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
         GLES20.glUniform4fv(mColorHandle, 1, color, 0);
@@ -116,10 +144,43 @@ public class GlEngine {
         // Pass the projection and view transformation to the shader
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 
+        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mIndicesBufferId[0]);
+
         // Draw quads
         GLES20.glDrawElements(
                 GLES20.GL_TRIANGLES, mQuadsNum * ORDER_INDICES_PER_QUAD,
-                GLES20.GL_UNSIGNED_SHORT, indexBuffer);
-        GLES20.glDisableVertexAttribArray(mPositionHandle);
+                GLES20.GL_UNSIGNED_SHORT, 0);
+
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
+        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    public void uploadBuffersToGpu() {
+        if (mDataInitNeeded) {
+            // Reset positions of buffers for consuming in GL
+            vertexBuffer.position(0);
+            indexBuffer.position(0);
+
+            copyToGpu(vertexBuffer);
+            copyToGpu(indexBuffer);
+
+            mDataInitNeeded = false;
+        }
+    }
+
+    public void deallocateGlBuffers() {
+        if (mVerticesBufferId[0] > 0) {
+            GLES20.glDeleteBuffers(mVerticesBufferId.length, mVerticesBufferId, 0);
+            mVerticesBufferId[0] = 0;
+        }
+        if (mIndicesBufferId[0] > 0) {
+             GLES20.glDeleteBuffers(mIndicesBufferId.length, mIndicesBufferId, 0);
+            mIndicesBufferId[0] = 0;
+        }
+    }
+
+    @Override
+    public void finalize() {
+        deallocateGlBuffers();
     }
 }

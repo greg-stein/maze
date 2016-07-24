@@ -3,6 +3,7 @@ package com.example.neutrino.maze;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 
 /**
  * Created by neutrino on 7/2/2016.
@@ -31,5 +32,12 @@ public class FloorPlanView extends GLSurfaceView {
     public void updateAngle(float degree) {
         mRenderer.setAngle(mRenderer.getAngle() + degree);
         requestRender();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+        mRenderer.handleTouch();
+
+        return true;
     }
 }
