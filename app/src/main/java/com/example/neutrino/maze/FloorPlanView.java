@@ -2,6 +2,7 @@ package com.example.neutrino.maze;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
+import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
@@ -35,8 +36,25 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent e) {
-        mRenderer.handleTouch();
+    public boolean onTouchEvent(MotionEvent event) {
+        int action = MotionEventCompat.getActionMasked(event);
+        // Get the index of the pointer associated with the action.
+        int index = MotionEventCompat.getActionIndex(event);
+        int xPos = -1;
+        int yPos = -1;
+
+        if (event.getPointerCount() > 1) {
+            // Multitouch event
+            xPos = (int)MotionEventCompat.getX(event, index);
+            yPos = (int)MotionEventCompat.getY(event, index);
+        } else {
+            // Single touch event
+            xPos = (int)MotionEventCompat.getX(event, index);
+            yPos = (int)MotionEventCompat.getY(event, index);
+            if (action == MotionEvent.ACTION_DOWN) {
+                mRenderer.handleTouch(xPos, yPos);
+            }
+        }
 
         return true;
     }

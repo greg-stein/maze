@@ -1,7 +1,6 @@
 package com.example.neutrino.maze;
 
 import android.opengl.GLES20;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -108,8 +107,8 @@ public class GlEngine {
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.capacity() * SIZE_OF_FLOAT, vertices, GLES20.GL_STATIC_DRAW);
 
         // Cleanup buffer
-        vertices.limit(0);
-        vertices = null;
+//        vertices.limit(0);
+//        vertices = null;
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
     }
 
@@ -121,8 +120,8 @@ public class GlEngine {
         GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.capacity() * SIZE_OF_SHORT, indices, GLES20.GL_STATIC_DRAW);
 
         // Cleanup buffer
-        indices.limit(0);
-        indices = null;
+//        indices.limit(0);
+//        indices = null;
         GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
@@ -156,16 +155,18 @@ public class GlEngine {
     }
 
     public void uploadBuffersToGpu() {
-        if (mDataInitNeeded) {
-            // Reset positions of buffers for consuming in GL
-            vertexBuffer.position(0);
-            indexBuffer.position(0);
+        int vertexPos = vertexBuffer.position();
+        int indexPos = indexBuffer.position();
 
-            copyToGpu(vertexBuffer);
-            copyToGpu(indexBuffer);
+        // Reset positions of buffers for consuming in GL
+        vertexBuffer.position(0);
+        indexBuffer.position(0);
 
-            mDataInitNeeded = false;
-        }
+        copyToGpu(vertexBuffer);
+        copyToGpu(indexBuffer);
+
+        vertexBuffer.position(vertexPos);
+        indexBuffer.position(indexPos);
     }
 
     public void deallocateGlBuffers() {

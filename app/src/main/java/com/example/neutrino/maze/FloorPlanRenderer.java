@@ -1,7 +1,9 @@
 package com.example.neutrino.maze;
 
+import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.GLU;
 import android.opengl.Matrix;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -19,9 +21,12 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private final float[] mProjectionMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
     private final float[] mRotationMatrix = new float[16];
+    private static float[] mRay = new float[6]; // ray represented by 2 points
 
     private GLSurfaceView mGlView;
     private GlEngine mGlEngine;
+    private int mViewPortWidth;
+    private int mViewPortHeight;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -53,6 +58,10 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceChanged(GL10 unused, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
+
+        // Remember these values for later use
+        mViewPortWidth = width;
+        mViewPortHeight = height;
 
         // Create a new perspective projection matrix. The height will stay the same
         // while the width will vary as per aspect ratio.
@@ -102,16 +111,58 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         this.mGlView = glView;
     }
 
-    public void handleTouch() {
+    public void handleTouch(final int x, final int y) {
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
-                mGlEngine = new GlEngine(10);
-                mGlEngine.registerQuad(new Wall(-0.5f, 0.4f, -0.2f, 0.4f));
-                mGlEngine.registerQuad(new Wall(0.5f, 0.4f, 0.2f, 0.4f));
-                mGlEngine.registerQuad(new Wall(0.0f, 0.0f, 0.0f, 0.3f, 0.02f));
+                if (mGlEngine == null) mGlEngine = new GlEngine(100);
+
+                final PointF worldPoint = new PointF();
+                windowToWorld(x, y, worldPoint);
+
+                mGlEngine.deallocateGlBuffers();
+                mGlEngine.registerQuad(new Wall(mRay[0], mRay[1], mRay[3], mRay[4], 0.005f));
                 mGlEngine.uploadBuffersToGpu();
             }
         });
+    }
+
+    public void windowToWorld(int x, int y, PointF worldPoint) {
+        final float WINDOW_Z_NEAR = 0.0f;
+        final float WINDOW_Z_FAR = 1.0f;
+
+        float rayStartPos[] = new float[4];
+        float rayEndPos[] = new float[4];
+        float modelView[] = new float[16];
+        int viewport[] = {0, 0, mViewPortWidth, mViewPortHeight};
+
+        // Model matrix is rotation since we do not apply anything else
+        Matrix.multiplyMM(modelView, 0, mViewMatrix, 0, mRotationMatrix, 0);
+
+        int windowX = x;
+        int windowY = mViewPortHeight - y;
+
+        int result = GLU.gluUnProject(windowX, windowY, WINDOW_Z_NEAR, modelView, 0, mProjectionMatrix, 0,
+                viewport, 0, rayStartPos, 0);
+
+        if (result == GL10.GL_TRUE) {
+            rayStartPos[0] /= rayStartPos[3];
+            rayStartPos[1] /= rayStartPos[3];
+            rayStartPos[2] /= rayStartPos[3];
+            System.arraycopy(rayStartPos, 0, mRay, 0, 3);
+        }
+
+        result = GLU.gluUnProject(windowX, windowY, WINDOW_Z_FAR, modelView, 0, mProjectionMatrix, 0,
+                viewport, 0, rayEndPos, 0);
+
+        if (result == GL10.GL_TRUE) {
+            rayEndPos[0] /= rayEndPos[3];
+            rayEndPos[1] /= rayEndPos[3];
+            rayEndPos[2] /= rayEndPos[3];
+            System.arraycopy(rayEndPos, 0, mRay, 3, 3);
+        }
+
+        worldPoint.x = mRay[0];
+        worldPoint.y = mRay[1];
     }
 }
