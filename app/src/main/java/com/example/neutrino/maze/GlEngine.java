@@ -18,8 +18,6 @@ public class GlEngine {
     private static final int BUFFERS_COUNT = 1;
 
     private int mQuadsNum = 0;
-    private int mLastCoordsIndex = 0;
-    private int mLastOrderIndex = 0;
 
     private final FloatBuffer vertexBuffer;
     private final ShortBuffer indexBuffer;
@@ -56,7 +54,6 @@ public class GlEngine {
 
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 0.0f };
-    private boolean mDataInitNeeded = true;
 
     public GlEngine(int quadsNum) {
         ByteBuffer bb = ByteBuffer.allocateDirect(quadsNum * VERTICES_PER_QUAD *
