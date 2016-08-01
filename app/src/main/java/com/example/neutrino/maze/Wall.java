@@ -2,6 +2,7 @@ package com.example.neutrino.maze;
 
 import android.graphics.Point;
 import android.graphics.PointF;
+import android.graphics.RectF;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
@@ -78,6 +79,32 @@ public class Wall {
         vertexBuffer.put(mCoords);
     }
 
+    public boolean hasPoint(float x, float y) {
+        // First test if the point within bounding box of line
+        RectF boundingBox = new RectF(mA.x, mA.y, mB.x, mB.y);
+        boundingBox.sort();
+
+        if (! boundingBox.contains(x, y)) {
+            return false;
+        }
+
+        // Now check if distance from given point to line is less then twice the width
+        // This uses method described on Wikipedia (https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line)
+        float xDiff = mB.x - mA.x;
+        float yDiff = mB.y - mA.y;
+
+        float twiceArea = Math.abs(yDiff * x - xDiff * y + mB.x * mA.y - mB.y * mA.x);
+        float distance = (float) (twiceArea / Math.sqrt(yDiff * yDiff + xDiff * xDiff));
+        return distance <= mWidth/2;
+    }
+
+    public void updateBuffer(FloatBuffer vertexBuffer) {
+        int lastPos = vertexBuffer.position();
+        vertexBuffer.position(mVertexBufferPosition);
+        vertexBuffer.put(mCoords);
+        vertexBuffer.position(lastPos);
+    }
+
     public void putIndices(ShortBuffer indexBuffer) {
         mIndexBufferPosition = indexBuffer.position();
         indexBuffer.put(mDrawOrder);
@@ -107,5 +134,22 @@ public class Wall {
     public void setB(float x, float y) {
         this.mB.x = x;
         this.mB.y = y;
+    }
+
+    public int getVertexBufferPosition() {
+        return mVertexBufferPosition;
+    }
+
+    public int getIndexBufferPosition() {
+        return mIndexBufferPosition;
+    }
+
+    public void mutate() {
+        // Swap x coordinates between two points
+        float tmp = mA.x;
+        mA.x = mB.x;
+        mB.x = tmp;
+
+        calcCoords();
     }
 }

@@ -5,6 +5,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Greg Stein on 7/12/2016.
@@ -16,8 +18,10 @@ public class GlEngine {
     public static final int SIZE_OF_FLOAT = Float.SIZE/Byte.SIZE;
     public static final int SIZE_OF_SHORT = Short.SIZE/Byte.SIZE;
     private static final int BUFFERS_COUNT = 1;
+    public static final int QUAD_VERTEX_DATA_SIZE = VERTICES_PER_QUAD * COORDS_PER_VERTEX * SIZE_OF_FLOAT;
 
     private int mQuadsNum = 0;
+    private List<Wall> mWalls = new ArrayList<Wall>();
 
     private final FloatBuffer vertexBuffer;
     private final ShortBuffer indexBuffer;
@@ -52,7 +56,7 @@ public class GlEngine {
     private int mPositionHandle;
     private int mColorHandle;
 
-    private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
+    private final int vertexStride = COORDS_PER_VERTEX * SIZE_OF_FLOAT;
     float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 0.0f };
 
     public GlEngine(int quadsNum) {
@@ -94,6 +98,17 @@ public class GlEngine {
         quad.putCoords(vertexBuffer);
         quad.putIndices(indexBuffer);
         mQuadsNum++;
+        mWalls.add(quad);
+    }
+
+    public Wall findWallHavingPoint(float x, float y) {
+        for (Wall wall : mWalls) {
+            if (wall.hasPoint(x, y)) {
+                return wall;
+            }
+        }
+
+        return null;
     }
 
     public void copyToGpu(FloatBuffer vertices) {
@@ -120,6 +135,19 @@ public class GlEngine {
 //        indices.limit(0);
 //        indices = null;
         GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    public void updateSingleObject(Wall object) {
+        object.updateBuffer(vertexBuffer);
+        // offset in bytes
+        int vertexBufferPosition = object.getVertexBufferPosition();
+        int vertexOffset = vertexBufferPosition * SIZE_OF_FLOAT;
+
+        int previousBufferPosition = vertexBuffer.position();
+        vertexBuffer.position(vertexBufferPosition);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mVerticesBufferId[0]);
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, vertexOffset, QUAD_VERTEX_DATA_SIZE, vertexBuffer);
+        vertexBuffer.position(previousBufferPosition);
     }
 
     public void render(float[] mvpMatrix) {

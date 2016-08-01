@@ -120,9 +120,19 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 final PointF worldPoint = new PointF();
                 windowToWorld(x, y, worldPoint);
 
-                mGlEngine.deallocateGlBuffers();
-                mGlEngine.registerQuad(new Wall(mRay[0], mRay[1], mRay[3], mRay[4], 0.005f));
-                mGlEngine.uploadBuffersToGpu();
+                Wall selectedWall = mGlEngine.findWallHavingPoint(worldPoint.x, worldPoint.y);
+                if (selectedWall == null) {
+                    // Add new wall at the point
+                    mGlEngine.deallocateGlBuffers();
+                    mGlEngine.registerQuad(new Wall(mRay[0], mRay[1], mRay[3], mRay[4], 0.05f));
+                    mGlEngine.uploadBuffersToGpu();
+                }
+                else {
+                    // Move existing wall
+                    // For this test, swap x coordinates of topLeft/bottomRight
+                    selectedWall.mutate();
+                    mGlEngine.updateSingleObject(selectedWall);
+                }
             }
         });
     }
