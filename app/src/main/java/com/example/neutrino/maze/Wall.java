@@ -52,7 +52,7 @@ public class Wall {
         calcCoords();
     }
 
-    private void calcCoords() {
+    public void calcCoords() {
         float[] vector = {mA.x - mB.x, mA.y - mB.y};
         float magnitude = (float) Math.sqrt(vector[0]*vector[0] + vector[1]*vector[1]);
         float[] identityVector = {vector[0]/magnitude, vector[1]/magnitude};

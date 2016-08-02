@@ -11,6 +11,7 @@ import android.view.MotionEvent;
  */
 public class FloorPlanView extends GLSurfaceView {
     private final FloorPlanRenderer mRenderer = new FloorPlanRenderer();
+    private boolean mDrugStarted;
 
     public FloorPlanView(Context context) {
         super(context);
@@ -51,11 +52,29 @@ public class FloorPlanView extends GLSurfaceView {
             // Single touch event
             xPos = (int)MotionEventCompat.getX(event, index);
             yPos = (int)MotionEventCompat.getY(event, index);
-            if (action == MotionEvent.ACTION_DOWN) {
-                mRenderer.handleTouch(xPos, yPos);
+            switch (action) {
+                case MotionEvent.ACTION_DOWN:
+                    mDrugStarted = true;
+                    mRenderer.handleStartDrag(xPos, yPos);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    if (mDrugStarted) {
+                        mRenderer.handleDrag(xPos, yPos);
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                    if (mDrugStarted) {
+                        mRenderer.handleEndDrag(xPos, yPos);
+                        mDrugStarted = false;
+                    }
+                    break;
             }
         }
 
         return true;
+    }
+
+    public void loadEngine() {
+        mRenderer.loadEngine();
     }
 }

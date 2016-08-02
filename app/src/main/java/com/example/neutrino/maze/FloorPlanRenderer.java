@@ -27,6 +27,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private GlEngine mGlEngine;
     private int mViewPortWidth;
     private int mViewPortHeight;
+    private final PointF mDragStart = new PointF();
+    private Wall mSelectedWall;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -111,32 +113,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         this.mGlView = glView;
     }
 
-    public void handleTouch(final int x, final int y) {
-        runOnGlThread(new Runnable() {
-            @Override
-            public void run() {
-                if (mGlEngine == null) mGlEngine = new GlEngine(100);
-
-                final PointF worldPoint = new PointF();
-                windowToWorld(x, y, worldPoint);
-
-                Wall selectedWall = mGlEngine.findWallHavingPoint(worldPoint.x, worldPoint.y);
-                if (selectedWall == null) {
-                    // Add new wall at the point
-                    mGlEngine.deallocateGlBuffers();
-                    mGlEngine.registerQuad(new Wall(mRay[0], mRay[1], mRay[3], mRay[4], 0.05f));
-                    mGlEngine.uploadBuffersToGpu();
-                }
-                else {
-                    // Move existing wall
-                    // For this test, swap x coordinates of topLeft/bottomRight
-                    selectedWall.mutate();
-                    mGlEngine.updateSingleObject(selectedWall);
-                }
-            }
-        });
-    }
-
     public void windowToWorld(int x, int y, PointF worldPoint) {
         final float WINDOW_Z_NEAR = 0.0f;
         final float WINDOW_Z_FAR = 1.0f;
@@ -174,5 +150,62 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
         worldPoint.x = mRay[0];
         worldPoint.y = mRay[1];
+    }
+
+    public void handleStartDrag(final int x, final int y) {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                windowToWorld(x, y, mDragStart);
+
+                mSelectedWall = mGlEngine.findWallHavingPoint(mDragStart.x, mDragStart.y);
+                if (mSelectedWall == null) {
+                    // Add new wall at the point
+                    mSelectedWall = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y, 0.05f);
+                    mGlEngine.registerQuad(mSelectedWall);
+
+                    // Refresh GPU buffers with added wall
+                    // TODO: This could introduce a performance issue (on each touch all the map
+                    // TODO: is rewritten in GPU memory)
+                    mGlEngine.deallocateGpuBuffers();
+                    mGlEngine.allocateGpuBuffers();
+                }
+            }
+        });
+    }
+
+    public void handleDrag(final int x, final int y) {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                final PointF worldPoint = new PointF();
+                windowToWorld(x, y, worldPoint);
+
+                mSelectedWall.setB(worldPoint.x, worldPoint.y);
+                mSelectedWall.calcCoords();
+                mGlEngine.updateSingleObject(mSelectedWall);
+            }
+        });
+    }
+
+    public void handleEndDrag(int x, int y) {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                mSelectedWall = null;
+            }
+        });
+    }
+
+    public void loadEngine() {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run()  {
+                if (mGlEngine == null) {
+                    mGlEngine = new GlEngine(100);
+                    mGlEngine.allocateGpuBuffers();
+                }
+            }
+        });
     }
 }

@@ -5,16 +5,20 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     // GUI-related fields
-    private FloorPlanView uiMapContainer;
+    private FloorPlanView uiFloorPlanView;
     private Toolbar uiToolbar;
+    private FloatingActionButton uiFab;
 
     // Map north angle
     private float mapNorth = 0.0f;
@@ -30,9 +34,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        uiMapContainer = (FloorPlanView)  findViewById(R.id.ui_MapContainer);
+        uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
         uiToolbar = (Toolbar) findViewById(R.id.toolbar);
+        uiFab = (FloatingActionButton) findViewById(R.id.fab);
         setSupportActionBar(uiToolbar);
+
+        uiFab.setOnTouchListener(new View.OnTouchListener() {
+                                     @Override
+                                     public boolean onTouch(View view, MotionEvent motionEvent) {
+                                         uiFloorPlanView.loadEngine();
+                                         return true;
+                                     }
+                                 }
+        );
 
         // initialize your android device sensor capabilities
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -59,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         return super.onOptionsItemSelected(item);
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -84,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 // get the angle around the z-axis rotated
                 float degree = Math.round(event.values[0] + mapNorth);
 
-                uiMapContainer.updateAngle(currentDegree - degree);
+                uiFloorPlanView.updateAngle(currentDegree - degree);
                 currentDegree = degree;
                 break;
             }

@@ -23,8 +23,8 @@ public class GlEngine {
     private int mQuadsNum = 0;
     private List<Wall> mWalls = new ArrayList<Wall>();
 
-    private final FloatBuffer vertexBuffer;
-    private final ShortBuffer indexBuffer;
+    private final FloatBuffer mVerticesBuffer;
+    private final ShortBuffer mIndicesBuffer;
 
     private final int[] mVerticesBufferId = new int[BUFFERS_COUNT];
     private final int[] mIndicesBufferId = new int[BUFFERS_COUNT];
@@ -63,12 +63,12 @@ public class GlEngine {
         ByteBuffer bb = ByteBuffer.allocateDirect(quadsNum * VERTICES_PER_QUAD *
                 COORDS_PER_VERTEX * SIZE_OF_FLOAT);
         bb.order(ByteOrder.nativeOrder()); // device hardware's native byte order
-        vertexBuffer = bb.asFloatBuffer();
+        mVerticesBuffer = bb.asFloatBuffer();
 
         ByteBuffer bb2 = ByteBuffer.allocateDirect(quadsNum *
                 ORDER_INDICES_PER_QUAD * SIZE_OF_SHORT);
         bb2.order(ByteOrder.nativeOrder());
-        indexBuffer = bb2.asShortBuffer();
+        mIndicesBuffer = bb2.asShortBuffer();
 
         int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER,
                 vertexShaderCode);
@@ -95,8 +95,8 @@ public class GlEngine {
     }
 
     public void registerQuad(Wall quad) {
-        quad.putCoords(vertexBuffer);
-        quad.putIndices(indexBuffer);
+        quad.putCoords(mVerticesBuffer);
+        quad.putIndices(mIndicesBuffer);
         mQuadsNum++;
         mWalls.add(quad);
     }
@@ -116,7 +116,7 @@ public class GlEngine {
 
         // Copy vertices data into GPU memory
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mVerticesBufferId[0]);
-        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.capacity() * SIZE_OF_FLOAT, vertices, GLES20.GL_STATIC_DRAW);
+        GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.capacity() * SIZE_OF_FLOAT, vertices, GLES20.GL_DYNAMIC_DRAW);
 
         // Cleanup buffer
 //        vertices.limit(0);
@@ -138,16 +138,16 @@ public class GlEngine {
     }
 
     public void updateSingleObject(Wall object) {
-        object.updateBuffer(vertexBuffer);
+        object.updateBuffer(mVerticesBuffer);
         // offset in bytes
         int vertexBufferPosition = object.getVertexBufferPosition();
         int vertexOffset = vertexBufferPosition * SIZE_OF_FLOAT;
 
-        int previousBufferPosition = vertexBuffer.position();
-        vertexBuffer.position(vertexBufferPosition);
+        int previousBufferPosition = mVerticesBuffer.position();
+        mVerticesBuffer.position(vertexBufferPosition);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mVerticesBufferId[0]);
-        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, vertexOffset, QUAD_VERTEX_DATA_SIZE, vertexBuffer);
-        vertexBuffer.position(previousBufferPosition);
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, vertexOffset, QUAD_VERTEX_DATA_SIZE, mVerticesBuffer);
+        mVerticesBuffer.position(previousBufferPosition);
     }
 
     public void render(float[] mvpMatrix) {
@@ -179,22 +179,26 @@ public class GlEngine {
         GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    public void uploadBuffersToGpu() {
-        int vertexPos = vertexBuffer.position();
-        int indexPos = indexBuffer.position();
+    public void allocateGpuBuffers() {
+        int vertexPos = mVerticesBuffer.position();
+        int indexPos = mIndicesBuffer.position();
 
         // Reset positions of buffers for consuming in GL
-        vertexBuffer.position(0);
-        indexBuffer.position(0);
+        mVerticesBuffer.position(0);
+        mIndicesBuffer.position(0);
 
-        copyToGpu(vertexBuffer);
-        copyToGpu(indexBuffer);
+        // Fake full buffer
+        mVerticesBuffer.limit(mVerticesBuffer.capacity());
+        mIndicesBuffer.limit(mIndicesBuffer.capacity());
 
-        vertexBuffer.position(vertexPos);
-        indexBuffer.position(indexPos);
+        copyToGpu(mVerticesBuffer);
+        copyToGpu(mIndicesBuffer);
+
+        mVerticesBuffer.position(vertexPos);
+        mIndicesBuffer.position(indexPos);
     }
 
-    public void deallocateGlBuffers() {
+    public void deallocateGpuBuffers() {
         if (mVerticesBufferId[0] > 0) {
             GLES20.glDeleteBuffers(mVerticesBufferId.length, mVerticesBufferId, 0);
             mVerticesBufferId[0] = 0;
@@ -207,6 +211,6 @@ public class GlEngine {
 
     @Override
     public void finalize() {
-        deallocateGlBuffers();
+        deallocateGpuBuffers();
     }
 }
