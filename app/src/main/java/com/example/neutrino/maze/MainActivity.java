@@ -28,6 +28,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     // device sensor manager
     private SensorManager mSensorManager;
+    private Sensor mAccelerometer;
+    private Sensor mMagnetometer;
+    private Sensor mGravity;
+    private float[] mGravitySensorRawData;
+    private float[] mGeomagneticSensorRawData;
+    private static final float[] mRotationMatrix = new float[9];
+    private static final float[] mInclinationMatrix = new float[9];
+    private static final float[] mOrientation = new float[3];
+    private boolean mHaveAccelerometer;
+    private boolean mHaveMagnetometer;
+    private boolean mHaveGravity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +61,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // initialize your android device sensor capabilities
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+        mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
     }
 
     @Override
@@ -79,8 +93,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onResume();
 
         // for the system's orientation sensor registered listeners
-        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
-                SensorManager.SENSOR_DELAY_GAME);
+        mHaveAccelerometer = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
+        mHaveMagnetometer = mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_UI);
+        mHaveGravity = mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_UI);
+
+        // if there is a gravity sensor we do not need the accelerometer
+        if(mHaveGravity) {
+            this.mSensorManager.unregisterListener(this, this.mAccelerometer);
+        }
     }
 
     @Override
@@ -95,13 +115,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent event) {
 
         switch (event.sensor.getType()) {
-            case Sensor.TYPE_ORIENTATION: {
-                // get the angle around the z-axis rotated
-                float degree = Math.round(event.values[0] + mapNorth);
+            case Sensor.TYPE_GRAVITY:
+                mGravitySensorRawData = event.values; // TODO: clone()?
+                break;
+            case Sensor.TYPE_ACCELEROMETER: {
+                mGravitySensorRawData = event.values;
+                break;
+            }
+            case Sensor.TYPE_MAGNETIC_FIELD: {
+                mGeomagneticSensorRawData = event.values;
+                break;
+            }
+        }
 
+        if (mGravitySensorRawData != null && mGeomagneticSensorRawData != null) {
+            boolean success = SensorManager.getRotationMatrix(mRotationMatrix, mInclinationMatrix,
+                    mGravitySensorRawData, mGeomagneticSensorRawData);
+            if (success) {
+                SensorManager.getOrientation(mRotationMatrix, mOrientation);
+                float degree = Math.round(Math.toDegrees(mOrientation[0]) + mapNorth);
                 uiFloorPlanView.updateAngle(currentDegree - degree);
                 currentDegree = degree;
-                break;
             }
         }
     }
