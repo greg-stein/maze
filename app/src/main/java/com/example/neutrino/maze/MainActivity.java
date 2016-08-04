@@ -40,6 +40,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean mHaveMagnetometer;
     private boolean mHaveGravity;
 
+    /*
+     * time smoothing constant for low-pass filter
+     * 0 ≤ alpha ≤ 1 ; a smaller value basically means more smoothing
+     * See: http://en.wikipedia.org/wiki/Low-pass_filter#Discrete-time_realization
+     */
+    static final float LOW_PASS_ALPHA = 0.5f;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,22 +118,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mSensorManager.unregisterListener(this);
     }
 
+    protected float[] lowPass( float[] newSensorData, float[] oldSensorData ) {
+        if ( oldSensorData == null ) return newSensorData;
+
+        for ( int i=0; i < newSensorData.length; i++ ) {
+            oldSensorData[i] = newSensorData[i] + LOW_PASS_ALPHA * (oldSensorData[i] - newSensorData[i]);
+        }
+        return oldSensorData;
+    }
+
     @Override
     public void onSensorChanged(SensorEvent event) {
 
         switch (event.sensor.getType()) {
-            case Sensor.TYPE_GRAVITY:
-                mGravitySensorRawData = event.values; // TODO: clone()?
+            case Sensor.TYPE_GRAVITY: {
+                mGravitySensorRawData = lowPass(event.values.clone(), mGravitySensorRawData); // TODO: clone()?
                 break;
+            }
             case Sensor.TYPE_ACCELEROMETER: {
-                mGravitySensorRawData = event.values;
+                mGravitySensorRawData = lowPass(event.values.clone(), mGravitySensorRawData);
                 break;
             }
             case Sensor.TYPE_MAGNETIC_FIELD: {
-                mGeomagneticSensorRawData = event.values;
+                mGeomagneticSensorRawData = lowPass(event.values.clone(), mGeomagneticSensorRawData);
                 break;
             }
-        }
+         }
 
         if (mGravitySensorRawData != null && mGeomagneticSensorRawData != null) {
             boolean success = SensorManager.getRotationMatrix(mRotationMatrix, mInclinationMatrix,
