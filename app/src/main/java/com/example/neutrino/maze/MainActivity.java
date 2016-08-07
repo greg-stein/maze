@@ -14,6 +14,8 @@ import android.view.MotionEvent;
 import android.view.View;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
+    // One human step
+    private static final float STEP_LENGTH = 0.015f;
 
     // GUI-related fields
     private FloorPlanView uiFloorPlanView;
@@ -23,8 +25,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // Map north angle
     private float mapNorth = 0.0f;
 
-    // record the compass picture angle turned
     private float currentDegree = 0f;
+    private float mOffsetX;
+    private float mOffsetY;
 
     // device sensor manager
     private SensorManager mSensorManager;
@@ -32,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor mMagnetometer;
     private Sensor mGravity;
     private Sensor mRotation;
+    private Sensor mStepDetector;
     private float[] mGravitySensorRawData;
     private float[] mGeomagneticSensorRawData;
     private static final float[] mRotationMatrix = new float[9];
@@ -41,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean mHaveMagnetometer;
     private boolean mHaveGravity;
     private boolean mHaveRotation;
+    private boolean mHaveStepDetector;
 
 
     /*
@@ -75,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
         mRotation = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        mStepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
     }
 
     @Override
@@ -114,6 +120,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             mHaveMagnetometer = mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_UI);
         }
+
+        // Step detector
+        mHaveStepDetector = mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_UI);
     }
 
     @Override
@@ -155,6 +164,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 SensorManager.getRotationMatrixFromVector( mRotationMatrix, event.values );
                 gotRotationMatrix = true;
                 break;
+            }
+            case Sensor.TYPE_STEP_DETECTOR: {
+                mOffsetX += (float) (Math.sin(Math.toRadians(currentDegree)) * STEP_LENGTH);
+                mOffsetY += (float) (Math.cos(Math.toRadians(currentDegree)) * STEP_LENGTH);
+                uiFloorPlanView.updateOffset(mOffsetX, mOffsetY);
             }
          }
 

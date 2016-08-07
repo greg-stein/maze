@@ -20,7 +20,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private final float[] mMVPMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
     private final float[] mViewMatrix = new float[16];
+    private final float[] mModelMatrix = new float[16];
     private final float[] mRotationMatrix = new float[16];
+    private final float[] mTranslationMatrix = new float[16];
     private static float[] mRay = new float[6]; // ray represented by 2 points
 
     private GLSurfaceView mGlView;
@@ -29,14 +31,17 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private int mViewPortHeight;
     private final PointF mDragStart = new PointF();
     private Wall mSelectedWall;
+    private float mOffsetX;
+    private float mOffsetY;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        // Initialize the accumulated rotation matrix
+        // Initialize the accumulated rotation & translation matrices
         Matrix.setIdentityM(mRotationMatrix, 0);
+        Matrix.setIdentityM(mTranslationMatrix, 0);
 
         // Position the eye in front of the origin.
         final float eyeX = 0.0f;
@@ -88,11 +93,14 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
         Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, 1.0f);
+        Matrix.setIdentityM(mTranslationMatrix,0);
+        Matrix.translateM(mTranslationMatrix, 0, mOffsetX, -mOffsetY, 0);
+        Matrix.multiplyMM(mModelMatrix, 0, mRotationMatrix, 0, mTranslationMatrix, 0);
 
         // Combine the rotation matrix with the projection and camera view
         // Note that the mMVPMatrix factor *must be first* in order
         // for the matrix multiplication product to be correct.
-        Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mRotationMatrix, 0);
+        Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mModelMatrix, 0);
 
         if (mGlEngine != null) mGlEngine.render(scratch);
     }
@@ -109,6 +117,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         mAngle = angle;
     }
 
+    public void setOffset(float offsetX, float offsetY) {
+        mOffsetX = offsetX;
+        mOffsetY = offsetY;
+    }
+
     public void setGlView(GLSurfaceView glView) {
         this.mGlView = glView;
     }
@@ -122,8 +135,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         float modelView[] = new float[16];
         int viewport[] = {0, 0, mViewPortWidth, mViewPortHeight};
 
-        // Model matrix is rotation since we do not apply anything else
-        Matrix.multiplyMM(modelView, 0, mViewMatrix, 0, mRotationMatrix, 0);
+        // Model matrix is rotation + translation
+        Matrix.multiplyMM(modelView, 0, mViewMatrix, 0, mModelMatrix, 0);
 
         int windowX = x;
         int windowY = mViewPortHeight - y;
@@ -208,4 +221,5 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             }
         });
     }
+
 }

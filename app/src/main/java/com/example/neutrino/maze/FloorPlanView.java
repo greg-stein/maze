@@ -36,6 +36,10 @@ public class FloorPlanView extends GLSurfaceView {
         requestRender();
     }
 
+    public void updateOffset(float offsetX, float offsetY) {
+        mRenderer.setOffset(offsetX, offsetY);
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = MotionEventCompat.getActionMasked(event);
