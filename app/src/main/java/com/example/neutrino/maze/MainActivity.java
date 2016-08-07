@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor mAccelerometer;
     private Sensor mMagnetometer;
     private Sensor mGravity;
+    private Sensor mRotation;
     private float[] mGravitySensorRawData;
     private float[] mGeomagneticSensorRawData;
     private static final float[] mRotationMatrix = new float[9];
@@ -39,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean mHaveAccelerometer;
     private boolean mHaveMagnetometer;
     private boolean mHaveGravity;
+    private boolean mHaveRotation;
+
 
     /*
      * time smoothing constant for low-pass filter
@@ -71,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+        mRotation = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
     }
 
     @Override
@@ -100,13 +104,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onResume();
 
         // for the system's orientation sensor registered listeners
-        mHaveAccelerometer = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
-        mHaveMagnetometer = mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_UI);
-        mHaveGravity = mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_UI);
+        mHaveRotation = mSensorManager.registerListener(this, mRotation, SensorManager.SENSOR_DELAY_UI);
+        if (!mHaveRotation) {
+            mHaveGravity = mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_UI);
 
-        // if there is a gravity sensor we do not need the accelerometer
-        if(mHaveGravity) {
-            this.mSensorManager.unregisterListener(this, this.mAccelerometer);
+            // if there is a gravity sensor we do not need the accelerometer
+            if (!mHaveGravity) {
+                mHaveAccelerometer = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
+            }
+            mHaveMagnetometer = mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_UI);
         }
     }
 
@@ -129,10 +135,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        boolean gotRotationMatrix = false;
 
         switch (event.sensor.getType()) {
             case Sensor.TYPE_GRAVITY: {
-                mGravitySensorRawData = lowPass(event.values.clone(), mGravitySensorRawData); // TODO: clone()?
+                mGravitySensorRawData = lowPass(event.values.clone(), mGravitySensorRawData);
                 break;
             }
             case Sensor.TYPE_ACCELEROMETER: {
@@ -143,17 +150,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 mGeomagneticSensorRawData = lowPass(event.values.clone(), mGeomagneticSensorRawData);
                 break;
             }
+            case Sensor.TYPE_ROTATION_VECTOR: {
+                // calculate the rotation matrix
+                SensorManager.getRotationMatrixFromVector( mRotationMatrix, event.values );
+                gotRotationMatrix = true;
+                break;
+            }
          }
 
-        if (mGravitySensorRawData != null && mGeomagneticSensorRawData != null) {
-            boolean success = SensorManager.getRotationMatrix(mRotationMatrix, mInclinationMatrix,
-                    mGravitySensorRawData, mGeomagneticSensorRawData);
-            if (success) {
-                SensorManager.getOrientation(mRotationMatrix, mOrientation);
-                float degree = Math.round(Math.toDegrees(mOrientation[0]) + mapNorth);
-                uiFloorPlanView.updateAngle(currentDegree - degree);
-                currentDegree = degree;
+        if (event.sensor.getType() != Sensor.TYPE_ROTATION_VECTOR) {
+            if (mGravitySensorRawData != null && mGeomagneticSensorRawData != null) {
+                gotRotationMatrix = SensorManager.getRotationMatrix(mRotationMatrix, mInclinationMatrix,
+                        mGravitySensorRawData, mGeomagneticSensorRawData);
             }
+        }
+
+        if (gotRotationMatrix) {
+            SensorManager.getOrientation(mRotationMatrix, mOrientation);
+            float degree = Math.round(Math.toDegrees(mOrientation[0]) + mapNorth);
+            uiFloorPlanView.updateAngle(currentDegree - degree);
+            currentDegree = degree;
         }
     }
 
