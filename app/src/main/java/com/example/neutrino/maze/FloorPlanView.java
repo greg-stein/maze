@@ -1,6 +1,7 @@
 package com.example.neutrino.maze;
 
 import android.content.Context;
+import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
@@ -10,8 +11,13 @@ import android.view.MotionEvent;
  * Created by neutrino on 7/2/2016.
  */
 public class FloorPlanView extends GLSurfaceView {
+    private static final float CORRIDOR_DEFAULT_WIDTH = 0.03f;
+
     private final FloorPlanRenderer mRenderer = new FloorPlanRenderer();
     private boolean mDrugStarted;
+    private static final PointF mLastBuildWallsLocation = new PointF();
+    private static final PointF mNewWallsLocation =  new PointF();
+    private static final float[] mWallsBuffer = new float[12];
 
     public FloorPlanView(Context context) {
         super(context);
@@ -80,5 +86,28 @@ public class FloorPlanView extends GLSurfaceView {
 
     public void loadEngine() {
         mRenderer.loadEngine();
+    }
+
+    public void initCorridorWalls() {
+        // Convert center of view to world coordinates
+        mRenderer.windowToWorld(getMeasuredWidth()/2, getMeasuredHeight()/2, mLastBuildWallsLocation);
+    }
+
+    // This method builds walls from last call
+    public void buildCorridorWalls() {
+        // Convert center of view to world coordinates
+        mRenderer.windowToWorld(getMeasuredWidth()/2, getMeasuredHeight()/2, mNewWallsLocation);
+
+        VectorHelper.splitLine(mLastBuildWallsLocation, mNewWallsLocation, CORRIDOR_DEFAULT_WIDTH, mWallsBuffer);
+
+        // Make walls continuous (not dashed)
+
+        Wall rightWall = new Wall(mWallsBuffer[0], mWallsBuffer[1], mWallsBuffer[6], mWallsBuffer[7]);
+        Wall leftWall = new Wall(mWallsBuffer[3], mWallsBuffer[4], mWallsBuffer[9], mWallsBuffer[10]);
+
+        mRenderer.addWall(rightWall);
+        mRenderer.addWall(leftWall);
+
+        mLastBuildWallsLocation.set(mNewWallsLocation);
     }
 }

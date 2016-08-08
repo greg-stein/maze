@@ -15,7 +15,10 @@ import android.view.View;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     // One human step
-    private static final float STEP_LENGTH = 0.015f;
+    private static final float STEP_LENGTH = 0.045f;
+    private static final float WALL_CREATION_DISTANCE = STEP_LENGTH;
+
+    private float mTravelledDistance = 0;
 
     // GUI-related fields
     private FloorPlanView uiFloorPlanView;
@@ -109,6 +112,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onResume() {
         super.onResume();
 
+        uiFloorPlanView.initCorridorWalls();
+
         // for the system's orientation sensor registered listeners
         mHaveRotation = mSensorManager.registerListener(this, mRotation, SensorManager.SENSOR_DELAY_UI);
         if (!mHaveRotation) {
@@ -169,6 +174,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 mOffsetX += (float) (Math.sin(Math.toRadians(currentDegree)) * STEP_LENGTH);
                 mOffsetY += (float) (Math.cos(Math.toRadians(currentDegree)) * STEP_LENGTH);
                 uiFloorPlanView.updateOffset(mOffsetX, mOffsetY);
+
+                mTravelledDistance += STEP_LENGTH;
+                if (mTravelledDistance >= WALL_CREATION_DISTANCE) {
+                    uiFloorPlanView.buildCorridorWalls();
+                    mTravelledDistance = 0;
+                }
             }
          }
 

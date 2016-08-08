@@ -6,6 +6,7 @@ import android.graphics.RectF;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.Vector;
 
 /**
  * Created by neutrino on 7/7/2016.
@@ -14,7 +15,7 @@ public class Wall {
     // number of coordinates per vertex in this array
     private static final int COORDS_PER_VERTEX = 3;
     private static final int VERTICES_NUM = 4; // it's a rect after all
-    private static final float DEFAULT_WIDTH = 0.05f;
+    private static final float DEFAULT_WIDTH = 0.01f;
     private static final float DEFAULT_COORDS_SOURCE = 0.5f;
 
     private final float mCoords[] = new float[COORDS_PER_VERTEX * VERTICES_NUM];
@@ -49,26 +50,11 @@ public class Wall {
         mB.x = x2;
         mB.y = y2;
         mWidth = width;
-        calcCoords();
+        VectorHelper.splitLine(mA, mB, mWidth, mCoords);
     }
 
-    public void calcCoords() {
-        float[] vector = {mA.x - mB.x, mA.y - mB.y};
-        float magnitude = (float) Math.sqrt(vector[0]*vector[0] + vector[1]*vector[1]);
-        float[] identityVector = {vector[0]/magnitude, vector[1]/magnitude};
-        float[] orthogonalIdentityVector = {identityVector[1], -identityVector[0]};
-
-        mCoords[0] = mA.x + mWidth * orthogonalIdentityVector[0];
-        mCoords[1] = mA.y + mWidth * orthogonalIdentityVector[1];
-
-        mCoords[3] = mA.x - mWidth * orthogonalIdentityVector[0];
-        mCoords[4] = mA.y - mWidth * orthogonalIdentityVector[1];
-
-        mCoords[6] = mB.x + mWidth * orthogonalIdentityVector[0];
-        mCoords[7] = mB.y + mWidth * orthogonalIdentityVector[1];
-
-        mCoords[9] = mB.x - mWidth * orthogonalIdentityVector[0];
-        mCoords[10] = mB.y - mWidth * orthogonalIdentityVector[1];
+    public void updateCoords() {
+        VectorHelper.splitLine(mA, mB, mWidth, mCoords);
     }
 
     public void putCoords(FloatBuffer vertexBuffer) {
@@ -123,8 +109,7 @@ public class Wall {
     }
 
     public void setA(float x, float y) {
-        this.mA.x = x;
-        this.mA.y = y;
+        this.mA.set(x, y);
     }
 
     public PointF getB() {
@@ -132,8 +117,7 @@ public class Wall {
     }
 
     public void setB(float x, float y) {
-        this.mB.x = x;
-        this.mB.y = y;
+        this.mB.set(x, y);
     }
 
     public int getVertexBufferPosition() {
@@ -142,14 +126,5 @@ public class Wall {
 
     public int getIndexBufferPosition() {
         return mIndexBufferPosition;
-    }
-
-    public void mutate() {
-        // Swap x coordinates between two points
-        float tmp = mA.x;
-        mA.x = mB.x;
-        mB.x = tmp;
-
-        calcCoords();
     }
 }

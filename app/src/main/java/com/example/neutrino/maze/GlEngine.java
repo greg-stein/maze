@@ -20,7 +20,7 @@ public class GlEngine {
     private static final int BUFFERS_COUNT = 1;
     public static final int QUAD_VERTEX_DATA_SIZE = VERTICES_PER_QUAD * COORDS_PER_VERTEX * SIZE_OF_FLOAT;
 
-    private int mQuadsNum = 0;
+    private int mWallsNum = 0;
     private List<Wall> mWalls = new ArrayList<Wall>();
 
     private final FloatBuffer mVerticesBuffer;
@@ -94,11 +94,11 @@ public class GlEngine {
         return shader;
     }
 
-    public void registerQuad(Wall quad) {
-        quad.putCoords(mVerticesBuffer);
-        quad.putIndices(mIndicesBuffer);
-        mQuadsNum++;
-        mWalls.add(quad);
+    public void registerWall(Wall wall) {
+        wall.putCoords(mVerticesBuffer);
+        wall.putIndices(mIndicesBuffer);
+        mWallsNum++;
+        mWalls.add(wall);
     }
 
     public Wall findWallHavingPoint(float x, float y) {
@@ -172,7 +172,7 @@ public class GlEngine {
 
         // Draw quads
         GLES20.glDrawElements(
-                GLES20.GL_TRIANGLES, mQuadsNum * ORDER_INDICES_PER_QUAD,
+                GLES20.GL_TRIANGLES, mWallsNum * ORDER_INDICES_PER_QUAD,
                 GLES20.GL_UNSIGNED_SHORT, 0);
 
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);

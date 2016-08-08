@@ -175,13 +175,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 if (mSelectedWall == null) {
                     // Add new wall at the point
                     mSelectedWall = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y, 0.05f);
-                    mGlEngine.registerQuad(mSelectedWall);
-
-                    // Refresh GPU buffers with added wall
-                    // TODO: This could introduce a performance issue (on each touch all the map
-                    // TODO: is rewritten in GPU memory)
-                    mGlEngine.deallocateGpuBuffers();
-                    mGlEngine.allocateGpuBuffers();
+                    addWall(mSelectedWall);
                 }
             }
         });
@@ -195,7 +189,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 windowToWorld(x, y, worldPoint);
 
                 mSelectedWall.setB(worldPoint.x, worldPoint.y);
-                mSelectedWall.calcCoords();
+                mSelectedWall.updateCoords();
                 mGlEngine.updateSingleObject(mSelectedWall);
             }
         });
@@ -215,11 +209,25 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             @Override
             public void run()  {
                 if (mGlEngine == null) {
-                    mGlEngine = new GlEngine(100);
+                    mGlEngine = new GlEngine(1000);
                     mGlEngine.allocateGpuBuffers();
                 }
             }
         });
     }
 
+    public void addWall(Wall wall) {
+        mGlEngine.registerWall(wall);
+
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                // Refresh GPU buffers with added wall
+                // TODO: This could introduce a performance issue (on each touch all the map
+                // TODO: is rewritten in GPU memory)
+                mGlEngine.deallocateGpuBuffers();
+                mGlEngine.allocateGpuBuffers();
+            }
+        });
+    }
 }
