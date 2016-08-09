@@ -1,9 +1,13 @@
 package com.example.neutrino.maze;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -50,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean mHaveRotation;
     private boolean mHaveStepDetector;
 
+    private WifiManager mWifiManager;
+    private WifiScanner mWifiScanner;
 
     /*
      * time smoothing constant for low-pass filter
@@ -72,12 +78,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                      @Override
                                      public boolean onTouch(View view, MotionEvent motionEvent) {
                                          uiFloorPlanView.loadEngine();
+                                         mWifiScanner.enable();
                                          return true;
                                      }
                                  }
         );
 
         // initialize your android device sensor capabilities
+        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mWifiScanner = new WifiScanner(mWifiManager);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
@@ -114,6 +123,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         uiFloorPlanView.initCorridorWalls();
 
+        registerReceiver(mWifiScanner, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+
         // for the system's orientation sensor registered listeners
         mHaveRotation = mSensorManager.registerListener(this, mRotation, SensorManager.SENSOR_DELAY_UI);
         if (!mHaveRotation) {
@@ -136,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // to stop the listener and save battery
         mSensorManager.unregisterListener(this);
+        unregisterReceiver(mWifiScanner);
     }
 
     protected float[] lowPass( float[] newSensorData, float[] oldSensorData ) {
