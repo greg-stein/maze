@@ -18,6 +18,8 @@ public class FloorPlanView extends GLSurfaceView {
     private static final PointF mLastBuildWallsLocation = new PointF();
     private static final PointF mNewWallsLocation =  new PointF();
     private static final float[] mWallsBuffer = new float[12];
+    private static Wall mPreviousRightWall;
+    private static Wall mPreviousLeftWall;
 
     public FloorPlanView(Context context) {
         super(context);
@@ -35,6 +37,7 @@ public class FloorPlanView extends GLSurfaceView {
         // Set the Renderer for drawing on the GLSurfaceView
         setRenderer(mRenderer);
         mRenderer.setGlView(this);
+        setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 
     public void updateAngle(float degree) {
@@ -44,6 +47,7 @@ public class FloorPlanView extends GLSurfaceView {
 
     public void updateOffset(float offsetX, float offsetY) {
         mRenderer.setOffset(offsetX, offsetY);
+        requestRender();
     }
 
     @Override
@@ -81,6 +85,7 @@ public class FloorPlanView extends GLSurfaceView {
             }
         }
 
+        requestRender();
         return true;
     }
 
@@ -101,6 +106,14 @@ public class FloorPlanView extends GLSurfaceView {
         VectorHelper.splitLine(mLastBuildWallsLocation, mNewWallsLocation, CORRIDOR_DEFAULT_WIDTH, mWallsBuffer);
 
         // Make walls continuous (not dashed)
+        if (mPreviousRightWall != null) {
+            mWallsBuffer[0] = mPreviousRightWall.getB().x;
+            mWallsBuffer[1] = mPreviousRightWall.getB().y;
+        }
+        if (mPreviousLeftWall != null) {
+            mWallsBuffer[3] = mPreviousLeftWall.getB().x;
+            mWallsBuffer[4] = mPreviousLeftWall.getB().y;
+        }
 
         Wall rightWall = new Wall(mWallsBuffer[0], mWallsBuffer[1], mWallsBuffer[6], mWallsBuffer[7]);
         Wall leftWall = new Wall(mWallsBuffer[3], mWallsBuffer[4], mWallsBuffer[9], mWallsBuffer[10]);
@@ -108,6 +121,8 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.addWall(rightWall);
         mRenderer.addWall(leftWall);
 
+        mPreviousRightWall = rightWall;
+        mPreviousLeftWall = leftWall;
         mLastBuildWallsLocation.set(mNewWallsLocation);
     }
 }

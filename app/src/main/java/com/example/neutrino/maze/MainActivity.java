@@ -78,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                      @Override
                                      public boolean onTouch(View view, MotionEvent motionEvent) {
                                          uiFloorPlanView.loadEngine();
+                                         uiFloorPlanView.initCorridorWalls();
                                          mWifiScanner.enable();
                                          return true;
                                      }

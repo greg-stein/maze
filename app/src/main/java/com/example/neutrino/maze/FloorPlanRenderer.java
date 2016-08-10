@@ -92,17 +92,19 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
-        Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, 1.0f);
-        Matrix.setIdentityM(mTranslationMatrix,0);
-        Matrix.translateM(mTranslationMatrix, 0, mOffsetX, -mOffsetY, 0);
-        Matrix.multiplyMM(mModelMatrix, 0, mRotationMatrix, 0, mTranslationMatrix, 0);
-
         // Combine the rotation matrix with the projection and camera view
         // Note that the mMVPMatrix factor *must be first* in order
         // for the matrix multiplication product to be correct.
         Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mModelMatrix, 0);
 
         if (mGlEngine != null) mGlEngine.render(scratch);
+    }
+
+    private void updateModelMatrix() {
+        Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, 1.0f);
+        Matrix.setIdentityM(mTranslationMatrix,0);
+        Matrix.translateM(mTranslationMatrix, 0, mOffsetX, -mOffsetY, 0);
+        Matrix.multiplyMM(mModelMatrix, 0, mRotationMatrix, 0, mTranslationMatrix, 0);
     }
 
     protected void runOnGlThread(Runnable runnable) {
@@ -115,11 +117,13 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public void setAngle(float angle) {
         mAngle = angle;
+        updateModelMatrix();
     }
 
     public void setOffset(float offsetX, float offsetY) {
         mOffsetX = offsetX;
         mOffsetY = offsetY;
+        updateModelMatrix();
     }
 
     public void setGlView(GLSurfaceView glView) {
