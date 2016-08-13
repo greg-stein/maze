@@ -15,6 +15,9 @@ import javax.microedition.khronos.opengles.GL10;
 public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public volatile float mAngle;
+    private float mOffsetX;
+    private float mOffsetY;
+    private float mScale = 1.0f;
 
     // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
     private final float[] mMVPMatrix = new float[16];
@@ -23,6 +26,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private final float[] mModelMatrix = new float[16];
     private final float[] mRotationMatrix = new float[16];
     private final float[] mTranslationMatrix = new float[16];
+    private final float[] mScaleMatrix = new float[16];
+    private final float[] mIntermediateMatrix = new float[16];
     private static float[] mRay = new float[6]; // ray represented by 2 points
 
     private GLSurfaceView mGlView;
@@ -31,15 +36,14 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private int mViewPortHeight;
     private final PointF mDragStart = new PointF();
     private Wall mSelectedWall;
-    private float mOffsetX;
-    private float mOffsetY;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-        // Initialize the accumulated rotation & translation matrices
+        // Initialize the accumulated scale, rotation & translation matrices
+        Matrix.setIdentityM(mScaleMatrix, 0);
         Matrix.setIdentityM(mRotationMatrix, 0);
         Matrix.setIdentityM(mTranslationMatrix, 0);
 
@@ -101,10 +105,17 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     private void updateModelMatrix() {
+        Matrix.setIdentityM(mScaleMatrix,0);
+        Matrix.scaleM(mScaleMatrix, 0, mScale, mScale, mScale);
+
         Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, 1.0f);
+
         Matrix.setIdentityM(mTranslationMatrix,0);
         Matrix.translateM(mTranslationMatrix, 0, mOffsetX, -mOffsetY, 0);
-        Matrix.multiplyMM(mModelMatrix, 0, mRotationMatrix, 0, mTranslationMatrix, 0);
+
+        // Model = Scale * Rotate * Translate
+        Matrix.multiplyMM(mIntermediateMatrix, 0, mScaleMatrix, 0, mRotationMatrix, 0);
+        Matrix.multiplyMM(mModelMatrix, 0, mIntermediateMatrix, 0, mTranslationMatrix, 0);
     }
 
     protected void runOnGlThread(Runnable runnable) {
@@ -126,6 +137,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         updateModelMatrix();
     }
 
+    public void setScale(float scale) {
+        mScale = scale;
+        updateModelMatrix();
+    }
+
     public void setGlView(GLSurfaceView glView) {
         this.mGlView = glView;
     }
@@ -139,7 +155,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         float modelView[] = new float[16];
         int viewport[] = {0, 0, mViewPortWidth, mViewPortHeight};
 
-        // Model matrix is rotation + translation
+        // Model matrix is scale + rotation + translation
         Matrix.multiplyMM(modelView, 0, mViewMatrix, 0, mModelMatrix, 0);
 
         int windowX = x;
@@ -191,10 +207,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             public void run() {
                 final PointF worldPoint = new PointF();
                 windowToWorld(x, y, worldPoint);
-
-                mSelectedWall.setB(worldPoint.x, worldPoint.y);
-                mSelectedWall.updateCoords();
-                mGlEngine.updateSingleObject(mSelectedWall);
+                if (mSelectedWall != null) {
+                    mSelectedWall.setB(worldPoint.x, worldPoint.y);
+                    mSelectedWall.updateCoords();
+                    mGlEngine.updateSingleObject(mSelectedWall);
+                }
             }
         });
     }
@@ -223,6 +240,16 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public void addWall(Wall wall) {
         mGlEngine.registerWall(wall);
 
+        refreshGpuBuffers();
+    }
+
+    public void removeWall(Wall wall) {
+        mGlEngine.unregisterWall(wall);
+
+        refreshGpuBuffers();
+    }
+
+    private void refreshGpuBuffers() {
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
@@ -233,5 +260,18 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 mGlEngine.allocateGpuBuffers();
             }
         });
+    }
+
+    private static final PointF mPanStart = new PointF();
+    public void startPan(int x, int y) {
+        windowToWorld(x, y, mPanStart);
+    }
+
+    private static final PointF mCurrentPan = new PointF();
+    public void pan(int x, int y) {
+        windowToWorld(x, y, mCurrentPan);
+        setOffset(mCurrentPan.x - mPanStart.x, mCurrentPan.y - mPanStart.y);
+
+        mPanStart.set(mCurrentPan);
     }
 }

@@ -1,6 +1,5 @@
 package com.example.neutrino.maze;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.hardware.Sensor;
@@ -16,6 +15,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     // One human step
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FloorPlanView uiFloorPlanView;
     private Toolbar uiToolbar;
     private FloatingActionButton uiFab;
+    private Switch uiEditSwitch;
 
     // Map north angle
     private float mapNorth = 0.0f;
@@ -63,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * See: http://en.wikipedia.org/wiki/Low-pass_filter#Discrete-time_realization
      */
     static final float LOW_PASS_ALPHA = 0.5f;
+    boolean mInited = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,18 +75,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
         uiToolbar = (Toolbar) findViewById(R.id.toolbar);
         uiFab = (FloatingActionButton) findViewById(R.id.fab);
+        uiEditSwitch = (Switch) findViewById(R.id.edit_switch);
         setSupportActionBar(uiToolbar);
 
         uiFab.setOnTouchListener(new View.OnTouchListener() {
                                      @Override
                                      public boolean onTouch(View view, MotionEvent motionEvent) {
-                                         uiFloorPlanView.loadEngine();
-                                         uiFloorPlanView.initCorridorWalls();
-                                         mWifiScanner.enable();
+                                         if (!mInited) {
+                                             uiFloorPlanView.loadEngine();
+                                             uiFloorPlanView.initCorridorWalls();
+                                             mWifiScanner.enable();
+                                             mInited = true;
+                                         }
                                          return true;
                                      }
                                  }
         );
+
+        uiEditSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                uiFloorPlanView.setContentsInEditMode(isChecked);
+            }
+        });
 
         // initialize your android device sensor capabilities
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);

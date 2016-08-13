@@ -18,7 +18,18 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            app:popupTheme="@style/AppTheme.PopupOverlay">
+
+            <Switch
+                android:id="@+id/edit_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:textOn="edit"
+                android:textOff="save"
+                android:checked="false"
+                android:text="edit" />
+        </android.support.v7.widget.Toolbar>
+
 
     </android.support.design.widget.AppBarLayout>
 

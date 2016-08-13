@@ -1,6 +1,7 @@
 package com.example.neutrino.maze;
 
 import android.opengl.GLES20;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -22,6 +23,7 @@ public class GlEngine {
 
     private int mWallsNum = 0;
     private List<Wall> mWalls = new ArrayList<Wall>();
+    private List<Wall> mDeletedWalls = new ArrayList<Wall>();;
 
     private final FloatBuffer mVerticesBuffer;
     private final ShortBuffer mIndicesBuffer;
@@ -101,6 +103,15 @@ public class GlEngine {
         mWalls.add(wall);
     }
 
+    // Assumes given wall was registered
+    public void unregisterWall(Wall wall) {
+        wall.removeCoords(mVerticesBuffer);
+        wall.removeIndices(mIndicesBuffer);
+        mDeletedWalls.add(wall);
+        mWalls.remove(wall);
+        mWallsNum--;
+    }
+
     public Wall findWallHavingPoint(float x, float y) {
         for (Wall wall : mWalls) {
             if (wall.hasPoint(x, y)) {
@@ -116,6 +127,7 @@ public class GlEngine {
 
         // Copy vertices data into GPU memory
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mVerticesBufferId[0]);
+        // TODO: Should be vertices.limit() instead of vertices.capacity()
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.capacity() * SIZE_OF_FLOAT, vertices, GLES20.GL_DYNAMIC_DRAW);
 
         // Cleanup buffer
@@ -129,6 +141,7 @@ public class GlEngine {
 
         // Copy vertices data into GPU memory
         GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mIndicesBufferId[0]);
+        // TODO: Should be vertices.limit() instead of vertices.capacity()
         GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.capacity() * SIZE_OF_SHORT, indices, GLES20.GL_STATIC_DRAW);
 
         // Cleanup buffer
@@ -148,6 +161,7 @@ public class GlEngine {
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mVerticesBufferId[0]);
         GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, vertexOffset, QUAD_VERTEX_DATA_SIZE, mVerticesBuffer);
         mVerticesBuffer.position(previousBufferPosition);
+        GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
     }
 
     public void render(float[] mvpMatrix) {

@@ -6,6 +6,7 @@ import android.opengl.GLSurfaceView;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 
 /**
  * Created by neutrino on 7/2/2016.
@@ -20,6 +21,9 @@ public class FloorPlanView extends GLSurfaceView {
     private static final float[] mWallsBuffer = new float[12];
     private static Wall mPreviousRightWall;
     private static Wall mPreviousLeftWall;
+    private ScaleGestureDetector mScaleDetector;
+    private float mScaleFactor = 1;
+    private boolean mIsInEditMode;
 
     public FloorPlanView(Context context) {
         super(context);
@@ -38,7 +42,32 @@ public class FloorPlanView extends GLSurfaceView {
         setRenderer(mRenderer);
         mRenderer.setGlView(this);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
     }
+
+    public boolean isContentsInEditMode() {
+        return mIsInEditMode;
+    }
+
+    public void setContentsInEditMode(boolean isEditMode) {
+        this.mIsInEditMode = isEditMode;
+    }
+
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            mScaleFactor *= detector.getScaleFactor();
+
+            // Don't let the object get too small or too large.
+            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
+
+            // Update scale
+            mRenderer.setScale(mScaleFactor);
+            requestRender();
+            return true;
+        }
+    }
+
 
     public void updateAngle(float degree) {
         mRenderer.setAngle(mRenderer.getAngle() + degree);
@@ -52,41 +81,45 @@ public class FloorPlanView extends GLSurfaceView {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int action = MotionEventCompat.getActionMasked(event);
-        // Get the index of the pointer associated with the action.
-        int index = MotionEventCompat.getActionIndex(event);
-        int xPos = -1;
-        int yPos = -1;
-
-        if (event.getPointerCount() > 1) {
-            // Multitouch event
-            xPos = (int)MotionEventCompat.getX(event, index);
-            yPos = (int)MotionEventCompat.getY(event, index);
-        } else {
-            // Single touch event
-            xPos = (int)MotionEventCompat.getX(event, index);
-            yPos = (int)MotionEventCompat.getY(event, index);
-            switch (action) {
-                case MotionEvent.ACTION_DOWN:
-                    mDrugStarted = true;
-                    mRenderer.handleStartDrag(xPos, yPos);
-                    break;
-                case MotionEvent.ACTION_MOVE:
-                    if (mDrugStarted) {
-                        mRenderer.handleDrag(xPos, yPos);
-                    }
-                    break;
-                case MotionEvent.ACTION_UP:
-                    if (mDrugStarted) {
-                        mRenderer.handleEndDrag(xPos, yPos);
-                        mDrugStarted = false;
-                    }
-                    break;
-            }
+        if (mIsInEditMode) {
+            handleEditing(event);
+        }
+        else {
+            handlePanAndZoom(event);
         }
 
         requestRender();
         return true;
+    }
+
+    private void handleEditing(MotionEvent event) {
+        int action = MotionEventCompat.getActionMasked(event);
+        // Get the index of the pointer associated with the action.
+        int index = MotionEventCompat.getActionIndex(event);
+
+        int xPos = (int) MotionEventCompat.getX(event, index);
+        int yPos = (int) MotionEventCompat.getY(event, index);
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                mDrugStarted = true;
+                mRenderer.handleStartDrag(xPos, yPos);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (mDrugStarted && !mScaleDetector.isInProgress()) {
+                    mRenderer.handleDrag(xPos, yPos);
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                if (mDrugStarted) {
+                    mRenderer.handleEndDrag(xPos, yPos);
+                    mDrugStarted = false;
+                }
+                break;
+        }
+    }
+
+    private void handlePanAndZoom(MotionEvent event) {
+        mScaleDetector.onTouchEvent(event);
     }
 
     public void loadEngine() {
