@@ -97,7 +97,7 @@ public class GlEngine {
     }
 
     public void registerWall(Wall wall) {
-        wall.putCoords(mVerticesBuffer);
+        wall.putVertices(mVerticesBuffer);
         wall.putIndices(mIndicesBuffer);
         mWallsNum++;
         mWalls.add(wall);

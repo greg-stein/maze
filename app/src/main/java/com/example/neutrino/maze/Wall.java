@@ -18,7 +18,16 @@ public class Wall {
     private static final float DEFAULT_WIDTH = 0.01f;
     private static final float DEFAULT_COORDS_SOURCE = 0.5f;
 
-    private final float mCoords[] = new float[VERTICES_DATA_LENGTH];
+    // Different change types
+    private enum ChangeType {
+        CHANGE_A,
+        CHANGE_B,
+        CHANGE_WALL
+    };
+
+    private static final float CHANGE_ONE_END_THRESHOLD = 0.10f;
+
+    private final float mVertices[] = new float[VERTICES_DATA_LENGTH];
 
     private final short mDrawOrder[] = { 0, 1, 2,   // first triangle
             1, 2, 3 }; // second triangle
@@ -29,6 +38,9 @@ public class Wall {
     private final PointF mA = new PointF(0, 0);
     private final PointF mB = new PointF(0, 0);
     private float mWidth;
+
+    private ChangeType mChangeType;
+    private final PointF mTappedLocation = new PointF();
 
     public Wall() {
         init(-DEFAULT_COORDS_SOURCE, DEFAULT_COORDS_SOURCE, DEFAULT_COORDS_SOURCE,
@@ -41,7 +53,7 @@ public class Wall {
     }
 
     public Wall(float x1, float y1, float x2, float y2, float width) {
-        init(x1, y1, x2, y2, width);
+        init(x1, y1, x2, y2, width/2);
     }
 
     private void init(float x1, float y1, float x2, float y2, float width) {
@@ -50,26 +62,26 @@ public class Wall {
         mB.x = x2;
         mB.y = y2;
         mWidth = width;
-        VectorHelper.splitLine(mA, mB, mWidth, mCoords);
+        VectorHelper.splitLine(mA, mB, mWidth/2, mVertices);
     }
 
-    public void updateCoords() {
-        VectorHelper.splitLine(mA, mB, mWidth, mCoords);
+    public void updateVertices() {
+        VectorHelper.splitLine(mA, mB, mWidth/2, mVertices);
     }
 
-    public void putCoords(FloatBuffer verticesBuffer) {
+    public void putVertices(FloatBuffer verticesBuffer) {
         mVertexBufferPosition = verticesBuffer.position();
         for (int i = 0; i < mDrawOrder.length; i++) {
             mDrawOrder[i] += mVertexBufferPosition/GlEngine.COORDS_PER_VERTEX;
         }
-        verticesBuffer.put(mCoords);
+        verticesBuffer.put(mVertices);
     }
 
     public void removeCoords(FloatBuffer verticesBuffer) {
         // This doesn't really removes this wall's vertices from the buffer,
         // Instead, it nulls them. If removal is desired, need to loop over
         // all walls in the buffer and update their vertices and indices.
-        Arrays.fill(mCoords, 0);
+        Arrays.fill(mVertices, 0);
         updateBuffer(verticesBuffer);
     }
 
@@ -86,6 +98,10 @@ public class Wall {
         // First test if the point within bounding box of line
         RectF boundingBox = new RectF(mA.x, mA.y, mB.x, mB.y);
         boundingBox.sort();
+        boundingBox.left -= mWidth/2;
+        boundingBox.top -= mWidth/2;
+        boundingBox.right += mWidth/2;
+        boundingBox.bottom += mWidth/2;
 
         if (! boundingBox.contains(x, y)) {
             return false;
@@ -98,13 +114,14 @@ public class Wall {
 
         float twiceArea = Math.abs(yDiff * x - xDiff * y + mB.x * mA.y - mB.y * mA.x);
         float distance = (float) (twiceArea / Math.sqrt(yDiff * yDiff + xDiff * xDiff));
-        return distance <= mWidth/2;
+
+        return distance <= mWidth;// /2;
     }
 
     public void updateBuffer(FloatBuffer verticesBuffer) {
         int lastPos = verticesBuffer.position();
         verticesBuffer.position(mVertexBufferPosition);
-        verticesBuffer.put(mCoords);
+        verticesBuffer.put(mVertices);
         verticesBuffer.position(lastPos);
     }
 
@@ -146,5 +163,44 @@ public class Wall {
 
     public int getIndexBufferPosition() {
         return mIndexBufferPosition;
+    }
+
+    public void handleChange(float x, float y) {
+        float dx = x - mTappedLocation.x;
+        float dy = y - mTappedLocation.y;
+
+        switch (mChangeType) {
+            case CHANGE_A: {
+                mA.offset(dx, dy);
+                break;
+            }
+            case CHANGE_B: {
+                mB.offset(dx, dy);
+                break;
+            }
+            case CHANGE_WALL: {
+                mA.offset(dx, dy);
+                mB.offset(dx, dy);
+                break;
+            }
+        }
+
+        mTappedLocation.set(x, y);
+    }
+
+    public void setTapLocation(float x, float y) {
+        mTappedLocation.set(x, y);
+
+        // Tapped point closer to A?
+        if (PointF.length(mTappedLocation.x - mA.x, mTappedLocation.y - mA.y) <= CHANGE_ONE_END_THRESHOLD) {
+            mChangeType = ChangeType.CHANGE_A;
+        }
+        // Closer to B?
+        else if (PointF.length(mTappedLocation.x - mB.x, mTappedLocation.y - mB.y) <= CHANGE_ONE_END_THRESHOLD) {
+            mChangeType = ChangeType.CHANGE_B;
+        }
+        else {
+            mChangeType = ChangeType.CHANGE_WALL;
+        }
     }
 }

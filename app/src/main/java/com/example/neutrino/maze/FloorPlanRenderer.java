@@ -36,6 +36,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private int mViewPortHeight;
     private final PointF mDragStart = new PointF();
     private Wall mSelectedWall;
+    private boolean mAddedWallByDrag;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -191,11 +192,16 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             public void run() {
                 windowToWorld(x, y, mDragStart);
 
+                mAddedWallByDrag = false;
                 mSelectedWall = mGlEngine.findWallHavingPoint(mDragStart.x, mDragStart.y);
                 if (mSelectedWall == null) {
                     // Add new wall at the point
                     mSelectedWall = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y, 0.05f);
                     addWall(mSelectedWall);
+                    mAddedWallByDrag = true;
+                }
+                else {
+                    mSelectedWall.setTapLocation(mDragStart.x, mDragStart.y);
                 }
             }
         });
@@ -207,9 +213,15 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             public void run() {
                 final PointF worldPoint = new PointF();
                 windowToWorld(x, y, worldPoint);
+
                 if (mSelectedWall != null) {
-                    mSelectedWall.setB(worldPoint.x, worldPoint.y);
-                    mSelectedWall.updateCoords();
+                    if (mAddedWallByDrag) {
+                        mSelectedWall.setB(worldPoint.x, worldPoint.y);
+                    }
+                    else {
+                        mSelectedWall.handleChange(worldPoint.x, worldPoint.y);
+                    }
+                    mSelectedWall.updateVertices();
                     mGlEngine.updateSingleObject(mSelectedWall);
                 }
             }
