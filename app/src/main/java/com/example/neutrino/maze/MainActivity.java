@@ -65,7 +65,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * See: http://en.wikipedia.org/wiki/Low-pass_filter#Discrete-time_realization
      */
     static final float LOW_PASS_ALPHA = 0.5f;
-    boolean mInited = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,20 +76,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFab = (FloatingActionButton) findViewById(R.id.fab);
         uiEditSwitch = (Switch) findViewById(R.id.edit_switch);
         setSupportActionBar(uiToolbar);
-
-        uiFab.setOnTouchListener(new View.OnTouchListener() {
-                                     @Override
-                                     public boolean onTouch(View view, MotionEvent motionEvent) {
-                                         if (!mInited) {
-                                             uiFloorPlanView.loadEngine();
-                                             uiFloorPlanView.initCorridorWalls();
-                                             mWifiScanner.enable();
-                                             mInited = true;
-                                         }
-                                         return true;
-                                     }
-                                 }
-        );
 
         uiEditSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -154,6 +139,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // Step detector
         mHaveStepDetector = mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_UI);
+        mWifiScanner.enable();
     }
 
     @Override

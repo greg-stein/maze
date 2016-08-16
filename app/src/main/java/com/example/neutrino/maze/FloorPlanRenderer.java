@@ -65,6 +65,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
         // Set the view matrix. This matrix can be said to represent the camera position.
         Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+        loadEngine();
     }
 
     @Override
