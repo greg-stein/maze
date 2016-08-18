@@ -17,7 +17,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public volatile float mAngle;
     private float mOffsetX;
     private float mOffsetY;
-    private float mScale = 1.0f;
+    private float mScaleFactor = 1.0f;
 
     // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
     private final float[] mMVPMatrix = new float[16];
@@ -108,12 +108,12 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     private void updateModelMatrix() {
         Matrix.setIdentityM(mScaleMatrix,0);
-        Matrix.scaleM(mScaleMatrix, 0, mScale, mScale, mScale);
+        Matrix.scaleM(mScaleMatrix, 0, mScaleFactor, mScaleFactor, mScaleFactor);
 
         Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, 1.0f);
 
         Matrix.setIdentityM(mTranslationMatrix,0);
-        Matrix.translateM(mTranslationMatrix, 0, mOffsetX, -mOffsetY, 0);
+        Matrix.translateM(mTranslationMatrix, 0, mOffsetX, mOffsetY, 0);
 
         // Model = Scale * Rotate * Translate
         Matrix.multiplyMM(mIntermediateMatrix, 0, mScaleMatrix, 0, mRotationMatrix, 0);
@@ -140,7 +140,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void setScale(float scale) {
-        mScale = scale;
+        mScaleFactor = scale;
         updateModelMatrix();
     }
 
@@ -197,7 +197,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 mSelectedWall = mGlEngine.findWallHavingPoint(mDragStart.x, mDragStart.y);
                 if (mSelectedWall == null) {
                     // Add new wall at the point
-                    mSelectedWall = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y, 0.05f);
+                    mSelectedWall = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y);
                     addWall(mSelectedWall);
                     mAddedWallByDrag = true;
                 }
@@ -293,15 +293,27 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     private static final PointF mPanStart = new PointF();
-    public void startPan(int x, int y) {
-        windowToWorld(x, y, mPanStart);
+    public void handleStartPan(final int x, final int y) {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                windowToWorld(x, y, mPanStart);
+            }
+        });
     }
 
     private static final PointF mCurrentPan = new PointF();
-    public void pan(int x, int y) {
-        windowToWorld(x, y, mCurrentPan);
-        setOffset(mCurrentPan.x - mPanStart.x, mCurrentPan.y - mPanStart.y);
-
-        mPanStart.set(mCurrentPan);
+    public void handlePan(final int x, final int y) {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                windowToWorld(x, y, mCurrentPan);
+                float dx = mCurrentPan.x - mPanStart.x;
+                float dy = mCurrentPan.y - mPanStart.y;
+                mOffsetX += dx;
+                mOffsetY += dy;
+                updateModelMatrix();
+            }
+        });
     }
 }

@@ -15,7 +15,7 @@ public class Wall {
     private static final int COORDS_PER_VERTEX = 3;
     private static final int VERTICES_NUM = 4; // it's a rect after all
     private static final int VERTICES_DATA_LENGTH = COORDS_PER_VERTEX * VERTICES_NUM;
-    private static final float DEFAULT_WIDTH = 0.01f;
+    private static final float DEFAULT_WIDTH = 0.2f; // 20cm
     private static final float DEFAULT_COORDS_SOURCE = 0.5f;
     private boolean mIsRemoved;
 

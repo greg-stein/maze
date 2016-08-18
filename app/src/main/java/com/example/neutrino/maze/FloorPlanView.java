@@ -3,9 +3,9 @@ package com.example.neutrino.maze;
 import android.content.Context;
 import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
@@ -13,7 +13,7 @@ import android.view.ScaleGestureDetector;
  * Created by neutrino on 7/2/2016.
  */
 public class FloorPlanView extends GLSurfaceView {
-    private static final float CORRIDOR_DEFAULT_WIDTH = 0.03f;
+    private static final float CORRIDOR_DEFAULT_WIDTH = 1.0f; // 1m
 
 
     private final FloorPlanRenderer mRenderer = new FloorPlanRenderer();
@@ -59,22 +59,6 @@ public class FloorPlanView extends GLSurfaceView {
     public void setDeleteOperation() {
         mIsDeleteOperation = true;
     }
-
-    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            mScaleFactor *= detector.getScaleFactor();
-
-            // Don't let the object get too small or too large.
-            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f));
-
-            // Update scale
-            mRenderer.setScale(mScaleFactor);
-            requestRender();
-            return true;
-        }
-    }
-
 
     public void updateAngle(float degree) {
         mRenderer.setAngle(mRenderer.getAngle() + degree);
@@ -129,8 +113,50 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
+    private int mActivePointerId;
+    private static final int INVALID_POINTER_ID = -1;
     private void handlePanAndZoom(MotionEvent event) {
+        int action = MotionEventCompat.getActionMasked(event);
+        // Get the index of the pointer associated with the action.
+
         mScaleDetector.onTouchEvent(event);
+
+        switch (action) {
+            case MotionEvent.ACTION_DOWN: {
+                mActivePointerId = event.getPointerId(0);
+                int index = MotionEventCompat.getActionIndex(event);
+                final int x = (int) MotionEventCompat.getX(event, index);
+                final int y = (int) MotionEventCompat.getY(event, index);
+
+                mRenderer.handleStartPan(x, y);
+                break;
+            }
+            case MotionEvent.ACTION_MOVE: {
+                final int pointerIndex = event.findPointerIndex(mActivePointerId);
+                if (pointerIndex != INVALID_POINTER_ID) {
+                    final int x = (int) event.getX(pointerIndex);
+                    final int y = (int) event.getY(pointerIndex);
+
+                    mRenderer.handlePan(x, y);
+                }
+                break;
+            }
+        }
+    }
+
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            mScaleFactor *= detector.getScaleFactor();
+
+            // Don't let the object get too small or too large.
+            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 2.0f));
+
+            // Update scale
+            mRenderer.setScale(mScaleFactor);
+            requestRender();
+            return true;
+        }
     }
 
     public void loadEngine() {

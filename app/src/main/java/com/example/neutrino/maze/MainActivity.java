@@ -20,7 +20,7 @@ import android.widget.Switch;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     // One human step
-    private static final float STEP_LENGTH = 0.045f;
+    private static final float STEP_LENGTH = 0.78f; // 78cm
     private static final float WALL_CREATION_DISTANCE = STEP_LENGTH;
 
     private float mTravelledDistance = 0;
@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case Sensor.TYPE_STEP_DETECTOR: {
                 mOffsetX += (float) (Math.sin(Math.toRadians(currentDegree)) * STEP_LENGTH);
                 mOffsetY += (float) (Math.cos(Math.toRadians(currentDegree)) * STEP_LENGTH);
-                uiFloorPlanView.updateOffset(mOffsetX, mOffsetY);
+                uiFloorPlanView.updateOffset(mOffsetX, -mOffsetY); // -y for moving map downwards
 
                 mTravelledDistance += STEP_LENGTH;
                 if (mTravelledDistance >= WALL_CREATION_DISTANCE) {
