@@ -3,6 +3,7 @@ package com.example.neutrino.maze;
 import android.content.Context;
 import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -14,6 +15,7 @@ import android.view.ScaleGestureDetector;
 public class FloorPlanView extends GLSurfaceView {
     private static final float CORRIDOR_DEFAULT_WIDTH = 0.03f;
 
+
     private final FloorPlanRenderer mRenderer = new FloorPlanRenderer();
     private boolean mDrugStarted;
     private static final PointF mLastBuildWallsLocation = new PointF();
@@ -24,6 +26,7 @@ public class FloorPlanView extends GLSurfaceView {
     private ScaleGestureDetector mScaleDetector;
     private float mScaleFactor = 1;
     private boolean mIsInEditMode;
+    private boolean mIsDeleteOperation;
 
     public FloorPlanView(Context context) {
         super(context);
@@ -51,6 +54,10 @@ public class FloorPlanView extends GLSurfaceView {
 
     public void setContentsInEditMode(boolean isEditMode) {
         this.mIsInEditMode = isEditMode;
+    }
+
+    public void setDeleteOperation() {
+        mIsDeleteOperation = true;
     }
 
     private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
@@ -112,6 +119,10 @@ public class FloorPlanView extends GLSurfaceView {
             case MotionEvent.ACTION_UP:
                 if (mDrugStarted) {
                     mRenderer.handleEndDrag(xPos, yPos);
+                    if (mIsDeleteOperation) {
+                        mRenderer.processWallDeletion(xPos, yPos);
+                    }
+
                     mDrugStarted = false;
                 }
                 break;
@@ -158,4 +169,26 @@ public class FloorPlanView extends GLSurfaceView {
         mPreviousLeftWall = leftWall;
         mLastBuildWallsLocation.set(mNewWallsLocation);
     }
+
+    public enum ViewMode {VIEW_MODE, EDIT_MODE};
+    private ViewMode mViewMode;
+
+    private void initControls() {
+    }
+
+    public ViewMode getViewMode() {
+        return mViewMode;
+    }
+
+    public void setViewMode(ViewMode viewMode) {
+        this.mViewMode = viewMode;
+
+        switch (viewMode) {
+            case VIEW_MODE:
+                break;
+            case EDIT_MODE:
+                break;
+        }
+    }
+
 }

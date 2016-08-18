@@ -36,11 +36,49 @@
     <include layout="@layout/content_main"/>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/fab_follow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_dialog_email" />
+        android:layout_gravity="bottom|end"
+        android:alpha="0.3"
+        android:src="@android:drawable/ic_delete"
+        android:layout_marginBottom="@dimen/fab_spacing"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_delete_wall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="@dimen/fab_margin"
+        android:alpha="0.3"
+        android:src="@android:drawable/ic_delete" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_corridor_mode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:alpha="0.3"
+        android:src="@android:drawable/ic_delete"
+        android:layout_marginBottom="@dimen/fab_spacing"
+        android:layout_marginEnd="@dimen/fab_margin"
+        android:layout_marginStart="@dimen/fab_margin"
+        android:layout_marginTop="@dimen/fab_margin"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_set_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:alpha="0.3"
+        android:src="@android:drawable/ic_delete"
+        android:layout_marginBottom="155dp"
+        android:layout_marginEnd="@dimen/fab_margin"
+        android:layout_marginStart="@dimen/fab_margin"
+        android:layout_marginTop="@dimen/fab_margin"/>
 
 </android.support.design.widget.CoordinatorLayout>

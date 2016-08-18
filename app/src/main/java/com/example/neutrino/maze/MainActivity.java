@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // GUI-related fields
     private FloorPlanView uiFloorPlanView;
     private Toolbar uiToolbar;
-    private FloatingActionButton uiFab;
+    private FloatingActionButton uiFabDeleteWall;
     private Switch uiEditSwitch;
 
     // Map north angle
@@ -73,16 +73,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
         uiToolbar = (Toolbar) findViewById(R.id.toolbar);
-        uiFab = (FloatingActionButton) findViewById(R.id.fab);
+        uiFabDeleteWall = (FloatingActionButton) findViewById(R.id.fab_delete_wall);
         uiEditSwitch = (Switch) findViewById(R.id.edit_switch);
         setSupportActionBar(uiToolbar);
 
-        uiEditSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                uiFloorPlanView.setContentsInEditMode(isChecked);
-            }
-        });
+        setUiListeners();
 
         // initialize your android device sensor capabilities
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
@@ -93,6 +88,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
         mRotation = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         mStepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+    }
+
+    private void setUiListeners() {
+        uiEditSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                uiFloorPlanView.setContentsInEditMode(isChecked);
+            }
+        });
+
+        uiFabDeleteWall.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                uiFabDeleteWall.setAlpha(1.0f);
+                uiFloorPlanView.setDeleteOperation();
+                return true;
+            }
+        });
     }
 
     @Override

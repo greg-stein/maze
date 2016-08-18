@@ -238,6 +238,23 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
+    public void processWallDeletion(final int x, final int y) {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                final PointF worldPoint = new PointF();
+                windowToWorld(x, y, worldPoint);
+
+                if (mDragStart.equals(worldPoint.x, worldPoint.y)) {
+                    Wall candidate = mGlEngine.findWallHavingPoint(mDragStart.x, mDragStart.y);
+                    if (candidate != null) {
+                        removeWall(candidate);
+                    }
+                }
+            }
+        });
+    }
+
     public void loadEngine() {
         runOnGlThread(new Runnable() {
             @Override
@@ -257,9 +274,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void removeWall(Wall wall) {
-        mGlEngine.unregisterWall(wall);
-
-        refreshGpuBuffers();
+        wall.cloak();
+        wall.setRemoved(true);
+        mGlEngine.updateSingleObject(wall);
     }
 
     private void refreshGpuBuffers() {

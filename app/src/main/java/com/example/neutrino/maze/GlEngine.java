@@ -105,16 +105,16 @@ public class GlEngine {
 
     // Assumes given wall was registered
     public void unregisterWall(Wall wall) {
-        wall.removeCoords(mVerticesBuffer);
+        wall.removeVertices(mVerticesBuffer);
         wall.removeIndices(mIndicesBuffer);
         mDeletedWalls.add(wall);
-        mWalls.remove(wall);
+        wall.setRemoved(true);
         mWallsNum--;
     }
 
     public Wall findWallHavingPoint(float x, float y) {
         for (Wall wall : mWalls) {
-            if (wall.hasPoint(x, y)) {
+            if (!wall.isRemoved() && wall.hasPoint(x, y)) {
                 return wall;
             }
         }

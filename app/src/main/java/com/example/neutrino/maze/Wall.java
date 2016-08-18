@@ -17,6 +17,7 @@ public class Wall {
     private static final int VERTICES_DATA_LENGTH = COORDS_PER_VERTEX * VERTICES_NUM;
     private static final float DEFAULT_WIDTH = 0.01f;
     private static final float DEFAULT_COORDS_SOURCE = 0.5f;
+    private boolean mIsRemoved;
 
     // Different change types
     private enum ChangeType {
@@ -77,7 +78,7 @@ public class Wall {
         verticesBuffer.put(mVertices);
     }
 
-    public void removeCoords(FloatBuffer verticesBuffer) {
+    public void removeVertices(FloatBuffer verticesBuffer) {
         // This doesn't really removes this wall's vertices from the buffer,
         // Instead, it nulls them. If removal is desired, need to loop over
         // all walls in the buffer and update their vertices and indices.
@@ -202,5 +203,17 @@ public class Wall {
         else {
             mChangeType = ChangeType.CHANGE_WALL;
         }
+    }
+
+    public void setRemoved(boolean removed) {
+        this.mIsRemoved = removed;
+    }
+
+    public boolean isRemoved() {
+        return mIsRemoved;
+    }
+
+    public void cloak() {
+        Arrays.fill(mVertices, 0);
     }
 }
