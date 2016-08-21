@@ -11,6 +11,9 @@ import java.util.Arrays;
  * Created by neutrino on 7/7/2016.
  */
 public class Wall {
+    private static int instanceCounter = 0;
+    public int nInstanceIndex = instanceCounter++;
+
     // number of coordinates per vertex in this array
     private static final int COORDS_PER_VERTEX = 3;
     private static final int VERTICES_NUM = 4; // it's a rect after all

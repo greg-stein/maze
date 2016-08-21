@@ -16,7 +16,7 @@ public class FloorPlanView extends GLSurfaceView {
 
 
     private final FloorPlanRenderer mRenderer = new FloorPlanRenderer();
-    private boolean mDrugStarted;
+    private boolean mDragStarted;
     private static final PointF mLastBuildWallsLocation = new PointF();
     private static final PointF mNewWallsLocation =  new PointF();
     private static final float[] mWallsBuffer = new float[12];
@@ -25,7 +25,6 @@ public class FloorPlanView extends GLSurfaceView {
     private ScaleGestureDetector mScaleDetector;
     private float mScaleFactor = 1;
     private boolean mIsInEditMode;
-    private boolean mIsDeleteOperation;
 
     public FloorPlanView(Context context) {
         super(context);
@@ -55,9 +54,10 @@ public class FloorPlanView extends GLSurfaceView {
         this.mIsInEditMode = isEditMode;
     }
 
-    public void setDeleteOperation() {
-        mIsDeleteOperation = true;
+    public enum Operation {
+        NONE, ADD_WALL, REMOVE_WALL
     }
+    public Operation operation = Operation.NONE;
 
     public void updateAngle(float degree) {
         mRenderer.setAngle(mRenderer.getAngle() + degree);
@@ -91,23 +91,24 @@ public class FloorPlanView extends GLSurfaceView {
         int yPos = (int) MotionEventCompat.getY(event, index);
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                mDrugStarted = true;
-                mRenderer.handleStartDrag(xPos, yPos);
+                if (operation == Operation.ADD_WALL) {
+                    mDragStarted = true;
+                    mRenderer.handleStartDrag(xPos, yPos);
+                } else if (operation == Operation.REMOVE_WALL) {
+                    mRenderer.processWallDeletion(xPos, yPos);
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (mDrugStarted && !mScaleDetector.isInProgress()) {
+                if (mDragStarted && !mScaleDetector.isInProgress()) {
                     mRenderer.handleDrag(xPos, yPos);
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                if (mDrugStarted) {
+                if (mDragStarted) {
                     mRenderer.handleEndDrag(xPos, yPos);
-                    if (mIsDeleteOperation) {
-                        mRenderer.processWallDeletion(xPos, yPos);
-                    }
-
-                    mDrugStarted = false;
                 }
+
+                mDragStarted = false;
                 break;
         }
     }

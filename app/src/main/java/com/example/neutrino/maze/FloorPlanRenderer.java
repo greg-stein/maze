@@ -247,11 +247,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 final PointF worldPoint = new PointF();
                 windowToWorld(x, y, worldPoint);
 
-                if (mDragStart.equals(worldPoint.x, worldPoint.y)) {
-                    Wall candidate = mGlEngine.findWallHavingPoint(mDragStart.x, mDragStart.y);
-                    if (candidate != null) {
-                        removeWall(candidate);
-                    }
+                Wall candidate = mGlEngine.findWallHavingPoint(worldPoint.x, worldPoint.y);
+                if (candidate != null) {
+                    removeWall(candidate);
                 }
             }
         });

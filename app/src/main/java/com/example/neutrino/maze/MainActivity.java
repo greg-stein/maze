@@ -2,6 +2,7 @@ package com.example.neutrino.maze;
 
 import android.content.Context;
 import android.content.IntentFilter;
+import android.content.res.ColorStateList;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -13,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ToggleButton;
@@ -28,8 +28,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // GUI-related fields
     private FloorPlanView uiFloorPlanView;
     private Toolbar uiToolbar;
-    private FloatingActionButton uiFabDeleteWall;
     private ToggleButton uiModeSwitch;
+    private FloatingActionButton uiFabDeleteWall;
+    private FloatingActionButton uiFabAddWall;
+    private FloatingActionButton uiFabSetLocation;
+    private FloatingActionButton uiFabWalkMode;
+
 
     // Map north angle
     private float mapNorth = 0.0f;
@@ -77,6 +81,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
         uiToolbar = (Toolbar) findViewById(R.id.toolbar);
         uiFabDeleteWall = (FloatingActionButton) findViewById(R.id.fab_delete_wall);
+        uiFabAddWall = (FloatingActionButton) findViewById(R.id.fab_add_wall);
+        uiFabSetLocation = (FloatingActionButton) findViewById(R.id.fab_set_location);
+        uiFabWalkMode = (FloatingActionButton) findViewById(R.id.fab_corridor_mode);
         uiModeSwitch = (ToggleButton) findViewById(R.id.tb_edit_mode);
         setSupportActionBar(uiToolbar);
         getSupportActionBar().setTitle("");
@@ -108,13 +115,47 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        uiFabDeleteWall.setOnTouchListener(new View.OnTouchListener() {
+        uiFabDeleteWall.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                uiFloorPlanView.setDeleteOperation();
-                return true;
+            public void onClick(View view) {
+                if (uiFloorPlanView.operation == FloorPlanView.Operation.REMOVE_WALL) {
+                    uiFloorPlanView.operation = FloorPlanView.Operation.NONE;
+                }
+                else {
+                    uiFloorPlanView.operation = FloorPlanView.Operation.REMOVE_WALL;
+                }
+                updateFabsState();
             }
         });
+
+        uiFabAddWall.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (uiFloorPlanView.operation == FloorPlanView.Operation.ADD_WALL) {
+                    uiFloorPlanView.operation = FloorPlanView.Operation.NONE;
+                }
+                else {
+                    uiFloorPlanView.operation = FloorPlanView.Operation.ADD_WALL;
+                }
+                updateFabsState();
+            }
+        });
+    }
+
+    private void updateFabsState() {
+        switch (uiFloorPlanView.operation) {
+            case ADD_WALL:
+                uiFabDeleteWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                uiFabAddWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+                break;
+            case REMOVE_WALL:
+                uiFabDeleteWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+                uiFabAddWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                break;
+            case NONE:
+                uiFabDeleteWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                uiFabAddWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+        }
     }
 
     @Override
