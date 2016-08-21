@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.graphics.Color;
 import android.graphics.PointF;
 
 /**
@@ -51,5 +52,17 @@ public class VectorHelper {
 
         splitLines[9] = b.x - dist * orthogonalIdentityVector[0];
         splitLines[10] = b.y - dist * orthogonalIdentityVector[1];
+    }
+
+    public static void colorTo3F(int color, float[] fColor) {
+        int red = Color.red(color);
+        int green = Color.green(color);
+        int blue = Color.blue(color);
+        int alpha = Color.alpha(color);
+
+        fColor[0] = red/255f;
+        fColor[1] = green/255f;
+        fColor[2] = blue/255f;
+        fColor[3] = alpha/255f;
     }
 }

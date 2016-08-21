@@ -37,11 +37,13 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private final PointF mDragStart = new PointF();
     private Wall mSelectedWall;
     private boolean mAddedWallByDrag;
+    private static final float[] mBgColorF = new float[4];
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // Set the background frame color
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        VectorHelper.colorTo3F(AppSettings.mapBgColor, mBgColorF);
+        GLES20.glClearColor(mBgColorF[0], mBgColorF[1], mBgColorF[2], mBgColorF[3]);
 
         // Initialize the accumulated scale, rotation & translation matrices
         Matrix.setIdentityM(mScaleMatrix, 0);
@@ -316,4 +318,5 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             }
         });
     }
+
 }

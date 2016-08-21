@@ -5,7 +5,6 @@ import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
@@ -52,7 +51,7 @@ public class FloorPlanView extends GLSurfaceView {
         return mIsInEditMode;
     }
 
-    public void setContentsInEditMode(boolean isEditMode) {
+    public void setMode(boolean isEditMode) {
         this.mIsInEditMode = isEditMode;
     }
 
@@ -157,10 +156,6 @@ public class FloorPlanView extends GLSurfaceView {
             requestRender();
             return true;
         }
-    }
-
-    public void loadEngine() {
-        mRenderer.loadEngine();
     }
 
     public void initCorridorWalls() {

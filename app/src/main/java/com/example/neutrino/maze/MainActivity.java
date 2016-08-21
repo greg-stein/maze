@@ -16,7 +16,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.Switch;
+import android.widget.ToggleButton;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     // One human step
@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FloorPlanView uiFloorPlanView;
     private Toolbar uiToolbar;
     private FloatingActionButton uiFabDeleteWall;
-    private Switch uiEditSwitch;
+    private ToggleButton uiModeSwitch;
 
     // Map north angle
     private float mapNorth = 0.0f;
@@ -37,6 +37,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float currentDegree = 0f;
     private float mOffsetX;
     private float mOffsetY;
+
+    private boolean mIsCorridorBuildModeEnabled = false;
+    private boolean mStepDetectorInited;
 
     // device sensor manager
     private SensorManager mSensorManager;
@@ -74,9 +77,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
         uiToolbar = (Toolbar) findViewById(R.id.toolbar);
         uiFabDeleteWall = (FloatingActionButton) findViewById(R.id.fab_delete_wall);
-        uiEditSwitch = (Switch) findViewById(R.id.edit_switch);
+        uiModeSwitch = (ToggleButton) findViewById(R.id.tb_edit_mode);
         setSupportActionBar(uiToolbar);
+        getSupportActionBar().setTitle("");
 
+        AppSettings.init(getApplicationContext());
         setUiListeners();
 
         // initialize your android device sensor capabilities
@@ -91,17 +96,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void setUiListeners() {
-        uiEditSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        uiModeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                uiFloorPlanView.setContentsInEditMode(isChecked);
+                uiFloorPlanView.setMode(isChecked);
+                if (isChecked) {
+                    uiToolbar.setBackgroundColor(AppSettings.editModeColor);
+                } else {
+                    uiToolbar.setBackgroundColor(AppSettings.primaryColor);
+                }
             }
         });
 
         uiFabDeleteWall.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                uiFabDeleteWall.setAlpha(1.0f);
                 uiFloorPlanView.setDeleteOperation();
                 return true;
             }
@@ -134,8 +143,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onResume() {
         super.onResume();
 
-        uiFloorPlanView.initCorridorWalls();
-
         registerReceiver(mWifiScanner, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
         // for the system's orientation sensor registered listeners
@@ -151,8 +158,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         // Step detector
-        mHaveStepDetector = mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_UI);
+        updateCorridorBuildMode();
+
         mWifiScanner.enable();
+    }
+
+    private void updateCorridorBuildMode() {
+        if (mIsCorridorBuildModeEnabled) {
+            if (!mStepDetectorInited) {
+                mHaveStepDetector = mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_UI);
+                uiFloorPlanView.initCorridorWalls();
+                mStepDetectorInited = true;
+            }
+        }
+        else {
+            if (mStepDetectorInited) {
+                mSensorManager.unregisterListener(this, mStepDetector);
+                mStepDetectorInited = false;
+            }
+        }
     }
 
     @Override
@@ -161,6 +185,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // to stop the listener and save battery
         mSensorManager.unregisterListener(this);
+        mStepDetectorInited = false;
         unregisterReceiver(mWifiScanner);
     }
 

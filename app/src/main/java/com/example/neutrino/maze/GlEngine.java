@@ -81,6 +81,8 @@ public class GlEngine {
         GLES20.glAttachShader(mProgram, vertexShader);
         GLES20.glAttachShader(mProgram, fragmentShader);
         GLES20.glLinkProgram(mProgram);
+
+        VectorHelper.colorTo3F(AppSettings.wallColor, color);
     }
 
     public static int loadShader(int type, String shaderCode){
