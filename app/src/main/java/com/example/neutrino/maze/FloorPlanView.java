@@ -91,9 +91,9 @@ public class FloorPlanView extends GLSurfaceView {
         int yPos = (int) MotionEventCompat.getY(event, index);
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                if (operation == Operation.ADD_WALL) {
+                if (operation == Operation.ADD_WALL || operation == Operation.NONE) {
                     mDragStarted = true;
-                    mRenderer.handleStartDrag(xPos, yPos);
+                    mRenderer.handleStartDrag(xPos, yPos, operation);
                 } else if (operation == Operation.REMOVE_WALL) {
                     mRenderer.processWallDeletion(xPos, yPos);
                 }

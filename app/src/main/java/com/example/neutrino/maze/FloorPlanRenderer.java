@@ -189,22 +189,24 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         worldPoint.y = mRay[1];
     }
 
-    public void handleStartDrag(final int x, final int y) {
+    public void handleStartDrag(final int x, final int y, final FloorPlanView.Operation operation) {
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
                 windowToWorld(x, y, mDragStart);
 
                 mAddedWallByDrag = false;
-                mSelectedWall = mGlEngine.findWallHavingPoint(mDragStart.x, mDragStart.y);
-                if (mSelectedWall == null) {
+                if (operation == FloorPlanView.Operation.ADD_WALL) {
                     // Add new wall at the point
                     mSelectedWall = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y);
                     addWall(mSelectedWall);
                     mAddedWallByDrag = true;
                 }
                 else {
-                    mSelectedWall.setTapLocation(mDragStart.x, mDragStart.y);
+                    mSelectedWall = mGlEngine.findWallHavingPoint(mDragStart.x, mDragStart.y);
+                    if (mSelectedWall != null) {
+                        mSelectedWall.setTapLocation(mDragStart.x, mDragStart.y);
+                    }
                 }
             }
         });
