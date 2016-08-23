@@ -54,6 +54,15 @@ public class VectorHelper {
         splitLines[10] = b.y - dist * orthogonalIdentityVector[1];
     }
 
+    /**
+     * Aligns one vector to another so that they are parallel or orthogonal, depending on
+     * what is closer.
+     * @param u1
+     * @param u2
+     * @param v1
+     * @param v2
+     * @param t
+     */
     public static void alignVector(PointF u1, PointF u2, PointF v1, PointF v2, float t) {
         float[] u = {u2.x - u1.x, u2.y - u1.y};
         float[] v = {v2.x - v1.x, v2.y - v1.y};
@@ -69,13 +78,15 @@ public class VectorHelper {
             // v1 + vMag * ui
             v2.set(v1);
             v2.offset(vMag * ui[0], vMag * ui[1]);
-        } else if (dotProduct < -cos_t) {
+        }
+        else if (dotProduct < -cos_t) {
             // v1 - vMag * ui
             v2.set(v1);
             v2.offset(-vMag * ui[0], -vMag * ui[1]);
-        } else if (dotProduct > -t && dotProduct < t) {
+        }
+        else if (dotProduct > -t && dotProduct < t) {
             float[] orthoUi = {-ui[1], ui[0]};
-            float dotPOrthoUiVi = orthoUi[0] * vi[0] + orthoUi[1]*vi[1];
+            float dotPOrthoUiVi = orthoUi[0] * vi[0] + orthoUi[1] * vi[1];
 
             if (dotPOrthoUiVi > 0) {
                 // v1 + vMag * orthoUi

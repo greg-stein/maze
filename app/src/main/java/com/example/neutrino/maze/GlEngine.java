@@ -21,7 +21,7 @@ public class GlEngine {
     public static final int SIZE_OF_SHORT = Short.SIZE/Byte.SIZE;
     private static final int BUFFERS_COUNT = 1;
     public static final int QUAD_VERTEX_DATA_SIZE = VERTICES_PER_QUAD * COORDS_PER_VERTEX * SIZE_OF_FLOAT;
-    public static final float ALLIGN_THRESHOLD = 0.05f;//10; // 10 degrees
+    public static final float ALIGN_THRESHOLD = 0.1f;
 
     private int mWallsNum = 0;
     private List<Wall> mWalls = new ArrayList<Wall>();
@@ -244,14 +244,19 @@ public class GlEngine {
         deallocateGpuBuffers();
     }
 
-    public void allignChangeToExistingWalls(Wall wall, PointF point) {
-        Wall existingWall = mWalls.get(0);
+    public void alignChangeToExistingWalls(Wall wall, PointF point) {
+//        Wall existingWall = mWalls.get(0);
 
-        if (wall.getChangeType() == Wall.ChangeType.CHANGE_A) {
-            VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getB(), point, ALLIGN_THRESHOLD);
-        }
-        else if (wall.getChangeType() == Wall.ChangeType.CHANGE_B) {
-            VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getA(), point, ALLIGN_THRESHOLD);
+        // TODO: pick 3 near walls instead of looping through all of them.
+        for (Wall existingWall : mWalls) {
+            if (!existingWall.isRemoved()) {
+                if (wall.getChangeType() == Wall.ChangeType.CHANGE_A) {
+                    VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getB(), point, ALIGN_THRESHOLD);
+                }
+                else if (wall.getChangeType() == Wall.ChangeType.CHANGE_B) {
+                    VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getA(), point, ALIGN_THRESHOLD);
+                }
+            }
         }
     }
 
