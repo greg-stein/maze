@@ -246,7 +246,9 @@ public class GlEngine {
 
     public void alignChangeToExistingWalls(Wall wall, PointF point) {
 //        Wall existingWall = mWalls.get(0);
-
+        // NOTE: When using single wall as reference for alignment, current wall
+        //       is moved smoothly. However in the following loop, even if there
+        //       presents only one wall, it still "jumps"
         // TODO: pick 3 near walls instead of looping through all of them.
         for (Wall existingWall : mWalls) {
             if (!existingWall.isRemoved()) {
