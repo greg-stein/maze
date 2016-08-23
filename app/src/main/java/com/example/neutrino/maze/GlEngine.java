@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.graphics.PointF;
 import android.opengl.GLES20;
 
 import java.nio.ByteBuffer;
@@ -20,6 +21,7 @@ public class GlEngine {
     public static final int SIZE_OF_SHORT = Short.SIZE/Byte.SIZE;
     private static final int BUFFERS_COUNT = 1;
     public static final int QUAD_VERTEX_DATA_SIZE = VERTICES_PER_QUAD * COORDS_PER_VERTEX * SIZE_OF_FLOAT;
+    public static final float ALLIGN_THRESHOLD = 0.05f;//10; // 10 degrees
 
     private int mWallsNum = 0;
     private List<Wall> mWalls = new ArrayList<Wall>();
@@ -112,6 +114,18 @@ public class GlEngine {
         mDeletedWalls.add(wall);
         wall.setRemoved(true);
         mWallsNum--;
+    }
+
+    public void removeWall(Wall wall) {
+        wall.cloak();
+        wall.setRemoved(true);
+        mDeletedWalls.add(wall);
+        updateSingleObject(wall);
+        mWallsNum--;
+    }
+
+    public boolean hasWalls() {
+        return mWallsNum > 0;
     }
 
     public Wall findWallHavingPoint(float x, float y) {
@@ -228,5 +242,20 @@ public class GlEngine {
     @Override
     public void finalize() {
         deallocateGpuBuffers();
+    }
+
+    public void allignChangeToExistingWalls(Wall wall, PointF point) {
+        Wall existingWall = mWalls.get(0);
+
+        if (wall.getChangeType() == Wall.ChangeType.CHANGE_A) {
+            VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getB(), point, ALLIGN_THRESHOLD);
+        }
+        else if (wall.getChangeType() == Wall.ChangeType.CHANGE_B) {
+            VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getA(), point, ALLIGN_THRESHOLD);
+        }
+    }
+
+    public int getWallsNum() {
+        return mWallsNum;
     }
 }

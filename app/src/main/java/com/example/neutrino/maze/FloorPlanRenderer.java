@@ -220,6 +220,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 windowToWorld(x, y, worldPoint);
 
                 if (mSelectedWall != null) {
+                    if (mGlEngine.getWallsNum() > 1) {
+                        // Aligns worldPoint!
+                        mGlEngine.allignChangeToExistingWalls(mSelectedWall, worldPoint);
+                    }
+
                     if (mAddedWallByDrag) {
                         mSelectedWall.setB(worldPoint.x, worldPoint.y);
                     }
@@ -251,7 +256,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
                 Wall candidate = mGlEngine.findWallHavingPoint(worldPoint.x, worldPoint.y);
                 if (candidate != null) {
-                    removeWall(candidate);
+                    mGlEngine.removeWall(candidate);
                 }
             }
         });
@@ -273,12 +278,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         mGlEngine.registerWall(wall);
 
         refreshGpuBuffers();
-    }
-
-    public void removeWall(Wall wall) {
-        wall.cloak();
-        wall.setRemoved(true);
-        mGlEngine.updateSingleObject(wall);
     }
 
     private void refreshGpuBuffers() {

@@ -54,6 +54,42 @@ public class VectorHelper {
         splitLines[10] = b.y - dist * orthogonalIdentityVector[1];
     }
 
+    public static void alignVector(PointF u1, PointF u2, PointF v1, PointF v2, float t) {
+        float[] u = {u2.x - u1.x, u2.y - u1.y};
+        float[] v = {v2.x - v1.x, v2.y - v1.y};
+        float uMag = (float) Math.sqrt(u[0]*u[0] + u[1]*u[1]);
+        float vMag = (float) Math.sqrt(v[0]*v[0] + v[1]*v[1]);
+        float[] ui = {u[0]/uMag, u[1]/uMag};
+        float[] vi = {v[0]/vMag, v[1]/vMag};
+
+        float dotProduct = ui[0]*vi[0] + ui[1]*vi[1];
+        float cos_t = (float) Math.sqrt(1 - t*t);
+
+        if (dotProduct > cos_t) {
+            // v1 + vMag * ui
+            v2.set(v1);
+            v2.offset(vMag * ui[0], vMag * ui[1]);
+        } else if (dotProduct < -cos_t) {
+            // v1 - vMag * ui
+            v2.set(v1);
+            v2.offset(-vMag * ui[0], -vMag * ui[1]);
+        } else if (dotProduct > -t && dotProduct < t) {
+            float[] orthoUi = {-ui[1], ui[0]};
+            float dotPOrthoUiVi = orthoUi[0] * vi[0] + orthoUi[1]*vi[1];
+
+            if (dotPOrthoUiVi > 0) {
+                // v1 + vMag * orthoUi
+                v2.set(v1);
+                v2.offset(vMag * orthoUi[0], vMag * orthoUi[1]);
+            }
+            else {
+                // v1 - vMag * orthoUi
+                v2.set(v1);
+                v2.offset(-vMag * orthoUi[0], -vMag * orthoUi[1]);
+            }
+        }
+    }
+
     public static void colorTo3F(int color, float[] fColor) {
         int red = Color.red(color);
         int green = Color.green(color);

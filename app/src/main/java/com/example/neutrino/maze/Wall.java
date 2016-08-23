@@ -22,8 +22,12 @@ public class Wall {
     private static final float DEFAULT_COORDS_SOURCE = 0.5f;
     private boolean mIsRemoved;
 
+    public ChangeType getChangeType() {
+        return mChangeType;
+    }
+
     // Different change types
-    private enum ChangeType {
+    public enum ChangeType {
         CHANGE_A,
         CHANGE_B,
         CHANGE_WALL
@@ -67,6 +71,8 @@ public class Wall {
         mB.y = y2;
         mWidth = width;
         VectorHelper.splitLine(mA, mB, mWidth/2, mVertices);
+
+        mChangeType = ChangeType.CHANGE_B;
     }
 
     public void updateVertices() {
