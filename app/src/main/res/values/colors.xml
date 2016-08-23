@@ -9,7 +9,7 @@
     <color name="colorMapBackground">#CFD8DC</color>
     <color name="colorWall">#00796B</color>
     <color name="colorSelectedWall">#C2185B</color>
-    <color name="colorEditMode">#AFB42B</color>
+    <color name="colorEditMode">#D32F2F</color>
 
     <color name="colorAccent">#9E9E9E</color>
     <color name="colorFindLocation">#9E9E9E</color>
