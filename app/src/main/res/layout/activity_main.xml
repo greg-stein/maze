@@ -90,7 +90,7 @@
         android:layout_marginTop="@dimen/fab_margin"/>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_corridor_mode"
+        android:id="@+id/fab_map_autobuilder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
@@ -100,8 +100,38 @@
         android:layout_marginBottom="225dp"
         android:layout_marginEnd="@dimen/fab_margin"
         android:layout_marginStart="@dimen/fab_margin"
-        android:layout_marginTop="@dimen/fab_margin">
+        android:layout_marginTop="@dimen/fab_margin"/>
 
-        </android.support.design.widget.FloatingActionButton>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_map_autobuilder_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:alpha="@dimen/alpha_default"
+        android:elevation="@dimen/fab_elevation"
+        android:src="@drawable/ic_directions_walk_left_wall_white_24dp"
+        android:layout_marginBottom="235dp"
+        android:layout_marginEnd="@dimen/fab_margin"
+        android:layout_marginStart="85dp"
+        android:layout_marginTop="@dimen/fab_margin"
+        android:layout_marginLeft="85dp"
+        android:layout_marginRight="@dimen/fab_margin"
+        app:fabSize="mini"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_map_autobuilder_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:alpha="@dimen/alpha_default"
+        android:elevation="@dimen/fab_elevation"
+        android:src="@drawable/ic_directions_walk_right_wall_white_24dp"
+        android:layout_marginBottom="235dp"
+        android:layout_marginEnd="@dimen/fab_margin"
+        android:layout_marginStart="135dp"
+        android:layout_marginTop="@dimen/fab_margin"
+        android:layout_marginLeft="135dp"
+        android:layout_marginRight="@dimen/fab_margin"
+        app:fabSize="mini"/>
 
 </android.support.design.widget.CoordinatorLayout>

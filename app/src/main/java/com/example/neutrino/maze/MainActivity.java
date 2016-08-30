@@ -10,8 +10,10 @@ import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,8 +34,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FloatingActionButton uiFabDeleteWall;
     private FloatingActionButton uiFabAddWall;
     private FloatingActionButton uiFabSetLocation;
-    private FloatingActionButton uiFabWalkMode;
-
+    private FloatingActionButton uiFabAutobuilderMode;
+    private FloatingActionButton uiFabAutobuilderLeft;
+    private FloatingActionButton uiFabAutobuilderRight;
 
     // Map north angle
     private float mapNorth = 0.0f;
@@ -42,8 +45,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float mOffsetX;
     private float mOffsetY;
 
-    private boolean mIsCorridorBuildModeEnabled = false;
+    private boolean mIsAutobuildModeEnabled = false;
     private boolean mStepDetectorInited;
+    private boolean mAutobuilderFabsVisible = true;
 
     // device sensor manager
     private SensorManager mSensorManager;
@@ -83,7 +87,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabDeleteWall = (FloatingActionButton) findViewById(R.id.fab_delete_wall);
         uiFabAddWall = (FloatingActionButton) findViewById(R.id.fab_add_wall);
         uiFabSetLocation = (FloatingActionButton) findViewById(R.id.fab_set_location);
-        uiFabWalkMode = (FloatingActionButton) findViewById(R.id.fab_corridor_mode);
+        uiFabAutobuilderMode = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder);
+        uiFabAutobuilderLeft = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder_left);
+        uiFabAutobuilderRight = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder_right);
         uiModeSwitch = (ToggleButton) findViewById(R.id.tb_edit_mode);
         setSupportActionBar(uiToolbar);
         getSupportActionBar().setTitle("");
@@ -115,6 +121,53 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+        uiFabAutobuilderMode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mAutobuilderFabsVisible = !mAutobuilderFabsVisible;
+                if (mAutobuilderFabsVisible) {
+                    TypedValue outValue = new TypedValue();
+                    getResources().getValue(R.dimen.alpha_default, outValue, true);
+                    final float alpha = outValue.getFloat();
+
+                    uiFabAutobuilderLeft.show(new FloatingActionButton.OnVisibilityChangedListener() {
+                        @Override
+                        public void onShown(FloatingActionButton fab) {
+                            super.onShown(fab);
+                            fab.setAlpha(alpha);
+                        }
+                    });
+                    uiFabAutobuilderRight.show(new FloatingActionButton.OnVisibilityChangedListener() {
+                        @Override
+                        public void onShown(FloatingActionButton fab) {
+                            super.onShown(fab);
+                            fab.setAlpha(alpha);
+                        }
+                    });
+                }
+                else {
+                    uiFabAutobuilderLeft.hide();
+                    uiFabAutobuilderRight.hide();
+                }
+            }
+        });
+
+        uiFabAutobuilderLeft.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                uiFloorPlanView.autobuilderMode ^= uiFloorPlanView.BUILDER_MODE_LEFT;
+                updateAutobuilderFabsState();
+            }
+        });
+
+        uiFabAutobuilderRight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                uiFloorPlanView.autobuilderMode ^= uiFloorPlanView.BUILDER_MODE_RIGHT;
+                updateAutobuilderFabsState();
+            }
+        });
+
         uiFabDeleteWall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -124,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 else {
                     uiFloorPlanView.operation = FloorPlanView.Operation.REMOVE_WALL;
                 }
-                updateFabsState();
+                updateOperationFabsState();
             }
         });
 
@@ -137,12 +190,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 else {
                     uiFloorPlanView.operation = FloorPlanView.Operation.ADD_WALL;
                 }
-                updateFabsState();
+                updateOperationFabsState();
             }
         });
+
+        uiFabAutobuilderMode.callOnClick();
     }
 
-    private void updateFabsState() {
+    private void updateOperationFabsState() {
         switch (uiFloorPlanView.operation) {
             case ADD_WALL:
                 uiFabDeleteWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
@@ -155,6 +210,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case NONE:
                 uiFabDeleteWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
                 uiFabAddWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+        }
+    }
+
+    private void updateAutobuilderFabsState() {
+        if ((uiFloorPlanView.autobuilderMode & uiFloorPlanView.BUILDER_MODE_LEFT) != 0) {
+            uiFabAutobuilderLeft.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+        }
+        else {
+            uiFabAutobuilderLeft.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+        }
+
+        if ((uiFloorPlanView.autobuilderMode & uiFloorPlanView.BUILDER_MODE_RIGHT) != 0) {
+            uiFabAutobuilderRight.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+        }
+        else {
+            uiFabAutobuilderRight.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+        }
+
+        switch (uiFloorPlanView.autobuilderMode) {
+            case FloorPlanView.BUILDER_MODE_NONE:
+                uiFabAutobuilderMode.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                uiFabAutobuilderMode.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_directions_walk_white_24dp));
+                break;
+            case FloorPlanView.BUILDER_MODE_LEFT:
+                uiFabAutobuilderMode.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+                uiFabAutobuilderMode.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_directions_walk_left_wall_white_24dp));
+                break;
+            case FloorPlanView.BUILDER_MODE_RIGHT:
+                uiFabAutobuilderMode.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+                uiFabAutobuilderMode.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_directions_walk_right_wall_white_24dp));
+                break;
+            case FloorPlanView.BUILDER_MODE_BOTH:
+                uiFabAutobuilderMode.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+                uiFabAutobuilderMode.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_directions_walk_both_walls_white_24dp));
+                break;
         }
     }
 
@@ -199,25 +289,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         // Step detector
-        updateCorridorBuildMode();
+        mHaveStepDetector = mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_UI);
+        uiFloorPlanView.initWallsAutobuilder();
+        mStepDetectorInited = true;
 
         mWifiScanner.enable();
-    }
-
-    private void updateCorridorBuildMode() {
-        if (mIsCorridorBuildModeEnabled) {
-            if (!mStepDetectorInited) {
-                mHaveStepDetector = mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_UI);
-                uiFloorPlanView.initCorridorWalls();
-                mStepDetectorInited = true;
-            }
-        }
-        else {
-            if (mStepDetectorInited) {
-                mSensorManager.unregisterListener(this, mStepDetector);
-                mStepDetectorInited = false;
-            }
-        }
     }
 
     @Override
@@ -269,7 +345,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 mTravelledDistance += STEP_LENGTH;
                 if (mTravelledDistance >= WALL_CREATION_DISTANCE) {
-                    uiFloorPlanView.buildCorridorWalls();
+                    uiFloorPlanView.autobuildWalls();
                     mTravelledDistance = 0;
                 }
             }

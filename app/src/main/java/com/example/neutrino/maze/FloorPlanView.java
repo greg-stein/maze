@@ -26,6 +26,13 @@ public class FloorPlanView extends GLSurfaceView {
     private float mScaleFactor = 1;
     private boolean mIsInEditMode;
 
+    public static final int BUILDER_MODE_NONE = 0;
+    public static final int BUILDER_MODE_LEFT = 1;
+    public static final int BUILDER_MODE_RIGHT = 2;
+    public static final int BUILDER_MODE_BOTH = 3;
+
+    public int autobuilderMode = BUILDER_MODE_NONE;
+
     public FloorPlanView(Context context) {
         super(context);
         init(context, null);
@@ -159,33 +166,38 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
-    public void initCorridorWalls() {
+    public void initWallsAutobuilder() {
         // Convert center of view to world coordinates
         mRenderer.windowToWorld(getMeasuredWidth()/2, getMeasuredHeight()/2, mLastBuildWallsLocation);
     }
 
     // This method builds walls from last call
-    public void buildCorridorWalls() {
+    public void autobuildWalls() {
         // Convert center of view to world coordinates
         mRenderer.windowToWorld(getMeasuredWidth()/2, getMeasuredHeight()/2, mNewWallsLocation);
 
         VectorHelper.splitLine(mLastBuildWallsLocation, mNewWallsLocation, CORRIDOR_DEFAULT_WIDTH, mWallsBuffer);
 
+        Wall leftWall = null, rightWall = null;
+
         // Make walls continuous (not dashed)
-        if (mPreviousRightWall != null) {
-            mWallsBuffer[0] = mPreviousRightWall.getB().x;
-            mWallsBuffer[1] = mPreviousRightWall.getB().y;
-        }
-        if (mPreviousLeftWall != null) {
-            mWallsBuffer[3] = mPreviousLeftWall.getB().x;
-            mWallsBuffer[4] = mPreviousLeftWall.getB().y;
+        if ((autobuilderMode & BUILDER_MODE_LEFT) != 0) {
+            if (mPreviousLeftWall != null) {
+                mWallsBuffer[3] = mPreviousLeftWall.getB().x;
+                mWallsBuffer[4] = mPreviousLeftWall.getB().y;
+            }
+            leftWall = new Wall(mWallsBuffer[3], mWallsBuffer[4], mWallsBuffer[9], mWallsBuffer[10]);
+            mRenderer.addWall(leftWall);
         }
 
-        Wall rightWall = new Wall(mWallsBuffer[0], mWallsBuffer[1], mWallsBuffer[6], mWallsBuffer[7]);
-        Wall leftWall = new Wall(mWallsBuffer[3], mWallsBuffer[4], mWallsBuffer[9], mWallsBuffer[10]);
-
-        mRenderer.addWall(rightWall);
-        mRenderer.addWall(leftWall);
+        if ((autobuilderMode & BUILDER_MODE_RIGHT) != 0) {
+            if (mPreviousRightWall != null) {
+                mWallsBuffer[0] = mPreviousRightWall.getB().x;
+                mWallsBuffer[1] = mPreviousRightWall.getB().y;
+            }
+            rightWall = new Wall(mWallsBuffer[0], mWallsBuffer[1], mWallsBuffer[6], mWallsBuffer[7]);
+            mRenderer.addWall(rightWall);
+        }
 
         mPreviousRightWall = rightWall;
         mPreviousLeftWall = leftWall;
