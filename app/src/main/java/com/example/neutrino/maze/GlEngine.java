@@ -245,12 +245,13 @@ public class GlEngine {
     }
 
     public void alignChangeToExistingWalls(Wall wall, PointF point) {
-//        Wall existingWall = mWalls.get(0);
+
+        Wall existingWall = getAnotherWall(wall);
         // NOTE: When using single wall as reference for alignment, current wall
         //       is moved smoothly. However in the following loop, even if there
         //       presents only one wall, it still "jumps"
         // TODO: pick 3 near walls instead of looping through all of them.
-        for (Wall existingWall : mWalls) {
+//        for (Wall existingWall : mWalls) {
             if (!existingWall.isRemoved()) {
                 if (wall.getChangeType() == Wall.ChangeType.CHANGE_A) {
                     VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getB(), point, ALIGN_THRESHOLD);
@@ -259,7 +260,16 @@ public class GlEngine {
                     VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getA(), point, ALIGN_THRESHOLD);
                 }
             }
-        }
+//        }
+    }
+
+    // This func is called when there are at least 2 walls
+    private Wall getAnotherWall(Wall wall) {
+        Wall firstWall = mWalls.get(0);
+        Wall secondWall = mWalls.get(1);
+
+        if (wall.equals(firstWall)) return secondWall;
+        return firstWall;
     }
 
     public int getWallsNum() {
