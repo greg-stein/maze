@@ -2,6 +2,7 @@ package com.example.neutrino.maze;
 
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.util.Log;
 
 /**
  * Created by Greg Stein on 8/7/2016.
@@ -57,11 +58,11 @@ public class VectorHelper {
     /**
      * Aligns one vector to another so that they are parallel or orthogonal, depending on
      * what is closer.
-     * @param u1
-     * @param u2
-     * @param v1
-     * @param v2
-     * @param t
+     * @param u1 First point of reference vector
+     * @param u2 Second point of reference vector
+     * @param v1 First point of alignee vector
+     * @param v2 Second point of alignee vector
+     * @param t Threshold indicates when alignment should be performed.
      */
     public static void alignVector(PointF u1, PointF u2, PointF v1, PointF v2, float t) {
         float[] u = {u2.x - u1.x, u2.y - u1.y};
