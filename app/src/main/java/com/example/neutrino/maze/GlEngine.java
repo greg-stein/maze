@@ -275,4 +275,8 @@ public class GlEngine {
     public int getWallsNum() {
         return mWallsNum;
     }
+
+    public List<Wall> getWalls() {
+        return mWalls;
+    }
 }

@@ -6,6 +6,8 @@ import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
 
+import java.util.List;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -318,4 +320,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
+    public List<Wall> getWalls() {
+        return mGlEngine.getWalls();
+    }
 }

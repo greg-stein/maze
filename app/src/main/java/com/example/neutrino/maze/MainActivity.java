@@ -117,6 +117,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     uiToolbar.setBackgroundColor(AppSettings.editModeColor);
                 } else {
                     uiToolbar.setBackgroundColor(AppSettings.primaryColor);
+
+                    if (MazeServer.connectionAvailable(getApplicationContext())) {
+                        MazeServer server = new MazeServer(getApplicationContext());
+//                    server.downloadFloorPlan();
+                        server.uploadFloorPlan(uiFloorPlanView.getFloorPlanAsGSon());
+                    }
                 }
             }
         });

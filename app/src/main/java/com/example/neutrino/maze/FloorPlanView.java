@@ -8,6 +8,14 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
+import com.google.gson.Gson;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.List;
+
 /**
  * Created by neutrino on 7/2/2016.
  */
@@ -225,4 +233,11 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
+    public String getFloorPlanAsGSon() {
+        Gson gson = new Gson();
+        List<Wall> wallsList = mRenderer.getWalls();
+        String gsonString = gson.toJson(wallsList);
+
+        return gsonString;
+    }
 }

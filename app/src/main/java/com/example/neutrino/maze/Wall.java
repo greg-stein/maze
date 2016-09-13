@@ -12,7 +12,7 @@ import java.util.Arrays;
  */
 public class Wall {
     private static int instanceCounter = 0;
-    public int nInstanceIndex = instanceCounter++;
+    public transient int nInstanceIndex = instanceCounter++;
 
     // number of coordinates per vertex in this array
     private static final int COORDS_PER_VERTEX = 3;
@@ -35,20 +35,20 @@ public class Wall {
 
     private static final float CHANGE_ONE_END_THRESHOLD = 0.10f;
 
-    private final float mVertices[] = new float[VERTICES_DATA_LENGTH];
+    private transient final float mVertices[] = new float[VERTICES_DATA_LENGTH];
 
     private final short mDrawOrder[] = { 0, 1, 2,   // first triangle
             1, 2, 3 }; // second triangle
 
-    private int mVertexBufferPosition;
-    private int mIndexBufferPosition;
+    private transient int mVertexBufferPosition;
+    private transient int mIndexBufferPosition;
 
     private final PointF mA = new PointF(0, 0);
     private final PointF mB = new PointF(0, 0);
     private float mWidth;
 
-    private ChangeType mChangeType;
-    private final PointF mTappedLocation = new PointF();
+    private transient ChangeType mChangeType;
+    private transient final PointF mTappedLocation = new PointF();
 
     public Wall() {
         init(-DEFAULT_COORDS_SOURCE, DEFAULT_COORDS_SOURCE, DEFAULT_COORDS_SOURCE,
