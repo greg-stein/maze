@@ -130,7 +130,7 @@ public class MazeServer {
 
             StringBuilder urlBuilder = new StringBuilder();
             urlBuilder.append(mContext.getString(R.string.maze_server_api_url))
-                    .append(FUNC).append('?');
+                    .append(FUNC);
 
             try {
                 URL url = new URL(urlBuilder.toString());
@@ -159,9 +159,12 @@ public class MazeServer {
                     InputStream responseData = conn.getInputStream();
                     response = extractLines(responseData);
                 }
+                else {
+                    response = "HTTP: " + Integer.toString(responseCode);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
-                Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_SHORT).show();
+                response = e.getMessage();
             }
 
             return response;
