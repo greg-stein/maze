@@ -17,7 +17,9 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -109,6 +111,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void setUiListeners() {
+        ViewTreeObserver vto = uiFloorPlanView.getViewTreeObserver();
+        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (MazeServer.connectionAvailable(getApplicationContext())) {
+                    MazeServer server = new MazeServer(getApplicationContext());
+                    server.downloadFloorPlan(new MazeServer.AsyncResponse() {
+                        @Override
+                        public void processFinish(String jsonString) {
+                            uiFloorPlanView.setFloorPlanAsJSon(jsonString);
+                        }
+                    });
+                } else {
+                    Toast.makeText(getApplicationContext(), "No Internet connection", Toast.LENGTH_SHORT).show();
+                }
+
+                uiFloorPlanView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
+
         uiModeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -120,8 +142,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     if (MazeServer.connectionAvailable(getApplicationContext())) {
                         MazeServer server = new MazeServer(getApplicationContext());
-//                    server.downloadFloorPlan();
-                        server.uploadFloorPlan(uiFloorPlanView.getFloorPlanAsGSon());
+                        server.uploadFloorPlan(uiFloorPlanView.getFloorPlanAsJSon());
+                    } else {
+                        Toast.makeText(getApplicationContext(), "No Internet connection", Toast.LENGTH_SHORT).show();
                     }
                 }
             }

@@ -323,4 +323,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public List<Wall> getWalls() {
         return mGlEngine.getWalls();
     }
+
+    public void setWalls(List<Wall> walls) {
+        mGlEngine.setWalls(walls);
+        refreshGpuBuffers();
+    }
 }

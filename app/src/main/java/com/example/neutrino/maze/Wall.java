@@ -37,7 +37,7 @@ public class Wall {
 
     private transient final float mVertices[] = new float[VERTICES_DATA_LENGTH];
 
-    private final short mDrawOrder[] = { 0, 1, 2,   // first triangle
+    private transient final short mDrawOrder[] = { 0, 1, 2,   // first triangle
             1, 2, 3 }; // second triangle
 
     private transient int mVertexBufferPosition;

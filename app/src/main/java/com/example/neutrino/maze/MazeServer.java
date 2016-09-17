@@ -45,12 +45,12 @@ public class MazeServer {
         this.mContext = context;
     }
 
-    public void downloadFloorPlan() {
-        new DownloadFloorPlanTask().execute();
+    public void downloadFloorPlan(AsyncResponse response) {
+        new DownloadFloorPlanTask(response).execute();
     }
 
-    public void uploadFloorPlan(String gsonString) {
-        new UploadFloorPlanTask().execute(gsonString);
+    public void uploadFloorPlan(String jsonString) {
+        new UploadFloorPlanTask().execute(jsonString);
     }
 
     private String extractLines(InputStream iStream) throws IOException {
@@ -65,12 +65,26 @@ public class MazeServer {
         return result.toString();
     }
 
+    public interface AsyncResponse {
+        void processFinish(String jsonString);
+    }
+
     private class DownloadFloorPlanTask extends AsyncTask<Void, Void, String> {
         private static final String FUNC = "get_data";
         private static final String GET_METHOD = "GET";
 
+        public AsyncResponse delegate = null;
+
+        public DownloadFloorPlanTask(AsyncResponse delegate){
+            this.delegate = delegate;
+        }
+
         @Override
         protected void onPostExecute(String result) {
+            if (delegate != null) {
+                delegate.processFinish(result);
+            }
+
             Toast.makeText(mContext, result, Toast.LENGTH_SHORT).show();
         }
 
@@ -124,9 +138,9 @@ public class MazeServer {
         }
 
         @Override
-        protected String doInBackground(String... gsonStrings) {
-            String gsonString = gsonStrings[0];
-            String response = null;
+        protected String doInBackground(String... jsonStrings) {
+            String jsonString = jsonStrings[0];
+            String response;
 
             StringBuilder urlBuilder = new StringBuilder();
             urlBuilder.append(mContext.getString(R.string.maze_server_api_url))
@@ -139,7 +153,6 @@ public class MazeServer {
                 conn.setReadTimeout(10000);
                 conn.setConnectTimeout(15000);
                 conn.setRequestMethod(POST_METHOD);
-//                conn.setDoInput(true);
                 conn.setDoOutput(true);
 
                 OutputStream oStream = conn.getOutputStream();
@@ -147,7 +160,7 @@ public class MazeServer {
 
                 Uri.Builder queryBuilder = new Uri.Builder()
                         .appendQueryParameter("collection", "FloorPlan")
-                        .appendQueryParameter("data", gsonString);
+                        .appendQueryParameter("data", jsonString);
                 String query = queryBuilder.build().getEncodedQuery();
 
                 writer.write(query);

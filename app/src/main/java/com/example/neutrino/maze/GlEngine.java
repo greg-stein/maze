@@ -279,4 +279,13 @@ public class GlEngine {
     public List<Wall> getWalls() {
         return mWalls;
     }
+
+    public void setWalls(List<Wall> walls) {
+        mVerticesBuffer.clear();
+        mIndicesBuffer.clear();
+        for(Wall wall: walls) {
+            wall.updateVertices();
+            registerWall(wall);
+        }
+    }
 }
