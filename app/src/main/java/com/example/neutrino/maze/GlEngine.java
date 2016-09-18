@@ -23,7 +23,8 @@ public class GlEngine {
     public static final int QUAD_VERTEX_DATA_SIZE = VERTICES_PER_QUAD * COORDS_PER_VERTEX * SIZE_OF_FLOAT;
     public static final float ALIGN_THRESHOLD = 0.1f;
 
-    private int mWallsNum = 0;
+    private int mMaxWallsNum = 0;
+    private int mActualWallsNum = 0;
     private List<Wall> mWalls = new ArrayList<Wall>();
     private List<Wall> mDeletedWalls = new ArrayList<Wall>();;
 
@@ -63,13 +64,14 @@ public class GlEngine {
     private final int vertexStride = COORDS_PER_VERTEX * SIZE_OF_FLOAT;
     float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 0.0f };
 
-    public GlEngine(int quadsNum) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(quadsNum * VERTICES_PER_QUAD *
+    public GlEngine(int wallsNum) {
+        mMaxWallsNum = wallsNum;
+        ByteBuffer bb = ByteBuffer.allocateDirect(wallsNum * VERTICES_PER_QUAD *
                 COORDS_PER_VERTEX * SIZE_OF_FLOAT);
         bb.order(ByteOrder.nativeOrder()); // device hardware's native byte order
         mVerticesBuffer = bb.asFloatBuffer();
 
-        ByteBuffer bb2 = ByteBuffer.allocateDirect(quadsNum *
+        ByteBuffer bb2 = ByteBuffer.allocateDirect(wallsNum *
                 ORDER_INDICES_PER_QUAD * SIZE_OF_SHORT);
         bb2.order(ByteOrder.nativeOrder());
         mIndicesBuffer = bb2.asShortBuffer();
@@ -103,8 +105,8 @@ public class GlEngine {
     public void registerWall(Wall wall) {
         wall.putVertices(mVerticesBuffer);
         wall.putIndices(mIndicesBuffer);
-        mWallsNum++;
         mWalls.add(wall);
+        mActualWallsNum++;
     }
 
     // Assumes given wall was registered
@@ -113,7 +115,7 @@ public class GlEngine {
         wall.removeIndices(mIndicesBuffer);
         mDeletedWalls.add(wall);
         wall.setRemoved(true);
-        mWallsNum--;
+        mActualWallsNum--;
     }
 
     public void removeWall(Wall wall) {
@@ -121,11 +123,7 @@ public class GlEngine {
         wall.setRemoved(true);
         mDeletedWalls.add(wall);
         updateSingleObject(wall);
-        mWallsNum--;
-    }
-
-    public boolean hasWalls() {
-        return mWallsNum > 0;
+        mActualWallsNum--;
     }
 
     public Wall findWallHavingPoint(float x, float y) {
@@ -146,9 +144,6 @@ public class GlEngine {
         // TODO: Should be vertices.limit() instead of vertices.capacity()
         GLES20.glBufferData(GLES20.GL_ARRAY_BUFFER, vertices.capacity() * SIZE_OF_FLOAT, vertices, GLES20.GL_DYNAMIC_DRAW);
 
-        // Cleanup buffer
-//        vertices.limit(0);
-//        vertices = null;
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
     }
 
@@ -160,9 +155,6 @@ public class GlEngine {
         // TODO: Should be vertices.limit() instead of vertices.capacity()
         GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, indices.capacity() * SIZE_OF_SHORT, indices, GLES20.GL_STATIC_DRAW);
 
-        // Cleanup buffer
-//        indices.limit(0);
-//        indices = null;
         GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
@@ -202,7 +194,7 @@ public class GlEngine {
 
         // Draw quads
         GLES20.glDrawElements(
-                GLES20.GL_TRIANGLES, mWallsNum * ORDER_INDICES_PER_QUAD,
+                GLES20.GL_TRIANGLES, mMaxWallsNum * ORDER_INDICES_PER_QUAD,
                 GLES20.GL_UNSIGNED_SHORT, 0);
 
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
@@ -273,7 +265,7 @@ public class GlEngine {
     }
 
     public int getWallsNum() {
-        return mWallsNum;
+        return mActualWallsNum;
     }
 
     public List<Wall> getWalls() {
