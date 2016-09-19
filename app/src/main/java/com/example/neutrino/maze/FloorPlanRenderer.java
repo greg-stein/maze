@@ -5,6 +5,7 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
+import android.support.v4.graphics.ColorUtils;
 
 import java.util.List;
 
@@ -16,6 +17,8 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
+    public static final int ALPHA = 128;
+    public static final int OPAQUE = 255;
     public volatile float mAngle;
     private float mOffsetX;
     private float mOffsetY;
@@ -46,6 +49,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // Set the background frame color
         VectorHelper.colorTo3F(AppSettings.mapBgColor, mBgColorF);
         GLES20.glClearColor(mBgColorF[0], mBgColorF[1], mBgColorF[2], mBgColorF[3]);
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
+        GLES20.glDepthFunc(GLES20.GL_LESS);
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
         // Initialize the accumulated scale, rotation & translation matrices
         Matrix.setIdentityM(mScaleMatrix, 0);
@@ -203,13 +211,16 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     mSelectedWall = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y);
                     addWall(mSelectedWall);
                     mAddedWallByDrag = true;
+                    mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
                 }
                 else {
                     mSelectedWall = mGlEngine.findWallHavingPoint(mDragStart.x, mDragStart.y);
                     if (mSelectedWall != null) {
                         mSelectedWall.setTapLocation(mDragStart.x, mDragStart.y);
+                        mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
                     }
                 }
+
             }
         });
     }
@@ -244,6 +255,10 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
+                if (mSelectedWall != null) {
+                    mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, OPAQUE));
+                    mGlEngine.updateSingleObject(mSelectedWall);
+                }
                 mSelectedWall = null;
             }
         });

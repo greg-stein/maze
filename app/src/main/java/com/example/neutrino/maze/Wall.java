@@ -14,10 +14,8 @@ public class Wall {
     private static int instanceCounter = 0;
     public transient int nInstanceIndex = instanceCounter++;
 
-    // number of coordinates per vertex in this array
-    private static final int COORDS_PER_VERTEX = 3;
     private static final int VERTICES_NUM = 4; // it's a rect after all
-    private static final int VERTICES_DATA_LENGTH = COORDS_PER_VERTEX * VERTICES_NUM;
+    private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlEngine.COORDS_PER_VERTEX;
     private static final float DEFAULT_WIDTH = 0.2f; // 20cm
     private static final float DEFAULT_COORDS_SOURCE = 0.5f;
     private boolean mIsRemoved;
@@ -42,10 +40,13 @@ public class Wall {
 
     private transient int mVertexBufferPosition;
     private transient int mIndexBufferPosition;
+    private transient int mColorBufferPosition;
 
     private final PointF mA = new PointF(0, 0);
     private final PointF mB = new PointF(0, 0);
     private float mWidth;
+    private int mColor;
+    private final float[] mColor4f = new float[GlEngine.COLORS_PER_VERTEX];
 
     private transient ChangeType mChangeType;
     private transient final PointF mTappedLocation = new PointF();
@@ -79,29 +80,25 @@ public class Wall {
         VectorHelper.splitLine(mA, mB, mWidth/2, mVertices);
     }
 
+    // This method puts vertex data into given buffer
+    // Buffer.position() is saved internally for further updates
+    // This method call should be followed immediately by putIndices() method call
     public void putVertices(FloatBuffer verticesBuffer) {
         mVertexBufferPosition = verticesBuffer.position();
-        for (int i = 0; i < mDrawOrder.length; i++) {
-            mDrawOrder[i] += mVertexBufferPosition/GlEngine.COORDS_PER_VERTEX;
-        }
-        verticesBuffer.put(mVertices);
-    }
 
-    public void removeVertices(FloatBuffer verticesBuffer) {
-        // This doesn't really removes this wall's vertices from the buffer,
-        // Instead, it nulls them. If removal is desired, need to loop over
-        // all walls in the buffer and update their vertices and indices.
-        Arrays.fill(mVertices, 0);
-        updateBuffer(verticesBuffer);
+        for (int i = 0; i < mVertices.length; i += GlEngine.COORDS_PER_VERTEX) {
+            // TODO: check 4-bytes alignment
+            verticesBuffer.put(mVertices, i, GlEngine.COORDS_PER_VERTEX);    // put 3 floats of position
+            verticesBuffer.put(mColor4f);            // put 4 floats of color
+        }
     }
 
     public void putIndices(ShortBuffer indexBuffer) {
         mIndexBufferPosition = indexBuffer.position();
+        for (int i = 0; i < mDrawOrder.length; i++) {
+            mDrawOrder[i] += mVertexBufferPosition/(GlEngine.COORDS_PER_VERTEX + GlEngine.COLORS_PER_VERTEX);
+        }
         indexBuffer.put(mDrawOrder);
-    }
-
-    public void removeIndices(ShortBuffer indexBuffer) {
-        // Nothing to do since the coords are simply nulled
     }
 
     public boolean hasPoint(float x, float y) {
@@ -131,8 +128,19 @@ public class Wall {
     public void updateBuffer(FloatBuffer verticesBuffer) {
         int lastPos = verticesBuffer.position();
         verticesBuffer.position(mVertexBufferPosition);
-        verticesBuffer.put(mVertices);
+
+        putVertices(verticesBuffer);
+
         verticesBuffer.position(lastPos);
+    }
+
+    public int getColor() {
+        return mColor;
+    }
+
+    public void setColor(int color) {
+        this.mColor = color;
+        VectorHelper.colorTo3F(mColor, mColor4f);
     }
 
     public float getWidth() {

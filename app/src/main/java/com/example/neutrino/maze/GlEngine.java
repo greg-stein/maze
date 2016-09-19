@@ -14,14 +14,22 @@ import java.util.List;
  * Created by Greg Stein on 7/12/2016.
  */
 public class GlEngine {
-    public static final int COORDS_PER_VERTEX = 3;
-    public static final int ORDER_INDICES_PER_QUAD = 6;
-    public static final int VERTICES_PER_QUAD = 4;
     public static final int SIZE_OF_FLOAT = Float.SIZE/Byte.SIZE;
     public static final int SIZE_OF_SHORT = Short.SIZE/Byte.SIZE;
+
+    public static final int COORDS_PER_VERTEX = 3;
+    public static final int COLORS_PER_VERTEX = 4; // RGB + A
+    public static final int ORDER_INDICES_PER_QUAD = 6;
+    public static final int VERTICES_PER_QUAD = 4;
     private static final int BUFFERS_COUNT = 1;
-    public static final int QUAD_VERTEX_DATA_SIZE = VERTICES_PER_QUAD * COORDS_PER_VERTEX * SIZE_OF_FLOAT;
+    // TODO!!!
+    public static final int QUAD_VERTEX_DATA_SIZE = VERTICES_PER_QUAD *
+            (COORDS_PER_VERTEX + COLORS_PER_VERTEX) * SIZE_OF_FLOAT;
     public static final float ALIGN_THRESHOLD = 0.1f;
+    private static final int STRIDE = (COORDS_PER_VERTEX + COLORS_PER_VERTEX) * SIZE_OF_FLOAT;
+
+    private static final String POSITION_ATTRIBUTE = "a_Position";
+    private static final String COLOR_ATTRIBUTE = "a_Color";
 
     private int mMaxWallsNum = 0;
     private int mActualWallsNum = 0;
@@ -34,16 +42,25 @@ public class GlEngine {
     private final int[] mVerticesBufferId = new int[BUFFERS_COUNT];
     private final int[] mIndicesBufferId = new int[BUFFERS_COUNT];
 
+
     private final String vertexShaderCode =
             // This matrix member variable provides a hook to manipulate
             // the coordinates of the objects that use this vertex shader
             "uniform mat4 uMVPMatrix;" +
-                    "attribute vec4 vPosition;" +
+                    "uniform mat4 u_MVPMatrix;" +
+                    "attribute vec4 a_Position;" + // Per-vertex position information we will pass in.
+                    "attribute vec4 a_Color;" +    // Per-vertex color information we will pass in."
+//                    "attribute vec4 vPosition;" +
+                    "varying vec3 v_Position;" +
+                    "varying vec4 v_Color;" + // This will be passed into the fragment shader.
                     "void main() {" +
+                    "   v_Position = vec3(uMVPMatrix * a_Position);" +
+                    // Pass through the color.
+                    "   v_Color = a_Color;" +
                     // the matrix must be included as a modifier of gl_Position
                     // Note that the uMVPMatrix factor *must be first* in order
                     // for the matrix multiplication product to be correct.
-                    "  gl_Position = uMVPMatrix * vPosition;" +
+                    "   gl_Position = u_MVPMatrix * a_Position;" +
                     "}";
 
     // Use to access and set the view transformation
@@ -51,55 +68,38 @@ public class GlEngine {
 
     private final String fragmentShaderCode =
             "precision mediump float;" +
-                    "uniform vec4 vColor;" +
+                    "varying vec3 v_Position;" +		// Interpolated position for this fragment.
+                    "varying vec4 v_Color;" +          	// This is the color from the vertex shader interpolated across the
+                                                        // triangle per fragment.
                     "void main() {" +
-                    "  gl_FragColor = vColor;" +
+                    "  gl_FragColor = v_Color;" +
                     "}";
 
     private final int mProgram;
 
-    private int mPositionHandle;
-    private int mColorHandle;
-
-    private final int vertexStride = COORDS_PER_VERTEX * SIZE_OF_FLOAT;
-    float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 0.0f };
+    private int mPositionAttributeHandle;
+    private int mColorAttributeHandle;
 
     public GlEngine(int wallsNum) {
         mMaxWallsNum = wallsNum;
-        ByteBuffer bb = ByteBuffer.allocateDirect(wallsNum * VERTICES_PER_QUAD *
-                COORDS_PER_VERTEX * SIZE_OF_FLOAT);
-        bb.order(ByteOrder.nativeOrder()); // device hardware's native byte order
-        mVerticesBuffer = bb.asFloatBuffer();
 
-        ByteBuffer bb2 = ByteBuffer.allocateDirect(wallsNum *
-                ORDER_INDICES_PER_QUAD * SIZE_OF_SHORT);
-        bb2.order(ByteOrder.nativeOrder());
-        mIndicesBuffer = bb2.asShortBuffer();
+        // device hardware's native byte order
+        mVerticesBuffer = ByteBuffer.allocateDirect(wallsNum * VERTICES_PER_QUAD *
+                COORDS_PER_VERTEX * SIZE_OF_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
 
-        int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER,
+        mIndicesBuffer = ByteBuffer.allocateDirect(wallsNum *
+                ORDER_INDICES_PER_QUAD * SIZE_OF_SHORT).order(ByteOrder.nativeOrder()).asShortBuffer();
+
+//        mColorBuffer = ByteBuffer.allocateDirect(wallsNum * VERTICES_PER_QUAD *
+//                COLORS_PER_VERTEX * SIZE_OF_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
+
+        int vertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER,
                 vertexShaderCode);
-        int fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER,
+        int fragmentShader = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER,
                 fragmentShaderCode);
 
-        mProgram = GLES20.glCreateProgram();
-        GLES20.glAttachShader(mProgram, vertexShader);
-        GLES20.glAttachShader(mProgram, fragmentShader);
-        GLES20.glLinkProgram(mProgram);
-
-        VectorHelper.colorTo3F(AppSettings.wallColor, color);
-    }
-
-    public static int loadShader(int type, String shaderCode){
-
-        // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
-        // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
-        int shader = GLES20.glCreateShader(type);
-
-        // add the source code to the shader and compile it
-        GLES20.glShaderSource(shader, shaderCode);
-        GLES20.glCompileShader(shader);
-
-        return shader;
+        mProgram = ShaderHelper.createAndLinkProgram(vertexShader, fragmentShader,
+                POSITION_ATTRIBUTE, COLOR_ATTRIBUTE);
     }
 
     public void registerWall(Wall wall) {
@@ -107,15 +107,6 @@ public class GlEngine {
         wall.putIndices(mIndicesBuffer);
         mWalls.add(wall);
         mActualWallsNum++;
-    }
-
-    // Assumes given wall was registered
-    public void unregisterWall(Wall wall) {
-        wall.removeVertices(mVerticesBuffer);
-        wall.removeIndices(mIndicesBuffer);
-        mDeletedWalls.add(wall);
-        wall.setRemoved(true);
-        mActualWallsNum--;
     }
 
     public void removeWall(Wall wall) {
@@ -173,24 +164,28 @@ public class GlEngine {
     }
 
     public void render(float[] mvpMatrix) {
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mVerticesBufferId[0]);
         GLES20.glUseProgram(mProgram);
 
-        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition");
-        GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, 0);
+        mPositionAttributeHandle = GLES20.glGetAttribLocation(mProgram, POSITION_ATTRIBUTE);
+        GLES20.glVertexAttribPointer(mPositionAttributeHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false,
+                STRIDE, 0);
+        GLES20.glEnableVertexAttribArray(mPositionAttributeHandle);
 
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
-        GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+        mColorAttributeHandle = GLES20.glGetAttribLocation(mProgram, COLOR_ATTRIBUTE);
+        GLES20.glVertexAttribPointer(mColorAttributeHandle, COLORS_PER_VERTEX, GLES20.GL_FLOAT, false,
+                STRIDE, COORDS_PER_VERTEX * SIZE_OF_FLOAT);
+        GLES20.glEnableVertexAttribArray(mColorAttributeHandle);
+
+        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mIndicesBufferId[0]);
 
         // get handle to shape's transformation matrix
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
+        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVPMatrix");
         // Pass the projection and view transformation to the shader
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
 
-        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mIndicesBufferId[0]);
 
         // Draw quads
         GLES20.glDrawElements(
@@ -209,7 +204,6 @@ public class GlEngine {
         mVerticesBuffer.position(0);
         mIndicesBuffer.position(0);
 
-        // Fake full buffer
         mVerticesBuffer.limit(mVerticesBuffer.capacity());
         mIndicesBuffer.limit(mIndicesBuffer.capacity());
 
