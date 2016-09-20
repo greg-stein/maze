@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.content.Context;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -136,6 +137,12 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         mGlView.queueEvent(runnable);
     }
 
+    protected void runOnUiThread(Runnable runnable) {
+        if (AppSettings.appActivity != null) {
+            AppSettings.appActivity.runOnUiThread(runnable);
+        }
+    }
+
     public float getAngle() {
         return mAngle;
     }
@@ -246,6 +253,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     }
                     mSelectedWall.updateVertices();
                     mGlEngine.updateSingleObject(mSelectedWall);
+                    onWallLengthChanged(mSelectedWall);
                 }
             }
         });
@@ -342,5 +350,24 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public void setWalls(List<Wall> walls) {
         mGlEngine.setWalls(walls);
         refreshGpuBuffers();
+    }
+
+    private IWallLengthChangedListener mWallLengthChangedListener = null;
+    public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
+        this.mWallLengthChangedListener = listener;
+    }
+    private void onWallLengthChanged(final Wall wall) {
+        if (mWallLengthChangedListener != null) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    PointF wallVector = new PointF();
+                    wallVector.set(wall.getB());
+                    wallVector.offset(-wall.getA().x, -wall.getA().y);
+
+                    mWallLengthChangedListener.onWallLengthChanged(wallVector.length());
+                }
+            });
+        }
     }
 }

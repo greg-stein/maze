@@ -9,14 +9,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -250,5 +243,9 @@ public class FloorPlanView extends GLSurfaceView {
         List<Wall> wallsList = Arrays.asList(gson.fromJson(gsonString, Wall[].class));
 
         mRenderer.setWalls(wallsList);
+    }
+
+    public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
+        mRenderer.setOnWallLengthChangedListener(listener);
     }
 }

@@ -19,7 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
-import android.widget.Toast;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FloatingActionButton uiFabAutobuilderMode;
     private FloatingActionButton uiFabAutobuilderLeft;
     private FloatingActionButton uiFabAutobuilderRight;
+    private TextView uiWallLengthText;
 
     // Map north angle
     private float mapNorth = 0.0f;
@@ -93,10 +94,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabAutobuilderLeft = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder_left);
         uiFabAutobuilderRight = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder_right);
         uiModeSwitch = (ToggleButton) findViewById(R.id.tb_edit_mode);
+        uiWallLengthText = (TextView) findViewById(R.id.tv_wall_length);
+
         setSupportActionBar(uiToolbar);
         getSupportActionBar().setTitle("");
 
-        AppSettings.init(getApplicationContext());
+        AppSettings.init(this); //getApplicationContext()
         setUiListeners();
 
         // initialize your android device sensor capabilities
@@ -111,6 +114,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void setUiListeners() {
+        uiFloorPlanView.setOnWallLengthChangedListener(new IWallLengthChangedListener() {
+            @Override
+            public void onWallLengthChanged(float wallLength) {
+                uiWallLengthText.setText(String.format(java.util.Locale.US,"Wall length: %.2fm", wallLength));
+            }
+        });
+
         ViewTreeObserver vto = uiFloorPlanView.getViewTreeObserver();
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override

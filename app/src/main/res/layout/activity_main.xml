@@ -32,6 +32,13 @@
                 android:gravity="center"
                 />
 
+            <TextView
+                android:id="@+id/tv_wall_length"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_horizontal|center_vertical"
+                android:text="(_!_)"/>
+
         </android.support.v7.widget.Toolbar>
 
 

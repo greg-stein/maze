@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
 
@@ -13,8 +14,12 @@ public class AppSettings {
     public static int primaryDarkColor;
     public static int editModeColor;
     public static int accentColor;
+    public static Activity appActivity = null;
 
     public static void init(Context context) {
+        if (context instanceof Activity) {
+            appActivity = (Activity) context;
+        }
         wallColor = ContextCompat.getColor(context, R.color.colorWall);
         mapBgColor = ContextCompat.getColor(context, R.color.colorMapBackground);
         primaryColor = ContextCompat.getColor(context, R.color.colorPrimary);
