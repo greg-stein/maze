@@ -240,8 +240,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
                 if (mSelectedWall != null) {
                     if (mGlEngine.getWallsNum() > 1) {
-                        // Aligns worldPoint!
-                        mGlEngine.alignChangeToExistingWalls(mSelectedWall, worldPoint);
+//                        // Aligns worldPoint!
+//                        // TODO: Fix flickering with this method!!
+//                        mGlEngine.alignChangeToExistingWalls(mSelectedWall, worldPoint);
                     }
 
                     if (mAddedWallByDrag) {
