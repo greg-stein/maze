@@ -1,6 +1,5 @@
 package com.example.neutrino.maze;
 
-import android.content.Context;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -281,7 +280,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
                 Wall candidate = mGlEngine.findWallHavingPoint(worldPoint.x, worldPoint.y);
                 if (candidate != null) {
-                    mGlEngine.removeWall(candidate);
+                    mGlEngine.removePrimitive(candidate);
                 }
             }
         });
@@ -300,7 +299,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void addWall(Wall wall) {
-        mGlEngine.registerWall(wall);
+        mGlEngine.registerPrimitive(wall);
 
         refreshGpuBuffers();
     }
@@ -343,12 +342,12 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
-    public List<Wall> getWalls() {
-        return mGlEngine.getWalls();
+    public List<IFloorPlanPrimitive> getFloorPlan() {
+        return mGlEngine.getFloorPlan();
     }
 
-    public void setWalls(List<Wall> walls) {
-        mGlEngine.setWalls(walls);
+    public void setFloorPlan(List<IFloorPlanPrimitive> primitives) {
+        mGlEngine.setFloorPlan(primitives);
         refreshGpuBuffers();
     }
 

@@ -10,7 +10,7 @@ import java.util.Arrays;
 /**
  * Created by neutrino on 7/7/2016.
  */
-public class Wall {
+public class Wall implements IFloorPlanPrimitive {
     private static int instanceCounter = 0;
     public transient int nInstanceIndex = instanceCounter++;
 
@@ -40,7 +40,6 @@ public class Wall {
 
     private transient int mVertexBufferPosition;
     private transient int mIndexBufferPosition;
-    private transient int mColorBufferPosition;
 
     private final PointF mA = new PointF(0, 0);
     private final PointF mB = new PointF(0, 0);
@@ -76,6 +75,12 @@ public class Wall {
         mChangeType = ChangeType.CHANGE_B;
     }
 
+    @Override
+    public int getVerticesDataSize() {
+        return VERTICES_NUM * (GlEngine.COORDS_PER_VERTEX + GlEngine.COLORS_PER_VERTEX) * GlEngine.SIZE_OF_FLOAT;
+    }
+
+    @Override
     public void updateVertices() {
         VectorHelper.splitLine(mA, mB, mWidth/2, mVertices);
     }
@@ -83,6 +88,7 @@ public class Wall {
     // This method puts vertex data into given buffer
     // Buffer.position() is saved internally for further updates
     // This method call should be followed immediately by putIndices() method call
+    @Override
     public void putVertices(FloatBuffer verticesBuffer) {
         mVertexBufferPosition = verticesBuffer.position();
 
@@ -93,6 +99,7 @@ public class Wall {
         }
     }
 
+    @Override
     public void putIndices(ShortBuffer indexBuffer) {
         mIndexBufferPosition = indexBuffer.position();
         for (int i = 0; i < mDrawOrder.length; i++) {
@@ -125,6 +132,7 @@ public class Wall {
         return distance <= mWidth;// /2;
     }
 
+    @Override
     public void updateBuffer(FloatBuffer verticesBuffer) {
         int lastPos = verticesBuffer.position();
         verticesBuffer.position(mVertexBufferPosition);
@@ -134,10 +142,12 @@ public class Wall {
         verticesBuffer.position(lastPos);
     }
 
+    @Override
     public int getColor() {
         return mColor;
     }
 
+    @Override
     public void setColor(int color) {
         this.mColor = color;
         VectorHelper.colorTo3F(mColor, mColor4f);
@@ -175,10 +185,12 @@ public class Wall {
         this.mB.set(b);
     }
 
+    @Override
     public int getVertexBufferPosition() {
         return mVertexBufferPosition;
     }
 
+    @Override
     public int getIndexBufferPosition() {
         return mIndexBufferPosition;
     }
@@ -222,14 +234,17 @@ public class Wall {
         }
     }
 
+    @Override
     public void setRemoved(boolean removed) {
         this.mIsRemoved = removed;
     }
 
+    @Override
     public boolean isRemoved() {
         return mIsRemoved;
     }
 
+    @Override
     public void cloak() {
         Arrays.fill(mVertices, 0);
     }

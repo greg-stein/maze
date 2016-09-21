@@ -19,12 +19,10 @@ public class GlEngine {
 
     public static final int COORDS_PER_VERTEX = 3;
     public static final int COLORS_PER_VERTEX = 4; // RGB + A
+    public static final int INDICES_BUFFER_SIZE_FACTOR = 4; // we allocate indices buffer 4
+                                                            // times the number of vertices
     public static final int ORDER_INDICES_PER_QUAD = 6;
-    public static final int VERTICES_PER_QUAD = 4;
     private static final int BUFFERS_COUNT = 1;
-    // TODO!!!
-    public static final int QUAD_VERTEX_DATA_SIZE = VERTICES_PER_QUAD *
-            (COORDS_PER_VERTEX + COLORS_PER_VERTEX) * SIZE_OF_FLOAT;
     public static final float ALIGN_THRESHOLD = 0.1f;
     private static final int STRIDE = (COORDS_PER_VERTEX + COLORS_PER_VERTEX) * SIZE_OF_FLOAT;
 
@@ -33,8 +31,8 @@ public class GlEngine {
 
     private int mMaxWallsNum = 0;
     private int mActualWallsNum = 0;
-    private List<Wall> mWalls = new ArrayList<Wall>();
-    private List<Wall> mDeletedWalls = new ArrayList<Wall>();;
+    private List<IFloorPlanPrimitive> mFloorPlanPrimitives = new ArrayList<>();
+    private List<IFloorPlanPrimitive> mDeletedFloorPlanPrimitives = new ArrayList<>();
 
     private final FloatBuffer mVerticesBuffer;
     private final ShortBuffer mIndicesBuffer;
@@ -80,18 +78,15 @@ public class GlEngine {
     private int mPositionAttributeHandle;
     private int mColorAttributeHandle;
 
-    public GlEngine(int wallsNum) {
-        mMaxWallsNum = wallsNum;
+    public GlEngine(int verticesNum) {
+        mMaxWallsNum = verticesNum;
 
         // device hardware's native byte order
-        mVerticesBuffer = ByteBuffer.allocateDirect(wallsNum * VERTICES_PER_QUAD *
-                COORDS_PER_VERTEX * SIZE_OF_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mVerticesBuffer = ByteBuffer.allocateDirect(verticesNum *
+                (COORDS_PER_VERTEX + COLORS_PER_VERTEX)* SIZE_OF_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
 
-        mIndicesBuffer = ByteBuffer.allocateDirect(wallsNum *
-                ORDER_INDICES_PER_QUAD * SIZE_OF_SHORT).order(ByteOrder.nativeOrder()).asShortBuffer();
-
-//        mColorBuffer = ByteBuffer.allocateDirect(wallsNum * VERTICES_PER_QUAD *
-//                COLORS_PER_VERTEX * SIZE_OF_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        mIndicesBuffer = ByteBuffer.allocateDirect(verticesNum *
+                INDICES_BUFFER_SIZE_FACTOR * SIZE_OF_SHORT).order(ByteOrder.nativeOrder()).asShortBuffer();
 
         int vertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER,
                 vertexShaderCode);
@@ -102,25 +97,28 @@ public class GlEngine {
                 POSITION_ATTRIBUTE, COLOR_ATTRIBUTE);
     }
 
-    public void registerWall(Wall wall) {
-        wall.putVertices(mVerticesBuffer);
-        wall.putIndices(mIndicesBuffer);
-        mWalls.add(wall);
-        mActualWallsNum++;
+    public void registerPrimitive(IFloorPlanPrimitive primitive) {
+        primitive.putVertices(mVerticesBuffer);
+        primitive.putIndices(mIndicesBuffer);
+        mFloorPlanPrimitives.add(primitive);
+        if (primitive instanceof Wall) mActualWallsNum++;
     }
 
-    public void removeWall(Wall wall) {
-        wall.cloak();
-        wall.setRemoved(true);
-        mDeletedWalls.add(wall);
-        updateSingleObject(wall);
-        mActualWallsNum--;
+    public void removePrimitive(IFloorPlanPrimitive primitive) {
+        primitive.cloak();
+        primitive.setRemoved(true);
+        mDeletedFloorPlanPrimitives.add(primitive);
+        updateSingleObject(primitive);
+        if (primitive instanceof Wall) mActualWallsNum--;
     }
 
     public Wall findWallHavingPoint(float x, float y) {
-        for (Wall wall : mWalls) {
-            if (!wall.isRemoved() && wall.hasPoint(x, y)) {
-                return wall;
+        for (IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
+            if (primitive instanceof Wall) {
+                Wall wall = (Wall) primitive;
+                if (!wall.isRemoved() && wall.hasPoint(x, y)) {
+                    return wall;
+                }
             }
         }
 
@@ -149,16 +147,16 @@ public class GlEngine {
         GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    public void updateSingleObject(Wall object) {
-        object.updateBuffer(mVerticesBuffer);
+    public void updateSingleObject(IFloorPlanPrimitive primitive) {
+        primitive.updateBuffer(mVerticesBuffer);
         // offset in bytes
-        int vertexBufferPosition = object.getVertexBufferPosition();
-        int vertexOffset = vertexBufferPosition * SIZE_OF_FLOAT;
+        int primitiveBufferOffset = primitive.getVertexBufferPosition();
+        int vertexOffset = primitiveBufferOffset * SIZE_OF_FLOAT;
 
         int previousBufferPosition = mVerticesBuffer.position();
-        mVerticesBuffer.position(vertexBufferPosition);
+        mVerticesBuffer.position(primitiveBufferOffset);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mVerticesBufferId[0]);
-        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, vertexOffset, QUAD_VERTEX_DATA_SIZE, mVerticesBuffer);
+        GLES20.glBufferSubData(GLES20.GL_ARRAY_BUFFER, vertexOffset, primitive.getVerticesDataSize(), mVerticesBuffer);
         mVerticesBuffer.position(previousBufferPosition);
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
     }
@@ -237,23 +235,37 @@ public class GlEngine {
         //       is moved smoothly. However in the following loop, even if there
         //       presents only one wall, it still "jumps"
         // TODO: pick 3 near walls instead of looping through all of them.
-//        for (Wall existingWall : mWalls) {
-            if (!existingWall.isRemoved()) {
-                if (wall.getChangeType() == Wall.ChangeType.CHANGE_A) {
-                    VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getB(), point, ALIGN_THRESHOLD);
+//        for (IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
+//            if (primitive instanceof Wall) {
+//                existingWall = (Wall) primitive;
+
+                if (!existingWall.isRemoved()) {
+                    if (wall.getChangeType() == Wall.ChangeType.CHANGE_A) {
+                        VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getB(), point, ALIGN_THRESHOLD);
+                    } else if (wall.getChangeType() == Wall.ChangeType.CHANGE_B) {
+                        VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getA(), point, ALIGN_THRESHOLD);
+                    }
                 }
-                else if (wall.getChangeType() == Wall.ChangeType.CHANGE_B) {
-                    VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getA(), point, ALIGN_THRESHOLD);
-                }
-            }
+//            }
 //        }
     }
 
     // This func is called when there are at least 2 walls
     private Wall getAnotherWall(Wall wall) {
-        Wall firstWall = mWalls.get(0);
-        Wall secondWall = mWalls.get(1);
+        Wall firstWall = null;
+        Wall secondWall = null;
 
+        for (IFloorPlanPrimitive primitive: mFloorPlanPrimitives) {
+            if (primitive instanceof Wall) {
+                if (firstWall == null) {
+                    firstWall = wall;
+                }
+                else if (secondWall == null) {
+                    secondWall = wall;
+                    break;
+                }
+            }
+        }
         if (wall.equals(firstWall)) return secondWall;
         return firstWall;
     }
@@ -262,16 +274,16 @@ public class GlEngine {
         return mActualWallsNum;
     }
 
-    public List<Wall> getWalls() {
-        return mWalls;
+    public List<IFloorPlanPrimitive> getFloorPlan() {
+        return mFloorPlanPrimitives;
     }
 
-    public void setWalls(List<Wall> walls) {
+    public void setFloorPlan(List<IFloorPlanPrimitive> primitives) {
         mVerticesBuffer.clear();
         mIndicesBuffer.clear();
-        for(Wall wall: walls) {
-            wall.updateVertices();
-            registerWall(wall);
+        for(IFloorPlanPrimitive primitive: primitives) {
+            primitive.updateVertices();
+            registerPrimitive(primitive);
         }
     }
 }

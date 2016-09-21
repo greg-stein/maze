@@ -232,7 +232,7 @@ public class FloorPlanView extends GLSurfaceView {
 
     public String getFloorPlanAsJSon() {
         Gson gson = new Gson();
-        List<Wall> wallsList = mRenderer.getWalls();
+        List<IFloorPlanPrimitive> wallsList = mRenderer.getFloorPlan();
         String jsonString = gson.toJson(wallsList);
 
         return jsonString;
@@ -240,9 +240,11 @@ public class FloorPlanView extends GLSurfaceView {
 
     public void setFloorPlanAsJSon(String gsonString) {
         Gson gson = new Gson();
+        // TODO: BUG BUG BUG BUG
+        // TODO: reimplement deserialization!!!
         List<Wall> wallsList = Arrays.asList(gson.fromJson(gsonString, Wall[].class));
 
-        mRenderer.setWalls(wallsList);
+//        mRenderer.setFloorPlan(wallsList);
     }
 
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
