@@ -29,7 +29,7 @@ public class GlEngine {
     private static final String POSITION_ATTRIBUTE = "a_Position";
     private static final String COLOR_ATTRIBUTE = "a_Color";
 
-    private int mMaxWallsNum = 0;
+    private int mMaxVerticesNum = 0;
     private int mActualWallsNum = 0;
     private List<IFloorPlanPrimitive> mFloorPlanPrimitives = new ArrayList<>();
     private List<IFloorPlanPrimitive> mDeletedFloorPlanPrimitives = new ArrayList<>();
@@ -79,7 +79,7 @@ public class GlEngine {
     private int mColorAttributeHandle;
 
     public GlEngine(int verticesNum) {
-        mMaxWallsNum = verticesNum;
+        mMaxVerticesNum = verticesNum;
 
         // device hardware's native byte order
         mVerticesBuffer = ByteBuffer.allocateDirect(verticesNum *
@@ -187,7 +187,7 @@ public class GlEngine {
 
         // Draw quads
         GLES20.glDrawElements(
-                GLES20.GL_TRIANGLES, mMaxWallsNum * ORDER_INDICES_PER_QUAD,
+                GLES20.GL_TRIANGLES, mIndicesBuffer.position(),
                 GLES20.GL_UNSIGNED_SHORT, 0);
 
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
