@@ -1,8 +1,8 @@
 package com.example.neutrino.maze;
 
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.PointF;
-import android.util.Log;
 
 /**
  * Created by Greg Stein on 8/7/2016.
@@ -112,5 +112,47 @@ public class VectorHelper {
         fColor[1] = green/255f;
         fColor[2] = blue/255f;
         fColor[3] = alpha/255f;
+    }
+
+    public static void approximateCircle(PointF center, float radius, int segments, Matrix rotationMatrix, float[] vertices, int offset, int stride) {
+        PointF startPos = new PointF(radius, 0);
+        vertices[offset] = startPos.x;
+        vertices[offset + 1] = startPos.y;
+        int nextOffset;
+
+        for (int segment = 0; segment < segments; segment++) {
+            nextOffset = offset + stride;
+            rotationMatrix.mapPoints(vertices, nextOffset, vertices, offset, 1);
+            vertices[offset] += center.x;
+            vertices[offset + 1] += center.y;
+            offset = nextOffset;
+        }
+        vertices[offset] += center.x;
+        vertices[offset + 1] += center.y;
+    }
+
+    // vertices should contain at least segments * GlEngine.COORDS_PER_VERTEX * 2
+    public static void buildRing(PointF center, float inner_radius, float outer_radius, int segments, float[] vertices) {
+        final int STRIDE = GlEngine.COORDS_PER_VERTEX * 2;
+        float theta = (float) (2 * Math.PI / segments);
+        Matrix rotationMatrix = new Matrix();
+        rotationMatrix.setRotate(theta);
+//        rotationMatrix.postTranslate(center.x, center.y);
+
+        approximateCircle(center, outer_radius, segments, rotationMatrix, vertices, 0, STRIDE);
+        approximateCircle(center, inner_radius, segments, rotationMatrix, vertices, GlEngine.COORDS_PER_VERTEX, STRIDE);
+    }
+
+    // vertices should contain at least segments * GlEngine.COORDS_PER_VERTEX
+    public static void buildCircle(PointF center, float radius, int segments, float[] vertices) {
+        final int STRIDE = GlEngine.COORDS_PER_VERTEX;
+        float theta = 360f / segments;
+        Matrix rotationMatrix = new Matrix();
+        rotationMatrix.setRotate(theta);
+//        rotationMatrix.preTranslate(center.x, center.y);
+
+        vertices[0] = center.x;
+        vertices[1] = center.y;
+        approximateCircle(center, radius, segments, rotationMatrix, vertices, GlEngine.COORDS_PER_VERTEX, STRIDE);
     }
 }

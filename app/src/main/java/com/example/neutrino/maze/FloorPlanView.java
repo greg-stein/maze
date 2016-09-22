@@ -192,7 +192,7 @@ public class FloorPlanView extends GLSurfaceView {
                 mWallsBuffer[4] = mPreviousLeftWall.getB().y;
             }
             leftWall = new Wall(mWallsBuffer[3], mWallsBuffer[4], mWallsBuffer[9], mWallsBuffer[10]);
-            mRenderer.addWall(leftWall);
+            mRenderer.addPrimitive(leftWall);
         }
 
         if ((autobuilderMode & BUILDER_MODE_RIGHT) != 0) {
@@ -201,7 +201,7 @@ public class FloorPlanView extends GLSurfaceView {
                 mWallsBuffer[1] = mPreviousRightWall.getB().y;
             }
             rightWall = new Wall(mWallsBuffer[0], mWallsBuffer[1], mWallsBuffer[6], mWallsBuffer[7]);
-            mRenderer.addWall(rightWall);
+            mRenderer.addPrimitive(rightWall);
         }
 
         mPreviousRightWall = rightWall;
@@ -249,5 +249,9 @@ public class FloorPlanView extends GLSurfaceView {
 
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
         mRenderer.setOnWallLengthChangedListener(listener);
+    }
+
+    public void putStep(float x, float y) {
+        mRenderer.putStep(x, y);
     }
 }

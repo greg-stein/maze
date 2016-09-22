@@ -212,10 +212,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 windowToWorld(x, y, mDragStart);
 
                 mAddedWallByDrag = false;
+
                 if (operation == FloorPlanView.Operation.ADD_WALL) {
                     // Add new wall at the point
                     mSelectedWall = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y);
-                    addWall(mSelectedWall);
+                    addPrimitive(mSelectedWall);
                     mAddedWallByDrag = true;
                     mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
                 }
@@ -299,7 +300,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
-    public void addWall(Wall wall) {
+    public void addPrimitive(IFloorPlanPrimitive wall) {
         mGlEngine.registerPrimitive(wall);
 
         refreshGpuBuffers();
@@ -369,5 +370,16 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 }
             });
         }
+    }
+
+    public void putStep(final float x, final float y) {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                Footprint footprint = new Footprint(x, y);
+                footprint.setColor(AppSettings.footprintColor);
+                addPrimitive(footprint);
+            }
+        });
     }
 }

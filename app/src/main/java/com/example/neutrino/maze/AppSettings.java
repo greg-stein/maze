@@ -8,6 +8,7 @@ import android.support.v4.content.ContextCompat;
  * Created by Greg Stein on 8/21/2016.
  */
 public class AppSettings {
+    public static int footprintColor;
     public static int wallColor;
     public static int mapBgColor;
     public static int primaryColor;
@@ -20,6 +21,7 @@ public class AppSettings {
         if (context instanceof Activity) {
             appActivity = (Activity) context;
         }
+        footprintColor = ContextCompat.getColor(context, R.color.colorFootprint);
         wallColor = ContextCompat.getColor(context, R.color.colorWall);
         mapBgColor = ContextCompat.getColor(context, R.color.colorMapBackground);
         primaryColor = ContextCompat.getColor(context, R.color.colorPrimary);
