@@ -103,19 +103,18 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         Matrix.frustumM(mProjectionMatrix, 0, left, right, bottom, top, near, far);
     }
 
+    // Placed here to avoid unnecessary memory allocation on each onDrawFrame() call
+    private final float[] mScratch = new float[16];
+
     @Override
     public void onDrawFrame(GL10 gl) {
-        float[] scratch = new float[16];
-
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
         // Combine the rotation matrix with the projection and camera view
-        // Note that the mMVPMatrix factor *must be first* in order
-        // for the matrix multiplication product to be correct.
-        Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mScratch, 0, mMVPMatrix, 0, mModelMatrix, 0);
 
-        if (mGlEngine != null) mGlEngine.render(scratch);
+        if (mGlEngine != null) mGlEngine.render(mScratch);
     }
 
     private void updateModelMatrix() {
