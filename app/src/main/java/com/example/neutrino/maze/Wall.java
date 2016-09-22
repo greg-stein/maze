@@ -93,7 +93,6 @@ public class Wall implements IFloorPlanPrimitive {
         mVertexBufferPosition = verticesBuffer.position();
 
         for (int i = 0; i < mVertices.length; i += GlEngine.COORDS_PER_VERTEX) {
-            // TODO: check 4-bytes alignment
             verticesBuffer.put(mVertices, i, GlEngine.COORDS_PER_VERTEX);    // put 3 floats of position
             verticesBuffer.put(mColor4f);            // put 4 floats of color
         }
@@ -102,6 +101,7 @@ public class Wall implements IFloorPlanPrimitive {
     @Override
     public void putIndices(ShortBuffer indexBuffer) {
         mIndexBufferPosition = indexBuffer.position();
+
         for (int i = 0; i < mDrawOrder.length; i++) {
             mDrawOrder[i] += mVertexBufferPosition/(GlEngine.COORDS_PER_VERTEX + GlEngine.COLORS_PER_VERTEX);
         }
