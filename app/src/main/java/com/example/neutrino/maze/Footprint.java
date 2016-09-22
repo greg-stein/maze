@@ -2,10 +2,6 @@ package com.example.neutrino.maze;
 
 import android.graphics.PointF;
 
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-import java.util.Arrays;
-
 /**
  * Created by Greg Stein on 9/21/2016.
  */
@@ -51,9 +47,9 @@ public class Footprint extends FloorPlanPrimitiveBase {
         short i = 0;
         // First vertex = center of circle
         for (int s = 0; s < INDICES_DATA_LENGTH;) {
-            mDrawOrder[s++] = 0; // first vertex of triangle is always center
-            mDrawOrder[s++] = (short) (i + 1);
-            mDrawOrder[s++] = (short) (i + 2);
+            mIndices[s++] = 0; // first vertex of triangle is always center
+            mIndices[s++] = (short) (i + 1);
+            mIndices[s++] = (short) (i + 2);
             i ++;
         }
     }

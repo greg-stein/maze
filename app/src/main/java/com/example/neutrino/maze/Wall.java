@@ -3,22 +3,15 @@ package com.example.neutrino.maze;
 import android.graphics.PointF;
 import android.graphics.RectF;
 
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
-import java.util.Arrays;
-
 /**
  * Created by neutrino on 7/7/2016.
  */
-public class Wall implements IFloorPlanPrimitive {
-    private static int instanceCounter = 0;
-    public transient int nInstanceIndex = instanceCounter++;
-
+public class Wall extends FloorPlanPrimitiveBase {
     private static final int VERTICES_NUM = 4; // it's a rect after all
     private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlEngine.COORDS_PER_VERTEX;
+    private static final int INDICES_DATA_LENGTH = 6;
     private static final float DEFAULT_WIDTH = 0.2f; // 20cm
     private static final float DEFAULT_COORDS_SOURCE = 0.5f;
-    private boolean mIsRemoved;
 
     public ChangeType getChangeType() {
         return mChangeType;
@@ -33,22 +26,25 @@ public class Wall implements IFloorPlanPrimitive {
 
     private static final float CHANGE_ONE_END_THRESHOLD = 0.10f;
 
-    private transient final float mVertices[] = new float[VERTICES_DATA_LENGTH];
-
     private transient final short mDrawOrder[] = { 0, 1, 2,   // first triangle
             1, 2, 3 }; // second triangle
-
-    private transient int mVertexBufferPosition;
-    private transient int mIndexBufferPosition;
 
     private final PointF mA = new PointF(0, 0);
     private final PointF mB = new PointF(0, 0);
     private float mWidth;
-    private int mColor;
-    private final float[] mColor4f = new float[GlEngine.COLORS_PER_VERTEX];
 
     private transient ChangeType mChangeType;
     private transient final PointF mTappedLocation = new PointF();
+
+    @Override
+    protected int getVerticesNum() {
+        return VERTICES_DATA_LENGTH;
+    }
+
+    @Override
+    protected int getIndicesNum() {
+        return INDICES_DATA_LENGTH;
+    }
 
     public Wall() {
         init(-DEFAULT_COORDS_SOURCE, DEFAULT_COORDS_SOURCE, DEFAULT_COORDS_SOURCE,
@@ -72,6 +68,7 @@ public class Wall implements IFloorPlanPrimitive {
         mWidth = width;
         VectorHelper.splitLine(mA, mB, mWidth/2, mVertices);
 
+        System.arraycopy(mDrawOrder, 0, super.mIndices, 0, INDICES_DATA_LENGTH);
         mChangeType = ChangeType.CHANGE_B;
     }
 
@@ -83,29 +80,6 @@ public class Wall implements IFloorPlanPrimitive {
     @Override
     public void updateVertices() {
         VectorHelper.splitLine(mA, mB, mWidth/2, mVertices);
-    }
-
-    // This method puts vertex data into given buffer
-    // Buffer.position() is saved internally for further updates
-    // This method call should be followed immediately by putIndices() method call
-    @Override
-    public void putVertices(FloatBuffer verticesBuffer) {
-        mVertexBufferPosition = verticesBuffer.position();
-
-        for (int i = 0; i < mVertices.length; i += GlEngine.COORDS_PER_VERTEX) {
-            verticesBuffer.put(mVertices, i, GlEngine.COORDS_PER_VERTEX);    // put 3 floats of position
-            verticesBuffer.put(mColor4f);            // put 4 floats of color
-        }
-    }
-
-    @Override
-    public void putIndices(ShortBuffer indexBuffer) {
-        mIndexBufferPosition = indexBuffer.position();
-
-        for (int i = 0; i < mDrawOrder.length; i++) {
-            mDrawOrder[i] += mVertexBufferPosition/(GlEngine.COORDS_PER_VERTEX + GlEngine.COLORS_PER_VERTEX);
-        }
-        indexBuffer.put(mDrawOrder);
     }
 
     public boolean hasPoint(float x, float y) {
@@ -130,27 +104,6 @@ public class Wall implements IFloorPlanPrimitive {
         float distance = (float) (twiceArea / Math.sqrt(yDiff * yDiff + xDiff * xDiff));
 
         return distance <= mWidth;// /2;
-    }
-
-    @Override
-    public void updateBuffer(FloatBuffer verticesBuffer) {
-        int lastPos = verticesBuffer.position();
-        verticesBuffer.position(mVertexBufferPosition);
-
-        putVertices(verticesBuffer);
-
-        verticesBuffer.position(lastPos);
-    }
-
-    @Override
-    public int getColor() {
-        return mColor;
-    }
-
-    @Override
-    public void setColor(int color) {
-        this.mColor = color;
-        VectorHelper.colorTo3F(mColor, mColor4f);
     }
 
     public float getWidth() {
@@ -183,16 +136,6 @@ public class Wall implements IFloorPlanPrimitive {
 
     public void setB(PointF b) {
         this.mB.set(b);
-    }
-
-    @Override
-    public int getVertexBufferPosition() {
-        return mVertexBufferPosition;
-    }
-
-    @Override
-    public int getIndexBufferPosition() {
-        return mIndexBufferPosition;
     }
 
     public void handleChange(float x, float y) {
@@ -232,20 +175,5 @@ public class Wall implements IFloorPlanPrimitive {
         else {
             mChangeType = ChangeType.CHANGE_WALL;
         }
-    }
-
-    @Override
-    public void setRemoved(boolean removed) {
-        this.mIsRemoved = removed;
-    }
-
-    @Override
-    public boolean isRemoved() {
-        return mIsRemoved;
-    }
-
-    @Override
-    public void cloak() {
-        Arrays.fill(mVertices, 0);
     }
 }

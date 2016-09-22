@@ -9,14 +9,14 @@ import java.util.Arrays;
  */
 public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     protected transient final float mVertices[];
-    protected transient final short mDrawOrder[];
+    protected transient final short mIndices[];
 
     protected abstract int getVerticesNum();
     protected abstract int getIndicesNum();
 
     protected FloorPlanPrimitiveBase() {
         mVertices = new float[getVerticesNum()];
-        mDrawOrder = new short[getIndicesNum()];
+        mIndices = new short[getIndicesNum()];
     }
 
     @Override
@@ -33,10 +33,10 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     public void putIndices(ShortBuffer indexBuffer) {
         mIndexBufferPosition = indexBuffer.position();
 
-        for (int i = 0; i < mDrawOrder.length; i++) {
-            mDrawOrder[i] += mVertexBufferPosition/(GlEngine.COORDS_PER_VERTEX + GlEngine.COLORS_PER_VERTEX);
+        for (int i = 0; i < mIndices.length; i++) {
+            mIndices[i] += mVertexBufferPosition/(GlEngine.COORDS_PER_VERTEX + GlEngine.COLORS_PER_VERTEX);
         }
-        indexBuffer.put(mDrawOrder);
+        indexBuffer.put(mIndices);
     }
 
     @Override
