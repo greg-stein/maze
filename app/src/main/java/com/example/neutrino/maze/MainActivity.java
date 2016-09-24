@@ -48,8 +48,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float mOffsetX;
     private float mOffsetY;
 
-    private boolean mIsAutobuildModeEnabled = false;
-    private boolean mStepDetectorInited;
     private boolean mAutobuilderFabsVisible = true;
 
     // device sensor manager
@@ -366,7 +364,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // Step detector
         mHaveStepDetector = mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_UI);
         uiFloorPlanView.initWallsAutobuilder();
-        mStepDetectorInited = true;
 
         mWifiScanner.enable();
     }
@@ -377,7 +374,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // to stop the listener and save battery
         mSensorManager.unregisterListener(this);
-        mStepDetectorInited = false;
         unregisterReceiver(mWifiScanner);
     }
 
@@ -414,14 +410,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 break;
             }
             case Sensor.TYPE_STEP_DETECTOR: {
-                mOffsetX += (float) (Math.sin(Math.toRadians(currentDegree)) * STEP_LENGTH);
-                mOffsetY += (float) (Math.cos(Math.toRadians(currentDegree)) * STEP_LENGTH);
-                uiFloorPlanView.updateOffset(mOffsetX, -mOffsetY); // -y for moving map downwards
+                if (uiFloorPlanView.autobuilderMode != FloorPlanView.BUILDER_MODE_NONE) {
+                    mOffsetX += (float) (Math.sin(Math.toRadians(currentDegree)) * STEP_LENGTH);
+                    mOffsetY += (float) (Math.cos(Math.toRadians(currentDegree)) * STEP_LENGTH);
+                    uiFloorPlanView.updateOffset(mOffsetX, -mOffsetY); // -y for moving map downwards
 
-                mTravelledDistance += STEP_LENGTH;
-                if (mTravelledDistance >= WALL_CREATION_DISTANCE) {
-                    uiFloorPlanView.autobuildWalls();
-                    mTravelledDistance = 0;
+                    mTravelledDistance += STEP_LENGTH;
+                    if (mTravelledDistance >= WALL_CREATION_DISTANCE) {
+                        uiFloorPlanView.autobuildWalls();
+                        mTravelledDistance = 0;
+                    }
                 }
             }
          }
