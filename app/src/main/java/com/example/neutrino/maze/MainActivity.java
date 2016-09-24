@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -220,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+
         uiFabAddWall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -233,6 +235,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+        uiFabSetLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (uiFloorPlanView.operation == FloorPlanView.Operation.SET_LOCATION) {
+                    uiFloorPlanView.operation = FloorPlanView.Operation.NONE;
+                }
+                else {
+                    uiFloorPlanView.operation = FloorPlanView.Operation.SET_LOCATION;
+                }
+                updateOperationFabsState();
+            }
+        });
+
         uiFabAutobuilderMode.callOnClick();
     }
 
@@ -241,14 +256,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case ADD_WALL:
                 uiFabDeleteWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
                 uiFabAddWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+                uiFabSetLocation.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
                 break;
             case REMOVE_WALL:
                 uiFabDeleteWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
                 uiFabAddWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                uiFabSetLocation.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                break;
+            case SET_LOCATION:
+                uiFabDeleteWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                uiFabAddWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                uiFabSetLocation.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
                 break;
             case NONE:
                 uiFabDeleteWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
                 uiFabAddWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                uiFabSetLocation.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                break;
         }
     }
 

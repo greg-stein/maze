@@ -66,8 +66,11 @@ public class FloorPlanView extends GLSurfaceView {
         this.mIsInEditMode = isEditMode;
     }
 
+    public void setSetLocationOp(boolean mSetLocation) {
+    }
+
     public enum Operation {
-        NONE, ADD_WALL, REMOVE_WALL
+        NONE, ADD_WALL, REMOVE_WALL, SET_LOCATION
     }
     public Operation operation = Operation.NONE;
 
@@ -103,11 +106,18 @@ public class FloorPlanView extends GLSurfaceView {
         int yPos = (int) MotionEventCompat.getY(event, index);
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                if (operation == Operation.ADD_WALL || operation == Operation.NONE) {
-                    mDragStarted = true;
-                    mRenderer.handleStartDrag(xPos, yPos, operation);
-                } else if (operation == Operation.REMOVE_WALL) {
-                    mRenderer.processWallDeletion(xPos, yPos);
+                switch (operation) {
+                    case NONE:
+                    case ADD_WALL:
+                        mDragStarted = true;
+                        mRenderer.handleStartDrag(xPos, yPos, operation);
+                        break;
+                    case REMOVE_WALL:
+                        mRenderer.processWallDeletion(xPos, yPos);
+                        break;
+                    case SET_LOCATION:
+                        setLocation(xPos, yPos);
+                        break;
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -255,6 +265,14 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.putStep(x, y);
     }
 
+    // This overloaded method is used internally when user clicks on location
+    private void setLocation(int x, int y) {
+        PointF worldLocation = new PointF();
+        mRenderer.windowToWorld(x, y, worldLocation);
+        setLocation(worldLocation.x, worldLocation.y);
+    }
+
+    // This method is used when you want to set location programmatically
     public void setLocation(float x, float y) {
         mCurrentLocation.set(x, y);
         mRenderer.drawCurrentLocation(mCurrentLocation);
