@@ -19,10 +19,12 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public static final int ALPHA = 128;
     public static final int OPAQUE = 255;
+    static final float DEFAULT_SCALE_FACTOR = 0.03f;
+
     public volatile float mAngle;
     private float mOffsetX;
     private float mOffsetY;
-    private float mScaleFactor = 1.0f;
+    private float mScaleFactor = DEFAULT_SCALE_FACTOR;
 
     // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
     private final float[] mMVPMatrix = new float[16];

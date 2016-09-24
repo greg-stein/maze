@@ -27,7 +27,7 @@ public class FloorPlanView extends GLSurfaceView {
     private static Wall mPreviousRightWall;
     private static Wall mPreviousLeftWall;
     private ScaleGestureDetector mScaleDetector;
-    private float mScaleFactor = 1;
+    private float mScaleFactor = FloorPlanRenderer.DEFAULT_SCALE_FACTOR;
     private boolean mIsInEditMode;
 
     public static final int BUILDER_MODE_NONE = 0;
@@ -172,7 +172,7 @@ public class FloorPlanView extends GLSurfaceView {
             mScaleFactor *= detector.getScaleFactor();
 
             // Don't let the object get too small or too large.
-            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 2.0f));
+            mScaleFactor = Math.max(0.02f, Math.min(mScaleFactor, 2.0f));
 
             // Update scale
             mRenderer.setScale(mScaleFactor);

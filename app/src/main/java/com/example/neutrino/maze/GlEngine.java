@@ -20,8 +20,6 @@ public class GlEngine {
     public static final int COORDS_PER_VERTEX = 3;
     public static final int COLORS_PER_VERTEX = 4; // RGB + A
     public static final int INDICES_BUFFER_SIZE_FACTOR = 4; // we allocate indices buffer 4
-                                                            // times the number of vertices
-    public static final int ORDER_INDICES_PER_QUAD = 6;
     private static final int BUFFERS_COUNT = 1;
     public static final float ALIGN_THRESHOLD = 0.1f;
     private static final int STRIDE = (COORDS_PER_VERTEX + COLORS_PER_VERTEX) * SIZE_OF_FLOAT;
