@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         getSupportActionBar().setTitle("");
 
         AppSettings.init(this); //getApplicationContext()
+        mFabAlpha = getAlphaFromRes();
         setUiListeners();
 
         // initialize your android device sensor capabilities
@@ -147,10 +148,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 uiFloorPlanView.setMode(isChecked);
                 if (isChecked) {
                     uiToolbar.setBackgroundColor(AppSettings.editModeColor);
-                    uiFabDeleteWall.show();
-                    uiFabSetLocation.show();
-                    uiFabAddWall.show();
-                    uiFabAutobuilderMode.show();
+                    uiFabDeleteWall.show(mPreserveAlphaOnShow);
+                    uiFabSetLocation.show(mPreserveAlphaOnShow);
+                    uiFabAddWall.show(mPreserveAlphaOnShow);
+                    uiFabAutobuilderMode.show(mPreserveAlphaOnShow);
                 } else {
                     uiToolbar.setBackgroundColor(AppSettings.primaryColor);
                     uiFabDeleteWall.hide();
@@ -173,24 +174,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onClick(View view) {
                 mAutobuilderFabsVisible = !mAutobuilderFabsVisible;
                 if (mAutobuilderFabsVisible) {
-                    TypedValue outValue = new TypedValue();
-                    getResources().getValue(R.dimen.alpha_default, outValue, true);
-                    final float alpha = outValue.getFloat();
+                    final float alpha = getAlphaFromRes();
 
-                    uiFabAutobuilderLeft.show(new FloatingActionButton.OnVisibilityChangedListener() {
-                        @Override
-                        public void onShown(FloatingActionButton fab) {
-                            super.onShown(fab);
-                            fab.setAlpha(alpha);
-                        }
-                    });
-                    uiFabAutobuilderRight.show(new FloatingActionButton.OnVisibilityChangedListener() {
-                        @Override
-                        public void onShown(FloatingActionButton fab) {
-                            super.onShown(fab);
-                            fab.setAlpha(alpha);
-                        }
-                    });
+                    uiFabAutobuilderLeft.show(mPreserveAlphaOnShow);
+                    uiFabAutobuilderRight.show(mPreserveAlphaOnShow);
                 }
                 else {
                     uiFabAutobuilderLeft.hide();
@@ -260,6 +247,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabSetLocation.hide();
         uiFabAddWall.hide();
         uiFabAutobuilderMode.hide();
+    }
+
+    private FloatingActionButton.OnVisibilityChangedListener mPreserveAlphaOnShow = new FloatingActionButton.OnVisibilityChangedListener() {
+        @Override
+        public void onShown(FloatingActionButton fab) {
+            super.onShown(fab);
+            fab.setAlpha(mFabAlpha);
+        }
+    };
+    private float mFabAlpha;
+    private float getAlphaFromRes() {
+        TypedValue outValue = new TypedValue();
+        getResources().getValue(R.dimen.alpha_default, outValue, true);
+        return outValue.getFloat();
     }
 
     private void updateOperationFabsState() {
