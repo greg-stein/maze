@@ -147,8 +147,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 uiFloorPlanView.setMode(isChecked);
                 if (isChecked) {
                     uiToolbar.setBackgroundColor(AppSettings.editModeColor);
+                    uiFabDeleteWall.show();
+                    uiFabSetLocation.show();
+                    uiFabAddWall.show();
+                    uiFabAutobuilderMode.show();
                 } else {
                     uiToolbar.setBackgroundColor(AppSettings.primaryColor);
+                    uiFabDeleteWall.hide();
+                    uiFabSetLocation.hide();
+                    uiFabAddWall.hide();
+                    uiFabAutobuilderMode.hide();
 
 //                    if (MazeServer.connectionAvailable(getApplicationContext())) {
 //                        MazeServer server = new MazeServer(getApplicationContext());
@@ -248,6 +256,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
 
         uiFabAutobuilderMode.callOnClick();
+        uiFabDeleteWall.hide();
+        uiFabSetLocation.hide();
+        uiFabAddWall.hide();
+        uiFabAutobuilderMode.hide();
     }
 
     private void updateOperationFabsState() {
