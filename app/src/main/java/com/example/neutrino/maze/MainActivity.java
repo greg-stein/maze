@@ -20,7 +20,6 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -126,17 +125,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                if (MazeServer.connectionAvailable(getApplicationContext())) {
-                    MazeServer server = new MazeServer(getApplicationContext());
-                    server.downloadFloorPlan(new MazeServer.AsyncResponse() {
-                        @Override
-                        public void processFinish(String jsonString) {
-                            uiFloorPlanView.setFloorPlanAsJSon(jsonString);
-                        }
-                    });
-                } else {
-                    Toast.makeText(getApplicationContext(), "No Internet connection", Toast.LENGTH_SHORT).show();
-                }
+//                if (MazeServer.connectionAvailable(getApplicationContext())) {
+//                    MazeServer server = new MazeServer(getApplicationContext());
+//                    server.downloadFloorPlan(new MazeServer.AsyncResponse() {
+//                        @Override
+//                        public void processFinish(String jsonString) {
+//                            uiFloorPlanView.setFloorPlanAsJSon(jsonString);
+//                        }
+//                    });
+//                } else {
+//                    Toast.makeText(getApplicationContext(), "No Internet connection", Toast.LENGTH_SHORT).show();
+//                }
 
                 uiFloorPlanView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
@@ -151,12 +150,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 } else {
                     uiToolbar.setBackgroundColor(AppSettings.primaryColor);
 
-                    if (MazeServer.connectionAvailable(getApplicationContext())) {
-                        MazeServer server = new MazeServer(getApplicationContext());
-                        server.uploadFloorPlan(uiFloorPlanView.getFloorPlanAsJSon());
-                    } else {
-                        Toast.makeText(getApplicationContext(), "No Internet connection", Toast.LENGTH_SHORT).show();
-                    }
+//                    if (MazeServer.connectionAvailable(getApplicationContext())) {
+//                        MazeServer server = new MazeServer(getApplicationContext());
+//                        server.uploadFloorPlan(uiFloorPlanView.getFloorPlanAsJSon());
+//                    } else {
+//                        Toast.makeText(getApplicationContext(), "No Internet connection", Toast.LENGTH_SHORT).show();
+//                    }
                 }
             }
         });
