@@ -34,6 +34,10 @@ public class Footprint extends FloorPlanPrimitiveBase {
         init(cx, cy, DEFAULT_RADIUS);
     }
 
+    public Footprint(PointF center) {
+        this(center.x, center.y);
+    }
+
     public Footprint(float cx, float cy, float r) {
         init(cx, cy, r);
     }
@@ -52,11 +56,6 @@ public class Footprint extends FloorPlanPrimitiveBase {
             mIndices[s++] = (short) (i + 2);
             i ++;
         }
-    }
-
-    @Override
-    public int getVerticesDataSize() {
-        return VERTICES_DATA_LENGTH * GlEngine.SIZE_OF_FLOAT;
     }
 
     @Override

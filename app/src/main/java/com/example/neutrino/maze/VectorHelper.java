@@ -134,10 +134,9 @@ public class VectorHelper {
     // vertices should contain at least segments * GlEngine.COORDS_PER_VERTEX * 2
     public static void buildRing(PointF center, float inner_radius, float outer_radius, int segments, float[] vertices) {
         final int STRIDE = GlEngine.COORDS_PER_VERTEX * 2;
-        float theta = (float) (2 * Math.PI / segments);
+        float theta = 360f / segments;
         Matrix rotationMatrix = new Matrix();
         rotationMatrix.setRotate(theta);
-//        rotationMatrix.postTranslate(center.x, center.y);
 
         approximateCircle(center, outer_radius, segments, rotationMatrix, vertices, 0, STRIDE);
         approximateCircle(center, inner_radius, segments, rotationMatrix, vertices, GlEngine.COORDS_PER_VERTEX, STRIDE);
@@ -149,7 +148,6 @@ public class VectorHelper {
         float theta = 360f / segments;
         Matrix rotationMatrix = new Matrix();
         rotationMatrix.setRotate(theta);
-//        rotationMatrix.preTranslate(center.x, center.y);
 
         vertices[0] = center.x;
         vertices[1] = center.y;

@@ -43,6 +43,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private Wall mSelectedWall;
     private boolean mAddedWallByDrag;
     private static final float[] mBgColorF = new float[4];
+    private LocationMark mLocationMark = null;
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -299,8 +300,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
-    public void addPrimitive(IFloorPlanPrimitive wall) {
-        mGlEngine.registerPrimitive(wall);
+    public void addPrimitive(IFloorPlanPrimitive primitive) {
+        mGlEngine.registerPrimitive(primitive);
 
         refreshGpuBuffers();
     }
@@ -376,6 +377,28 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             @Override
             public void run() {
                 Footprint footprint = new Footprint(x, y);
+                footprint.setColor(AppSettings.footprintColor);
+                addPrimitive(footprint);
+            }
+        });
+    }
+
+    public void drawCurrentLocation(final PointF currentLocation) {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mLocationMark == null) {
+                    mLocationMark = new LocationMark(currentLocation);
+                    mLocationMark.setColor(AppSettings.locationMarkColor);
+                    addPrimitive(mLocationMark);
+                }
+                else {
+                    mLocationMark.setCenter(currentLocation);
+                    mLocationMark.updateVertices();
+                    mGlEngine.updateSingleObject(mLocationMark);
+                }
+
+                Footprint footprint = new Footprint(currentLocation);
                 footprint.setColor(AppSettings.footprintColor);
                 addPrimitive(footprint);
             }

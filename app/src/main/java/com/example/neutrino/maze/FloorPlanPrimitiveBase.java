@@ -49,6 +49,11 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
         verticesBuffer.position(lastPos);
     }
 
+    @Override
+    public int getVerticesDataSize() {
+        return getVerticesNum() * (GlEngine.COORDS_PER_VERTEX + GlEngine.COLORS_PER_VERTEX) * GlEngine.SIZE_OF_FLOAT;
+    }
+
     private int mColor;
     private final float[] mColor4f = new float[GlEngine.COLORS_PER_VERTEX];
 

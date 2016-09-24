@@ -19,7 +19,6 @@ import java.util.List;
 public class FloorPlanView extends GLSurfaceView {
     private static final float CORRIDOR_DEFAULT_WIDTH = 1.0f; // 1m
 
-
     private final FloorPlanRenderer mRenderer = new FloorPlanRenderer();
     private boolean mDragStarted;
     private static final PointF mLastBuildWallsLocation = new PointF();
@@ -37,6 +36,7 @@ public class FloorPlanView extends GLSurfaceView {
     public static final int BUILDER_MODE_BOTH = 3;
 
     public int autobuilderMode = BUILDER_MODE_NONE;
+    private final PointF mCurrentLocation = new PointF();
 
     public FloorPlanView(Context context) {
         super(context);
@@ -253,5 +253,10 @@ public class FloorPlanView extends GLSurfaceView {
 
     public void putStep(float x, float y) {
         mRenderer.putStep(x, y);
+    }
+
+    public void setLocation(float x, float y) {
+        mCurrentLocation.set(x, y);
+        mRenderer.drawCurrentLocation(mCurrentLocation);
     }
 }

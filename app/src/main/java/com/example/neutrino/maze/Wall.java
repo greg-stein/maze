@@ -73,11 +73,6 @@ public class Wall extends FloorPlanPrimitiveBase {
     }
 
     @Override
-    public int getVerticesDataSize() {
-        return VERTICES_NUM * (GlEngine.COORDS_PER_VERTEX + GlEngine.COLORS_PER_VERTEX) * GlEngine.SIZE_OF_FLOAT;
-    }
-
-    @Override
     public void updateVertices() {
         VectorHelper.splitLine(mA, mB, mWidth/2, mVertices);
     }
