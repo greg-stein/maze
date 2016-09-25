@@ -1,8 +1,9 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.floorplan;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.floorplan.FloorPlanPrimitiveBase;
+import com.example.neutrino.maze.GlEngine;
+import com.example.neutrino.maze.VectorHelper;
 
 /**
  * Created by Greg Stein on 9/22/2016.
