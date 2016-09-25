@@ -3,6 +3,9 @@ package com.example.neutrino.maze;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 
+import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
+import com.example.neutrino.maze.floorplan.Wall;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;

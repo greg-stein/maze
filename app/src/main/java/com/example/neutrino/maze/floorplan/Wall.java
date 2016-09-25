@@ -1,7 +1,10 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.floorplan;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
+
+import com.example.neutrino.maze.GlEngine;
+import com.example.neutrino.maze.VectorHelper;
 
 /**
  * Created by neutrino on 7/7/2016.

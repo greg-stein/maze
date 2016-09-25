@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.floorplan;
 
 /**
  * Created by Greg Stein on 9/25/2016.

@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.floorplan;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;

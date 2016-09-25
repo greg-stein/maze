@@ -7,6 +7,10 @@ import android.opengl.GLU;
 import android.opengl.Matrix;
 import android.support.v4.graphics.ColorUtils;
 
+import com.example.neutrino.maze.floorplan.Footprint;
+import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
+import com.example.neutrino.maze.floorplan.Wall;
+
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
