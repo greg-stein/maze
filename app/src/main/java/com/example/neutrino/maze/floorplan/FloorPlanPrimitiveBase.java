@@ -98,4 +98,16 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
         Arrays.fill(mVertices, 0);
     }
 
+    @Override
+    public boolean equals(Object another) {
+        if (another == this) return true;
+        if (!(another instanceof FloorPlanPrimitiveBase)) return false;
+
+        FloorPlanPrimitiveBase anotherPrimitive = (FloorPlanPrimitiveBase) another;
+
+        if (anotherPrimitive.mColor != this.mColor) return false;
+
+        return true;
+    }
+
 }

@@ -65,4 +65,17 @@ public class Footprint extends FloorPlanPrimitiveBase {
     public void updateVertices() {
         VectorHelper.buildCircle(mCenter, mRadius, SEGMENTS_NUM, mVertices);
     }
+
+    @Override
+    public boolean equals(Object another) {
+        if (!super.equals(another)) return false;
+        if (!(another instanceof Footprint)) return false;
+
+        Footprint anotherFootprint = (Footprint) another;
+
+        if (!anotherFootprint.mCenter.equals(this.mCenter.x, this.mCenter.y)) return false;
+        if (anotherFootprint.mRadius != this.mRadius) return false;
+
+        return true;
+    }
 }

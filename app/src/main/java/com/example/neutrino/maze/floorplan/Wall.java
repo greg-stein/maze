@@ -174,4 +174,19 @@ public class Wall extends FloorPlanPrimitiveBase {
             mChangeType = ChangeType.CHANGE_WALL;
         }
     }
+
+    @Override
+    public boolean equals(Object another) {
+        if (another == this) return true;
+        if (!(another instanceof Wall)) return false;
+        if (!super.equals(another)) return false;
+
+        Wall anotherWall = (Wall) another;
+
+        if (!anotherWall.mA.equals(this.mA.x, this.mA.y)) return false;
+        if (!anotherWall.mB.equals(this.mB.x, this.mB.y)) return false;
+        if (anotherWall.mWidth != this.mWidth) return false;
+
+        return true;
+    }
 }

@@ -69,4 +69,18 @@ public class LocationMark extends FloorPlanPrimitiveBase {
     public void setCenter(PointF center) {
         mCenter.set(center);
     }
+
+    @Override
+    public boolean equals(Object another) {
+        if (!super.equals(another)) return false;
+        if (!(another instanceof LocationMark)) return false;
+
+        LocationMark anotherLocationMark = (LocationMark) another;
+
+        if (!anotherLocationMark.mCenter.equals(this.mCenter.x, this.mCenter.y)) return false;
+        if (anotherLocationMark.mInnerRadius != this.mInnerRadius) return false;
+        if (anotherLocationMark.mOuterRadius!= this.mOuterRadius) return false;
+
+        return true;
+    }
 }
