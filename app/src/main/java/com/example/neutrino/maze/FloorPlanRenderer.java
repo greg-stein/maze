@@ -414,10 +414,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     mLocationMark.updateVertices();
                     mGlEngine.updateSingleObject(mLocationMark);
                 }
-
-                Footprint footprint = new Footprint(currentLocation);
-                footprint.setColor(AppSettings.footprintColor);
-                addPrimitive(footprint);
             }
         });
     }
