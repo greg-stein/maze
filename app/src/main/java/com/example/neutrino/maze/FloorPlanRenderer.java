@@ -303,8 +303,23 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     mGlEngine = new GlEngine(1000);
                     mGlEngine.allocateGpuBuffers();
                 }
+
+                if (mQueuedTaskForGlThread != null) {
+                    mQueuedTaskForGlThread.run();
+                }
             }
         });
+    }
+
+    private Runnable mQueuedTaskForGlThread = null;
+    public void setFloorPlan(final List<IFloorPlanPrimitive> primitives) {
+        mQueuedTaskForGlThread = new Runnable() {
+            @Override
+            public void run() {
+                mGlEngine.setFloorPlan(primitives);
+                refreshGpuBuffers();
+            }
+        };
     }
 
     public void addPrimitive(IFloorPlanPrimitive primitive) {
@@ -353,11 +368,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public List<IFloorPlanPrimitive> getFloorPlan() {
         return mGlEngine.getFloorPlan();
-    }
-
-    public void setFloorPlan(List<IFloorPlanPrimitive> primitives) {
-        mGlEngine.setFloorPlan(primitives);
-        refreshGpuBuffers();
     }
 
     private IWallLengthChangedListener mWallLengthChangedListener = null;
