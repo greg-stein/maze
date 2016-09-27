@@ -8,11 +8,10 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
+import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;
-import com.google.gson.Gson;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -243,20 +242,14 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     public String getFloorPlanAsJSon() {
-        Gson gson = new Gson();
-        List<IFloorPlanPrimitive> wallsList = mRenderer.getFloorPlan();
-        String jsonString = gson.toJson(wallsList);
-
-        return jsonString;
+        List<IFloorPlanPrimitive> floorPlan = mRenderer.getFloorPlan();
+        return FloorPlanSerializer.serializeFloorPlan(floorPlan);
     }
 
     public void setFloorPlanAsJSon(String gsonString) {
-        Gson gson = new Gson();
-        // TODO: BUG BUG BUG BUG
-        // TODO: reimplement deserialization!!!
-        List<Wall> wallsList = Arrays.asList(gson.fromJson(gsonString, Wall[].class));
+        List<IFloorPlanPrimitive> floorplan = FloorPlanSerializer.deserializeFloorPlan(gsonString);
 
-//        mRenderer.setFloorPlan(wallsList);
+        mRenderer.setFloorPlan(floorplan);
     }
 
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {

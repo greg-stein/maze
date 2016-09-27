@@ -20,7 +20,10 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import com.example.neutrino.maze.floorplan.PersistenceLayer;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     // One human step
@@ -124,6 +127,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
+                String jsonString = PersistenceLayer.loadFloorPlan();
+                if (jsonString != null) {
+                    uiFloorPlanView.setFloorPlanAsJSon(jsonString);
+                }
 //                if (MazeServer.connectionAvailable(getApplicationContext())) {
 //                    MazeServer server = new MazeServer(getApplicationContext());
 //                    server.downloadFloorPlan(new MazeServer.AsyncResponse() {
@@ -157,6 +164,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     uiFabAddWall.hide();
                     uiFabAutobuilderMode.hide();
 
+                    String jsonString = uiFloorPlanView.getFloorPlanAsJSon();
+                    PersistenceLayer.saveFloorPlan(jsonString);
 //                    if (MazeServer.connectionAvailable(getApplicationContext())) {
 //                        MazeServer server = new MazeServer(getApplicationContext());
 //                        server.uploadFloorPlan(uiFloorPlanView.getFloorPlanAsJSon());
