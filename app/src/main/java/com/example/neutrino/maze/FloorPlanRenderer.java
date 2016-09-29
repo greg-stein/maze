@@ -11,8 +11,10 @@ import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.LocationMark;
 import com.example.neutrino.maze.floorplan.Wall;
+import com.example.neutrino.maze.floorplan.WifiMark;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -396,6 +398,16 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 Footprint footprint = new Footprint(x, y);
                 footprint.setColor(AppSettings.footprintColor);
                 addPrimitive(footprint);
+            }
+        });
+    }
+
+    public void putMark(final float x, final float y, final Map<String, Integer> wifiFingerprint) {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                WifiMark mark = new WifiMark(x, y, wifiFingerprint);
+                addPrimitive(mark);
             }
         });
     }

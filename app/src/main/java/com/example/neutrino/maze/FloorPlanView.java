@@ -13,6 +13,7 @@ import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by neutrino on 7/2/2016.
@@ -260,6 +261,7 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.putStep(x, y);
     }
 
+
     // This overloaded method is used internally when user clicks on location
     private void setLocation(int x, int y) {
         PointF worldLocation = new PointF();
@@ -271,5 +273,21 @@ public class FloorPlanView extends GLSurfaceView {
     public void setLocation(float x, float y) {
         mCurrentLocation.set(x, y);
         mRenderer.drawCurrentLocation(mCurrentLocation);
+
+        if (mNewLocationListener != null) {
+            mNewLocationListener.onLocationPlaced(x, y);
+        }
+    }
+
+    public interface IOnLocationPlacedListener {
+        void onLocationPlaced(float x, float y);
+    }
+    private IOnLocationPlacedListener mNewLocationListener = null;
+    public void setOnLocationPlacedListener(IOnLocationPlacedListener listener) {
+        this.mNewLocationListener = listener;
+    }
+
+    public void placeWiFiMarkAt(PointF center, Map<String, Integer> fingerprint) {
+        mRenderer.putMark(center.x, center.y, fingerprint);
     }
 }

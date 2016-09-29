@@ -3,6 +3,7 @@ package com.example.neutrino.maze;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.res.ColorStateList;
+import android.graphics.PointF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -20,10 +21,11 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
+
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     // One human step
@@ -74,12 +76,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private WifiManager mWifiManager;
     private WifiScanner mWifiScanner;
 
+    private boolean mPlacedMarkAtCurrentLocation = true;
+
     /*
      * time smoothing constant for low-pass filter
      * 0 ≤ alpha ≤ 1 ; a smaller value basically means more smoothing
      * See: http://en.wikipedia.org/wiki/Low-pass_filter#Discrete-time_realization
      */
-    static final float LOW_PASS_ALPHA = 0.5f;
+    private static final float LOW_PASS_ALPHA = 0.5f;
+    private static final PointF mCurrentLocaion = new PointF();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         AppSettings.init(this); //getApplicationContext()
         mFabAlpha = getAlphaFromRes();
-        setUiListeners();
 
         // initialize your android device sensor capabilities
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
@@ -113,9 +117,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
         mRotation = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         mStepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+
+        setUiListeners();
     }
 
     private void setUiListeners() {
+        mWifiScanner.setFingerprintAvailableListener(new WifiScanner.IFingerprintAvailableListener() {
+            @Override
+            public void onFingerprintAvailable(Map<String, Integer> fingerprint) {
+                if (!mPlacedMarkAtCurrentLocation) {
+                    uiFloorPlanView.placeWiFiMarkAt(mCurrentLocaion, fingerprint);
+                }
+            }
+        });
+
+        uiFloorPlanView.setOnLocationPlacedListener(new FloorPlanView.IOnLocationPlacedListener() {
+            @Override
+            public void onLocationPlaced(float x, float y) {
+                mCurrentLocaion.set(x, y);
+                mPlacedMarkAtCurrentLocation = false;
+            }
+        });
+
         uiFloorPlanView.setOnWallLengthChangedListener(new IWallLengthChangedListener() {
             @Override
             public void onWallLengthChanged(float wallLength) {
