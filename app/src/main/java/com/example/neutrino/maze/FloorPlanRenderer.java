@@ -402,7 +402,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
-    public void putMark(final float x, final float y, final Map<String, Integer> wifiFingerprint) {
+    public void putMark(final float x, final float y, final WiFiTug.Fingerprint wifiFingerprint) {
         runOnGlThread(new Runnable() {
             @Override
             public void run() {

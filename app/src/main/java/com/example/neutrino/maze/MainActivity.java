@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void setUiListeners() {
         mWifiScanner.setFingerprintAvailableListener(new WifiScanner.IFingerprintAvailableListener() {
             @Override
-            public void onFingerprintAvailable(Map<String, Integer> fingerprint) {
+            public void onFingerprintAvailable(WiFiTug.Fingerprint fingerprint) {
                 if (!mPlacedMarkAtCurrentLocation) {
                     uiFloorPlanView.placeWiFiMarkAt(mCurrentLocaion, fingerprint);
                 }

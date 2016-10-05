@@ -46,7 +46,7 @@ public class WifiScanner extends BroadcastReceiver {
     }
 
     public interface IFingerprintAvailableListener {
-        void onFingerprintAvailable(Map<String, Integer> fingerprint);
+        void onFingerprintAvailable(WiFiTug.Fingerprint fingerprint);
     }
     private IFingerprintAvailableListener mFingerprintAvailableListener = null;
     public void setFingerprintAvailableListener(IFingerprintAvailableListener listener) {
@@ -54,7 +54,7 @@ public class WifiScanner extends BroadcastReceiver {
     }
     private void emitWiFiFingerprintAvailableEvent(List<ScanResult> scanResults) {
         if (mFingerprintAvailableListener != null) {
-            Map<String, Integer> fingerprint = new HashMap<>();
+            WiFiTug.Fingerprint fingerprint = new WiFiTug.Fingerprint();
 
             for (ScanResult scan : scanResults) {
                 int level = WifiManager.calculateSignalLevel(scan.level, MAX_WIFI_LEVEL);

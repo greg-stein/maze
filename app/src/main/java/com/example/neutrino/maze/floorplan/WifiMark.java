@@ -2,6 +2,8 @@ package com.example.neutrino.maze.floorplan;
 
 import android.graphics.Color;
 
+import com.example.neutrino.maze.WiFiTug;
+
 import java.util.Map;
 
 /**
@@ -12,9 +14,9 @@ import java.util.Map;
 public class WifiMark extends Footprint {
     private static final float MARK_RADIUS = 0.05f;
 
-    private Map<String, Integer> mFingerprint;
+    private WiFiTug.Fingerprint mFingerprint;
 
-    public WifiMark(float cx, float cy, Map<String, Integer> fingerprint) {
+    public WifiMark(float cx, float cy, WiFiTug.Fingerprint fingerprint) {
         super(cx, cy, MARK_RADIUS);
         setColor(Color.BLUE);
         this.mFingerprint = fingerprint;
