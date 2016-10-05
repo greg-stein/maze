@@ -1,13 +1,11 @@
 package com.example.neutrino.maze;
 
-import android.graphics.Color;
-
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.LocationMark;
-import com.example.neutrino.maze.floorplan.WifiMark;
 import com.example.neutrino.maze.floorplan.Wall;
+import com.example.neutrino.maze.floorplan.WifiMark;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,11 +15,10 @@ import org.robolectric.annotation.Config;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Created by Greg Stein on 9/26/2016.
