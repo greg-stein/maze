@@ -89,7 +89,8 @@ public class FloorPlanSerializer {
                 try {
                     klass = Class.forName(packageName + '.' + className);
                     final FloorPlanPrimitiveBase deserializedInstance = context.deserialize(serializedInstance, klass);
-                    if (!deserializedInstance.isRemoved()) { // skip removed primitives
+                    if (!deserializedInstance.isRemoved() &&
+                            (deserializedInstance instanceof Wall || deserializedInstance instanceof WifiMark)) { // skip removed primitives
                         result.add(deserializedInstance);
                     }
                 } catch (ClassNotFoundException e) {
