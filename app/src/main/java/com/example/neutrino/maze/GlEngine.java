@@ -287,4 +287,12 @@ public class GlEngine {
             registerPrimitive(primitive);
         }
     }
+
+    public void clearFloorPlan() {
+        for(IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
+            if (!primitive.isRemoved()) {
+                removePrimitive(primitive);
+            }
+        }
+    }
 }

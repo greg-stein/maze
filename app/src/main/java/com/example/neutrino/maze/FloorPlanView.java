@@ -304,4 +304,8 @@ public class FloorPlanView extends GLSurfaceView {
     public void placeWiFiMarkAt(PointF center, WiFiTug.Fingerprint fingerprint) {
         mRenderer.putMark(center.x, center.y, fingerprint);
     }
+
+    public void clearFloorPlan() {
+        mRenderer.clearFloorPlan();
+    }
 }

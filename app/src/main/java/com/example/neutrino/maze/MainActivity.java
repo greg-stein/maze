@@ -128,6 +128,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void setUiListeners() {
+        uiFabDeleteWall.setLongClickable(true);
+        uiFabDeleteWall.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                uiFloorPlanView.clearFloorPlan();
+                return false;
+            }
+        });
+
         mWifiScanner.setFingerprintAvailableListener(new WifiScanner.IFingerprintAvailableListener() {
             @Override
             public void onFingerprintAvailable(WiFiTug.Fingerprint fingerprint) {

@@ -419,4 +419,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             });
         }
     }
+
+    public void clearFloorPlan() {
+        mGlEngine.clearFloorPlan();
+        refreshGpuBuffers();
+    }
 }
