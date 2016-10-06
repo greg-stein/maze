@@ -75,6 +75,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private WifiManager mWifiManager;
     private WifiScanner mWifiScanner;
+    private WiFiTug mWiFiTug = new WiFiTug();
+    private TugOfWar mTow = new TugOfWar();
 
     private boolean mPlacedMarkAtCurrentLocation = true;
 
@@ -85,6 +87,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      */
     private static final float LOW_PASS_ALPHA = 0.5f;
     private static final PointF mCurrentLocaion = new PointF();
+
+    public MainActivity() {
+        mTow.registerTugger(mWiFiTug);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,6 +134,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (!mPlacedMarkAtCurrentLocation) {
                     uiFloorPlanView.placeWiFiMarkAt(mCurrentLocaion, fingerprint);
                 }
+                mWiFiTug.currentFingerprint = fingerprint;
             }
         });
 
