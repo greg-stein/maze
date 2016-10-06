@@ -21,4 +21,8 @@ public class WifiMark extends Footprint {
         setColor(Color.BLUE);
         this.mFingerprint = fingerprint;
     }
+
+    public WiFiTug.Fingerprint getFingerprint() {
+        return mFingerprint;
+    }
 }

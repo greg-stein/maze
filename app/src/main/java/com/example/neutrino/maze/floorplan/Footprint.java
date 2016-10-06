@@ -78,4 +78,8 @@ public class Footprint extends FloorPlanPrimitiveBase {
 
         return true;
     }
+
+    public PointF getCenter() {
+        return mCenter;
+    }
 }
