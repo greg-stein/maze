@@ -12,6 +12,7 @@ import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -240,6 +241,19 @@ public class FloorPlanView extends GLSurfaceView {
             case EDIT_MODE:
                 break;
         }
+    }
+
+    public final <T extends IFloorPlanPrimitive> List<T> getPrimitives(Class<T> klazz) {
+        List<IFloorPlanPrimitive> floorPlan = mRenderer.getFloorPlan();
+
+        List<T> result = new ArrayList<>();
+        for(IFloorPlanPrimitive primitive : floorPlan) {
+            if (primitive.getClass().equals(klazz)) {
+                result.add(klazz.cast(primitive));
+            }
+        }
+
+        return result;
     }
 
     public String getFloorPlanAsJSon() {
