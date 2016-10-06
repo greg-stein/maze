@@ -392,41 +392,31 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void putStep(final float x, final float y) {
-        runOnGlThread(new Runnable() {
-            @Override
-            public void run() {
-                Footprint footprint = new Footprint(x, y);
-                footprint.setColor(AppSettings.footprintColor);
-                addPrimitive(footprint);
-            }
-        });
+        Footprint footprint = new Footprint(x, y);
+        footprint.setColor(AppSettings.footprintColor);
+        addPrimitive(footprint);
     }
 
     public void putMark(final float x, final float y, final WiFiTug.Fingerprint wifiFingerprint) {
-        runOnGlThread(new Runnable() {
-            @Override
-            public void run() {
-                WifiMark mark = new WifiMark(x, y, wifiFingerprint);
-                addPrimitive(mark);
-            }
-        });
+        WifiMark mark = new WifiMark(x, y, wifiFingerprint);
+        addPrimitive(mark);
     }
 
     public void drawCurrentLocation(final PointF currentLocation) {
-        runOnGlThread(new Runnable() {
-            @Override
-            public void run() {
-                if (mLocationMark == null) {
-                    mLocationMark = new LocationMark(currentLocation);
-                    mLocationMark.setColor(AppSettings.locationMarkColor);
-                    addPrimitive(mLocationMark);
-                }
-                else {
-                    mLocationMark.setCenter(currentLocation);
-                    mLocationMark.updateVertices();
+        if (mLocationMark == null) {
+            mLocationMark = new LocationMark(currentLocation);
+            mLocationMark.setColor(AppSettings.locationMarkColor);
+            addPrimitive(mLocationMark);
+        }
+        else {
+            mLocationMark.setCenter(currentLocation);
+            mLocationMark.updateVertices();
+            runOnGlThread(new Runnable() {
+                @Override
+                public void run() {
                     mGlEngine.updateSingleObject(mLocationMark);
                 }
-            }
-        });
+            });
+        }
     }
 }
