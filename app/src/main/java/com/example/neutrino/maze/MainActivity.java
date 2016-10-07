@@ -24,8 +24,7 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
-
-import java.util.Map;
+import com.example.neutrino.maze.floorplan.WifiMark;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     // One human step
@@ -44,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FloatingActionButton uiFabAutobuilderMode;
     private FloatingActionButton uiFabAutobuilderLeft;
     private FloatingActionButton uiFabAutobuilderRight;
+    private FloatingActionButton uiFabFindMeOnMap;
     private TextView uiWallLengthText;
 
     // Map north angle
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * See: http://en.wikipedia.org/wiki/Low-pass_filter#Discrete-time_realization
      */
     private static final float LOW_PASS_ALPHA = 0.5f;
-    private static final PointF mCurrentLocaion = new PointF();
+    private static final PointF mCurrentLocation = new PointF();
 
     public MainActivity() {
         mTow.registerTugger(mWiFiTug);
@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabAutobuilderMode = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder);
         uiFabAutobuilderLeft = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder_left);
         uiFabAutobuilderRight = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder_right);
+        uiFabFindMeOnMap = (FloatingActionButton) findViewById(R.id.fab_find_me_on_map);
         uiModeSwitch = (ToggleButton) findViewById(R.id.tb_edit_mode);
         uiWallLengthText = (TextView) findViewById(R.id.tv_wall_length);
 
@@ -128,6 +129,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void setUiListeners() {
+        uiFabFindMeOnMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                PointF location = mTow.getCurrentPosition();
+                uiFloorPlanView.putLocationMarkAt(location);
+            }
+        });
+
         uiFabDeleteWall.setLongClickable(true);
         uiFabDeleteWall.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -141,7 +150,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void onFingerprintAvailable(WiFiTug.Fingerprint fingerprint) {
                 if (!mPlacedMarkAtCurrentLocation) {
-                    uiFloorPlanView.placeWiFiMarkAt(mCurrentLocaion, fingerprint);
+                    uiFloorPlanView.placeWiFiMarkAt(mCurrentLocation, fingerprint);
+                    mWiFiTug.marks = uiFloorPlanView.getPrimitives(WifiMark.class);
+                    mPlacedMarkAtCurrentLocation = true;
                 }
                 mWiFiTug.currentFingerprint = fingerprint;
             }
@@ -150,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFloorPlanView.setOnLocationPlacedListener(new FloorPlanView.IOnLocationPlacedListener() {
             @Override
             public void onLocationPlaced(float x, float y) {
-                mCurrentLocaion.set(x, y);
+                mCurrentLocation.set(x, y);
                 mPlacedMarkAtCurrentLocation = false;
             }
         });

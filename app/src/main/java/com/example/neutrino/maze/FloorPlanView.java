@@ -14,7 +14,6 @@ import com.example.neutrino.maze.floorplan.Wall;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by neutrino on 7/2/2016.
@@ -286,11 +285,15 @@ public class FloorPlanView extends GLSurfaceView {
     // This method is used when you want to set location programmatically
     public void setLocation(float x, float y) {
         mCurrentLocation.set(x, y);
-        mRenderer.drawCurrentLocation(mCurrentLocation);
+        mRenderer.drawLocationMarkAt(mCurrentLocation);
 
         if (mNewLocationListener != null) {
             mNewLocationListener.onLocationPlaced(x, y);
         }
+    }
+
+    public void putLocationMarkAt(PointF location) {
+        mRenderer.drawLocationMarkAt(location);
     }
 
     public interface IOnLocationPlacedListener {

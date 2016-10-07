@@ -402,7 +402,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         addPrimitive(mark);
     }
 
-    public void drawCurrentLocation(final PointF currentLocation) {
+    public void drawLocationMarkAt(final PointF currentLocation) {
         if (mLocationMark == null) {
             mLocationMark = new LocationMark(currentLocation);
             mLocationMark.setColor(AppSettings.locationMarkColor);
