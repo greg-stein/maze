@@ -14,8 +14,13 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
@@ -152,7 +157,85 @@ public class WiFiDistanceTests {
         List<WifiMark> similarMarks = WiFiTug.getSimilarMarks(marks, fingerprint, 0.2f);
 
         assertNotNull(similarMarks);
-        assertThat(similarMarks.size(), is(equalTo(1)));
+        assertThat(similarMarks, hasSize(1));
         assertThat(similarMarks.get(0), is(sameInstance(eMark)));
+    }
+
+    @Test
+    public void eliminateOutliersTest() {
+        WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
+        a.put("44-85-00-11-DA-EC", 5);
+        a.put("44-85-FF-11-DA-EC", 5);
+
+        WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
+        b.put("44-85-00-11-DA-EC", 5);
+        b.put("44-85-FF-11-DA-EC", 3);
+
+        WiFiTug.Fingerprint c = new WiFiTug.Fingerprint();
+        c.put("44-85-00-11-DA-EC", 4);
+        c.put("44-85-FF-11-DA-EC", 5);
+
+        WiFiTug.Fingerprint d = new WiFiTug.Fingerprint();
+        d.put("44-85-00-11-DA-EC", 0);
+        d.put("44-85-FF-11-DA-EC", 0);
+
+        WiFiTug.Fingerprint e = new WiFiTug.Fingerprint();
+        e.put("44-85-00-11-DA-EC", -3);
+        e.put("44-85-FF-11-DA-EC", -3);
+
+        List<WifiMark> marks = new ArrayList<>();
+        WifiMark aMark, bMark, cMark, dMark, eMark;
+
+        marks.add(aMark = new WifiMark(1, 0, a));
+        marks.add(bMark = new WifiMark(0, 1, b));
+        marks.add(cMark = new WifiMark(-1, 0, c));
+        marks.add(dMark = new WifiMark(0, -1, d));
+        marks.add(eMark = new WifiMark(10, 10, e)); // outlier
+
+        WiFiTug.eliminateOutliers(marks);
+
+        assertThat(marks, hasSize(4));
+        assertThat(marks, not(hasItem(eMark)));
+        assertThat(marks, contains(aMark, bMark, cMark, dMark));
+    }
+
+    @Test
+    public void eliminateOutliersNegativeTest() {
+        WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
+        a.put("44-85-00-11-DA-EC", 5);
+        a.put("44-85-FF-11-DA-EC", 5);
+
+        WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
+        b.put("44-85-00-11-DA-EC", 5);
+        b.put("44-85-FF-11-DA-EC", 3);
+
+        WiFiTug.Fingerprint c = new WiFiTug.Fingerprint();
+        c.put("44-85-00-11-DA-EC", 4);
+        c.put("44-85-FF-11-DA-EC", 5);
+
+        WiFiTug.Fingerprint d = new WiFiTug.Fingerprint();
+        d.put("44-85-00-11-DA-EC", 0);
+        d.put("44-85-FF-11-DA-EC", 0);
+
+        WiFiTug.Fingerprint e = new WiFiTug.Fingerprint();
+        e.put("44-85-00-11-DA-EC", -3);
+        e.put("44-85-FF-11-DA-EC", -3);
+
+        List<WifiMark> marks = new ArrayList<>();
+        WifiMark eMark;
+
+        marks.add(new WifiMark(1, 0, a));
+        marks.add(new WifiMark(0, 1, b));
+        marks.add(new WifiMark(-1, 0, c));
+        marks.add(new WifiMark(0, -1, d));
+        marks.add(eMark = new WifiMark(2, 2, e)); // NOT an outlier
+
+        List<WifiMark> originalMarks = new ArrayList<>(marks);
+
+        WiFiTug.eliminateOutliers(marks);
+
+        assertThat(marks, hasSize(5));
+        assertThat(marks, hasItem(eMark));
+        assertEquals(originalMarks, marks);
     }
 }
