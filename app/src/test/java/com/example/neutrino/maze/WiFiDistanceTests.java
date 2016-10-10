@@ -10,10 +10,13 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.Matchers.closeTo;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -21,8 +24,7 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest=Config.NONE)
-public class WiFiSampleDistanceTests {
-
+public class WiFiDistanceTests {
     public static final double FLOAT_ERROR = 0.00005f;
 
     @Test
@@ -84,6 +86,7 @@ public class WiFiSampleDistanceTests {
     @Test
     public void wifiTugCommon2AP2refTest() {
         WiFiTug wiFiTug = new WiFiTug();
+        wiFiTug.setClosestMarksPercentage(1.00f); // 100% - use all of the given reference points
 
         WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
         a.put("44-85-00-11-DA-EC", 60);
@@ -108,5 +111,48 @@ public class WiFiSampleDistanceTests {
 
         assertThat((double)position.x, is(closeTo(0.5d, FLOAT_ERROR)));
         assertThat((double)position.y, is(closeTo(1.5d, FLOAT_ERROR)));
+    }
+
+    @Test
+    public void getSimilarMarksTest() {
+        WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
+        a.put("44-85-00-11-DA-EC", 5);
+        a.put("44-85-FF-11-DA-EC", 5);
+
+        WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
+        b.put("44-85-00-11-DA-EC", 5);
+        b.put("44-85-FF-11-DA-EC", 3);
+
+        WiFiTug.Fingerprint c = new WiFiTug.Fingerprint();
+        c.put("44-85-00-11-DA-EC", 4);
+        c.put("44-85-FF-11-DA-EC", 5);
+
+        WiFiTug.Fingerprint d = new WiFiTug.Fingerprint();
+        d.put("44-85-00-11-DA-EC", 0);
+        d.put("44-85-FF-11-DA-EC", 0);
+
+        WiFiTug.Fingerprint e = new WiFiTug.Fingerprint();
+        e.put("44-85-00-11-DA-EC", -3);
+        e.put("44-85-FF-11-DA-EC", -3);
+
+        WiFiTug.Fingerprint fingerprint = new WiFiTug.Fingerprint();
+        fingerprint.put("44-85-00-11-DA-EC", -5); // diff = 3
+        fingerprint.put("44-85-FF-11-DA-EC", -5); // diff = 4
+
+        List<WifiMark> marks = new ArrayList<>();
+        WifiMark eMark;
+        // Real location of marks is not important, so place all of them in (0, 0)
+        marks.add(new WifiMark(0, 0, a));
+        marks.add(new WifiMark(0, 0, b));
+        marks.add(new WifiMark(0, 0, c));
+        marks.add(new WifiMark(0, 0, d));
+        marks.add(eMark = new WifiMark(0, 0, e));
+
+        // get 20% of total 5 = 1 WiFi mark
+        List<WifiMark> similarMarks = WiFiTug.getSimilarMarks(marks, fingerprint, 0.2f);
+
+        assertNotNull(similarMarks);
+        assertThat(similarMarks.size(), is(equalTo(1)));
+        assertThat(similarMarks.get(0), is(sameInstance(eMark)));
     }
 }

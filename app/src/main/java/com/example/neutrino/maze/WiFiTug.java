@@ -4,19 +4,31 @@ import android.graphics.PointF;
 
 import com.example.neutrino.maze.floorplan.WifiMark;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 /**
  * Created by Greg Stein on 9/25/2016.
  */
 public class WiFiTug implements TugOfWar.ITugger {
+
+    // 20% of total marks
+    public static final float CLOSEST_MARKS_PERCENTAGE = 0.2f;
+    private float mClosestMarksPercentage = CLOSEST_MARKS_PERCENTAGE;
+    public void setClosestMarksPercentage(float percentage) {
+        mClosestMarksPercentage = percentage;
+    }
+
     // Yeah, fake class is so antipattern...
     public static class Fingerprint extends HashMap<String, Integer> {}
     public List<WifiMark> marks; //TODO: no encapsulation!
     public Fingerprint currentFingerprint = null;
 
-    // Calculates euclidean distance in DB space
+    // Calculates euclidean distance in Decibell space
     public static float distance(Fingerprint actual, Fingerprint reference) {
         float distance = 0.0f;
         int bssidLevelDiff;
@@ -40,10 +52,31 @@ public class WiFiTug implements TugOfWar.ITugger {
             }
         }
 
+        // Return squared distance as used in calculations
         distance = (float) Math.sqrt(distance);
-
+        // division by zero handling:
         if (distance == 0.0f) distance = Float.MIN_VALUE;
         return distance;
+    }
+
+    public static List<WifiMark> getSimilarMarks(List<WifiMark> wifiMarks, Fingerprint fingerprint, float percentage) {
+        NavigableMap<Float, WifiMark> sortedMarks = new TreeMap<>(); // sorted by distance to current fingerprint
+        List<WifiMark> result = new ArrayList<>();
+
+        for(WifiMark mark: wifiMarks) {
+            Fingerprint markFingerprint = mark.getFingerprint();
+            float distance = distance(fingerprint, markFingerprint);
+            sortedMarks.put(distance, mark);
+        }
+
+        int marksNum = (int) Math.ceil(wifiMarks.size() * percentage);
+        Map.Entry<Float, WifiMark> entry = sortedMarks.firstEntry();
+        for(int markCount = 0; markCount < marksNum; markCount++) {
+            result.add(entry.getValue());
+            entry = sortedMarks.higherEntry(entry.getKey());
+        }
+
+        return result;
     }
 
     @Override
@@ -52,7 +85,8 @@ public class WiFiTug implements TugOfWar.ITugger {
         float weight;
         float weightSum = 0;
 
-        for(WifiMark mark: marks) {
+        List<WifiMark> wifiMarks = getSimilarMarks(marks, currentFingerprint, mClosestMarksPercentage);
+        for(WifiMark mark: wifiMarks) {
             Fingerprint markFingerprint = mark.getFingerprint();
             float distance = distance(currentFingerprint, markFingerprint);
             weight = 1/distance;
