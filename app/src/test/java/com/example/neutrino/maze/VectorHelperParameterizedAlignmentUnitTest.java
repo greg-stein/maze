@@ -24,7 +24,7 @@ import static org.junit.Assert.assertThat;
 public class VectorHelperParameterizedAlignmentUnitTest {
     private static final float THRESHOLD = 0.1f;
 
-    private static final Logger logger = Logger.getLogger(VectorHelperCommonAlignmentUnitTest.class.getName());
+    private static final Logger logger = Logger.getLogger(VectorHelperParameterizedAlignmentUnitTest.class.getName());
 
     public enum AlignmentType {ALIGNMENT_TYPE_VERTICAL, ALIGNMENT_TYPE_HORIZONTAL};
     private static AlignmentType mAlignmentType;
