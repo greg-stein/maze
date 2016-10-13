@@ -153,4 +153,27 @@ public class VectorHelper {
         vertices[1] = center.y;
         approximateCircle(center, radius, segments, rotationMatrix, vertices, GlEngine.COORDS_PER_VERTEX, STRIDE);
     }
+
+    public static boolean linesIntersect(PointF A, PointF B, PointF O, PointF M) {
+        float v1[] = {A.x - O.x, A.y - O.y};
+        float v2[] = {B.x - O.x, B.y - O.y};
+        float v3[] = {M.x - O.x, M.y - O.y};
+        float v4[] = {A.x - M.x, A.y - M.y};
+        float v5[] = {B.x - M.x, B.y - M.y};
+
+        // Test if point is "below" line respective to O: (v1 + v2)•(v4 + v5) < 0
+        v4[0] += v5[0]; // v4 = v4 + v5
+        v4[1] += v5[1];
+        v5[0] = v1[0] + v2[0]; // v5 = v1 + v2
+        v5[1] = v1[1] + v2[1];
+        float dotProduct = v4[0] * v5[0] + v4[1] * v5[1];
+        // In most cases line does not obscure a point M from O
+        if (dotProduct > 0) return false;
+
+        // Otherwise point M is "above" line A-B, we need to test if its obscured
+        // Test: sign(v1 x v3) == sign(v3 x v2)
+        float crossV1V3 = v1[0]*v3[1] - v1[1]*v3[0];
+        float crossV3V2 = v3[0]*v2[1] - v3[1]*v2[0];
+        return (crossV1V3 < 0) == (crossV3V2 < 0);
+    }
 }
