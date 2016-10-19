@@ -2,6 +2,7 @@ package com.example.neutrino.maze;
 
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class WiFiTug implements TugOfWar.ITugger {
     // Yeah, fake class is so antipattern...
     public static class Fingerprint extends HashMap<String, Integer> {}
     public List<WifiMark> marks; //TODO: no encapsulation!
+    public List<Wall> walls; //TODO: no encapsulation!
     public Fingerprint currentFingerprint = null;
 
     // Calculates euclidean distance in Decibell space
@@ -81,12 +83,13 @@ public class WiFiTug implements TugOfWar.ITugger {
         return result;
     }
 
-    public static void eliminateOutliers(List<WifiMark> wifiMarks) {
+    // Returns centroid
+    public static PointF eliminateOutliers(List<WifiMark> wifiMarks) {
         final float ALPHA = 0.05f;
 
         int n = wifiMarks.size();
 
-        if (n < 3) return;
+        if (n < 3) return null;
 
         TDistribution t = new TDistribution(n-2);
         float confidence = ALPHA / (2 * n);
@@ -118,6 +121,21 @@ public class WiFiTug implements TugOfWar.ITugger {
                 i.remove();
             }
         }
+
+        return mean;
+    }
+
+    public static void eliminateInvisibles(PointF currentPos, List<WifiMark> marks, List<Wall> walls) {
+        for(Iterator<WifiMark> i = marks.iterator(); i.hasNext();) {
+            WifiMark mark = i.next();
+
+            for (Wall wall : walls) {
+                if (VectorHelper.linesIntersect(wall.getA(), wall.getB(), currentPos, mark.getCenter())) {
+                    i.remove();
+                    break;
+                }
+            }
+        }
     }
 
     @Override
@@ -127,7 +145,10 @@ public class WiFiTug implements TugOfWar.ITugger {
         float weightSum = 0;
 
         List<WifiMark> wifiMarks = getSimilarMarks(marks, currentFingerprint, mClosestMarksPercentage);
-        eliminateOutliers(wifiMarks);
+        PointF centroid = eliminateOutliers(wifiMarks);
+        if (centroid != null) {
+            eliminateInvisibles(centroid, wifiMarks, walls);
+        }
 
         for(WifiMark mark: wifiMarks) {
             Fingerprint markFingerprint = mark.getFingerprint();

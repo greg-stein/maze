@@ -2,6 +2,7 @@ package com.example.neutrino.maze;
 
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
 import org.junit.Test;
@@ -18,6 +19,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
@@ -237,5 +239,57 @@ public class WiFiDistanceTests {
         assertThat(marks, hasSize(5));
         assertThat(marks, hasItem(eMark));
         assertEquals(originalMarks, marks);
+    }
+
+    @Test
+    public void eliminateInvisiblesSimpleTest() {
+        ArrayList<WifiMark> marks = new ArrayList<>();
+        marks.add(new WifiMark(-1, 0, new WiFiTug.Fingerprint()));
+        ArrayList<Wall> walls = new ArrayList<>();
+        walls.add(new Wall(0, 1, 0, -1));
+
+        WiFiTug.eliminateInvisibles(new PointF(1, 0),marks ,walls);
+
+        assertThat(marks, is(empty()));
+    }
+
+    @Test
+    public void eliminateInvisiblesSimpleNegativeTest() {
+        ArrayList<WifiMark> marks = new ArrayList<>();
+        marks.add(new WifiMark(0.5f, 0, new WiFiTug.Fingerprint()));
+        ArrayList<Wall> walls = new ArrayList<>();
+        walls.add(new Wall(0, 1, 0, -1));
+
+        WiFiTug.eliminateInvisibles(new PointF(1, 0),marks ,walls);
+
+        assertThat(marks, is(not(empty())));
+        assertThat(marks, hasSize(1));
+    }
+
+    @Test
+    public void eliminateInvisiblesTest() {
+        ArrayList<WifiMark> marks = new ArrayList<>();
+        marks.add(new WifiMark(-1, 0, new WiFiTug.Fingerprint()));
+        ArrayList<Wall> walls = new ArrayList<>();
+        walls.add(new Wall(0, 1, 0, -1));
+        walls.add(new Wall(0, -0.5f, 2, -0.5f));
+
+        WiFiTug.eliminateInvisibles(new PointF(1, 0),marks ,walls);
+
+        assertThat(marks, is(empty()));
+    }
+
+    @Test
+    public void eliminateInvisiblesNegativeTest() {
+        ArrayList<WifiMark> marks = new ArrayList<>();
+        marks.add(new WifiMark(0.5f, 0, new WiFiTug.Fingerprint()));
+        ArrayList<Wall> walls = new ArrayList<>();
+        walls.add(new Wall(0, 1, 0, -1));
+        walls.add(new Wall(0, -0.5f, 2, -0.5f));
+
+        WiFiTug.eliminateInvisibles(new PointF(1, 0),marks ,walls);
+
+        assertThat(marks, is(not(empty())));
+        assertThat(marks, hasSize(1));
     }
 }

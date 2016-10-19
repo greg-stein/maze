@@ -24,6 +24,7 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
+import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -152,6 +153,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (!mPlacedMarkAtCurrentLocation) {
                     uiFloorPlanView.placeWiFiMarkAt(mCurrentLocation, fingerprint);
                     mWiFiTug.marks = uiFloorPlanView.getPrimitives(WifiMark.class);
+                    mWiFiTug.walls = uiFloorPlanView.getPrimitives(Wall.class);
                     mPlacedMarkAtCurrentLocation = true;
                 }
                 mWiFiTug.currentFingerprint = fingerprint;
