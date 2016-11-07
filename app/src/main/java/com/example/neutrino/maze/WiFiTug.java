@@ -128,19 +128,35 @@ public class WiFiTug implements TugOfWar.ITugger {
     }
 
     public static List<WifiMark> getSimilarMarks(List<WifiMark> wifiMarks, Fingerprint fingerprint, float percentage) {
-        NavigableMap<Float, WifiMark> sortedMarks = new TreeMap<>(); // sorted by distance to current fingerprint
+        NavigableMap<Float, List<WifiMark>> sortedMarks = new TreeMap<>(); // sorted by distance to current fingerprint
         List<WifiMark> result = new ArrayList<>();
 
         for(WifiMark mark: wifiMarks) {
             Fingerprint markFingerprint = mark.getFingerprint();
             float distance = distance(fingerprint, markFingerprint);
-            sortedMarks.put(distance, mark);
+
+            List<WifiMark> sameDistanceMarks = sortedMarks.get(distance);
+            if (sameDistanceMarks == null) {
+                sameDistanceMarks = new ArrayList<>();
+                sortedMarks.put(distance, sameDistanceMarks);
+            }
+            sameDistanceMarks.add(mark);
         }
 
         int marksNum = (int) Math.ceil(wifiMarks.size() * percentage);
-        Map.Entry<Float, WifiMark> entry = sortedMarks.firstEntry();
-        for(int markCount = 0; markCount < marksNum; markCount++) {
-            result.add(entry.getValue());
+        int availableMinimumMarks = Math.min(MINIMUM_WIFI_MARKS, wifiMarks.size());
+        marksNum = Math.max(marksNum, availableMinimumMarks);
+
+        Map.Entry<Float, List<WifiMark>> entry = sortedMarks.firstEntry();
+        while(result.size() < marksNum) {
+            final int remainingMarks = marksNum - result.size();
+            final List<WifiMark> marks = entry.getValue();
+
+            if (marks.size() >= remainingMarks)
+                result.addAll(marks.subList(0, remainingMarks));
+            else
+                result.addAll(marks);
+
             entry = sortedMarks.higherEntry(entry.getKey());
         }
 

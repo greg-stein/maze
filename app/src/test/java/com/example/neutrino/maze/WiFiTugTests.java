@@ -13,6 +13,7 @@ import org.robolectric.annotation.Config;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -123,44 +124,86 @@ public class WiFiTugTests {
     @Test
     public void getSimilarMarksTest() {
         WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
-        a.put("44-85-00-11-DA-EC", 5);
-        a.put("44-85-FF-11-DA-EC", 5);
+        a.put("44-85-00-11-DA-EC", 1);
+        a.put("44-85-FF-11-DA-EC", 0);
 
         WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
-        b.put("44-85-00-11-DA-EC", 5);
-        b.put("44-85-FF-11-DA-EC", 3);
+        b.put("44-85-00-11-DA-EC", 1);
+        b.put("44-85-FF-11-DA-EC", 1);
 
         WiFiTug.Fingerprint c = new WiFiTug.Fingerprint();
-        c.put("44-85-00-11-DA-EC", 4);
-        c.put("44-85-FF-11-DA-EC", 5);
+        c.put("44-85-00-11-DA-EC", 1);
+        c.put("44-85-FF-11-DA-EC", 2);
 
         WiFiTug.Fingerprint d = new WiFiTug.Fingerprint();
-        d.put("44-85-00-11-DA-EC", 0);
-        d.put("44-85-FF-11-DA-EC", 0);
+        d.put("44-85-00-11-DA-EC", 2);
+        d.put("44-85-FF-11-DA-EC", 2);
 
         WiFiTug.Fingerprint e = new WiFiTug.Fingerprint();
-        e.put("44-85-00-11-DA-EC", -3);
-        e.put("44-85-FF-11-DA-EC", -3);
+        e.put("44-85-00-11-DA-EC", 2);
+        e.put("44-85-FF-11-DA-EC", 3);
+
+        WiFiTug.Fingerprint f = new WiFiTug.Fingerprint();
+        f.put("44-85-00-11-DA-EC", 2);
+        f.put("44-85-FF-11-DA-EC", 4);
+
+        WiFiTug.Fingerprint g = new WiFiTug.Fingerprint();
+        g.put("44-85-00-11-DA-EC", 4);
+        g.put("44-85-FF-11-DA-EC", 3);
+
+        WiFiTug.Fingerprint h = new WiFiTug.Fingerprint();
+        h.put("44-85-00-11-DA-EC", 4);
+        h.put("44-85-FF-11-DA-EC", 4);
+
+        WiFiTug.Fingerprint i = new WiFiTug.Fingerprint();
+        i.put("44-85-00-11-DA-EC", 4);
+        i.put("44-85-FF-11-DA-EC", 5);
+
+        WiFiTug.Fingerprint j = new WiFiTug.Fingerprint();
+        j.put("44-85-00-11-DA-EC", 5);
+        j.put("44-85-FF-11-DA-EC", 5);
 
         WiFiTug.Fingerprint fingerprint = new WiFiTug.Fingerprint();
-        fingerprint.put("44-85-00-11-DA-EC", -5); // diff = 3
-        fingerprint.put("44-85-FF-11-DA-EC", -5); // diff = 4
+        fingerprint.put("44-85-00-11-DA-EC", 0); // diff = 3
+        fingerprint.put("44-85-FF-11-DA-EC", 0); // diff = 4
 
         List<WifiMark> marks = new ArrayList<>();
-        WifiMark eMark;
+        WifiMark aMark, bMark, cMark, dMark, eMark, fMark, gMark, hMark, iMark, jMark;
         // Real location of marks is not important, so place all of them in (0, 0)
-        marks.add(new WifiMark(0, 0, a));
-        marks.add(new WifiMark(0, 0, b));
-        marks.add(new WifiMark(0, 0, c));
-        marks.add(new WifiMark(0, 0, d));
+        marks.add(aMark = new WifiMark(0, 0, a));
+        marks.add(bMark = new WifiMark(0, 0, b));
+        marks.add(cMark = new WifiMark(0, 0, c));
+        marks.add(dMark = new WifiMark(0, 0, d));
         marks.add(eMark = new WifiMark(0, 0, e));
+        marks.add(fMark = new WifiMark(0, 0, f));
+        marks.add(gMark = new WifiMark(0, 0, g));
+        marks.add(hMark = new WifiMark(0, 0, h));
+        marks.add(iMark = new WifiMark(0, 0, i));
+        marks.add(jMark = new WifiMark(0, 0, j));
 
-        // get 20% of total 5 = 1 WiFi mark
+        // add another 20 marks farther than those ten
+        for (int x = 0; x < 20; x++) {
+            WiFiTug.Fingerprint fingerprint1 = new WiFiTug.Fingerprint();
+            fingerprint1.put("44-85-00-11-DA-EC", (int) (Math.random()*50 + 20));
+            fingerprint1.put("44-85-FF-11-DA-EC", (int) (Math.random()*50 + 20));
+            marks.add(new WifiMark(0, 0, fingerprint1));
+        }
+        // get 20% of total 30, but minimum is 10
         List<WifiMark> similarMarks = WiFiTug.getSimilarMarks(marks, fingerprint, 0.2f);
 
         assertNotNull(similarMarks);
-        assertThat(similarMarks, hasSize(1));
-        assertThat(similarMarks.get(0), is(sameInstance(eMark)));
+        assertThat(similarMarks, hasSize(10));
+        assertThat(similarMarks, contains(aMark, bMark, cMark, dMark, eMark, fMark, gMark, hMark, iMark, jMark));
+        assertThat(similarMarks.get(0), is(sameInstance(aMark)));
+        assertThat(similarMarks.get(1), is(sameInstance(bMark)));
+        assertThat(similarMarks.get(2), is(sameInstance(cMark)));
+        assertThat(similarMarks.get(3), is(sameInstance(dMark)));
+        assertThat(similarMarks.get(4), is(sameInstance(eMark)));
+        assertThat(similarMarks.get(5), is(sameInstance(fMark)));
+        assertThat(similarMarks.get(6), is(sameInstance(gMark)));
+        assertThat(similarMarks.get(7), is(sameInstance(hMark)));
+        assertThat(similarMarks.get(8), is(sameInstance(iMark)));
+        assertThat(similarMarks.get(9), is(sameInstance(jMark)));
     }
 
     @Test
