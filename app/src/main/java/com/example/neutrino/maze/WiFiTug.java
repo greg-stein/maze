@@ -226,21 +226,29 @@ public class WiFiTug implements TugOfWar.ITugger {
 
         List<WifiMark> wifiMarks = getSimilarMarks(marks, currentFingerprint, mClosestMarksPercentage);
         PointF centroid = eliminateOutliers(wifiMarks);
-        if (centroid != null) {
-            eliminateInvisibles(centroid, wifiMarks, walls);
+
+        for (int i = 0; i < CENTROID_OPT_ITERATIONS; i++) {
+            if (centroid != null) {
+                eliminateInvisibles(centroid, wifiMarks, walls);
+            }
+
+            for (WifiMark mark : wifiMarks) {
+                Fingerprint markFingerprint = mark.getFingerprint();
+                float distance = distance(currentFingerprint, markFingerprint);
+                weight = 1 / distance;
+
+                x += weight * mark.getCenter().x;
+                y += weight * mark.getCenter().y;
+                weightSum += weight;
+            }
+
+            position.set(x / weightSum, y / weightSum);
+            centroid = position;
         }
-
-        for(WifiMark mark: wifiMarks) {
-            Fingerprint markFingerprint = mark.getFingerprint();
-            float distance = distance(currentFingerprint, markFingerprint);
-            weight = 1/distance;
-
-            x += weight * mark.getCenter().x;
-            y += weight * mark.getCenter().y;
-            weightSum += weight;
-        }
-
-        position.set(x / weightSum, y / weightSum);
+//        String table = buildWifiTable();
+        String fingerprintTable = buildFingerprintTable();
+        String wallsTable = buildWallsTable();
+        centroidMarks = wifiMarks;
     }
 
     @Override
