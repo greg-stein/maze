@@ -19,11 +19,20 @@ import org.apache.commons.math3.distribution.TDistribution;
  */
 public class WiFiTug implements TugOfWar.ITugger {
 
+    public static List<WifiMark> centroidMarks = null;
     // 20% of total marks
     public static final float CLOSEST_MARKS_PERCENTAGE = 0.2f;
+    private static final int CENTROID_OPT_ITERATIONS = 3;
+
     private float mClosestMarksPercentage = CLOSEST_MARKS_PERCENTAGE;
     public void setClosestMarksPercentage(float percentage) {
         mClosestMarksPercentage = percentage;
+    }
+
+    public static final int MINIMUM_WIFI_MARKS = 10;
+    private int mMinWifiMarks = MINIMUM_WIFI_MARKS;
+    public void setMinimumWifiMarks(int minWifiMarks) {
+        mMinWifiMarks = minWifiMarks;
     }
 
     // Yeah, fake class is so antipattern...
@@ -31,6 +40,62 @@ public class WiFiTug implements TugOfWar.ITugger {
     public List<WifiMark> marks; //TODO: no encapsulation!
     public List<Wall> walls; //TODO: no encapsulation!
     public Fingerprint currentFingerprint = null;
+
+    public String buildWifiTable() {
+        StringBuilder table = new StringBuilder(10 * marks.size() * marks.size());
+
+        for(WifiMark outerMark : marks) {
+            for (WifiMark innerMark : marks) {
+                boolean visible = true;
+                if (walls != null) {
+                    for (Wall wall : walls) {
+                        if (VectorHelper.linesIntersect(wall.getA(), wall.getB(), outerMark.getCenter(), innerMark.getCenter())) {
+                            visible = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (visible) {
+                    float likelihood = distance(outerMark.getFingerprint(), innerMark.getFingerprint());
+                    float distance = (float) Math.sqrt(
+                            Math.pow(outerMark.getCenter().x - innerMark.getCenter().x, 2) +
+                                    Math.pow(outerMark.getCenter().y - innerMark.getCenter().y, 2));
+                    table.append(likelihood).append(',').append(distance).append('\n');
+                }
+            }
+        }
+
+        return table.toString();
+    }
+
+    public String buildFingerprintTable() {
+        StringBuilder table = new StringBuilder();
+
+        for(WifiMark mark : marks) {
+            for(Map.Entry<String, Integer> entry : mark.getFingerprint().entrySet()) {
+                table.append(entry.getKey()).append(", ") // MAC
+                        .append(mark.getCenter().x).append(", ")
+                        .append(mark.getCenter().y).append(", ")
+                        .append(entry.getValue()).append('\n'); // in decibel
+            }
+        }
+
+        return table.toString();
+    }
+
+    public String buildWallsTable() {
+        StringBuilder table = new StringBuilder();
+
+        for (Wall wall : walls) {
+            table.append(wall.getA().x).append(", ")
+                    .append(wall.getA().y).append(", ")
+                    .append(wall.getB().x).append(", ")
+                    .append(wall.getB().y).append('\n');
+        }
+
+        return table.toString();
+    }
 
     // Calculates euclidean distance in Decibell space
     public static float distance(Fingerprint actual, Fingerprint reference) {
@@ -56,7 +121,6 @@ public class WiFiTug implements TugOfWar.ITugger {
             }
         }
 
-        // Return squared distance as used in calculations
         distance = (float) Math.sqrt(distance);
         // division by zero handling:
         if (distance == 0.0f) distance = Float.MIN_VALUE;
