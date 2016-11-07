@@ -135,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onClick(View view) {
                 PointF location = mTow.getCurrentPosition();
                 uiFloorPlanView.putLocationMarkAt(location);
+                uiFloorPlanView.highlightCentroidMarks(WiFiTug.centroidMarks);
             }
         });
 

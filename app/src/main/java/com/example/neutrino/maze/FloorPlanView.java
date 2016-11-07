@@ -11,6 +11,7 @@ import android.view.ScaleGestureDetector;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;
+import com.example.neutrino.maze.floorplan.WifiMark;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,6 +70,11 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     public void setSetLocationOp(boolean mSetLocation) {
+    }
+
+    public void highlightCentroidMarks(List<WifiMark> centroidMarks) {
+        if (centroidMarks == null) return;
+        mRenderer.highlightCentroidMarks(centroidMarks);
     }
 
     public enum Operation {

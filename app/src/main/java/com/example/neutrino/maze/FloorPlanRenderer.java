@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.graphics.Color;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -423,5 +424,24 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public void clearFloorPlan() {
         mGlEngine.clearFloorPlan();
         refreshGpuBuffers();
+    }
+
+    public void highlightCentroidMarks(List<WifiMark> centroidMarks) {
+        List<IFloorPlanPrimitive> primitives = mGlEngine.getFloorPlan();
+        for (IFloorPlanPrimitive primitive : primitives) {
+            if (primitive instanceof WifiMark) {
+                final WifiMark mark = (WifiMark) primitive;
+                if (centroidMarks.contains(mark))
+                    mark.setColor(Color.RED);
+                else
+                    mark.setColor(Color.BLUE);
+                runOnGlThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mGlEngine.updateSingleObject(mark);
+                    }
+                });
+            }
+        }
     }
 }
