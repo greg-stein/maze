@@ -6,9 +6,12 @@ import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * Created by Greg Stein on 8/10/2016.
@@ -16,6 +19,7 @@ import java.util.Map;
 public class WifiScanner extends BroadcastReceiver {
     private static final int MAX_WIFI_LEVEL = 100; // Percent of signal reception
 
+    private MovingAverageQueue mQueue = new MovingAverageQueue();
     private List<ScanResult> mLastScan;
     private WifiManager mWifiManager;
     private boolean mIsEnabled = false;
@@ -40,7 +44,9 @@ public class WifiScanner extends BroadcastReceiver {
             mLastScan = mWifiManager.getScanResults();
             if (mIsEnabled) mWifiManager.startScan();
 
-            emitWiFiFingerprintAvailableEvent(mLastScan);
+            mQueue.add(mLastScan);
+
+            emitWiFiFingerprintAvailableEvent(mQueue.getSumFingerprint(), mQueue.getNumScans());
             mScanId++;
         }
     }
@@ -52,13 +58,13 @@ public class WifiScanner extends BroadcastReceiver {
     public void setFingerprintAvailableListener(IFingerprintAvailableListener listener) {
         this.mFingerprintAvailableListener = listener;
     }
-    private void emitWiFiFingerprintAvailableEvent(List<ScanResult> scanResults) {
+    private void emitWiFiFingerprintAvailableEvent(WiFiTug.Fingerprint scanResultsSums, int numScans) {
         if (mFingerprintAvailableListener != null) {
             WiFiTug.Fingerprint fingerprint = new WiFiTug.Fingerprint();
 
-            for (ScanResult scan : scanResults) {
-                int level = WifiManager.calculateSignalLevel(scan.level, MAX_WIFI_LEVEL);
-                fingerprint.put(scan.BSSID, level);
+            for (Map.Entry<String, Integer> entry : scanResultsSums.entrySet()) {
+//                int level = WifiManager.calculateSignalLevel(entry.getValue()/numScans, MAX_WIFI_LEVEL);
+                fingerprint.put(entry.getKey(), entry.getValue()/numScans /*level*/);
             }
 
             mFingerprintAvailableListener.onFingerprintAvailable(fingerprint);
