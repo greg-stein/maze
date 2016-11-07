@@ -31,7 +31,7 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest=Config.NONE)
-public class WiFiDistanceTests {
+public class WiFiTugTests {
     public static final double FLOAT_ERROR = 0.00005f;
 
     @Test
