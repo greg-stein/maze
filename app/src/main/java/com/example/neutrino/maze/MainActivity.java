@@ -3,6 +3,7 @@ package com.example.neutrino.maze;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.PointF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -26,6 +27,8 @@ import android.widget.ToggleButton;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
+
+import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     // One human step
@@ -180,10 +183,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                String jsonString = PersistenceLayer.loadFloorPlan();
+                String jsonString = null;// = PersistenceLayer.loadFloorPlan();
+
+                try {
+                    Resources res = getResources();
+                    InputStream in_s = res.openRawResource(R.raw.floorplan_greg_home_2nd_floor);
+
+                    byte[] b = new byte[in_s.available()];
+                    in_s.read(b);
+                    jsonString = new String(b);
+                } catch (Exception e) {
+                     e.printStackTrace();
+                }
+
                 if (jsonString != null) {
                     uiFloorPlanView.setFloorPlanAsJSon(jsonString);
                 }
+
+
 //                if (MazeServer.connectionAvailable(getApplicationContext())) {
 //                    MazeServer server = new MazeServer(getApplicationContext());
 //                    server.downloadFloorPlan(new MazeServer.AsyncResponse() {
