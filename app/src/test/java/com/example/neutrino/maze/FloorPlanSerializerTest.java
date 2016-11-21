@@ -12,12 +12,15 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -52,5 +55,27 @@ public class FloorPlanSerializerTest {
 
         assertThat(deserializedList.get(3), is(instanceOf(LocationMark.class)));
         assertThat(deserializedList.get(3), is(equalTo(originalList.get(3))));
+    }
+
+    @Test
+    public void deserializeFromResourcesTest() {
+        String jsonString = null;
+
+        try {
+            ClassLoader classLoader = getClass().getClassLoader();
+            // Get json file from test resources: app/src/test/resources
+            InputStream in_s = classLoader.getResourceAsStream("floorplan_greg_home_2nd_floor.json");
+
+            byte[] b = new byte[in_s.available()];
+            in_s.read(b);
+            jsonString = new String(b);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        List<IFloorPlanPrimitive> deserializedList = FloorPlanSerializer.deserializeFloorPlan(jsonString);
+
+        assertNotNull(deserializedList);
+        assertThat(deserializedList, hasSize(70));
     }
 }

@@ -12,12 +12,14 @@ import java.util.Map;
  * This class is for debugging/development only!!
  */
 public class WifiMark extends Footprint {
-    private static int instance_id_cnt = 0;
-    public int instance_id = instance_id_cnt++;
-
-    private static final float MARK_RADIUS = 0.05f;
+    public static final float MARK_RADIUS = 0.05f;
 
     private WiFiTug.Fingerprint mFingerprint;
+
+    public WifiMark() {
+        super();
+        setColor(Color.BLUE);
+    }
 
     public WifiMark(float cx, float cy, WiFiTug.Fingerprint fingerprint) {
         super(cx, cy, MARK_RADIUS);

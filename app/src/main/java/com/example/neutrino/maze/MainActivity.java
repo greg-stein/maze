@@ -24,11 +24,14 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
+import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
 import java.io.InputStream;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     // One human step
@@ -197,7 +200,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
 
                 if (jsonString != null) {
-                    uiFloorPlanView.setFloorPlanAsJSon(jsonString);
+                    List<IFloorPlanPrimitive> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
+                    uiFloorPlanView.setFloorPlan(floorplan);
+                    mWiFiTug.marks = uiFloorPlanView.getPrimitives(WifiMark.class, floorplan);
+                    mWiFiTug.walls = uiFloorPlanView.getPrimitives(Wall.class, floorplan);
                 }
 
 

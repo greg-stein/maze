@@ -318,6 +318,13 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         mQueuedTaskForGlThread = new Runnable() {
             @Override
             public void run() {
+                for (IFloorPlanPrimitive primitive : primitives) {
+                    if (primitive instanceof LocationMark) {
+                        mLocationMark = (LocationMark) primitive;
+                        break;
+                    }
+                }
+
                 mGlEngine.setFloorPlan(primitives);
                 refreshGpuBuffers();
             }
@@ -334,9 +341,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
-                // Refresh GPU buffers with added wall
-                // TODO: This could introduce a performance issue (on each touch all the map
-                // TODO: is rewritten in GPU memory)
                 mGlEngine.deallocateGpuBuffers();
                 mGlEngine.allocateGpuBuffers();
             }
