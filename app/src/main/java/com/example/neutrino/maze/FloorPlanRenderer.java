@@ -15,7 +15,6 @@ import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -303,7 +302,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             @Override
             public void run()  {
                 if (mGlEngine == null) {
-                    mGlEngine = new GlEngine(1000);
+                    mGlEngine = new GlEngine(2000);
                     mGlEngine.allocateGpuBuffers();
                 }
 
