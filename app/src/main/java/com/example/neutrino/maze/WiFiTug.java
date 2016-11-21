@@ -218,6 +218,30 @@ public class WiFiTug implements TugOfWar.ITugger {
         }
     }
 
+    // Get list of wifi marks with the same APs as a given fingerprint, by iteratively reducing the
+    // full set of wifi marks until only those containing all APs in the fingerprint remain.
+    // If at some point we get to an empty list, we assume a 'rogue' mark and re-use the list from
+    // the previous step.
+    public static List<WifiMark> getMarksWithSameAps(List<WifiMark> wifiMarks, Fingerprint fingerprint) {
+        List<WifiMark> previousMarks = wifiMarks;
+        List<WifiMark> relevantMarks = new ArrayList<>();
+
+        for (String mac : fingerprint.keySet()) {
+            for (WifiMark mark : previousMarks) {
+                Fingerprint markFingerprint = mark.getFingerprint();
+                if (markFingerprint.containsKey(mac)) {
+                    relevantMarks.add(mark);
+                }
+            }
+            if (!relevantMarks.isEmpty()) {  // If new list is non-empty, use it for next step
+                previousMarks = relevantMarks;
+                relevantMarks = new ArrayList<>();
+            }
+        }
+
+        return previousMarks;
+    }
+
     @Override
     public void getPosition(PointF position) {
         float x = 0, y = 0;
