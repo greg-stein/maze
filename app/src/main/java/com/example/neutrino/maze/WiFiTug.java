@@ -246,8 +246,10 @@ public class WiFiTug implements TugOfWar.ITugger {
             centroid = position;
         }
 //        String table = buildWifiTable();
-        String fingerprintTable = buildFingerprintTable();
-        String wallsTable = buildWallsTable();
+//        String fingerprintTable = buildFingerprintTable();
+//        String wallsTable = buildWallsTable();
+
+        // For highlighting them
         centroidMarks = wifiMarks;
     }
 
