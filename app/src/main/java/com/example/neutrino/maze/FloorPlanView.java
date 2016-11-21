@@ -250,7 +250,10 @@ public class FloorPlanView extends GLSurfaceView {
 
     public final <T extends IFloorPlanPrimitive> List<T> getPrimitives(Class<T> klazz) {
         List<IFloorPlanPrimitive> floorPlan = mRenderer.getFloorPlan();
+        return getPrimitives(klazz, floorPlan);
+    }
 
+    public final <T extends IFloorPlanPrimitive> List<T> getPrimitives(Class<T> klazz, List<IFloorPlanPrimitive> floorPlan) {
         List<T> result = new ArrayList<>();
         for(IFloorPlanPrimitive primitive : floorPlan) {
             if (primitive.getClass().equals(klazz)) {
@@ -266,9 +269,13 @@ public class FloorPlanView extends GLSurfaceView {
         return FloorPlanSerializer.serializeFloorPlan(floorPlan);
     }
 
-    public void setFloorPlanAsJSon(String gsonString) {
-        List<IFloorPlanPrimitive> floorplan = FloorPlanSerializer.deserializeFloorPlan(gsonString);
+    public void setFloorPlanAsJSon(String jsonString) {
+        List<IFloorPlanPrimitive> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
 
+        mRenderer.setFloorPlan(floorplan);
+    }
+
+    public void setFloorPlan(List<IFloorPlanPrimitive> floorplan) {
         mRenderer.setFloorPlan(floorplan);
     }
 
