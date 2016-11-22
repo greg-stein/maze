@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -14,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.core.CombinableMatcher.both;
+import static org.hamcrest.core.CombinableMatcher.either;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -113,6 +116,7 @@ public class WiFiTugTests {
         wiFiTug.marks.add(new WifiMark(-1, 0, a));
         wiFiTug.marks.add(new WifiMark(1, 2, b));
         wiFiTug.currentFingerprint = current;
+        wiFiTug.walls = new ArrayList<>();
 
         PointF position = new PointF();
         wiFiTug.getPosition(position);
@@ -334,5 +338,95 @@ public class WiFiTugTests {
 
         assertThat(marks, is(not(empty())));
         assertThat(marks, hasSize(1));
+    }
+
+    @Test
+    public void getMarksWithSameApsTest() {
+        WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
+        a.put("44-85-00-11-DA-EC", 0); // 00
+        a.put("44-85-FF-11-DA-EC", 0); // FF
+
+        WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
+        b.put("44-85-00-11-DA-EC", 0); // 00
+        b.put("44-85-FF-11-DA-EC", 0); // FF
+        b.put("44-85-AA-11-DA-EC", 0); // AA
+
+        WiFiTug.Fingerprint c = new WiFiTug.Fingerprint();
+        c.put("44-85-00-11-DA-EC", 0); // 00
+        c.put("44-85-FF-11-DA-EC", 0); // FF
+        c.put("44-85-AA-11-DA-EC", 0); // AA
+
+        WiFiTug.Fingerprint d = new WiFiTug.Fingerprint();
+        d.put("44-85-00-11-DA-EC", 0); // 00
+        d.put("44-85-BB-11-DA-EC", 0); // BB
+
+        WiFiTug.Fingerprint e = new WiFiTug.Fingerprint();
+        e.put("44-85-00-11-DA-EC", 0); // 00
+        e.put("44-85-BB-11-DA-EC", 0); // BB
+        e.put("44-85-FF-11-DA-EC", 0); // FF
+
+        List<WifiMark> marks = new ArrayList<>();
+        WifiMark aMark, bMark, cMark, dMark, eMark;
+
+        marks.add(aMark = new WifiMark(0, 0, a));
+        marks.add(bMark = new WifiMark(0, 0, b));
+        marks.add(cMark = new WifiMark(0, 0, c));
+        marks.add(dMark = new WifiMark(0, 0, d));
+        marks.add(eMark = new WifiMark(0, 0, e));
+
+        WiFiTug.Fingerprint fingerprint1 = new WiFiTug.Fingerprint();
+        fingerprint1.put("44-85-00-11-DA-EC", 0); // 00
+        fingerprint1.put("44-85-FF-11-DA-EC", 0); // FF
+
+        List<WifiMark> filteredMarks = WiFiTug.getMarksWithSameAps(marks, fingerprint1);
+
+        assertNotNull(filteredMarks);
+        assertThat(filteredMarks, hasSize(4));
+        assertThat(filteredMarks, not(contains(dMark)));
+        assertThat(filteredMarks, contains(aMark, bMark, cMark, eMark));
+
+// --------------------------------------------------------
+
+        WiFiTug.Fingerprint fingerprint2 = new WiFiTug.Fingerprint();
+        fingerprint2.put("44-85-00-11-DA-EC", 0); // 00
+        fingerprint2.put("44-85-BB-11-DA-EC", 0); // BB
+
+        filteredMarks = WiFiTug.getMarksWithSameAps(marks, fingerprint2);
+
+        assertNotNull(filteredMarks);
+        assertThat(filteredMarks, hasSize(2));
+        assertThat(filteredMarks, not(contains(aMark, bMark, cMark)));
+        assertThat(filteredMarks, contains(dMark, eMark));
+
+// --------------------------------------------------------
+
+        WiFiTug.Fingerprint fingerprint3 = new WiFiTug.Fingerprint();
+        fingerprint3.put("44-85-00-11-DA-EC", 0); // 00
+        fingerprint3.put("44-85-BB-11-DA-EC", 0); // BB
+        fingerprint3.put("44-85-FF-11-DA-EC", 0); // FF
+
+        filteredMarks = WiFiTug.getMarksWithSameAps(marks, fingerprint3);
+
+        assertNotNull(filteredMarks);
+        assertThat(filteredMarks, hasSize(1));
+        assertThat(filteredMarks, not(contains(aMark, bMark, cMark, dMark)));
+        assertThat(filteredMarks, contains(eMark));
+
+// --------------------------------------------------------
+
+        WiFiTug.Fingerprint fingerprint4 = new WiFiTug.Fingerprint();
+        fingerprint4.put("44-85-00-11-DA-EC", 0); // 00
+        fingerprint4.put("44-85-BB-11-DA-EC", 0); // BB
+        fingerprint4.put("44-85-FF-11-DA-EC", 0); // FF
+        fingerprint4.put("44-85-AA-11-DA-EC", 0); // AA
+
+        filteredMarks = WiFiTug.getMarksWithSameAps(marks, fingerprint4);
+
+        assertNotNull(filteredMarks);
+        assertThat(filteredMarks, either(
+                both(not(contains(aMark, eMark, dMark))).and(contains(bMark, cMark)))
+        .or(
+                both(not(contains(aMark, bMark, cMark, dMark))).and(contains(eMark))
+        ));
     }
 }
