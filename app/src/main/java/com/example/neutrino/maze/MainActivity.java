@@ -202,8 +202,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (jsonString != null) {
                     List<IFloorPlanPrimitive> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
                     uiFloorPlanView.setFloorPlan(floorplan);
-                    mWiFiTug.marks = uiFloorPlanView.getPrimitives(WifiMark.class, floorplan);
-                    mWiFiTug.walls = uiFloorPlanView.getPrimitives(Wall.class, floorplan);
+                    mWiFiTug.marks = CommonHelper.getPrimitives(WifiMark.class, floorplan);
+                    mWiFiTug.walls = CommonHelper.getPrimitives(Wall.class, floorplan);
                 }
 
 

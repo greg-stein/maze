@@ -250,18 +250,7 @@ public class FloorPlanView extends GLSurfaceView {
 
     public final <T extends IFloorPlanPrimitive> List<T> getPrimitives(Class<T> klazz) {
         List<IFloorPlanPrimitive> floorPlan = mRenderer.getFloorPlan();
-        return getPrimitives(klazz, floorPlan);
-    }
-
-    public final <T extends IFloorPlanPrimitive> List<T> getPrimitives(Class<T> klazz, List<IFloorPlanPrimitive> floorPlan) {
-        List<T> result = new ArrayList<>();
-        for(IFloorPlanPrimitive primitive : floorPlan) {
-            if (primitive.getClass().equals(klazz)) {
-                result.add(klazz.cast(primitive));
-            }
-        }
-
-        return result;
+        return CommonHelper.getPrimitives(klazz, floorPlan);
     }
 
     public String getFloorPlanAsJSon() {
