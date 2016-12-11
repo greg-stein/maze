@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FloatingActionButton uiFabAutobuilderLeft;
     private FloatingActionButton uiFabAutobuilderRight;
     private FloatingActionButton uiFabFindMeOnMap;
+    private FloatingActionButton uiFabAddFloorplanFromPic;
     private TextView uiWallLengthText;
 
     // Map north angle
@@ -113,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabAutobuilderLeft = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder_left);
         uiFabAutobuilderRight = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder_right);
         uiFabFindMeOnMap = (FloatingActionButton) findViewById(R.id.fab_find_me_on_map);
+        uiFabAddFloorplanFromPic = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_image);
         uiModeSwitch = (ToggleButton) findViewById(R.id.tb_edit_mode);
         uiWallLengthText = (TextView) findViewById(R.id.tv_wall_length);
 
@@ -136,6 +138,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void setUiListeners() {
+        uiFabAddFloorplanFromPic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Here comes code for taking floorplan as picture from
+                // either camera or gallery.
+            }
+        });
+
         uiFabFindMeOnMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -233,12 +243,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     uiFabSetLocation.show(mPreserveAlphaOnShow);
                     uiFabAddWall.show(mPreserveAlphaOnShow);
                     uiFabAutobuilderMode.show(mPreserveAlphaOnShow);
+                    uiFabAddFloorplanFromPic.show(mPreserveAlphaOnShow);;
                 } else {
                     uiToolbar.setBackgroundColor(AppSettings.primaryColor);
                     uiFabDeleteWall.hide();
                     uiFabSetLocation.hide();
                     uiFabAddWall.hide();
                     uiFabAutobuilderMode.hide();
+                    uiFabAddFloorplanFromPic.hide();
 
                     String jsonString = uiFloorPlanView.getFloorPlanAsJSon();
                     PersistenceLayer.saveFloorPlan(jsonString);
@@ -330,6 +342,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabSetLocation.hide();
         uiFabAddWall.hide();
         uiFabAutobuilderMode.hide();
+        uiFabAddFloorplanFromPic.hide();
     }
 
     private FloatingActionButton.OnVisibilityChangedListener mPreserveAlphaOnShow = new FloatingActionButton.OnVisibilityChangedListener() {
