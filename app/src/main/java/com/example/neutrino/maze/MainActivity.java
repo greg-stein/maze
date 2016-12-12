@@ -1,16 +1,22 @@
 package com.example.neutrino.maze;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -21,7 +27,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
@@ -30,6 +38,8 @@ import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -137,12 +147,49 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setUiListeners();
     }
 
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
+    protected String mCurrentImagePath;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            File imageFile = new File(mCurrentImagePath);
+            if (imageFile.exists()) {
+                Bitmap floorplanBitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+
+                // Show the image
+                Toast toast = new Toast(this.getApplicationContext());
+                ImageView view = new ImageView(this.getApplicationContext());
+                view.setImageBitmap(floorplanBitmap);
+                toast.setView(view);
+                toast.show();
+            }
+        }
+    }
+
     private void setUiListeners() {
         uiFabAddFloorplanFromPic.setOnClickListener(new View.OnClickListener() {
+            static final String IMAGE_FILENAME = "floorplan";
+
+            // Here comes code for taking floorplan as picture from
+            // either camera or gallery.
             @Override
             public void onClick(View view) {
-                // Here comes code for taking floorplan as picture from
-                // either camera or gallery.
+                // Dispatch Take Picture Intent
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                    try {
+                        File imageFile = File.createTempFile(IMAGE_FILENAME, ".jpg", storageDir);
+                        mCurrentImagePath = imageFile.getAbsolutePath();
+                        Uri imageFileUri = Uri.fromFile(imageFile);
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageFileUri);
+                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                    } catch (IOException e) {
+                        // TODO: error message: "Error saving image"
+                        e.printStackTrace();
+                    }
+                }
             }
         });
 
