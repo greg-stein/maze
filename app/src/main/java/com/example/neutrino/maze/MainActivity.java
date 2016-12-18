@@ -37,6 +37,7 @@ import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
+import com.example.neutrino.maze.floorplan.vectorization.FloorplanVectorizer;
 
 import java.io.File;
 import java.io.IOException;
@@ -155,13 +156,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             File imageFile = new File(mCurrentImagePath);
             if (imageFile.exists()) {
-                Bitmap floorplanBitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
-
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inMutable = true;
+                Bitmap floorplanBitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
+                FloorplanVectorizer.vectorize(floorplanBitmap);
                 // Show the image
                 Toast toast = new Toast(this.getApplicationContext());
                 ImageView view = new ImageView(this.getApplicationContext());
-                view.setImageBitmap(floorplanBitmap);
+
+                view.setImageBitmap(FloorplanVectorizer.debugBM);
                 toast.setView(view);
+                toast.setDuration(Toast.LENGTH_LONG);
                 toast.show();
             }
         }
@@ -186,6 +191,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageFileUri);
                         startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                     } catch (IOException e) {
+                        Toast.makeText(getApplicationContext(), "Error saving image", Toast.LENGTH_SHORT).show();
                         // TODO: error message: "Error saving image"
                         e.printStackTrace();
                     }
