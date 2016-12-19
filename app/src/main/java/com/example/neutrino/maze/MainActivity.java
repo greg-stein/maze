@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FloatingActionButton uiFabAutobuilderRight;
     private FloatingActionButton uiFabFindMeOnMap;
     private FloatingActionButton uiFabAddFloorplanFromPic;
+    private FloatingActionButton uiFabAddFloorplanFromGallery;
     private TextView uiWallLengthText;
 
     // Map north angle
@@ -125,7 +127,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabAutobuilderLeft = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder_left);
         uiFabAutobuilderRight = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder_right);
         uiFabFindMeOnMap = (FloatingActionButton) findViewById(R.id.fab_find_me_on_map);
-        uiFabAddFloorplanFromPic = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_image);
+        uiFabAddFloorplanFromPic = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_camera);
+        uiFabAddFloorplanFromGallery = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_gallery);
         uiModeSwitch = (ToggleButton) findViewById(R.id.tb_edit_mode);
         uiWallLengthText = (TextView) findViewById(R.id.tv_wall_length);
 
@@ -149,35 +152,98 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
+    private static final int REQUEST_IMAGE_SELECT = 2;
     protected String mCurrentImagePath;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            File imageFile = new File(mCurrentImagePath);
-            if (imageFile.exists()) {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inMutable = true;
-                Bitmap floorplanBitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-                FloorplanVectorizer.vectorize(floorplanBitmap);
-                // Show the image
-                Toast toast = new Toast(this.getApplicationContext());
-                ImageView view = new ImageView(this.getApplicationContext());
+        if (resultCode != RESULT_OK) return;
 
-                view.setImageBitmap(FloorplanVectorizer.debugBM);
-                toast.setView(view);
-                toast.setDuration(Toast.LENGTH_LONG);
-                toast.show();
-            }
+        switch (requestCode) {
+            case REQUEST_IMAGE_CAPTURE:
+                File imageFile = new File(mCurrentImagePath);
+                if (imageFile.exists()) {
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inMutable = true;
+                    Bitmap floorplanBitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
+                    FloorplanVectorizer.vectorize(floorplanBitmap);
+
+                    // Show the image
+                    showTheImage();
+                }
+                break;
+            case REQUEST_IMAGE_SELECT:
+                Uri selectedImageUri = data.getData();
+                mCurrentImagePath = getPath(selectedImageUri);
+
+                if (mCurrentImagePath == null) {
+                    loadPicasaImageFromGallery(selectedImageUri);
+                }
+                break;
         }
     }
 
+    private void showTheImage() {
+        Toast toast = new Toast(this.getApplicationContext());
+        ImageView view = new ImageView(this.getApplicationContext());
+
+        view.setImageBitmap(FloorplanVectorizer.debugBM);
+        toast.setView(view);
+        toast.setDuration(Toast.LENGTH_LONG);
+        toast.show();
+    }
+
+    // NEW METHOD FOR PICASA IMAGE LOAD
+    private void loadPicasaImageFromGallery(final Uri uri) {
+        String[] projection = {  MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME };
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+        if(cursor != null) {
+            cursor.moveToFirst();
+
+            int columnIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
+            if (columnIndex != -1) {
+                try {
+                    Bitmap floorplanBitmap = android.provider.MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                    FloorplanVectorizer.vectorize(floorplanBitmap);
+
+                    showTheImage();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        cursor.close();
+    }
+
+    public String getPath(Uri uri) {
+        String[] projection = {MediaStore.MediaColumns.DATA};
+        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+            int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+            String filePath = cursor.getString(columnIndex);
+            cursor.close();
+            return filePath;
+        } else
+            return uri.getPath();               // FOR OI/ASTRO/Dropbox etc
+    }
+
     private void setUiListeners() {
+        uiFabAddFloorplanFromGallery.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"),
+                        REQUEST_IMAGE_SELECT);
+            }
+        });
+
         uiFabAddFloorplanFromPic.setOnClickListener(new View.OnClickListener() {
             static final String IMAGE_FILENAME = "floorplan";
 
-            // Here comes code for taking floorplan as picture from
-            // either camera or gallery.
+            // Here comes code for taking floorplan as picture from camera
             @Override
             public void onClick(View view) {
                 // Dispatch Take Picture Intent
@@ -192,7 +258,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                     } catch (IOException e) {
                         Toast.makeText(getApplicationContext(), "Error saving image", Toast.LENGTH_SHORT).show();
-                        // TODO: error message: "Error saving image"
                         e.printStackTrace();
                     }
                 }
@@ -296,7 +361,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     uiFabSetLocation.show(mPreserveAlphaOnShow);
                     uiFabAddWall.show(mPreserveAlphaOnShow);
                     uiFabAutobuilderMode.show(mPreserveAlphaOnShow);
-                    uiFabAddFloorplanFromPic.show(mPreserveAlphaOnShow);;
+                    uiFabAddFloorplanFromPic.show(mPreserveAlphaOnShow);
+                    uiFabAddFloorplanFromGallery.show(mPreserveAlphaOnShow);
                 } else {
                     uiToolbar.setBackgroundColor(AppSettings.primaryColor);
                     uiFabDeleteWall.hide();
@@ -304,6 +370,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     uiFabAddWall.hide();
                     uiFabAutobuilderMode.hide();
                     uiFabAddFloorplanFromPic.hide();
+                    uiFabAddFloorplanFromGallery.hide();
 
                     String jsonString = uiFloorPlanView.getFloorPlanAsJSon();
                     PersistenceLayer.saveFloorPlan(jsonString);
@@ -396,6 +463,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabAddWall.hide();
         uiFabAutobuilderMode.hide();
         uiFabAddFloorplanFromPic.hide();
+        uiFabAddFloorplanFromGallery.hide();
     }
 
     private FloatingActionButton.OnVisibilityChangedListener mPreserveAlphaOnShow = new FloatingActionButton.OnVisibilityChangedListener() {

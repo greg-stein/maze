@@ -61,14 +61,30 @@
         android:layout_marginTop="0dp" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_add_floorplan_from_image"
+        android:id="@+id/fab_add_floorplan_from_gallery"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/fab_margin"
-        android:layout_gravity="end"
+        android:layout_gravity="bottom|end"
         android:alpha="@dimen/alpha_default"
         android:elevation="@dimen/fab_elevation"
-        android:src="@drawable/ic_camera_alt_white_24dp" />
+        android:src="@drawable/ic_photo_library_white_24dp"
+        android:layout_marginBottom="155dp"
+        android:layout_marginEnd="@dimen/fab_margin"
+        android:layout_marginStart="@dimen/fab_margin"
+        android:layout_marginTop="@dimen/fab_margin"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_add_floorplan_from_camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:alpha="@dimen/alpha_default"
+        android:elevation="@dimen/fab_elevation"
+        android:src="@drawable/ic_camera_alt_white_24dp"
+        android:layout_marginBottom="85dp"
+        android:layout_marginEnd="@dimen/fab_margin"
+        android:layout_marginStart="@dimen/fab_margin"
+        android:layout_marginTop="@dimen/fab_margin"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_delete_wall"
