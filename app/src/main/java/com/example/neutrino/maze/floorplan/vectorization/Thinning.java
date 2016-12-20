@@ -11,8 +11,6 @@ import java.util.List;
  */
 // TODO: generate white strips skip list to save scanning of white pixels
 public class Thinning {
-//    private static final int BLACK = 0xFF;
-//    private static final int WHITE = 0x00;
     private static final int NEIGHBOURS_TO_CHECK = 9;
 
     // Indices:                                        0   1   2   3   4   5   6   7   8
@@ -27,39 +25,41 @@ public class Thinning {
 
     public static ImageArray doZhangSuenThinning(ImageArray binaryImage) {
         boolean changeOccurred;
-        int iterations = 0;
 
         do {
             changeOccurred = doZhangSuenStep(binaryImage, true); // Step 1
             changeOccurred |= doZhangSuenStep(binaryImage, false); // Step 2
-            iterations ++;
-        } while (changeOccurred && iterations < 100);
+        } while (changeOccurred);
 
         return binaryImage;
     }
 
     private static boolean doZhangSuenStep(ImageArray binaryImage, boolean isFirstStep) {
-        List<Point> pointsToChange = new LinkedList();
+        ImageArray.PixelBufferChunk pixelsToRemove = new ImageArray.PixelBufferChunk(binaryImage.blackPixelsNum);
         boolean changeOccurred = false;
 
-        for (int y = 1; y < binaryImage.height - 1; y++) {
-            for (int x = 1; x < binaryImage.width - 1; x++) {
-                if (binaryImage.get(x, y) != Color.BLACK) continue;
+        List<ImageArray.PixelBufferChunk> chunks = binaryImage.pixelBufferChunks;
+        for (ImageArray.PixelBufferChunk chunk : chunks) {
+            chunk.reset();
+            for (Point point = new Point(-1, -1); point.x != 0 || point.y != 0; chunk.getPixel(point)) {
+                if (point.x == -1 && point.y == -1) continue; // removed pixel?
 
-                getNeighboursAndTransitions(binaryImage, x, y, isFirstStep);
+                getNeighboursAndTransitions(binaryImage, point.x, point.y, isFirstStep);
                 if (neighbours < 2 || neighbours > 6) continue;
                 if (transitions != 1) continue;
                 if (hasThreeConsequentEvenBlackNeighbours) continue;
 
-                pointsToChange.add(new Point(x, y));
+                chunk.removePixel(); // mark it with (-1, -1)
+                pixelsToRemove.putPixel(point.x, point.y);
                 changeOccurred = true;
             }
         }
 
-        for (Point point : pointsToChange) {
-            binaryImage.set(point.x, point.y, Color.WHITE);
+        Point p = new Point(-1, -1);
+        while (p.x != 0 || p.y != 0) {
+            pixelsToRemove.getPixel(p);
+            binaryImage.set(p.x, p.y, Color.WHITE);
         }
-        pointsToChange.clear();
 
         return changeOccurred;
     }
