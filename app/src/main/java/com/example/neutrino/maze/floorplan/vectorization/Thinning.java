@@ -11,7 +11,6 @@ import java.util.Set;
 /**
  * Created by Greg Stein on 12/13/2016.
  */
-// TODO: generate white strips skip list to save scanning of white pixels
 public class Thinning {
     private static final int NEIGHBOURS_TO_CHECK = 9;
 
