@@ -3,8 +3,10 @@ package com.example.neutrino.maze.floorplan.vectorization;
 import android.graphics.Color;
 import android.graphics.Point;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Greg Stein on 12/13/2016.
@@ -44,7 +46,7 @@ public class Thinning {
             for (Point point = new Point(-1, -1); point.x != 0 || point.y != 0; chunk.getPixel(point)) {
                 if (point.x == -1 && point.y == -1) continue; // removed pixel?
 
-                getNeighboursAndTransitions(binaryImage, point.x, point.y, isFirstStep);
+                getNeighboursAndTransitions(binaryImage, point, isFirstStep);
                 if (neighbours < 2 || neighbours > 6) continue;
                 if (transitions != 1) continue;
                 if (hasThreeConsequentEvenBlackNeighbours) continue;
@@ -64,20 +66,20 @@ public class Thinning {
         return changeOccurred;
     }
 
-    private static void getNeighboursAndTransitions(ImageArray image, int x, int y, boolean isFirstStep) {
+    private static void getNeighboursAndTransitions(ImageArray image, Point p, boolean isFirstStep) {
         neighbours = 0;
         transitions = 0;
         hasThreeConsequentEvenBlackNeighbours = false;
         int whiteEvenNeighbourIndex = -1;
         int whiteEvenNeighbours = 0;
         for (int i = 0; i < NEIGHBOURS_TO_CHECK - 1; i++) {
-            final int neighbourX = x + NEIGHBOURS_X_OFFSET[i];
-            final int neighbourY = y + NEIGHBOURS_Y_OFFSET[i];
+            final int neighbourX = p.x + NEIGHBOURS_X_OFFSET[i];
+            final int neighbourY = p.y + NEIGHBOURS_Y_OFFSET[i];
             if (image.get(neighbourX, neighbourY) == Color.BLACK) {
                neighbours++;
             } else {
-                final int nextNeighbourX = x + NEIGHBOURS_X_OFFSET[i + 1];
-                final int nextNeighbourY = y + NEIGHBOURS_Y_OFFSET[i + 1];
+                final int nextNeighbourX = p.x + NEIGHBOURS_X_OFFSET[i + 1];
+                final int nextNeighbourY = p.y + NEIGHBOURS_Y_OFFSET[i + 1];
                 if (image.get(nextNeighbourX, nextNeighbourY) == Color.BLACK) {
                     transitions++;
                 }
