@@ -83,6 +83,10 @@ public class ImageArray {
         return dataArray[y * width + x];
     }
 
+    public void set(Point p, int value) {
+        dataArray[p.y * width + p.x] = value;
+    }
+
     public void set(int x, int y, int value) {
         dataArray[y * width + x] = value;
     }

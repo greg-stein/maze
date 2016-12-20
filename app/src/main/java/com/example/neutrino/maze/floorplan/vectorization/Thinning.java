@@ -60,7 +60,7 @@ public class Thinning {
         Point p = new Point(-1, -1);
         while (p.x != 0 || p.y != 0) {
             pixelsToRemove.getPixel(p);
-            binaryImage.set(p.x, p.y, Color.WHITE);
+            binaryImage.set(p, Color.WHITE);
         }
 
         return changeOccurred;
