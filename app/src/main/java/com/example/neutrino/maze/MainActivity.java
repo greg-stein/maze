@@ -202,13 +202,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             int columnIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
             if (columnIndex != -1) {
+                Bitmap floorplanBitmap;
                 try {
-                    Bitmap floorplanBitmap = android.provider.MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                    floorplanBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                     FloorplanVectorizer.vectorize(floorplanBitmap);
-
                     showTheImage();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }
