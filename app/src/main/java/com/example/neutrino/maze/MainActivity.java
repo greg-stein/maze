@@ -159,28 +159,41 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != RESULT_OK) return;
 
-        switch (requestCode) {
-            case REQUEST_IMAGE_CAPTURE:
-                File imageFile = new File(mCurrentImagePath);
-                if (imageFile.exists()) {
-                    BitmapFactory.Options options = new BitmapFactory.Options();
-                    options.inMutable = true;
-                    Bitmap floorplanBitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-                    FloorplanVectorizer.vectorize(floorplanBitmap);
+        Bitmap floorplanBitmap = null;
 
-                    // Show the image
-                    showTheImage();
-                }
+        switch (requestCode) {
+            case REQUEST_IMAGE_CAPTURE: {
+                floorplanBitmap = loadBitmapFromFile(mCurrentImagePath);
                 break;
-            case REQUEST_IMAGE_SELECT:
+            }
+            case REQUEST_IMAGE_SELECT: {
                 Uri selectedImageUri = data.getData();
                 mCurrentImagePath = getPath(selectedImageUri);
 
                 if (mCurrentImagePath == null) {
-                    loadPicasaImageFromGallery(selectedImageUri);
+                    floorplanBitmap = loadPicasaImageFromGallery(selectedImageUri);
+                } else {
+                    floorplanBitmap = loadBitmapFromFile(mCurrentImagePath);
                 }
                 break;
+            }
         }
+
+        FloorplanVectorizer.vectorize(floorplanBitmap);
+        showTheImage();
+    }
+
+    private static Bitmap loadBitmapFromFile(String mCurrentImagePath) {
+        Bitmap bitmap = null;
+        File imageFile = new File(mCurrentImagePath);
+
+        if (imageFile.exists()) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inMutable = true;
+            bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
+        }
+
+        return bitmap;
     }
 
     private void showTheImage() {
@@ -194,25 +207,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     // NEW METHOD FOR PICASA IMAGE LOAD
-    private void loadPicasaImageFromGallery(final Uri uri) {
+    private Bitmap loadPicasaImageFromGallery(final Uri uri) {
+        Bitmap floorplanBitmap = null;
         String[] projection = {  MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME };
         Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+
         if(cursor != null) {
             cursor.moveToFirst();
 
             int columnIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
             if (columnIndex != -1) {
-                Bitmap floorplanBitmap;
                 try {
                     floorplanBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                    FloorplanVectorizer.vectorize(floorplanBitmap);
-                    showTheImage();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
         cursor.close();
+        return floorplanBitmap;
     }
 
     public String getPath(Uri uri) {
