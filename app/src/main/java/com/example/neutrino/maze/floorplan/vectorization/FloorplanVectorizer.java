@@ -8,6 +8,8 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 
+import java.io.IOException;
+
 /**
  * Created by Greg Stein on 12/13/2016.
  */
@@ -25,7 +27,9 @@ public class FloorplanVectorizer {
         grayImage.recycle();
 
         binarize(imageArray, calcOtsuThreshold(imageArray));
-//        Thinning.doZhangSuenThinning(imageArray);
+        imageArray.findBlackPixels(); // this updates internal multiarray with black pixels
+
+        Thinning.doZhangSuenThinning(imageArray);
         debugBM = imageArray.toBitmap();
 
 

@@ -76,7 +76,6 @@ public class ImageArray {
         this.dataArray = new int[width * height];
         image.getPixels(dataArray, 0, width, 0, 0, width, height);
         this.dataLength = dataArray.length;
-        findBlackPixels();
     }
 
     public int get(int x, int y) {
@@ -127,6 +126,4 @@ public class ImageArray {
             }
         }
     }
-
-
 }
