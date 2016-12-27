@@ -7,8 +7,14 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Point;
+
+import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.floorplan.Wall;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Greg Stein on 12/13/2016.
@@ -16,12 +22,13 @@ import java.io.IOException;
 public class FloorplanVectorizer {
     public static Bitmap debugBM;
 
-    public static Iterable<CollinearSegments.ILineSegment> vectorize(Bitmap image) {
-        Bitmap scaledImage = getResizedBitmap(image, image.getWidth()/2, image.getHeight()/2);
-        image.recycle();
+    public static List<Wall> vectorize(Bitmap image) {
+        if (image == null) return null;
+//        Bitmap scaledImage = getResizedBitmap(image, image.getWidth()/2, image.getHeight()/2);
+//        image.recycle();
 
-        Bitmap grayImage = toGrayscale(scaledImage);
-        scaledImage.recycle();
+        Bitmap grayImage = toGrayscale(image);
+        image.recycle();
 
         ImageArray imageArray = new ImageArray(grayImage);
         grayImage.recycle();
@@ -32,13 +39,29 @@ public class FloorplanVectorizer {
         Thinning.doZhangSuenThinning(imageArray);
         debugBM = imageArray.toBitmap();
 
+        HoughTransform houghTransform = new HoughTransform(imageArray);
+        houghTransform.buildHoughSpace();
+        List<HoughTransform.LineSegment> lines = houghTransform.getLines(50);
 
-//        HoughTransform houghTransform = new HoughTransform(imageArray);
-//        houghTransform.buildHoughSpace();
-//        List<CollinearSegments.ILineSegment> lines = houghTransform.getLines(50);
-//
-//        return lines;
-        return null;
+        List<Wall> walls = translateToWalls(lines);
+
+        return walls;
+    }
+
+    private static List<Wall> translateToWalls(List<HoughTransform.LineSegment> lines) {
+        List<Wall> walls = new ArrayList<>(lines.size());
+        // TODO: ACHTUNG!! This is only for tests! Scale factor should be set by user!!!
+        // TODO: And not in this stage, but later when floorplan is added
+        float s = 21.0f/1433; // scale factor
+
+        for (HoughTransform.LineSegment segment : lines) {
+            Wall wall = new Wall(s * segment.start.x, s * segment.start.y,
+                    s * segment.end.x, s * segment.end.y);
+            wall.setColor(AppSettings.wallColor);
+            walls.add(wall);
+        }
+
+        return walls;
     }
 
     public static Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {

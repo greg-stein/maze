@@ -43,6 +43,7 @@ import com.example.neutrino.maze.floorplan.vectorization.FloorplanVectorizer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -179,9 +180,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
 
-        FloorplanVectorizer.vectorize(floorplanBitmap);
-        showTheImage();
+        List<Wall> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
+        uiFloorPlanView.setFloorPlan(walls, false); // not in init phase
+        mWiFiTug.walls = walls;
     }
+
 
     private static Bitmap loadBitmapFromFile(String mCurrentImagePath) {
         Bitmap bitmap = null;
