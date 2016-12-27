@@ -72,12 +72,18 @@ public class HoughTransform {
     }
 
     public static class LineSegment {
+        private HoughLine line;
         public Point start;
         public Point end;
 
         public LineSegment(Point start, Point end) {
             this.start = start;
             this.end = end;
+        }
+
+        public LineSegment(Point start, Point end, HoughLine line) {
+            this(start, end);
+            this.line = line;
         }
     }
 
@@ -243,9 +249,18 @@ public class HoughTransform {
             final HoughLine line = linePoints.getKey();
             final SortedSet<Point> points = linePoints.getValue();
             eliminateOutliers(line.rho, line.theta, points);
-            recognizeSegments(points, lineSegments);
+            recognizeSegments(line, points, lineSegments);
         }
 
+        List<LineSegment> mergedSegments = mergeSegments (lineSegments);
+
+        return mergedSegments;
+    }
+
+    // TODO: IMPLEMENT THIS
+    // If collinear (or almost) segments intersect or have very close start/end points
+    // we want to merge these segments into one
+    private List<LineSegment> mergeSegments(List<LineSegment> lineSegments) {
         return lineSegments;
     }
 
@@ -292,12 +307,12 @@ public class HoughTransform {
         return linesToPointsMap;
     }
 
-    private static void createSegment(Point start, Point end, List<LineSegment> segments) {
+    private static void createSegment(Point start, Point end, HoughLine line, List<LineSegment> segments) {
         int dx = Math.abs(start.x - end.x);
         int dy = Math.abs(start.y - end.y);
         int segmentLen = dx*dx + dy*dy; // square len
         if (segmentLen > MIN_LINE_SEGMENT_LENGTH_SQ) {// skip creating short segments
-            LineSegment newSegment = new LineSegment(start, end);
+            LineSegment newSegment = new LineSegment(start, end, line);
             segments.add(newSegment);
         }
     }
@@ -305,7 +320,7 @@ public class HoughTransform {
     // Preconditions:
     //     points should be sorted either by X or Y
     //     segments != null, factory != null, points != null
-    private static void recognizeSegments(SortedSet<Point> points, List<LineSegment> segments) {
+    private static void recognizeSegments(HoughLine line, SortedSet<Point> points, List<LineSegment> segments) {
         Point segmentStart = points.first();
         Point segmentEnd = points.first();
 
@@ -313,7 +328,7 @@ public class HoughTransform {
             int gap = (int)(Math.pow(point.x - segmentEnd.x, 2) + Math.pow(point.y - segmentEnd.y, 2));
 
             if (gap > CONTINUOUS_LINE_MAX_GAP_SQ)  {// new segment detected?
-                createSegment(segmentStart, segmentEnd, segments);
+                createSegment(segmentStart, segmentEnd, line, segments);
                 segmentStart = point;
                 segmentEnd = point;
             } else {
@@ -322,7 +337,7 @@ public class HoughTransform {
         }
 
         // Add last segment
-        createSegment(segmentStart, segmentEnd, segments);
+        createSegment(segmentStart, segmentEnd, line, segments);
     }
 
     // Removes points that do not lie on line given by normal (r, theta)
