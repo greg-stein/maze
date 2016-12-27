@@ -264,8 +264,13 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.setFloorPlan(floorplan);
     }
 
-    public void setFloorPlan(List<IFloorPlanPrimitive> floorplan) {
+    public void setFloorPlan(List<? extends IFloorPlanPrimitive> floorplan) {
         mRenderer.setFloorPlan(floorplan);
+    }
+
+    public void setFloorPlan(List<? extends IFloorPlanPrimitive> floorplan, boolean inInit) {
+        mRenderer.setFloorPlan(floorplan);
+        if (!inInit) mRenderer.performQueuedTask();
     }
 
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {

@@ -279,7 +279,7 @@ public class GlEngine {
         return mFloorPlanPrimitives;
     }
 
-    public void setFloorPlan(List<IFloorPlanPrimitive> primitives) {
+    public void setFloorPlan(List<? extends IFloorPlanPrimitive> primitives) {
         mVerticesBuffer.clear();
         mIndicesBuffer.clear();
         for(IFloorPlanPrimitive primitive: primitives) {

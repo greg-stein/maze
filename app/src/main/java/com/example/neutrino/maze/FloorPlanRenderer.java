@@ -314,7 +314,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     private Runnable mQueuedTaskForGlThread = null;
-    public void setFloorPlan(final List<IFloorPlanPrimitive> primitives) {
+    public void setFloorPlan(final List<? extends IFloorPlanPrimitive> primitives) {
         mQueuedTaskForGlThread = new Runnable() {
             @Override
             public void run() {
@@ -329,6 +329,13 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 refreshGpuBuffers();
             }
         };
+    }
+
+    public void performQueuedTask() {
+        if (mQueuedTaskForGlThread != null) {
+            runOnGlThread(mQueuedTaskForGlThread);
+            mQueuedTaskForGlThread = null;
+        }
     }
 
     public void addPrimitive(IFloorPlanPrimitive primitive) {
