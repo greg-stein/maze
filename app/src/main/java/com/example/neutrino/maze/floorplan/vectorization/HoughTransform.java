@@ -5,16 +5,13 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Build;
-import android.support.v4.util.Pair;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -116,7 +113,6 @@ public class HoughTransform {
     // the number of points that have been added
     private int mNumPoints;
 
-//    private HoughBin[][] mBins;
     private ImageArray mImage;
 
     // cache of values of sin and cos for different theta values. Has a significant performance improvement.
@@ -154,8 +150,6 @@ public class HoughTransform {
 
         // Count how many points there are
         mNumPoints = 0;
-
-//        mBins = new HoughBin[MAX_THETA][mDoubleHeight];
     }
 
     /**
@@ -174,16 +168,6 @@ public class HoughTransform {
                 }
             }
         }
-
-
-//        for (int x = 0; x < mImageWidth; x++) {
-//            for (int y = 0; y < mImageHeight; y++) {
-//                // Find non-black pixels
-//                if ((mImage.get(x, y) & 0x000000ff) != 0x000000ff) {
-//                    addPoint(x, y);
-//                }
-//            }
-//        }
     }
 
     /**
@@ -205,11 +189,6 @@ public class HoughTransform {
 
             // Increment the hough array
             mHoughArray[t][r]++;
-
-//            if (mBins[t][r] == null) {
-//                mBins[t][r] = new HoughBin();
-//            }
-//            mBins[t][r].add(new Point(x, y));
         }
 
         mNumPoints++;
@@ -221,7 +200,7 @@ public class HoughTransform {
      *
      * @param threshold The  threshold above which lines are determined from the Hough space
      */
-    public List<LineSegment> getLines(int threshold) {
+    public List<LineSegment> getLineSegments(int threshold) {
 //        Set<Point> points = new HashSet<>();
         List<HoughLine> foundLines = new ArrayList<>(INIT_LINES_NUMBER);
         List<LineSegment> lineSegments = new ArrayList<>(50);
@@ -239,9 +218,6 @@ public class HoughTransform {
 
                     int peak = mHoughArray[t][r];
 
-//                    points.clear();
-//                    points.addAll(mBins[t][r]);
-
                     // Check that this peak is indeed the local maxima
                     for (int dx = -HOUGH_NEIGHBOURHOOD_SIZE; dx <= HOUGH_NEIGHBOURHOOD_SIZE; dx++) {
                         for (int dy = -HOUGH_NEIGHBOURHOOD_SIZE; dy <= HOUGH_NEIGHBOURHOOD_SIZE; dy++) {
@@ -253,25 +229,16 @@ public class HoughTransform {
                                 // found a bigger point nearby, skip
                                 continue loop;
                             }
-
-//                            // Take values from same column only
-//                            if ((dt == t) && mBins[dt][dr] != null) {
-//                                points.addAll(mBins[dt][dr]);
-//                            }
                         }
                     }
 
                     foundLines.add(new HoughLine(r, t));
-                    // calculate the true value of theta
-//                    double theta = t * THETA_STEP;
-//                    eliminateOutliers(r, t, points);
-//                    lineSegments.addAll(CollinearSegments.findCollinearSegments(r, theta, points));
                 }
             }
         }
 
         Map<HoughLine, SortedSet<Point>> linesToPointsMap;
-        linesToPointsMap = clasterize(mImage.pixelBufferChunks, foundLines);
+        linesToPointsMap = clusterize(mImage.pixelBufferChunks, foundLines);
         for (Map.Entry<HoughLine, SortedSet<Point>> linePoints : linesToPointsMap.entrySet()) {
             final HoughLine line = linePoints.getKey();
             final SortedSet<Point> points = linePoints.getValue();
@@ -284,9 +251,8 @@ public class HoughTransform {
 
     // I love generics
     // TODO: implement Iterable<Point> in PixelBufferChunk
-    private Map<HoughLine, SortedSet<Point>> clasterize(List<ImageArray.PixelBufferChunk> points, List<HoughLine> lines) {
+    private Map<HoughLine, SortedSet<Point>> clusterize(List<ImageArray.PixelBufferChunk> points, List<HoughLine> lines) {
         Map<HoughLine, SortedSet<Point>> linesToPointsMap = new HashMap<>();
-        List<Integer> govno = new ArrayList<>(100000);
 
         for (ImageArray.PixelBufferChunk chunk : points) {
             chunk.reset();
@@ -294,24 +260,19 @@ public class HoughTransform {
                 if (p.x == -1 && p.y == -1) continue; // removed pixel?
 
                 // Find closest line to the point
-//                int minDistanceToLine = Integer.MAX_VALUE;
                 HoughLine closestLine = null;
                 for (HoughLine line : lines) {
                     final float x = p.x - mCenterX;
                     final float y = p.y - mCenterY;
                     final int rho = (int) (x * cosCache[line.theta] + y * sinCache[line.theta]) + mHoughHeight;
-                    int rhoDiff = Math.abs(line.rho - rho);
 
-//                    if (rhoDiff < minDistanceToLine) {
                     //TODO: throw last bit of this comparison? & 0xFFFE
                     if (line.rho == rho) {
-//                        minDistanceToLine = rhoDiff;
                         closestLine = line;
                     }
                 }
 
                 if (closestLine == null) continue; // line of this point wasn't recognized (too short?)
-//                govno.add(minDistanceToLine);
                 SortedSet<Point> linePoints = linesToPointsMap.get(closestLine);
                 if (linePoints == null) {
                     final double theta = closestLine.theta * THETA_STEP; // real theta

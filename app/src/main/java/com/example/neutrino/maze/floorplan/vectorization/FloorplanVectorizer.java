@@ -7,12 +7,10 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Point;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Wall;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,9 +39,9 @@ public class FloorplanVectorizer {
 
         HoughTransform houghTransform = new HoughTransform(imageArray);
         houghTransform.buildHoughSpace();
-        List<HoughTransform.LineSegment> lines = houghTransform.getLines(50);
+        List<HoughTransform.LineSegment> lineSegments = houghTransform.getLineSegments(50);
 
-        List<Wall> walls = translateToWalls(lines);
+        List<Wall> walls = translateToWalls(lineSegments);
 
         return walls;
     }
@@ -56,7 +54,7 @@ public class FloorplanVectorizer {
 
         for (HoughTransform.LineSegment segment : lines) {
             Wall wall = new Wall(s * segment.start.x, s * segment.start.y,
-                    s * segment.end.x, s * segment.end.y);
+                    s * segment.end.x, s * segment.end.y, 0.01f);
             wall.setColor(AppSettings.wallColor);
             walls.add(wall);
         }
