@@ -43,6 +43,8 @@ import static org.junit.Assert.assertThat;
 public class MovingAverageQueueTests {
 
     private static final Logger LOGGER = Logger.getLogger(MovingAverageQueueTests.class.getName());
+    public static final String MAC1 = "01:02:03:04:05:06";
+    public static final String MAC2 = "0A:0B:0C:0D:0E:0F";
 
     @Test
     public void SomeTest() {
@@ -56,7 +58,7 @@ public class MovingAverageQueueTests {
     @Test
     public void parcelTest() {
 
-        ScanResult sr = buildScanResult("01:02:03:04:05:06", 70);
+        ScanResult sr = buildScanResult(MAC1, 70);
 
         ScanResult clone = cloneScanResult(sr);
 
@@ -71,7 +73,7 @@ public class MovingAverageQueueTests {
 
         long start = System.nanoTime();
         for (int i = 0; i < 1000000; i++) {
-            sr = buildScanResult("01:02:03:04:05:06", 70);
+            sr = buildScanResult(MAC1, 70);
         }
         long elapsedNanos = System.nanoTime() - start;
 
@@ -100,57 +102,57 @@ public class MovingAverageQueueTests {
         MovingAverageQueue queue = new MovingAverageQueue();
 
         List<ScanResult> scanResults1 = new ArrayList<>();
-        scanResults1.add(buildScanResult("01:02:03:04:05:06", 50));
+        scanResults1.add(buildScanResult(MAC1, 50));
         queue.add(scanResults1);
         Map.Entry<String, Integer> entry = Iterables.get(queue.getSumFingerprint().entrySet(), 0);
 
         assertNotNull(queue.getSumFingerprint());
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
-        assertThat(entry.getKey(), is(equalTo("01:02:03:04:05:06")));
+        assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(50)));
         assertThat(queue.getNumScans(), is(equalTo(1)));
 
         List<ScanResult> scanResults2 = new ArrayList<>();
-        scanResults2.add(buildScanResult("01:02:03:04:05:06", 70));
+        scanResults2.add(buildScanResult(MAC1, 70));
         queue.add(scanResults2);
         entry = Iterables.get(queue.getSumFingerprint().entrySet(), 0);
 
         assertNotNull(queue.getSumFingerprint());
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
-        assertThat(entry.getKey(), is(equalTo("01:02:03:04:05:06")));
+        assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(50 + 70)));
         assertThat(queue.getNumScans(), is(equalTo(2)));
 
         List<ScanResult> scanResults3 = new ArrayList<>();
-        scanResults3.add(buildScanResult("01:02:03:04:05:06", 30));
+        scanResults3.add(buildScanResult(MAC1, 30));
         queue.add(scanResults3);
         entry = Iterables.get(queue.getSumFingerprint().entrySet(), 0);
 
         assertNotNull(queue.getSumFingerprint());
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
-        assertThat(entry.getKey(), is(equalTo("01:02:03:04:05:06")));
+        assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(50 + 70 + 30)));
         assertThat(queue.getNumScans(), is(equalTo(3)));
 
         List<ScanResult> scanResults4 = new ArrayList<>();
-        scanResults4.add(buildScanResult("01:02:03:04:05:06", 90));
+        scanResults4.add(buildScanResult(MAC1, 90));
         queue.add(scanResults4);
         entry = Iterables.get(queue.getSumFingerprint().entrySet(), 0);
 
         assertNotNull(queue.getSumFingerprint());
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
-        assertThat(entry.getKey(), is(equalTo("01:02:03:04:05:06")));
+        assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(70 + 30 + 90)));
         assertThat(queue.getNumScans(), is(equalTo(3)));
 
         List<ScanResult> scanResults5 = new ArrayList<>();
-        scanResults5.add(buildScanResult("01:02:03:04:05:06", 60));
+        scanResults5.add(buildScanResult(MAC1, 60));
         queue.add(scanResults5);
         entry = Iterables.get(queue.getSumFingerprint().entrySet(), 0);
 
         assertNotNull(queue.getSumFingerprint());
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
-        assertThat(entry.getKey(), is(equalTo("01:02:03:04:05:06")));
+        assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(30 + 90 + 60)));
         assertThat(queue.getNumScans(), is(equalTo(3)));
     }
@@ -160,57 +162,57 @@ public class MovingAverageQueueTests {
         MovingAverageQueue queue = new MovingAverageQueue();
 
         List<ScanResult> scanResults1 = new ArrayList<>();
-        scanResults1.add(buildScanResult("01:02:03:04:05:06", -50));
+        scanResults1.add(buildScanResult(MAC1, -50));
         queue.add(scanResults1);
         Map.Entry<String, Integer> entry = Iterables.get(queue.getSumFingerprint().entrySet(), 0);
 
         assertNotNull(queue.getSumFingerprint());
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
-        assertThat(entry.getKey(), is(equalTo("01:02:03:04:05:06")));
+        assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(-50)));
         assertThat(queue.getNumScans(), is(equalTo(1)));
 
         List<ScanResult> scanResults2 = new ArrayList<>();
-        scanResults2.add(buildScanResult("01:02:03:04:05:06", -70));
+        scanResults2.add(buildScanResult(MAC1, -70));
         queue.add(scanResults2);
         entry = Iterables.get(queue.getSumFingerprint().entrySet(), 0);
 
         assertNotNull(queue.getSumFingerprint());
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
-        assertThat(entry.getKey(), is(equalTo("01:02:03:04:05:06")));
+        assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(-50 + -70)));
         assertThat(queue.getNumScans(), is(equalTo(2)));
 
         List<ScanResult> scanResults3 = new ArrayList<>();
-        scanResults3.add(buildScanResult("01:02:03:04:05:06", -30));
+        scanResults3.add(buildScanResult(MAC1, -30));
         queue.add(scanResults3);
         entry = Iterables.get(queue.getSumFingerprint().entrySet(), 0);
 
         assertNotNull(queue.getSumFingerprint());
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
-        assertThat(entry.getKey(), is(equalTo("01:02:03:04:05:06")));
+        assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(-50 + -70 + -30)));
         assertThat(queue.getNumScans(), is(equalTo(3)));
 
         List<ScanResult> scanResults4 = new ArrayList<>();
-        scanResults4.add(buildScanResult("01:02:03:04:05:06", -90));
+        scanResults4.add(buildScanResult(MAC1, -90));
         queue.add(scanResults4);
         entry = Iterables.get(queue.getSumFingerprint().entrySet(), 0);
 
         assertNotNull(queue.getSumFingerprint());
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
-        assertThat(entry.getKey(), is(equalTo("01:02:03:04:05:06")));
+        assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(-70 + -30 + -90)));
         assertThat(queue.getNumScans(), is(equalTo(3)));
 
         List<ScanResult> scanResults5 = new ArrayList<>();
-        scanResults5.add(buildScanResult("01:02:03:04:05:06", -60));
+        scanResults5.add(buildScanResult(MAC1, -60));
         queue.add(scanResults5);
         entry = Iterables.get(queue.getSumFingerprint().entrySet(), 0);
 
         assertNotNull(queue.getSumFingerprint());
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
-        assertThat(entry.getKey(), is(equalTo("01:02:03:04:05:06")));
+        assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(-30 + -90 + -60)));
         assertThat(queue.getNumScans(), is(equalTo(3)));
     }
