@@ -57,6 +57,7 @@ public class ImageArrayTests {
 
         Bitmap bitmap = Bitmap.createBitmap(colors, 3, 3, Bitmap.Config.ARGB_8888);
         ImageArray imageArray = new ImageArray(bitmap);
+        imageArray.findBlackPixels();
 
         assertThat(imageArray.blackPixelsNum, is(equalTo(4)));
         assertNotNull(imageArray.pixelBufferChunks);
@@ -81,6 +82,7 @@ public class ImageArrayTests {
         Arrays.fill(colors, Color.BLACK);
         Bitmap bitmap = Bitmap.createBitmap(colors, IMAGE_WIDTH, colors.length/IMAGE_WIDTH, Bitmap.Config.ARGB_8888);
         ImageArray imageArray = new ImageArray(bitmap);
+        imageArray.findBlackPixels();
 
         assertThat(imageArray.blackPixelsNum, is(equalTo(colors.length - 1))); // 1 - first pixel (0, 0) is ignored
         assertNotNull(imageArray.pixelBufferChunks);
