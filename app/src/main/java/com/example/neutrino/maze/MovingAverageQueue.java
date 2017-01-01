@@ -4,7 +4,9 @@ import android.net.wifi.ScanResult;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 /**
@@ -15,6 +17,8 @@ public class MovingAverageQueue {
     private int mMaxScans = MAX_SCANS_TO_AVERAGE;
     private WiFiTug.Fingerprint mSumFingerprint = new WiFiTug.Fingerprint();
     private Queue<List<ScanResult>> mQueue = new ArrayDeque<>(mMaxScans);
+    // Maintain map of counters per MAC, counter++ in case scanResult.level present
+    private Map<String, Integer> counters = new HashMap<>();
 
     @Deprecated
     private final List<ScanResult> mAverageScans = new ArrayList<>();
@@ -40,9 +44,11 @@ public class MovingAverageQueue {
                 int iSum = oSum; // unbox
                 iSum += scanResult.level;
                 mSumFingerprint.put(scanResult.BSSID, iSum);
-            }
-            else {
+                int counter = counters.get(scanResult.BSSID);
+                counters.put(scanResult.BSSID, counter + 1);
+            } else {
                 mSumFingerprint.put(scanResult.BSSID, scanResult.level);
+                counters.put(scanResult.BSSID, 1);
             }
         }
     }
@@ -51,7 +57,9 @@ public class MovingAverageQueue {
         for(ScanResult scanResult : scanResults) {
             // Scan result with this`` MAC should exist
             int sum = mSumFingerprint.get(scanResult.BSSID);
+            int counter = counters.get(scanResult.BSSID);
             mSumFingerprint.put(scanResult.BSSID, sum - scanResult.level);
+            counters.put(scanResult.BSSID, counter - 1);
         }
     }
 
@@ -64,7 +72,7 @@ public class MovingAverageQueue {
     public WiFiTug.Fingerprint getSumFingerprint() {
         return mSumFingerprint;
     }
-
+    public Map<String, Integer> getCounters() { return counters; }
     public int getNumScans() {
         return mQueue.size();
     }

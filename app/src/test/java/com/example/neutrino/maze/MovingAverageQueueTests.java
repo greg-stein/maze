@@ -217,9 +217,36 @@ public class MovingAverageQueueTests {
         assertThat(queue.getNumScans(), is(equalTo(3)));
     }
 
+
     @Test
     public void twoApTest() {
+        MovingAverageQueue queue = new MovingAverageQueue();
 
+        List<ScanResult> scanResults1 = new ArrayList<>();
+        scanResults1.add(buildScanResult(MAC1, -50));
+        queue.add(scanResults1);
+
+        List<ScanResult> scanResults2 = new ArrayList<>();
+        scanResults2.add(buildScanResult(MAC1, -30));
+        scanResults2.add(buildScanResult(MAC2, -70));
+        queue.add(scanResults2);
+
+        WiFiTug.Fingerprint sum = queue.getSumFingerprint();
+        Map<String, Integer> counters = queue.getCounters();
+
+        assertNotNull(sum);
+        assertNotNull(counters);
+
+        Map.Entry<String, Integer> entry = Iterables.get(queue.getSumFingerprint().entrySet(), 0);
+        int sumMac1 = sum.get(MAC1);
+        int counter1 = counters.get(MAC1);
+        assertThat(sumMac1, is(equalTo(-50 + -30)));
+        assertThat(counter1, is(equalTo(2)));
+
+        int sumMac2 = sum.get(MAC2);
+        int counter2 = counters.get(MAC2);
+        assertThat(sumMac2, is(equalTo(-70)));
+        assertThat(counter2, is(equalTo(1)));
     }
 
     // OMG, thanks Google. To mock ScanResult I need to use reflection.
@@ -247,4 +274,6 @@ public class MovingAverageQueueTests {
 
         return sr;
     }
+
+
 }

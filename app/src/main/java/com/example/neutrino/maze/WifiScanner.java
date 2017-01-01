@@ -46,7 +46,7 @@ public class WifiScanner extends BroadcastReceiver {
 
             mQueue.add(mLastScan);
 
-            emitWiFiFingerprintAvailableEvent(mQueue.getSumFingerprint(), mQueue.getNumScans());
+            emitWiFiFingerprintAvailableEvent(mQueue.getSumFingerprint(), mQueue.getCounters());
             mScanId++;
         }
     }
@@ -58,13 +58,13 @@ public class WifiScanner extends BroadcastReceiver {
     public void setFingerprintAvailableListener(IFingerprintAvailableListener listener) {
         this.mFingerprintAvailableListener = listener;
     }
-    private void emitWiFiFingerprintAvailableEvent(WiFiTug.Fingerprint scanResultsSums, int numScans) {
+    private void emitWiFiFingerprintAvailableEvent(WiFiTug.Fingerprint scanResultsSums, Map<String, Integer> numScans) {
         if (mFingerprintAvailableListener != null) {
             WiFiTug.Fingerprint fingerprint = new WiFiTug.Fingerprint();
 
             for (Map.Entry<String, Integer> entry : scanResultsSums.entrySet()) {
 //                int level = WifiManager.calculateSignalLevel(entry.getValue()/numScans, MAX_WIFI_LEVEL);
-                fingerprint.put(entry.getKey(), entry.getValue()/numScans /*level*/);
+                fingerprint.put(entry.getKey(), entry.getValue()/numScans.get(entry.getKey()) /*level*/);
             }
 
             mFingerprintAvailableListener.onFingerprintAvailable(fingerprint);
