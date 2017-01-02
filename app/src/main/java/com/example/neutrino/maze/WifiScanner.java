@@ -63,8 +63,10 @@ public class WifiScanner extends BroadcastReceiver {
             WiFiTug.Fingerprint fingerprint = new WiFiTug.Fingerprint();
 
             for (Map.Entry<String, Integer> entry : scanResultsSums.entrySet()) {
-//                int level = WifiManager.calculateSignalLevel(entry.getValue()/numScans, MAX_WIFI_LEVEL);
-                fingerprint.put(entry.getKey(), entry.getValue()/numScans.get(entry.getKey()) /*level*/);
+                final Integer scansCounter = numScans.get(entry.getKey());
+                if (scansCounter > 0) {
+                    fingerprint.put(entry.getKey(), entry.getValue() / scansCounter /*level*/);
+                }
             }
 
             mFingerprintAvailableListener.onFingerprintAvailable(fingerprint);
