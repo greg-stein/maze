@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.os.Build;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -34,7 +33,7 @@ public class HoughTransform {
         public int compare(Point p1, Point p2) {
             int compare = Integer.compare(p1.x, p2.x);
             // Make compare method consistent with equals which is NOT used by treeset
-            if (compare == 0 && !p1.equals(p2)) return 1;
+            if (compare == 0 && !p1.equals(p2)) return Integer.compare(p1.y, p2.y);
             return compare;
         }
     };
@@ -44,7 +43,7 @@ public class HoughTransform {
         public int compare(Point p1, Point p2) {
             int compare = Integer.compare(p1.y, p2.y);
             // Make compare method consistent with equals which is NOT used by treeset
-            if (compare == 0 && !p1.equals(p2)) return 1;
+            if (compare == 0 && !p1.equals(p2)) return Integer.compare(p1.x, p2.x);
             return compare;
         }
     };
@@ -71,7 +70,7 @@ public class HoughTransform {
         }
     }
 
-    public static class LineSegment {
+    public static class LineSegment implements Comparable<LineSegment> {
         private HoughLine line;
         public Point start;
         public Point end;
@@ -84,6 +83,40 @@ public class HoughTransform {
         public LineSegment(Point start, Point end, HoughLine line) {
             this(start, end);
             this.line = line;
+        }
+
+        @Override
+        public int compareTo(LineSegment another) {
+
+            if (this.start.x < another.start.x)
+                return -1;
+            if (this.start.x > another.start.x)
+                return 1;
+            if (this.end.x < another.end.x)
+                return -1;
+            if (this.end.x > another.end.x)
+                return 1;
+
+            if (this.start.y < another.start.y)
+                return -1;
+            if (this.start.y > another.start.y)
+                return 1;
+            if (this.end.y < another.end.y)
+                return -1;
+            if (this.end.y > another.end.y)
+                return 1;
+
+            return 0;
+        }
+
+        public boolean equals (LineSegment another) {
+            return (this.compareTo(another) == 0);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof LineSegment)) return false;
+            return equals((LineSegment)o);
         }
     }
 
@@ -261,7 +294,46 @@ public class HoughTransform {
     // If collinear (or almost) segments intersect or have very close start/end points
     // we want to merge these segments into one
     private List<LineSegment> mergeSegments(List<LineSegment> lineSegments) {
-        return lineSegments;
+
+        HashMap<HoughLine, SortedSet<LineSegment>> segmentsByLine = new HashMap<>();
+
+        // Organize all segments by their HoughLine (rho,theta) in a sorted set
+        for (LineSegment s: lineSegments) {
+            if (segmentsByLine.get(s.line) == null) {
+                segmentsByLine.put(s.line, new TreeSet<LineSegment>());
+            }
+            segmentsByLine.get(s.line).add(s);
+        }
+
+        List<LineSegment> mergedSegments = new ArrayList<>();
+
+        for (SortedSet<LineSegment> set: segmentsByLine.values()) { // Merge for this (rho,theta)
+            List<LineSegment> mergedList = mergeSegmentsSameLine(set);
+            mergedSegments.addAll(mergedList);
+        }
+
+        return mergedSegments;
+    }
+
+    private List<LineSegment> mergeSegmentsSameLine(SortedSet<LineSegment> set) {
+        List<LineSegment> newlist = new ArrayList<>();
+
+        LineSegment current = set.first();   // Assume there is always a first otherwise why are we even here
+
+        for (LineSegment seg : set) {
+            if (X_COMPARATOR.compare(seg.start, current.end) < 0) {     // starts inside current segment
+                if (X_COMPARATOR.compare(seg.end, current.end) > 0) {   // ends outside current segment
+                    current.end = seg.end;                              // extend current segment
+                }
+            } else {    // TODO: add condition for close segments
+                newlist.add(current);                                   // starts after current segment - so current segment is finalized
+                current = seg;                                          // now this is the current segment
+            }
+        }
+
+        newlist.add(current);   // Add the last segment
+
+        return newlist;
     }
 
     // I love generics
