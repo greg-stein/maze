@@ -48,7 +48,7 @@ public class HoughTransform {
         }
     };
 
-    private static class HoughLine {
+    public static class HoughLine {
         public int rho;
         public int theta;
 
@@ -290,10 +290,7 @@ public class HoughTransform {
         return mergedSegments;
     }
 
-    // TODO: IMPLEMENT THIS
-    // If collinear (or almost) segments intersect or have very close start/end points
-    // we want to merge these segments into one
-    private List<LineSegment> mergeSegments(List<LineSegment> lineSegments) {
+    public static List<LineSegment> mergeSegments(List<LineSegment> lineSegments) {
 
         HashMap<HoughLine, SortedSet<LineSegment>> segmentsByLine = new HashMap<>();
 
@@ -315,13 +312,13 @@ public class HoughTransform {
         return mergedSegments;
     }
 
-    private List<LineSegment> mergeSegmentsSameLine(SortedSet<LineSegment> set) {
+    public static List<LineSegment> mergeSegmentsSameLine(SortedSet<LineSegment> set) {
         List<LineSegment> newlist = new ArrayList<>();
 
         LineSegment current = set.first();   // Assume there is always a first otherwise why are we even here
 
         for (LineSegment seg : set) {
-            if (X_COMPARATOR.compare(seg.start, current.end) < 0) {     // starts inside current segment
+            if (X_COMPARATOR.compare(seg.start, current.end) <= 0) {     // starts inside current segment (or at boundary)
                 if (X_COMPARATOR.compare(seg.end, current.end) > 0) {   // ends outside current segment
                     current.end = seg.end;                              // extend current segment
                 }
