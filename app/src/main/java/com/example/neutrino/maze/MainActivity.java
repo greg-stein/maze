@@ -330,18 +330,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                String jsonString = null;// = PersistenceLayer.loadFloorPlan();
+                String jsonString = PersistenceLayer.loadFloorPlan();
 
-                try {
-                    Resources res = getResources();
-                    InputStream in_s = res.openRawResource(R.raw.floorplan_greg_home_2nd_floor);
-
-                    byte[] b = new byte[in_s.available()];
-                    in_s.read(b);
-                    jsonString = new String(b);
-                } catch (Exception e) {
-                     e.printStackTrace();
-                }
+//                try {
+//                    Resources res = getResources();
+//                    InputStream in_s = res.openRawResource(R.raw.floorplan_greg_home_2nd_floor);
+//
+//                    byte[] b = new byte[in_s.available()];
+//                    in_s.read(b);
+//                    jsonString = new String(b);
+//                } catch (Exception e) {
+//                     e.printStackTrace();
+//                }
 
                 if (jsonString != null) {
                     List<IFloorPlanPrimitive> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
