@@ -241,7 +241,8 @@ public class WiFiTugTests {
         marks.add(dMark = new WifiMark(0, -1, d));
         marks.add(eMark = new WifiMark(10, 10, e)); // outlier
 
-        WiFiTug.eliminateOutliers(marks);
+        PointF centroid = new PointF();
+        WiFiTug.eliminateOutliers(marks, centroid);
 
         assertThat(marks, hasSize(4));
         assertThat(marks, not(hasItem(eMark)));
@@ -281,7 +282,8 @@ public class WiFiTugTests {
 
         List<WifiMark> originalMarks = new ArrayList<>(marks);
 
-        WiFiTug.eliminateOutliers(marks);
+        PointF centroid = new PointF();
+        WiFiTug.eliminateOutliers(marks, centroid);
 
         assertThat(marks, hasSize(5));
         assertThat(marks, hasItem(eMark));

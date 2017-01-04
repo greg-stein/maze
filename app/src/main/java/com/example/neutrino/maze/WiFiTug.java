@@ -193,19 +193,19 @@ public class WiFiTug implements TugOfWar.ITugger {
     }
 
     // Returns centroid
-    public static PointF eliminateOutliers(List<WifiMark> wifiMarks) {
+    public static boolean eliminateOutliers(List<WifiMark> wifiMarks, PointF mean) {
         final float ALPHA = 0.05f;
 
         int n = wifiMarks.size();
 
-        if (n < 3) return null;
+        if (n < 3) return false;
 
         TDistribution t = new TDistribution(n-2);
         float confidence = ALPHA / (2 * n);
         float criticalValue = (float) -t.inverseCumulativeProbability(confidence);
 
         // Centroid calculation
-        PointF mean = new PointF();
+        mean.set(0, 0);
         for (WifiMark mark : wifiMarks) {
             mean.x += mark.getCenter().x;
             mean.y += mark.getCenter().y;
@@ -221,6 +221,7 @@ public class WiFiTug implements TugOfWar.ITugger {
         standardDeviation = (float) Math.sqrt(standardDeviation / n);
 
         // Grubb's test (https://en.wikipedia.org/wiki/Grubbs%27_test_for_outliers)
+        boolean outlierFound = false;
         float grubbsTestThreshold = (float) ((n-1)/Math.sqrt(n) * criticalValue / Math.sqrt(n - 2 + Math.pow(criticalValue, 2)));
         for(Iterator<WifiMark> i = wifiMarks.iterator(); i.hasNext();) {
             WifiMark mark = i.next();
@@ -228,10 +229,11 @@ public class WiFiTug implements TugOfWar.ITugger {
             float g = (float) (Math.sqrt(Math.pow(center.x - mean.x, 2) + Math.pow(center.y - mean.y, 2))/standardDeviation);
             if (g > grubbsTestThreshold) {
                 i.remove();
+                outlierFound = true;
             }
         }
 
-        return mean;
+        return outlierFound;
     }
 
     public static void eliminateInvisibles(PointF currentPos, List<WifiMark> marks, List<Wall> walls) {
@@ -295,12 +297,17 @@ public class WiFiTug implements TugOfWar.ITugger {
         float weightSum = 0;
 
         List<WifiMark> wifiMarks = getMarksWithSameAps(marks, currentFingerprint);
-        PointF centroid = eliminateOutliers(wifiMarks);
+//        List<WifiMark> wifiMarks = getMostCorrelatedMarks(currentFingerprint, marks);
+        PointF centroid = new PointF();
+        boolean outlierFound;
+        do {
+            outlierFound = eliminateOutliers(wifiMarks, centroid);
+        } while (outlierFound);
 
-        for (int i = 0; i < CENTROID_OPT_ITERATIONS; i++) {
-            if (centroid != null) {
-                eliminateInvisibles(centroid, wifiMarks, walls);
-            }
+//        for (int i = 0; i < CENTROID_OPT_ITERATIONS; i++) {
+//            if (centroid != null) {
+//                eliminateInvisibles(centroid, wifiMarks, walls);
+//            }
 
             for (WifiMark mark : wifiMarks) {
                 Fingerprint markFingerprint = mark.getFingerprint();
@@ -313,8 +320,8 @@ public class WiFiTug implements TugOfWar.ITugger {
             }
 
             position.set(x / weightSum, y / weightSum);
-            centroid = position;
-        }
+//            centroid = position;
+//        }
 //        String table = buildWifiTable();
 //        String fingerprintTable = buildFingerprintTable();
 //        String wallsTable = buildWallsTable();
