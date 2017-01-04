@@ -54,7 +54,7 @@ public class FloorplanVectorizer {
 
         for (HoughTransform.LineSegment segment : lines) {
             Wall wall = new Wall(s * segment.start.x, s * segment.start.y,
-                    s * segment.end.x, s * segment.end.y, 0.01f);
+                    s * segment.end.x, s * segment.end.y); // Width for debug: , 0.01f
             wall.setColor(AppSettings.wallColor);
             walls.add(wall);
         }
