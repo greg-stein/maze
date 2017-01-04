@@ -271,9 +271,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onClick(View view) {
                 mIsMapRotationLocked = !mIsMapRotationLocked;
                 if (mIsMapRotationLocked) {
-                    uiFabMapRotateLock.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+                    exciteFab(uiFabMapRotateLock);
                 } else {
-                    uiFabMapRotateLock.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                    calmFab(uiFabMapRotateLock);
                 }
 
                 // if (enable) {
@@ -528,7 +528,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabMapRotateLock.hide();
     }
 
-    // TODO: add func for moving fab into 'exciting' mode (change tint color)
     private FloatingActionButton.OnVisibilityChangedListener mPreserveAlphaOnShow = new FloatingActionButton.OnVisibilityChangedListener() {
         @Override
         public void onShown(FloatingActionButton fab) {
@@ -542,62 +541,68 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         getResources().getValue(R.dimen.alpha_default, outValue, true);
         return outValue.getFloat();
     }
+    private void exciteFab(FloatingActionButton fab) {
+        fab.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+    }
+    private void calmFab(FloatingActionButton fab) {
+        fab.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+    }
 
     private void updateOperationFabsState() {
         switch (uiFloorPlanView.operation) {
             case ADD_WALL:
-                uiFabDeleteWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
-                uiFabAddWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
-                uiFabSetLocation.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                calmFab(uiFabDeleteWall);
+                exciteFab(uiFabAddWall);
+                calmFab(uiFabSetLocation);
                 break;
             case REMOVE_WALL:
-                uiFabDeleteWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
-                uiFabAddWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
-                uiFabSetLocation.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                exciteFab(uiFabDeleteWall);
+                calmFab(uiFabAddWall);
+                calmFab(uiFabSetLocation);
                 break;
             case SET_LOCATION:
-                uiFabDeleteWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
-                uiFabAddWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
-                uiFabSetLocation.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+                calmFab(uiFabDeleteWall);
+                calmFab(uiFabAddWall);
+                exciteFab(uiFabSetLocation);
                 break;
             case NONE:
-                uiFabDeleteWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
-                uiFabAddWall.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
-                uiFabSetLocation.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                calmFab(uiFabDeleteWall);
+                calmFab(uiFabAddWall);
+                calmFab(uiFabSetLocation);
                 break;
         }
     }
 
     private void updateAutobuilderFabsState() {
         if ((uiFloorPlanView.autobuilderMode & uiFloorPlanView.BUILDER_MODE_LEFT) != 0) {
-            uiFabAutobuilderLeft.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+            exciteFab(uiFabAutobuilderLeft);
         }
         else {
-            uiFabAutobuilderLeft.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+            calmFab(uiFabAutobuilderLeft);
         }
 
         if ((uiFloorPlanView.autobuilderMode & uiFloorPlanView.BUILDER_MODE_RIGHT) != 0) {
-            uiFabAutobuilderRight.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+            exciteFab(uiFabAutobuilderRight);
         }
         else {
-            uiFabAutobuilderRight.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+            calmFab(uiFabAutobuilderRight);
         }
 
         switch (uiFloorPlanView.autobuilderMode) {
             case FloorPlanView.BUILDER_MODE_NONE:
-                uiFabAutobuilderMode.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                calmFab(uiFabAutobuilderMode);
                 uiFabAutobuilderMode.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_directions_walk_white_24dp));
                 break;
             case FloorPlanView.BUILDER_MODE_LEFT:
-                uiFabAutobuilderMode.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+                exciteFab(uiFabAutobuilderMode);
                 uiFabAutobuilderMode.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_directions_walk_left_wall_white_24dp));
                 break;
             case FloorPlanView.BUILDER_MODE_RIGHT:
-                uiFabAutobuilderMode.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+                exciteFab(uiFabAutobuilderMode);
                 uiFabAutobuilderMode.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_directions_walk_right_wall_white_24dp));
                 break;
             case FloorPlanView.BUILDER_MODE_BOTH:
-                uiFabAutobuilderMode.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+                exciteFab(uiFabAutobuilderMode);
                 uiFabAutobuilderMode.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_directions_walk_both_walls_white_24dp));
                 break;
         }
