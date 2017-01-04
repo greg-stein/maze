@@ -19,6 +19,8 @@ import org.apache.commons.math3.distribution.TDistribution;
  */
 public class WiFiTug implements TugOfWar.ITugger {
 
+    private static final double CORR_THRESHOLD = 0.9;
+
     public static List<WifiMark> centroidMarks = null;
     // 20% of total marks
     public static final float CLOSEST_MARKS_PERCENTAGE = 0.2f;
@@ -125,6 +127,33 @@ public class WiFiTug implements TugOfWar.ITugger {
         // division by zero handling:
         if (distance == 0.0f) distance = Float.MIN_VALUE;
         return distance;
+    }
+
+    public static double correlation(Fingerprint actual, Fingerprint reference) {
+        double sum = 0;
+        double lenX = 0;
+        double lenY = 0;
+        int counter = 0;
+
+        for (String mac : actual.keySet()) {
+            int x = actual.get(mac);
+            int y = -1000;
+            if (reference.containsKey(mac)) {
+                y = reference.get(mac);
+                counter++;
+            }
+            double xD = Math.pow(10, x/20f);
+            double yD = Math.pow(10, y/20f);
+            System.out.println(String.format("x=%d y=%d", x, y));
+            sum += xD * yD;
+            lenX += xD * xD;
+            lenY += yD * yD;
+        }
+
+        System.out.println(String.format("COUNTER: %d", counter));
+        final double lenProduct = lenX * lenY;
+        if (lenProduct == 0) return 0;
+        return sum / Math.sqrt(lenProduct);
     }
 
     public static List<WifiMark> getSimilarMarks(List<WifiMark> wifiMarks, Fingerprint fingerprint, float percentage) {
@@ -240,6 +269,23 @@ public class WiFiTug implements TugOfWar.ITugger {
         }
 
         return previousMarks;
+    }
+
+    public static List<WifiMark> getMostCorrelatedMarks(Fingerprint fingerprint, List<WifiMark> marks) {
+        List<WifiMark> correlatedMarks = new ArrayList<>();
+
+        for(Iterator<WifiMark> i = marks.iterator(); i.hasNext();) {
+            WifiMark mark = i.next();
+
+            Fingerprint markFingerprint = mark.getFingerprint();
+            double correlation = correlation(fingerprint, markFingerprint);
+            if (correlation < CORR_THRESHOLD) {
+                correlatedMarks.add(mark);
+                i.remove();
+            }
+        }
+
+        return correlatedMarks;
     }
 
     @Override
