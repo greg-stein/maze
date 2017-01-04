@@ -20,10 +20,7 @@ import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.ListViewCompat;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -70,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FloatingActionButton uiFabFindMeOnMap;
     private FloatingActionButton uiFabAddFloorplanFromPic;
     private FloatingActionButton uiFabAddFloorplanFromGallery;
+    private FloatingActionButton uiFabMapRotateLock;
     private EditText uiWallLengthText;
 
     // Map north angle
@@ -114,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final float LOW_PASS_ALPHA = 0.5f;
     private static final PointF mCurrentLocation = new PointF();
     private float mCurrentWallLength = 1;
+    private boolean mIsMapRotationLocked = false;
 
     public MainActivity() {
         mTow.registerTugger(mWiFiTug);
@@ -135,6 +134,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabFindMeOnMap = (FloatingActionButton) findViewById(R.id.fab_find_me_on_map);
         uiFabAddFloorplanFromPic = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_camera);
         uiFabAddFloorplanFromGallery = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_gallery);
+        uiFabMapRotateLock = (FloatingActionButton) findViewById(R.id.fab_map_rotate_lock);
         uiModeSwitch = (ToggleButton) findViewById(R.id.tb_edit_mode);
         uiWallLengthText = (EditText) findViewById(R.id.et_wall_length);
 
@@ -263,6 +263,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     return true;
                 }
                 return false;
+            }
+        });
+
+        uiFabMapRotateLock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mIsMapRotationLocked = !mIsMapRotationLocked;
+                if (mIsMapRotationLocked) {
+                    uiFabMapRotateLock.setBackgroundTintList(ColorStateList.valueOf(AppSettings.primaryDarkColor));
+                } else {
+                    uiFabMapRotateLock.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
+                }
+
+                // if (enable) {
+                //     rememberedNorth = currentNorth
+                //     disable map rotation
+                // } else {
+                //     angleDiff = currentNorth - rememberedNorth
+                //     rerotate map
+                //     enable map rotation
+                // }
             }
         });
 
@@ -401,6 +422,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     uiFabAutobuilderMode.show(mPreserveAlphaOnShow);
                     uiFabAddFloorplanFromPic.show(mPreserveAlphaOnShow);
                     uiFabAddFloorplanFromGallery.show(mPreserveAlphaOnShow);
+                    uiFabMapRotateLock.show(mPreserveAlphaOnShow);
                 } else {
                     uiToolbar.setBackgroundColor(AppSettings.primaryColor);
                     uiFabDeleteWall.hide();
@@ -409,6 +431,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     uiFabAutobuilderMode.hide();
                     uiFabAddFloorplanFromPic.hide();
                     uiFabAddFloorplanFromGallery.hide();
+                    uiFabMapRotateLock.hide();
 
                     String jsonString = uiFloorPlanView.getFloorPlanAsJSon();
                     PersistenceLayer.saveFloorPlan(jsonString);
@@ -502,8 +525,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabAutobuilderMode.hide();
         uiFabAddFloorplanFromPic.hide();
         uiFabAddFloorplanFromGallery.hide();
+        uiFabMapRotateLock.hide();
     }
 
+    // TODO: add func for moving fab into 'exciting' mode (change tint color)
     private FloatingActionButton.OnVisibilityChangedListener mPreserveAlphaOnShow = new FloatingActionButton.OnVisibilityChangedListener() {
         @Override
         public void onShown(FloatingActionButton fab) {
@@ -691,7 +716,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (gotRotationMatrix) {
             SensorManager.getOrientation(mRotationMatrix, mOrientation);
             float degree = Math.round(Math.toDegrees(mOrientation[0]) + mapNorth);
-            uiFloorPlanView.updateAngle(currentDegree - degree);
+            if (!mIsMapRotationLocked) {
+                uiFloorPlanView.updateAngle(currentDegree - degree);
+            }
             currentDegree = degree;
         }
     }
