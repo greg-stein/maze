@@ -80,6 +80,12 @@ public class Wall extends FloorPlanPrimitiveBase {
         VectorHelper.splitLine(mA, mB, mWidth/2, mVertices);
     }
 
+    @Override
+    public void scaleVertices(float scaleFactor) {
+        mA.set(mA.x * scaleFactor, mA.y * scaleFactor);
+        mB.set(mB.x * scaleFactor, mB.y * scaleFactor);
+    }
+
     public boolean hasPoint(float x, float y) {
         // First test if the point within bounding box of line
         RectF boundingBox = new RectF(mA.x, mA.y, mB.x, mB.y);

@@ -33,4 +33,6 @@ public interface IFloorPlanPrimitive {
     boolean isRemoved();
 
     void cloak();
+
+    void scaleVertices(float scaleFactor);
 }

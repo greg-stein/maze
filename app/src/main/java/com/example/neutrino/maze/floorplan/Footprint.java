@@ -67,6 +67,11 @@ public class Footprint extends FloorPlanPrimitiveBase {
     }
 
     @Override
+    public void scaleVertices(float scaleFactor) {
+        mCenter.set(mCenter.x * scaleFactor, mCenter.y * scaleFactor);
+    }
+
+    @Override
     public boolean equals(Object another) {
         if (!super.equals(another)) return false;
         if (!(another instanceof Footprint)) return false;

@@ -13,7 +13,6 @@ import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -75,6 +74,10 @@ public class FloorPlanView extends GLSurfaceView {
     public void highlightCentroidMarks(List<WifiMark> centroidMarks) {
         if (centroidMarks == null) return;
         mRenderer.highlightCentroidMarks(centroidMarks);
+    }
+
+    public void rescaleMap(float scaleFactor) {
+        mRenderer.rescaleFloorplan(scaleFactor);
     }
 
     public enum Operation {

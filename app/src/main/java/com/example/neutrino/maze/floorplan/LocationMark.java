@@ -66,6 +66,11 @@ public class LocationMark extends FloorPlanPrimitiveBase {
         VectorHelper.buildRing(mCenter, mInnerRadius, mOuterRadius, SEGMENTS_NUM, mVertices);
     }
 
+    @Override
+    public void scaleVertices(float scaleFactor) {
+        mCenter.set(mCenter.x * scaleFactor, mCenter.y * scaleFactor);
+    }
+
     public void setCenter(PointF center) {
         mCenter.set(center);
     }

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -21,13 +20,20 @@ import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ListViewCompat;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,8 +48,6 @@ import com.example.neutrino.maze.floorplan.vectorization.FloorplanVectorizer;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -66,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FloatingActionButton uiFabFindMeOnMap;
     private FloatingActionButton uiFabAddFloorplanFromPic;
     private FloatingActionButton uiFabAddFloorplanFromGallery;
-    private TextView uiWallLengthText;
+    private EditText uiWallLengthText;
 
     // Map north angle
     private float mapNorth = 0.0f;
@@ -109,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      */
     private static final float LOW_PASS_ALPHA = 0.5f;
     private static final PointF mCurrentLocation = new PointF();
+    private float mCurrentWallLength = 1;
 
     public MainActivity() {
         mTow.registerTugger(mWiFiTug);
@@ -131,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabAddFloorplanFromPic = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_camera);
         uiFabAddFloorplanFromGallery = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_gallery);
         uiModeSwitch = (ToggleButton) findViewById(R.id.tb_edit_mode);
-        uiWallLengthText = (TextView) findViewById(R.id.tv_wall_length);
+        uiWallLengthText = (EditText) findViewById(R.id.et_wall_length);
 
         setSupportActionBar(uiToolbar);
         getSupportActionBar().setTitle("");
@@ -245,6 +250,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void setUiListeners() {
+        uiWallLengthText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(uiWallLengthText.getWindowToken(), 0);
+
+                    float realLength = Float.parseFloat(uiWallLengthText.getText().toString());
+                    uiFloorPlanView.rescaleMap(realLength/mCurrentWallLength);
+
+                    return true;
+                }
+                return false;
+            }
+        });
+
         uiFabAddFloorplanFromGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -322,7 +343,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFloorPlanView.setOnWallLengthChangedListener(new IWallLengthChangedListener() {
             @Override
             public void onWallLengthChanged(float wallLength) {
-                uiWallLengthText.setText(String.format(java.util.Locale.US,"Wall length: %.2fm", wallLength));
+                mCurrentWallLength = wallLength;
+                uiWallLengthText.setText(String.format(java.util.Locale.US,"%.2f", wallLength));
             }
         });
 

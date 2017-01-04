@@ -454,4 +454,21 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             }
         }
     }
+
+    public void rescaleFloorplan(float scaleFactor) {
+        if (mGlEngine == null) return; // TODO: this should be fixed somehow
+        List<IFloorPlanPrimitive> primitives = mGlEngine.getFloorPlan();
+
+        for (final IFloorPlanPrimitive primitive : primitives) {
+            if (primitive.isRemoved()) continue; // Do not alter removed primitives
+            primitive.scaleVertices(scaleFactor);
+            primitive.updateVertices();
+            runOnGlThread(new Runnable() {
+                @Override
+                public void run() {
+                    mGlEngine.updateSingleObject(primitive);
+                }
+            });
+        }
+    }
 }

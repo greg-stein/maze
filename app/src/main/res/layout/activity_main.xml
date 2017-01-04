@@ -32,12 +32,14 @@
                 android:gravity="center"
                 />
 
-            <TextView
-                android:id="@+id/tv_wall_length"
+            <EditText
+                android:id="@+id/et_wall_length"
+                android:inputType="number"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center_horizontal|center_vertical"
-                android:text="(_!_)"/>
+                android:text="0"
+                />
 
         </android.support.v7.widget.Toolbar>
 
