@@ -130,10 +130,12 @@ public class HoughTransform {
     private static final int INIT_LINES_NUMBER = 200;
     public static final int CONTINUOUS_LINE_MAX_GAP = 4;
     public static final int MIN_LINE_SEGMENT_LENGTH = 10;
+    public static final int MIN_DIFF_BETWEEN_SEGMENTS = 4;
     private static final int CONTINUOUS_LINE_MAX_GAP_SQ =
             CONTINUOUS_LINE_MAX_GAP * CONTINUOUS_LINE_MAX_GAP; // actually for comparing squared distance
     private static final int MIN_LINE_SEGMENT_LENGTH_SQ =
             MIN_LINE_SEGMENT_LENGTH * MIN_LINE_SEGMENT_LENGTH; // and this is a square of minimal length!
+    private static final int MIN_DIFF_BETWEEN_SEGMENTS_SQ = MIN_DIFF_BETWEEN_SEGMENTS * MIN_DIFF_BETWEEN_SEGMENTS;
 
     public class HoughBin extends ArrayList<Point>{};
 
@@ -322,9 +324,16 @@ public class HoughTransform {
                 if (X_COMPARATOR.compare(seg.end, current.end) > 0) {   // ends outside current segment
                     current.end = seg.end;                              // extend current segment
                 }
-            } else {    // TODO: add condition for close segments
-                newlist.add(current);                                   // starts after current segment - so current segment is finalized
-                current = seg;                                          // now this is the current segment
+            } else {    // Check if segments are distinct but very close
+                int dx = Math.abs(seg.start.x - current.end.x);
+                int dy = Math.abs(seg.start.y - current.end.y);
+                int gap = dx*dx + dy*dy;
+                if (gap < MIN_DIFF_BETWEEN_SEGMENTS_SQ) {
+                    current.end = seg.end;
+                } else {
+                    newlist.add(current);   // cannot merge segments - finalize current
+                    current = seg;          // now this is the current segment
+                }
             }
         }
 
