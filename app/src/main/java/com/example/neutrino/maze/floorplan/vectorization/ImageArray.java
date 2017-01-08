@@ -13,45 +13,6 @@ import java.util.List;
 public class ImageArray {
     public static final int PIXEL_BUFFER_CHUNK_SIZE = 4096; // 4K=
 
-    public static class PixelBufferChunk {
-        public static final int END_OF_CHUNK = 0;
-        public static final int REMOVED_PIXEL = -1;
-
-        public final int[] coords;
-        public int pixelsCount = 0;
-        public final int size;
-        public int position;
-
-        public PixelBufferChunk(int size) {
-            coords = new int[2 * (size + 1)]; // two coords. Last pair is always 0
-            this.size = size;
-            position = -2;
-        }
-
-        // Achtung! this method doesn't check boundaries!
-        public void putPixel(int x, int y) {
-            coords[pixelsCount] = x;
-            coords[pixelsCount+1] = y;
-            pixelsCount += 2;
-        }
-
-        // If this func returns (0, 0) - it's the end of an array!!!
-        public void getPixel(Point p) {
-            position += 2;
-            p.x = coords[position];
-            p.y = coords[position+1];
-        }
-
-        public void removePixel() {
-            coords[position] = REMOVED_PIXEL;
-            coords[position+1] = REMOVED_PIXEL;
-        }
-
-        public void reset() {
-            position = -2;
-        }
-    }
-
     public final int[] dataArray;
     public final int width;
     public final int height;

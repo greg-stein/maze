@@ -3,10 +3,7 @@ package com.example.neutrino.maze.floorplan.vectorization;
 import android.graphics.Color;
 import android.graphics.Point;
 
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by Greg Stein on 12/13/2016.
@@ -36,11 +33,11 @@ public class Thinning {
     }
 
     private static boolean doZhangSuenStep(ImageArray binaryImage, boolean isFirstStep) {
-        ImageArray.PixelBufferChunk pixelsToRemove = new ImageArray.PixelBufferChunk(binaryImage.blackPixelsNum);
+        PixelBufferChunk pixelsToRemove = new PixelBufferChunk(binaryImage.blackPixelsNum);
         boolean changeOccurred = false;
 
-        List<ImageArray.PixelBufferChunk> chunks = binaryImage.pixelBufferChunks;
-        for (ImageArray.PixelBufferChunk chunk : chunks) {
+        List<PixelBufferChunk> chunks = binaryImage.pixelBufferChunks;
+        for (PixelBufferChunk chunk : chunks) {
             chunk.reset();
             for (Point point = new Point(-1, -1); point.x != 0 || point.y != 0; chunk.getPixel(point)) {
                 if (point.x == -1 && point.y == -1) continue; // removed pixel?

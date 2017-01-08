@@ -4,35 +4,27 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 
-import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.floorplan.WifiMark;
 import com.example.neutrino.maze.floorplan.vectorization.ImageArray;
+import com.example.neutrino.maze.floorplan.vectorization.PixelBufferChunk;
 
 import junit.framework.Assert;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.hasItemInArray;
-import static org.hamcrest.core.CombinableMatcher.both;
-import static org.hamcrest.core.CombinableMatcher.either;
 import static org.hamcrest.collection.IsArrayContainingInOrder.arrayContaining;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertArrayEquals;
@@ -44,12 +36,12 @@ import static org.junit.Assert.assertThat;
  * Created by Greg Stein on 12/20/2016.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest=Config.NONE)
+@Config(manifest = Config.NONE)
 public class ImageArrayTests {
     @Test
     public void findBlackPixelsTest() {
         // 4 black pixels
-        int[] colors = new int[] {
+        int[] colors = new int[]{
                 Color.WHITE, Color.BLACK, Color.WHITE,
                 Color.BLACK, Color.WHITE, Color.BLACK,
                 Color.WHITE, Color.BLACK, Color.WHITE,
@@ -62,10 +54,10 @@ public class ImageArrayTests {
         assertThat(imageArray.blackPixelsNum, is(equalTo(4)));
         assertNotNull(imageArray.pixelBufferChunks);
         assertThat(imageArray.pixelBufferChunks, hasSize(1));
-        ImageArray.PixelBufferChunk chunk = imageArray.pixelBufferChunks.get(0);
+        PixelBufferChunk chunk = imageArray.pixelBufferChunks.get(0);
         assertNotNull(chunk);
         assertThat(chunk.pixelsCount, is(4 * 2));
-        int[] expectedCoords = new int[] {
+        int[] expectedCoords = new int[]{
                 1, 0,
                 0, 1,
                 2, 1,
@@ -78,9 +70,9 @@ public class ImageArrayTests {
     public void findBlackPixels2ChunkTest() {
         final int IMAGE_WIDTH = 64;
 
-        int[] colors = new int[(int)(ImageArray.PIXEL_BUFFER_CHUNK_SIZE * 1.5)]; // 1.5 * 4K
+        int[] colors = new int[(int) (ImageArray.PIXEL_BUFFER_CHUNK_SIZE * 1.5)]; // 1.5 * 4K
         Arrays.fill(colors, Color.BLACK);
-        Bitmap bitmap = Bitmap.createBitmap(colors, IMAGE_WIDTH, colors.length/IMAGE_WIDTH, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(colors, IMAGE_WIDTH, colors.length / IMAGE_WIDTH, Bitmap.Config.ARGB_8888);
         ImageArray imageArray = new ImageArray(bitmap);
         imageArray.findBlackPixels();
 
@@ -88,17 +80,17 @@ public class ImageArrayTests {
         assertNotNull(imageArray.pixelBufferChunks);
         assertThat(imageArray.pixelBufferChunks, hasSize(2));
 
-        ImageArray.PixelBufferChunk chunk1 = imageArray.pixelBufferChunks.get(0);
+        PixelBufferChunk chunk1 = imageArray.pixelBufferChunks.get(0);
         assertNotNull(chunk1);
         assertThat(chunk1.pixelsCount, is(2 * ImageArray.PIXEL_BUFFER_CHUNK_SIZE));
-        ImageArray.PixelBufferChunk chunk2 = imageArray.pixelBufferChunks.get(1);
+        PixelBufferChunk chunk2 = imageArray.pixelBufferChunks.get(1);
         assertNotNull(chunk2);
         assertThat(chunk2.pixelsCount, is(2 * (ImageArray.PIXEL_BUFFER_CHUNK_SIZE / 2 - 1)));
     }
 
     @Test
     public void pixelBufferChunkTest() {
-        Point[] points = new Point[] {
+        Point[] points = new Point[]{
                 new Point(0, 1),
                 new Point(2, 3),
                 new Point(4, 5),
@@ -111,7 +103,7 @@ public class ImageArrayTests {
                 new Point(18, 19)
         };
 
-        ImageArray.PixelBufferChunk chunk = new ImageArray.PixelBufferChunk(10);
+        PixelBufferChunk chunk = new PixelBufferChunk(10);
         for (Point p : points) {
             chunk.putPixel(p.x, p.y);
         }
@@ -142,7 +134,7 @@ public class ImageArrayTests {
 
     @Test
     public void pixelBufferChunkRemovePixelTest() {
-        Point[] points = new Point[] {
+        Point[] points = new Point[]{
                 new Point(0, 1),
                 new Point(2, 3),
                 new Point(4, 5),
@@ -155,7 +147,7 @@ public class ImageArrayTests {
                 new Point(18, 19)
         };
 
-        ImageArray.PixelBufferChunk chunk = new ImageArray.PixelBufferChunk(10);
+        PixelBufferChunk chunk = new PixelBufferChunk(10);
         for (Point p : points) {
             chunk.putPixel(p.x, p.y);
         }
@@ -177,7 +169,35 @@ public class ImageArrayTests {
             }
         }
 
-        assertThat(chunk.coords[6], is(equalTo(ImageArray.PixelBufferChunk.REMOVED_PIXEL)));
-        assertThat(chunk.coords[7], is(equalTo(ImageArray.PixelBufferChunk.REMOVED_PIXEL)));
+        assertThat(chunk.coords[6], is(equalTo(PixelBufferChunk.REMOVED_PIXEL)));
+        assertThat(chunk.coords[7], is(equalTo(PixelBufferChunk.REMOVED_PIXEL)));
+    }
+
+    @Test
+    public void pixelBufferChunkCompactTest() {
+        PixelBufferChunk chunk = new PixelBufferChunk(10);
+        int i;
+        for (i = 0; i < 20; i += 2) {
+            chunk.coords[i] = 1+(i*i)%17;
+            chunk.coords[i+1] = 1+(i*i)%13;
+        }
+        for (i = 0; i < 22; i += 2) {
+            System.out.print(chunk.coords[i] + " " + chunk.coords[i+1] + " ");
+        }
+        System.out.println();
+
+        chunk.coords[0] = chunk.coords[1] = chunk.coords[10] = chunk.coords[11] = chunk.coords[14] = chunk.coords[15] = -1;
+
+        for (i = 0; i < 22; i += 2) {
+            System.out.print(chunk.coords[i] + " " + chunk.coords[i+1] + " ");
+        }
+        System.out.println();
+
+        chunk.compact();
+
+        for (i = 0; i < 22; i += 2) {
+            System.out.print(chunk.coords[i] + " " + chunk.coords[i+1] + " ");
+        }
+        System.out.println();
     }
 }

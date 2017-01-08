@@ -200,8 +200,8 @@ public class HoughTransform {
     public void buildHoughSpace() {
         // Now find edge points and update the hough array
 
-        List<ImageArray.PixelBufferChunk> chunks = mImage.pixelBufferChunks;
-        for (ImageArray.PixelBufferChunk chunk : chunks) {
+        List<PixelBufferChunk> chunks = mImage.pixelBufferChunks;
+        for (PixelBufferChunk chunk : chunks) {
             chunk.reset();
             for (Point p = new Point(-1, -1); p.x != 0 || p.y != 0; chunk.getPixel(p)) {
                 if (p.x != -1 && p.y != -1) { // removed pixel?
@@ -344,10 +344,10 @@ public class HoughTransform {
 
     // I love generics
     // TODO: implement Iterable<Point> in PixelBufferChunk
-    private Map<HoughLine, SortedSet<Point>> clusterize(List<ImageArray.PixelBufferChunk> points, List<HoughLine> lines) {
+    private Map<HoughLine, SortedSet<Point>> clusterize(List<PixelBufferChunk> points, List<HoughLine> lines) {
         Map<HoughLine, SortedSet<Point>> linesToPointsMap = new HashMap<>();
 
-        for (ImageArray.PixelBufferChunk chunk : points) {
+        for (PixelBufferChunk chunk : points) {
             chunk.reset();
             for (Point p = new Point(-1, -1); p.x != 0 || p.y != 0; chunk.getPixel(p)) {
                 if (p.x == -1 && p.y == -1) continue; // removed pixel?
