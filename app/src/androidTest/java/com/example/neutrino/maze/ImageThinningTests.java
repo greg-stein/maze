@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.MediumTest;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.example.neutrino.maze.floorplan.vectorization.ImageArray;
@@ -12,7 +13,12 @@ import com.example.neutrino.maze.floorplan.vectorization.Thinning;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -35,19 +41,15 @@ import static org.junit.Assert.assertThat;
  * Created by Greg Stein on 1/5/2017.
  */
 @RunWith(AndroidJUnit4.class)
+@MediumTest
 public class ImageThinningTests {
     private static final String RESOURCE_TEST_DIR = "/thinningTest";
-    private static ImageThinningTests instance;
-
-    public ImageThinningTests() {
-        instance = this;
-    }
 
     private static Bitmap readBitmapFromResources(String bitmapRes) {
         Bitmap bitmapFromRes = null;
 
         try {
-            Class<? extends ImageThinningTests> aClass = instance.getClass();
+            Class<? extends ImageThinningTests> aClass = ImageThinningTests.class;
             InputStream in_s = aClass.getResourceAsStream(RESOURCE_TEST_DIR + "/" + bitmapRes);
 
             bitmapFromRes = BitmapFactory.decodeStream(in_s);
@@ -68,7 +70,7 @@ public class ImageThinningTests {
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                assertThat(expected.getPixel(x, y), is(equalTo(actual.getPixel(x, y))));
+                assertThat(String.format("(x, y)=(%d, %d)", x, y), expected.getPixel(x, y), is(equalTo(actual.getPixel(x, y))));
             }
         }
     }
