@@ -302,7 +302,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             @Override
             public void run()  {
                 if (mGlEngine == null) {
-                    mGlEngine = new GlEngine(2000);
+                    mGlEngine = new GlEngine(8000);
                     mGlEngine.allocateGpuBuffers();
                 }
 
