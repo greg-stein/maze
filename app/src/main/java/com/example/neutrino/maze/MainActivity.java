@@ -204,11 +204,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return bitmap;
     }
 
-    private void showTheImage() {
+    private void showTheImage(Bitmap b) {
         Toast toast = new Toast(this.getApplicationContext());
         ImageView view = new ImageView(this.getApplicationContext());
 
-        view.setImageBitmap(FloorplanVectorizer.debugBM);
+        view.setImageBitmap(b);
         toast.setView(view);
         toast.setDuration(Toast.LENGTH_LONG);
         toast.show();
