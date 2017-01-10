@@ -9,6 +9,7 @@ import com.example.neutrino.maze.floorplan.vectorization.PixelBufferChunk;
 
 import junit.framework.Assert;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -38,6 +39,35 @@ import static org.junit.Assert.assertThat;
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ImageArrayTests {
+
+    @Test
+    public void imageArrayIndexingTest() {
+        int[] data = new int[] {
+                Color.BLACK, Color.WHITE, Color.BLACK,
+                Color.WHITE, Color.BLACK, Color.WHITE,
+                Color.BLACK, Color.WHITE, Color.BLACK
+        };
+        ImageArray imageArray = new ImageArray(data, 3, 3);
+
+        assertThat(imageArray.dataLength, is(Matchers.equalTo(9)));
+        assertThat(imageArray.width, is(Matchers.equalTo(3)));
+        assertThat(imageArray.height, is(Matchers.equalTo(3)));
+        assertThat(imageArray.get(0,0), is(Matchers.equalTo(Color.BLACK)));
+        assertThat(imageArray.get(1,0), is(Matchers.equalTo(Color.WHITE)));
+        assertThat(imageArray.get(2,0), is(Matchers.equalTo(Color.BLACK)));
+        assertThat(imageArray.get(0,1), is(Matchers.equalTo(Color.WHITE)));
+        assertThat(imageArray.get(1,1), is(Matchers.equalTo(Color.BLACK)));
+        assertThat(imageArray.get(2,1), is(Matchers.equalTo(Color.WHITE)));
+        assertThat(imageArray.get(0,2), is(Matchers.equalTo(Color.BLACK)));
+        assertThat(imageArray.get(1,2), is(Matchers.equalTo(Color.WHITE)));
+        assertThat(imageArray.get(2,2), is(Matchers.equalTo(Color.BLACK)));
+
+        imageArray.findBlackPixels();
+        // There are 5 black pixels, but we ignore first pixel at (0, 0).
+        // This is because (0, 0) is special end-mark. Hence we expect 4
+        assertThat(imageArray.blackPixelsNum, is(Matchers.equalTo(5 - 1)));
+    }
+
     @Test
     public void findBlackPixelsTest() {
         // 4 black pixels
