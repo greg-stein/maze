@@ -14,12 +14,12 @@ public class Thinning {
     // Indices:                                        0   1   2   3   4   5   6   7   8
     //                                                P2  P3  P4  P5  P6  P7  P8  P9  P2
     private static final int[] NEIGHBOURS_X_OFFSET = { 0,  1,  1,  1,  0, -1, -1, -1,  0};
-    private static final int[] NEIGHBOURS_Y_OFFSET = {-1, -1,  0,  1, -1,  1,  0, -1, -1};
+    private static final int[] NEIGHBOURS_Y_OFFSET = {-1, -1,  0,  1,  1,  1,  0, -1, -1};
 
     // These are return values from getNeighboursAndTransitions()
-    private static int neighbours;
-    private static int transitions;
-    private static boolean hasThreeConsequentEvenBlackNeighbours; // :D
+    public static int neighbours;
+    public static int transitions;
+    public static boolean hasThreeConsequentEvenBlackNeighbours; // :D
 
     public static ImageArray doZhangSuenThinning(ImageArray binaryImage) {
         boolean changeOccurred;
@@ -42,6 +42,10 @@ public class Thinning {
             for (Point point = new Point(-1, -1); point.x != 0 || point.y != 0; chunk.getPixel(point)) {
                 if (point.x == -1 && point.y == -1) continue; // removed pixel?
 
+                // Check boundaries
+                if (point.x == 0 || point.y == 0 ||
+                        point.x == binaryImage.width - 1 || point.y == binaryImage.height - 1) continue;
+
                 getNeighboursAndTransitions(binaryImage, point, isFirstStep);
                 if (neighbours < 2 || neighbours > 6) continue;
                 if (transitions != 1) continue;
@@ -62,7 +66,7 @@ public class Thinning {
         return changeOccurred;
     }
 
-    private static void getNeighboursAndTransitions(ImageArray image, Point p, boolean isFirstStep) {
+    public static void getNeighboursAndTransitions(ImageArray image, Point p, boolean isFirstStep) {
         neighbours = 0;
         transitions = 0;
         hasThreeConsequentEvenBlackNeighbours = false;
