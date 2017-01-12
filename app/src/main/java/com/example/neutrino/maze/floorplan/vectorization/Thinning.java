@@ -42,7 +42,7 @@ public class Thinning {
             for (Point point = new Point(-1, -1); point.x != 0 || point.y != 0; chunk.getPixel(point)) {
                 if (point.x == -1 && point.y == -1) continue; // removed pixel?
 
-                // Check boundaries
+                // Check boundaries. TODO: add padding of 1 pixel on all sides to save this check
                 if (point.x == 0 || point.y == 0 ||
                         point.x == binaryImage.width - 1 || point.y == binaryImage.height - 1) continue;
 
@@ -61,6 +61,7 @@ public class Thinning {
         while (p.x != 0 || p.y != 0) {
             pixelsToRemove.getPixel(p);
             binaryImage.set(p, Color.WHITE);
+            binaryImage.blackPixelsNum--;
         }
 
         return changeOccurred;
