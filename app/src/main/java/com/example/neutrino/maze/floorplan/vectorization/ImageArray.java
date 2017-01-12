@@ -75,13 +75,13 @@ public class ImageArray {
         for (int i = 1; i < dataLength; i++) {
             if (dataArray[i] == Color.BLACK) {
                 blackPixelsNum++;
-                final int x = i % width;
-                final int y = i / width;
                 if (pointsInCurrentChunk >= PIXEL_BUFFER_CHUNK_SIZE) {
                     currentChunk = new PixelBufferChunk(PIXEL_BUFFER_CHUNK_SIZE);
                     pixelBufferChunks.add(currentChunk);
                     pointsInCurrentChunk = 0;
                 }
+                final int x = i % width;
+                final int y = i / width;
                 currentChunk.putPixel(x, y);
                 pointsInCurrentChunk++;
             }
