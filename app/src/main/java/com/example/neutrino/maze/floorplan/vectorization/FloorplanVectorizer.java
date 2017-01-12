@@ -78,7 +78,7 @@ public class FloorplanVectorizer {
         return resizedBitmap;
     }
 
-    private static Bitmap toGrayscale(Bitmap bmpOriginal)
+    public static Bitmap toGrayscale(Bitmap bmpOriginal)
     {
         int width, height;
         height = bmpOriginal.getHeight();
@@ -103,7 +103,7 @@ public class FloorplanVectorizer {
         return bmpGrayscale;
     }
 
-    private static int calcOtsuThreshold(ImageArray grayScaledImage) {
+    public static int calcOtsuThreshold(ImageArray grayScaledImage) {
         final int GRAY_LEVELS = 256;
 
         int[] histogram = new int[GRAY_LEVELS];
@@ -155,7 +155,7 @@ public class FloorplanVectorizer {
         return threshold;
     }
 
-    private static void binarize(ImageArray grayScaledImage, int threshold) {
+    public static void binarize(ImageArray grayScaledImage, int threshold) {
         for (int index = 0; index < grayScaledImage.dataLength; index ++) {
             final int grayValue = grayScaledImage.dataArray[index] & 0xFF;
             grayScaledImage.dataArray[index] = (grayValue > threshold)? Color.WHITE : Color.BLACK;
