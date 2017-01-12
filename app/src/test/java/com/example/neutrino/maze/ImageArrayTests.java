@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.allOf;
@@ -229,5 +230,26 @@ public class ImageArrayTests {
             System.out.print(chunk.coords[i] + " " + chunk.coords[i+1] + " ");
         }
         System.out.println();
+    }
+
+    @Test
+    public void pixelBufferChunkMultiChunkTest() {
+        // In this test we create image with number of black (foreground)
+        // pixels > PIXEL_BUFFER_CHUNK_SIZE to generate two chunks
+        final int DATA_LENGTH = ImageArray.PIXEL_BUFFER_CHUNK_SIZE * 2 + ImageArray.PIXEL_BUFFER_CHUNK_SIZE/2;
+        int[] data = new int[DATA_LENGTH];
+        Arrays.fill(data, Color.BLACK);
+        ImageArray imageArray = new ImageArray(data, DATA_LENGTH/64, 64);
+        imageArray.findBlackPixels();
+
+        assertThat(imageArray.blackPixelsNum, is(equalTo(DATA_LENGTH - 1))); //(0,0) EOD mark
+        assertNotNull(imageArray.pixelBufferChunks);
+        assertThat(imageArray.pixelBufferChunks, hasSize(3));
+        assertNotNull(imageArray.pixelBufferChunks.get(0));
+        assertThat(imageArray.pixelBufferChunks.get(0).pixelsCount, is(equalTo(2*ImageArray.PIXEL_BUFFER_CHUNK_SIZE)));
+        assertNotNull(imageArray.pixelBufferChunks.get(1));
+        assertThat(imageArray.pixelBufferChunks.get(1).pixelsCount, is(equalTo(2*ImageArray.PIXEL_BUFFER_CHUNK_SIZE)));
+        assertNotNull(imageArray.pixelBufferChunks.get(2));
+        assertThat(imageArray.pixelBufferChunks.get(2).pixelsCount, is(equalTo(2*(ImageArray.PIXEL_BUFFER_CHUNK_SIZE/2 - 1))));
     }
 }
