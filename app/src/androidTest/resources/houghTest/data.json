@@ -1,0 +1,17 @@
+[
+  {
+    "imageFile":"houghTest1.png",
+    "expectedLineSegments":[
+      {
+        "start":{
+          "x":13,
+          "y":9
+        },
+        "end":{
+          "x":518,
+          "y":9
+        }
+      }
+    ]
+  }
+]

@@ -71,7 +71,7 @@ public class HoughTransform {
     }
 
     public static class LineSegment implements Comparable<LineSegment> {
-        private HoughLine line;
+        transient private HoughLine line;
         public Point start;
         public Point end;
 
