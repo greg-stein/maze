@@ -47,8 +47,8 @@ public class ImageThinningTests {
 
         boolean resourcesExist;
         do {
-            original = readBitmapFromResources("test" + index + "original.png");
-            expected = readBitmapFromResources("test" + index + "expected.png");
+            original = TestHelper.readBitmapFromResources(RESOURCE_TEST_DIR + "/test" + index + "original.png");
+            expected = TestHelper.readBitmapFromResources(RESOURCE_TEST_DIR + "/test" + index + "expected.png");
 
             resourcesExist = original != null && expected != null;
 
@@ -60,22 +60,6 @@ public class ImageThinningTests {
         } while (resourcesExist);
 
         return parameters;
-    }
-
-    private static Bitmap readBitmapFromResources(String bitmapRes) {
-        Bitmap bitmapFromRes = null;
-
-        try {
-            Class<? extends ImageThinningTests> aClass = ImageThinningTests.class;
-            InputStream in_s = aClass.getResourceAsStream(RESOURCE_TEST_DIR + "/" + bitmapRes);
-
-            bitmapFromRes = BitmapFactory.decodeStream(in_s);
-
-        } catch (Exception e) {
-            e.printStackTrace(); // АААА! Жопа!! жопА!!
-        }
-
-        return bitmapFromRes;
     }
 
     private void assertBitmapsEqual(Bitmap expected, Bitmap actual) {
