@@ -5,17 +5,30 @@ import android.graphics.PointF;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Queue;
 import java.util.TreeMap;
 import org.apache.commons.math3.distribution.TDistribution;
 
 /**
  * Created by Greg Stein on 9/25/2016.
+ */
+/* DR TODO:
+ *  Implement currentFingerPrintList - like MovingAverageQueue - DONE
+ *  Implement addtoFingerPrintList() API - DONE
+   *  Implement getMostProbablyTrajectory() API for last MovingAverage based on
+   *  algorithm as was discussed:
+   *  for first scan find K most likely marks (based on distance)
+   *  for each next scan - try to append K most likely to the previous list and discard
+   *  the impossible ones (based on maximum distance requirement). Keep at most the top K.
+   *  Continue until full trajectory exists.
+   *  Play with: K, MaxDistThr, ListLength...
  */
 public class WiFiTug implements TugOfWar.ITugger {
 
@@ -25,6 +38,7 @@ public class WiFiTug implements TugOfWar.ITugger {
     // 20% of total marks
     public static final float CLOSEST_MARKS_PERCENTAGE = 0.2f;
     private static final int CENTROID_OPT_ITERATIONS = 3;
+    private static final int FINGERPRINT_HISTORY_LENGTH = 10;
 
     private float mClosestMarksPercentage = CLOSEST_MARKS_PERCENTAGE;
     public void setClosestMarksPercentage(float percentage) {
@@ -39,9 +53,38 @@ public class WiFiTug implements TugOfWar.ITugger {
 
     // Yeah, fake class is so antipattern...
     public static class Fingerprint extends HashMap<String, Integer> {}
+    public static class FingerprintHistory {
+        private Queue<Fingerprint> mQueue;
+        private int mLength;
+
+        FingerprintHistory(int historyLength) {
+            mQueue = new ArrayDeque<>(this.mLength = historyLength);
+        }
+
+        public void add(Fingerprint fingerprint) {
+            if (mQueue.size() == mLength) {
+                mQueue.remove();
+            }
+
+            if (!mQueue.add(fingerprint)) {
+                throw new RuntimeException("Unable to add new fingerpting to queue.");
+            }
+        }
+
+        public void clear() {
+            mQueue.clear();
+        }
+
+    }
+
     public List<WifiMark> marks; //TODO: no encapsulation!
     public List<Wall> walls; //TODO: no encapsulation!
     public Fingerprint currentFingerprint = null;
+    private FingerprintHistory currentHistory = null;
+
+    void addToFingerprintHistory (Fingerprint fingerprint) {
+        currentHistory.add(fingerprint);
+    }
 
     public String buildWifiTable() {
         StringBuilder table = new StringBuilder(10 * marks.size() * marks.size());
