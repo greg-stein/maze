@@ -81,6 +81,10 @@ public class PixelBufferChunk implements Iterable<Point> {
 
         final Point current = new Point();
 
+        public PixelBufferChunkIterator() {
+            PixelBufferChunk.this.reset();
+        }
+
         @Override
         public boolean hasNext() {
             return !(PixelBufferChunk.this.endReached());

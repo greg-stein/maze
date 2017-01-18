@@ -52,7 +52,6 @@ public class ImageArrayTests {
             chunk.putPixel(coord++, coord++);
         }
 
-        chunk.reset();
         int i = 0;
         for (Point p : chunk) {
             assertThat(p.x, is(equalTo(i++)));
