@@ -7,6 +7,7 @@ import com.example.neutrino.maze.floorplan.WifiMark;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -84,6 +85,31 @@ public class WiFiTug implements TugOfWar.ITugger {
 
     void addToFingerprintHistory (Fingerprint fingerprint) {
         currentHistory.add(fingerprint);
+    }
+
+    // Mars
+    public float getAverageDistanceTo(Fingerprint fingerprint) {
+        int nMarks = marks.size();
+        float distance = 0f;
+        for (WifiMark mark: marks) {
+            distance += distance(mark.getFingerprint(),fingerprint);
+        }
+        return (distance /= nMarks);
+    }
+
+    public float[] getSortedDistanceArray(Fingerprint fingerprint, Float avg) {
+        int nMarks = marks.size();
+        float distance = 0f;
+        float[] distanceArray = new float[nMarks];
+        for (int i = 0 ; i < nMarks; i++) {
+            distanceArray[i] = distance(marks.get(i).getFingerprint(),fingerprint);
+            distance += distanceArray[i];
+        }
+        Arrays.sort(distanceArray);
+        if (avg != null) {
+            avg = (distance / nMarks);
+        }
+        return distanceArray;
     }
 
     public String buildWifiTable() {
