@@ -9,6 +9,7 @@ import com.example.neutrino.maze.floorplan.vectorization.PixelBufferChunk;
 
 import junit.framework.Assert;
 
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +18,7 @@ import org.robolectric.annotation.Config;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Iterator;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -40,6 +42,52 @@ import static org.junit.Assert.assertThat;
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ImageArrayTests {
+
+    @Test
+    public void pixelBufferChunkIteratorTest() {
+        final int SIZE = 10;
+        PixelBufferChunk chunk = new PixelBufferChunk(SIZE);
+        int coord = 0;
+        for (int i = 0; i < SIZE; i++) {
+            chunk.putPixel(coord++, coord++);
+        }
+
+        chunk.reset();
+        int i = 0;
+        for (Point p : chunk) {
+            assertThat(p.x, is(equalTo(i++)));
+            assertThat(p.y, is(equalTo(i++)));
+        }
+
+        assertThat(i, is(equalTo(coord)));
+    }
+
+    @Test
+    public void pixelBufferChunkIteratorRemoveTest() {
+        final int SIZE = 10;
+        PixelBufferChunk chunk = new PixelBufferChunk(SIZE);
+        int coord = 0;
+        for (int i = 0; i < SIZE; i++) {
+            chunk.putPixel(coord++, coord++);
+        }
+
+        Point p2delete = new Point(4, 5);
+        Iterator<Point> iterator = chunk.iterator();
+        while (iterator.hasNext()) {
+            Point p = iterator.next();
+            if (p.equals(p2delete)) {
+                iterator.remove();
+            }
+        }
+
+        Point markedAsDeleted = new Point(-1, -1);
+        for (Point p : chunk) {
+            assertThat(p, is(not(equalTo(p2delete))));
+            // Check that (-1, -1) is not returned by iterator
+            assertThat(p, is(not(equalTo(markedAsDeleted))));
+        }
+        assertThat(chunk, not(hasItem(p2delete)));
+    }
 
     @Test
     public void imageArrayIndexingTest() {
