@@ -87,11 +87,6 @@ public class PixelBufferChunk implements Iterable<Point> {
 
         @Override
         public boolean hasNext() {
-            return !(PixelBufferChunk.this.endReached());
-        }
-
-        @Override
-        public Point next() {
             do {
                 PixelBufferChunk.this.getPixel(current);
                 // Skip removed pixel
@@ -100,8 +95,13 @@ public class PixelBufferChunk implements Iterable<Point> {
                 } else {
                     break;
                 }
-            } while (!PixelBufferChunk.this.endReached());
+            } while (current.x != END_OF_CHUNK || current.y != END_OF_CHUNK);
 
+            return (current.x != END_OF_CHUNK || current.y != END_OF_CHUNK);
+        }
+
+        @Override
+        public Point next() {
             return current;
         }
 
