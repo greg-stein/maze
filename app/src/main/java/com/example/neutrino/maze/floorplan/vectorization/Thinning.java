@@ -52,6 +52,8 @@ public class Thinning {
                 pixelsToRemove.putPixel(point.x, point.y);
                 changeOccurred = true;
             }
+
+            chunk.compact();
         }
 
         for (Point p : pixelsToRemove) {
