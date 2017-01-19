@@ -38,10 +38,7 @@ public class Thinning {
 
         List<PixelBufferChunk> chunks = binaryImage.pixelBufferChunks;
         for (PixelBufferChunk chunk : chunks) {
-            chunk.reset();
-            for (Point point = new Point(-1, -1); point.x != 0 || point.y != 0; chunk.getPixel(point)) {
-                if (point.x == -1 && point.y == -1) continue; // removed pixel?
-
+            for (Point point : chunk) {
                 // Check boundaries. TODO: add padding of 1 pixel on all sides to save this check
                 if (point.x == 0 || point.y == 0 ||
                         point.x == binaryImage.width - 1 || point.y == binaryImage.height - 1) continue;
@@ -57,9 +54,7 @@ public class Thinning {
             }
         }
 
-        Point p = new Point(-1, -1);
-        while (p.x != 0 || p.y != 0) {
-            pixelsToRemove.getPixel(p);
+        for (Point p : pixelsToRemove) {
             binaryImage.set(p, Color.WHITE);
             binaryImage.blackPixelsNum--;
         }
