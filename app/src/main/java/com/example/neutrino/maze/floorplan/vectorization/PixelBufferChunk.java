@@ -12,7 +12,7 @@ public class PixelBufferChunk implements Iterable<Point> {
     public static final int REMOVED_PIXEL = -1;
 
     public final int[] coords;
-    public int pixelsCount = 0;
+    public int coordsCount = 0;
     public final int size;
     public int position;
     public int removedPixelsNum = 0;
@@ -25,9 +25,9 @@ public class PixelBufferChunk implements Iterable<Point> {
 
     // Achtung! this method doesn't check boundaries!
     public void putPixel(int x, int y) {
-        coords[pixelsCount] = x;
-        coords[pixelsCount + 1] = y;
-        pixelsCount += 2;
+        coords[coordsCount] = x;
+        coords[coordsCount + 1] = y;
+        coordsCount += 2;
     }
 
     // If this func returns (0, 0) - it's the end of an array!!!

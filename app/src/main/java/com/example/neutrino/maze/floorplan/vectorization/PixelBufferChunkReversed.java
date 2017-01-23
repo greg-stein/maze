@@ -6,21 +6,21 @@ package com.example.neutrino.maze.floorplan.vectorization;
 public class PixelBufferChunkReversed extends PixelBufferChunk {
     public PixelBufferChunkReversed(int size) {
         super(size);
-        pixelsCount = 2 * (size - 1);
-        position = pixelsCount;
+        coordsCount = 2 * (size - 1);
+        position = coordsCount;
     }
 
     // This method doesn't check for boundaries
     @Override
     public void putPixel(int x, int y) {
-        coords[pixelsCount] = x;
-        coords[pixelsCount + 1] = y;
-        position = pixelsCount;
-        pixelsCount -= 2;
+        coords[coordsCount] = x;
+        coords[coordsCount + 1] = y;
+        position = coordsCount;
+        coordsCount -= 2;
     }
 
     @Override
     public void reset() {
-        position = pixelsCount + 2;
+        position = coordsCount + 2;
     }
 }

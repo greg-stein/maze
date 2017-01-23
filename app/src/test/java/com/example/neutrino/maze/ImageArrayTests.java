@@ -2,23 +2,17 @@ package com.example.neutrino.maze;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Point;
 
 import com.example.neutrino.maze.floorplan.vectorization.ImageArray;
 import com.example.neutrino.maze.floorplan.vectorization.PixelBufferChunk;
 
-import junit.framework.Assert;
-
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
-import java.util.Iterator;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -89,7 +83,7 @@ public class ImageArrayTests {
         assertThat(imageArray.pixelBufferChunks, hasSize(1));
         PixelBufferChunk chunk = imageArray.pixelBufferChunks.get(0);
         assertNotNull(chunk);
-        assertThat(chunk.pixelsCount, is(4 * 2));
+        assertThat(chunk.coordsCount, is(4 * 2));
         int[] expectedCoords = new int[]{
                 1, 0,
                 0, 1,
@@ -115,9 +109,9 @@ public class ImageArrayTests {
 
         PixelBufferChunk chunk1 = imageArray.pixelBufferChunks.get(0);
         assertNotNull(chunk1);
-        assertThat(chunk1.pixelsCount, is(2 * ImageArray.PIXEL_BUFFER_CHUNK_SIZE));
+        assertThat(chunk1.coordsCount, is(2 * ImageArray.PIXEL_BUFFER_CHUNK_SIZE));
         PixelBufferChunk chunk2 = imageArray.pixelBufferChunks.get(1);
         assertNotNull(chunk2);
-        assertThat(chunk2.pixelsCount, is(2 * (ImageArray.PIXEL_BUFFER_CHUNK_SIZE / 2 - 1)));
+        assertThat(chunk2.coordsCount, is(2 * (ImageArray.PIXEL_BUFFER_CHUNK_SIZE / 2 - 1)));
     }
 }
