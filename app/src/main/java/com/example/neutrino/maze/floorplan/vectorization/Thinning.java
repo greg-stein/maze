@@ -48,6 +48,7 @@ public class Thinning {
                 if (transitions != 1) continue;
                 if (hasThreeConsequentEvenBlackNeighbours) continue;
 
+                // This is a hack. Usually you do this with iterator.remove()
                 chunk.removePixel(); // mark it with (-1, -1)
                 pixelsToRemove.putPixel(point.x, point.y);
                 changeOccurred = true;
