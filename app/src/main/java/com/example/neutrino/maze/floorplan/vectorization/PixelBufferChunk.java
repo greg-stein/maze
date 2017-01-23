@@ -13,6 +13,7 @@ public class PixelBufferChunk implements Iterable<Point> {
 
     public final int[] coords;
     public int coordsCount = 0;
+    public int pixelsCount = 0;
     public final int size;
     public int position;
     public int removedPixelsNum = 0;
@@ -28,6 +29,7 @@ public class PixelBufferChunk implements Iterable<Point> {
         coords[coordsCount] = x;
         coords[coordsCount + 1] = y;
         coordsCount += 2;
+        pixelsCount++;
     }
 
     // If this func returns (0, 0) - it's the end of an array!!!

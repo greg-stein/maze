@@ -17,6 +17,7 @@ public class PixelBufferChunkReversed extends PixelBufferChunk {
         coords[coordsCount + 1] = y;
         position = coordsCount;
         coordsCount -= 2;
+        pixelsCount++;
     }
 
     @Override
