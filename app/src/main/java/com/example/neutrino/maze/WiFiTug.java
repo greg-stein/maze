@@ -54,7 +54,7 @@ public class WiFiTug implements TugOfWar.ITugger {
 
     // Yeah, fake class is so antipattern...
     public static class Fingerprint extends HashMap<String, Integer> {}
-    public static class FingerprintHistory {
+    public static class FingerprintHistory implements Iterable<Fingerprint> {
         private Queue<Fingerprint> mQueue;
         private int mLength;
 
@@ -76,6 +76,10 @@ public class WiFiTug implements TugOfWar.ITugger {
             mQueue.clear();
         }
 
+        @Override
+        public Iterator<Fingerprint> iterator() {
+            return (mQueue.iterator());
+        }
     }
 
     public List<WifiMark> marks; //TODO: no encapsulation!
