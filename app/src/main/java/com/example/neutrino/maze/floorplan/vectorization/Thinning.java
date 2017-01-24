@@ -39,10 +39,6 @@ public class Thinning {
         List<PixelBufferChunk> chunks = binaryImage.pixelBufferChunks;
         for (PixelBufferChunk chunk : chunks) {
             for (Point point : chunk) {
-                // Check boundaries. TODO: add padding of 1 pixel on all sides to save this check
-                if (point.x == 0 || point.y == 0 ||
-                        point.x == binaryImage.width - 1 || point.y == binaryImage.height - 1) continue;
-
                 getNeighboursAndTransitions(binaryImage, point, isFirstStep);
                 if (neighbours < 2 || neighbours > 6) continue;
                 if (transitions != 1) continue;
