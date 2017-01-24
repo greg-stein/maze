@@ -13,6 +13,7 @@ public class PixelBuffer extends ArrayList<PixelBufferChunk> {
     private PixelBufferChunk mLastChunk;
     private PixelBufferChunk mFirstChunk = null;
     private final int mBufferChunkSize;
+    private int mPixelsCount = 0;
 
     public PixelBuffer() {
         this(BUFFER_CHUNK_DEFAULT_SIZE);
@@ -28,6 +29,7 @@ public class PixelBuffer extends ArrayList<PixelBufferChunk> {
             addChunk();
         }
         mLastChunk.putPixel(p.x, p.y);
+        mPixelsCount++;
     }
 
     public void prepareForPushingBack() {
@@ -41,7 +43,10 @@ public class PixelBuffer extends ArrayList<PixelBufferChunk> {
             pushBackChunk();
         }
         mFirstChunk.putPixel(p.x, p.y);
+        mPixelsCount++;
     }
+
+    public int getPixelsCount() { return mPixelsCount; }
 
     private void pushBackChunk() {
         mFirstChunk = new PixelBufferChunkReversed(mBufferChunkSize);
