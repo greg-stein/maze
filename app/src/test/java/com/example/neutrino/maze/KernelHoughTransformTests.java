@@ -79,4 +79,87 @@ public class KernelHoughTransformTests {
         assertThat(actualCoords2.length, is(equalTo(chunk2.coords.length)));
         assertThat(actualCoords2, is(equalTo(chunk2.coords)));
     }
+
+    @Test
+    public void linkingPixelChains2JointChainsOneShortTest() {
+        int[] data = new int[] {
+                //   0            1            2            3            4            6
+                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 0
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 1
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 2
+                Color.WHITE, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.WHITE, // 3
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 4
+                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 5
+        };
+        ImageArray imageArray = new ImageArray(data, 6, 6);
+        imageArray.findBlackPixels();
+        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        List<PixelBuffer> chains = kht.getPixelChains(imageArray);
+
+        PixelBuffer expectedChain1 = new PixelBuffer();
+        PixelBufferChunk chunk1 = new PixelBufferChunk(PixelBuffer.BUFFER_CHUNK_DEFAULT_SIZE);
+        chunk1.putPixel(1, 1);
+        chunk1.putPixel(1, 2);
+        chunk1.putPixel(2, 3);
+        chunk1.putPixel(3, 3);
+        chunk1.putPixel(4, 3);
+        expectedChain1.add(chunk1);
+
+        // The second chain is shorter than KernelHoughTransform.MIN_PIXELS_IN_CHAIN, so not reported
+        int[] actualCoords1 =  chains.get(0).get(0).coords;
+
+        assertNotNull(chains);
+        assertThat(chains, hasSize(1));
+        assertThat(actualCoords1.length, is(equalTo(chunk1.coords.length)));
+        assertThat(actualCoords1, is(equalTo(chunk1.coords)));
+    }
+
+    @Test
+    public void linkingPixelChains2JointChainsTest() {
+        int[] data = new int[] {
+                //   0            1            2            3            4            6
+                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 0
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 1
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 2
+                Color.WHITE, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.WHITE, // 3
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 4
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 5
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 6
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 7
+                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 8
+        };
+        ImageArray imageArray = new ImageArray(data, 6, 9);
+        imageArray.findBlackPixels();
+        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        List<PixelBuffer> chains = kht.getPixelChains(imageArray);
+
+        PixelBuffer expectedChain1 = new PixelBuffer();
+        PixelBufferChunk chunk1 = new PixelBufferChunk(PixelBuffer.BUFFER_CHUNK_DEFAULT_SIZE);
+        chunk1.putPixel(1, 1);
+        chunk1.putPixel(1, 2);
+        chunk1.putPixel(2, 3);
+        chunk1.putPixel(3, 3);
+        chunk1.putPixel(4, 3);
+        expectedChain1.add(chunk1);
+
+        PixelBuffer expectedChain2 = new PixelBuffer();
+        PixelBufferChunk chunk2 = new PixelBufferChunk(PixelBuffer.BUFFER_CHUNK_DEFAULT_SIZE);
+        chunk2.putPixel(1, 3);
+        chunk2.putPixel(1, 4);
+        chunk2.putPixel(1, 5);
+        chunk2.putPixel(1, 6);
+        chunk2.putPixel(1, 7);
+        expectedChain2.add(chunk2);
+
+        // The second chain is shorter than KernelHoughTransform.MIN_PIXELS_IN_CHAIN, so not reported
+        int[] actualCoords1 =  chains.get(0).get(0).coords;
+        int[] actualCoords2 =  chains.get(1).get(0).coords;
+
+        assertNotNull(chains);
+        assertThat(chains, hasSize(2));
+        assertThat(actualCoords1.length, is(equalTo(chunk1.coords.length)));
+        assertThat(actualCoords1, is(equalTo(chunk1.coords)));
+        assertThat(actualCoords2.length, is(equalTo(chunk2.coords.length)));
+        assertThat(actualCoords2, is(equalTo(chunk2.coords)));
+    }
 }
