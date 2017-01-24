@@ -118,6 +118,11 @@ public class HoughTransform {
             if (!(o instanceof LineSegment)) return false;
             return equals((LineSegment)o);
         }
+
+        @Override
+        public String toString() {
+            return String.format("%s--%s", start.toString(), end.toString());
+        }
     }
 
     // The size of the neighbourhood in which to search for other local maxima
