@@ -34,6 +34,8 @@ import org.apache.commons.math3.distribution.TDistribution;
 public class WiFiTug implements TugOfWar.ITugger {
 
     private static final double CORR_THRESHOLD = 0.9;
+    private static final float WIFI_DISTANCE_CANDIDATE_PERCENTAGE = 0.1f;
+    private static final int MAX_NUM_CANDIDATES = 5;
 
     public static List<WifiMark> centroidMarks = null;
     // 20% of total marks
@@ -42,6 +44,7 @@ public class WiFiTug implements TugOfWar.ITugger {
     private static final int FINGERPRINT_HISTORY_LENGTH = 10;
 
     private float mClosestMarksPercentage = CLOSEST_MARKS_PERCENTAGE;
+
     public void setClosestMarksPercentage(float percentage) {
         mClosestMarksPercentage = percentage;
     }
@@ -403,9 +406,68 @@ public class WiFiTug implements TugOfWar.ITugger {
         centroidMarks = wifiMarks;
     }
 
+    public void getMostProbableTrajectory(List<PointF> trajectory)
+    {
+        float minDistance, maxDistance, distanceRange, maxViableDistance;
+
+        for (Fingerprint fingerprint: currentHistory) {
+            List<WifiMark> wifiMarks = getMarksWithSameAps(marks, fingerprint);
+            minDistance = 0; maxDistance = Float.MAX_VALUE;
+
+            // First iteration - get min and max distance
+            for (WifiMark mark: wifiMarks) {
+                float distance = distance(fingerprint, mark.getFingerprint());
+                if (distance < minDistance)
+                    minDistance = distance;
+                if (distance > maxDistance)
+                    maxDistance = distance;
+            }
+            distanceRange = maxDistance - minDistance;
+            maxViableDistance = minDistance + WIFI_DISTANCE_CANDIDATE_PERCENTAGE * distanceRange;
+
+            // Second iteration - take only viable candidates (up to MAX_CANDIDATES from top CANDIDATE_PERCENTAGE)
+            for (WifiMark mark: wifiMarks) {
+                float distance = distance(fingerprint, mark.getFingerprint());
+                if (distance <= maxViableDistance) {
+                    List<WifiMark> candidate;
+                    for (int i = 0 ; i < MAX_NUM_CANDIDATES ; i++) {
+                        // TODO: implement this
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public float getForce() {
         // TODO: calculate error
         return 0.5f;
+    }
+
+    // Implements a comparable class of WifiMark history (list).
+    // With each list a total cost (error function) is associated, which is used for sorting.
+    public static class WifiMarkHistory implements Comparable<WifiMarkHistory>{
+        private List<WifiMark> marks;
+        private float totalCost;
+
+        public void add (WifiMark mark, float cost) {
+            marks.add(mark);
+            totalCost += cost;
+        }
+
+        @Override
+        public int compareTo(WifiMarkHistory another) {
+            return Float.compare(this.totalCost, another.totalCost);
+        }
+
+        WifiMarkHistory() {
+            marks = new ArrayList<>();
+            totalCost = 0;
+        }
+
+        WifiMarkHistory(WifiMark mark, float cost) {
+            this();
+            add(mark, cost);
+        }
     }
 }
