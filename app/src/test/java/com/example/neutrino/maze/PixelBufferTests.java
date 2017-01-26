@@ -127,4 +127,88 @@ public class PixelBufferTests {
             }
         }
     }
+
+    @Test
+    public void pixelBufferDirectIndexingTest() {
+        final int CHUNK_SIZE = 10; // points
+        final int DATA_SIZE = 34;  // points
+        final int NUMBER_OF_CHUNKS = (int) Math.ceil(DATA_SIZE / (float)CHUNK_SIZE);
+
+        PixelBuffer buffer = new PixelBuffer(CHUNK_SIZE );
+        Point p = new Point(-1, 0);
+
+        for (int coord = 0; coord < DATA_SIZE; coord++) {
+            p.offset(1, 1); // generate sequence of points: (0,1),(1,2),(2,3),...
+            buffer.putPixel(p);
+        }
+
+        buffer.initCornersDetection();
+        Point actual = new Point();
+        int i = 0;
+        for (PixelBufferChunk chunk : buffer) {
+            for (Point point : chunk) {
+                buffer.get(i++, actual);
+                assertThat(actual, is(equalTo(point)));
+            }
+        }
+    }
+
+    @Test
+    public void pixelBufferReverseIndexingTest() {
+        final int CHUNK_SIZE = 10; // points
+        final int DATA_SIZE = 34;  // points
+        final int NUMBER_OF_CHUNKS = (int) Math.ceil(DATA_SIZE / (float)CHUNK_SIZE);
+
+        PixelBuffer buffer = new PixelBuffer(CHUNK_SIZE);
+        buffer.prepareForPushingBack();
+        Point p = new Point(-1, 0);
+
+        for (int coord = 0; coord < DATA_SIZE; coord++) {
+            p.offset(1, 1); // generate sequence of points: (0,1),(1,2),(2,3),...
+            buffer.pushBackPixel(p);
+        }
+
+        buffer.initCornersDetection();
+        Point actual = new Point();
+        int i = 0;
+        for (PixelBufferChunk chunk : buffer) {
+            for (Point point : chunk) {
+                buffer.get(i++, actual);
+                assertThat(actual, is(equalTo(point)));
+            }
+        }
+    }
+
+    @Test
+    public void pixelBufferHybridIndexingTest() {
+        final int CHUNK_SIZE = 10; // points
+        final int DATA_SIZE = 34;  // points
+        final int NUMBER_OF_CHUNKS = (int) Math.ceil(DATA_SIZE / (float)CHUNK_SIZE);
+
+        PixelBuffer buffer = new PixelBuffer(CHUNK_SIZE);
+        buffer.prepareForPushingBack();
+        Point p = new Point(DATA_SIZE/2 - 1, DATA_SIZE/2); // (16, 17)
+
+        for (int coord = 0; coord < DATA_SIZE/2 - 1; coord++) {
+            p.offset(-1, -1); // generate sequence of points: (0,1),(1,2),(2,3),...,(16,17)
+            buffer.pushBackPixel(p);
+        }
+
+        p = new Point(DATA_SIZE/2 - 2, DATA_SIZE/2 - 1); // (15,16) will be changes to (16, 17) in first iteration
+
+        for (int coord = DATA_SIZE/2 - 1; coord < DATA_SIZE; coord++) {
+            p.offset(1, 1); // generate sequence of points: (17,18),(18,19),...,(33,34)
+            buffer.putPixel(p);
+        }
+
+        buffer.initCornersDetection();
+        Point actual = new Point();
+        int i = 0;
+        for (PixelBufferChunk chunk : buffer) {
+            for (Point point : chunk) {
+                buffer.get(i++, actual);
+                assertThat(actual, is(equalTo(point)));
+            }
+        }
+    }
 }

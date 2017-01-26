@@ -9,6 +9,7 @@ import java.util.ArrayList;
  */
 public class PixelBuffer extends ArrayList<PixelBufferChunk> {
     public static final int BUFFER_CHUNK_DEFAULT_SIZE = 256;
+    private static final int CORNER = 1;
 
     private PixelBufferChunk mLastChunk;
     private PixelBufferChunk mFirstChunk = null;
@@ -56,5 +57,44 @@ public class PixelBuffer extends ArrayList<PixelBufferChunk> {
     private void addChunk() {
         mLastChunk = new PixelBufferChunk(mBufferChunkSize);
         this.add(mLastChunk);
+    }
+
+    // For each pixels this array stores 1 if corresponding pixel is corner and 0 otherwise
+    private int[] mCorners;
+    private int mFirstChunkPixelsNum;
+    private int mLastChunkPixelsNum;
+    private int mInnerChunksNum;
+    private int mPixelsUpToLastChunk;
+    public void initCornersDetection() {
+        mCorners = new int[mPixelsCount];
+        mFirstChunkPixelsNum = get(0).pixelsCount;
+        mLastChunkPixelsNum = get(size()-1).pixelsCount;
+        mInnerChunksNum = Math.max(0, size() - 2);
+        mPixelsUpToLastChunk = mFirstChunkPixelsNum + mInnerChunksNum * mBufferChunkSize;
+    }
+
+    private int mIndexWithinChunk;
+    private int mChunkIndex;
+    private void toLocalIndex(int index) {
+        if (index < mFirstChunkPixelsNum) { // first chunk?
+            mChunkIndex = 0;
+            mIndexWithinChunk = index;
+        } else if (index > mPixelsUpToLastChunk) { // last chunk?
+            mChunkIndex = size() - 1;
+            mIndexWithinChunk = index - mPixelsUpToLastChunk;
+        } else { // in inner chunk
+            final int innerIndex = index - mFirstChunkPixelsNum;
+            mChunkIndex = innerIndex / mBufferChunkSize + 1;
+            mIndexWithinChunk = innerIndex % mBufferChunkSize;
+        }
+    }
+
+    // Gets point using given global index. Point must be initialized
+    public void get(int index, Point p) {
+        toLocalIndex(index);
+        PixelBufferChunk chunk = get(mChunkIndex);
+        mIndexWithinChunk <<= 1;
+        mIndexWithinChunk += chunk.getFirstIndex();
+        p.set(chunk.coords[mIndexWithinChunk], chunk.coords[mIndexWithinChunk + 1]);
     }
 }

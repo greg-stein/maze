@@ -24,4 +24,9 @@ public class PixelBufferChunkReversed extends PixelBufferChunk {
     public void reset() {
         position = coordsCount + 2;
     }
+
+    @Override
+    public int getFirstIndex() {
+        return coordsCount + 2;
+    }
 }

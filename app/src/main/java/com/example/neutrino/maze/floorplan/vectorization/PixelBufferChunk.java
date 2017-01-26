@@ -74,6 +74,10 @@ public class PixelBufferChunk implements Iterable<Point> {
         position = 0;
     }
 
+    public int getFirstIndex() {
+        return 0;
+    }
+
     @Override
     public Iterator<Point> iterator() {
         return new PixelBufferChunkIterator();
