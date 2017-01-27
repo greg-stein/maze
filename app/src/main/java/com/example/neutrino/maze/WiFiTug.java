@@ -524,31 +524,4 @@ public class WiFiTug implements TugOfWar.ITugger {
     public static float distanceXYsqr (Footprint a, Footprint b) {
         return (float)( Math.pow((a.getCenter().x - b.getCenter().x), 2) + Math.pow((a.getCenter().y - b.getCenter().y), 2) );
     }
-
-    // Implements a comparable class of WifiMark history (list).
-    // With each list a total cost (error function) is associated, which is used for sorting.
-    public static class WifiMarkHistory implements Comparable<WifiMarkHistory>{
-        private List<WifiMark> marks;
-        private float totalCost;
-
-        public void add (WifiMark mark, float cost) {
-            marks.add(mark);
-            totalCost += cost;
-        }
-
-        @Override
-        public int compareTo(WifiMarkHistory another) {
-            return Float.compare(this.totalCost, another.totalCost);
-        }
-
-        WifiMarkHistory() {
-            marks = new ArrayList<>();
-            totalCost = 0;
-        }
-
-        WifiMarkHistory(WifiMark mark, float cost) {
-            this();
-            add(mark, cost);
-        }
-    }
 }
