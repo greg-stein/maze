@@ -1,7 +1,9 @@
 package com.example.neutrino.maze;
 
 import android.graphics.PointF;
+import android.util.Pair;
 
+import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
@@ -15,6 +17,8 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Queue;
 import java.util.TreeMap;
+import java.util.TreeSet;
+
 import org.apache.commons.math3.distribution.TDistribution;
 
 /**
@@ -36,6 +40,7 @@ public class WiFiTug implements TugOfWar.ITugger {
     private static final double CORR_THRESHOLD = 0.9;
     private static final float WIFI_DISTANCE_CANDIDATE_PERCENTAGE = 0.1f;
     private static final int MAX_NUM_CANDIDATES = 5;
+    private static final float MAX_SQRDISTANCE_TWO_WIFIMARKS = 100;   // maximum allowed sqrdistance
 
     public static List<WifiMark> centroidMarks = null;
     // 20% of total marks
@@ -406,9 +411,18 @@ public class WiFiTug implements TugOfWar.ITugger {
         centroidMarks = wifiMarks;
     }
 
+    /* Returns the most probable trajectory of locations, given the current stored history of
+     * Wifi fingerprints.
+     */
     public void getMostProbableTrajectory(List<PointF> trajectory)
     {
         float minDistance, maxDistance, distanceRange, maxViableDistance;
+        TreeSet<LinkableWifiMark> candidatesThisRound = new TreeSet<>();
+        TreeSet<LinkableWifiMark> candidatesList = new TreeSet<>();
+        TreeSet<LinkableWifiMark> candidatePairs = new TreeSet<>();
+        boolean firstRound = true;
+        int i, j;
+        LinkableWifiMark wmark, lwmark;
 
         for (Fingerprint fingerprint: currentHistory) {
             List<WifiMark> wifiMarks = getMarksWithSameAps(marks, fingerprint);
@@ -425,23 +439,90 @@ public class WiFiTug implements TugOfWar.ITugger {
             distanceRange = maxDistance - minDistance;
             maxViableDistance = minDistance + WIFI_DISTANCE_CANDIDATE_PERCENTAGE * distanceRange;
 
-            // Second iteration - take only viable candidates (up to MAX_CANDIDATES from top CANDIDATE_PERCENTAGE)
+            // Second iteration - take only viable candidates (from top CANDIDATE_PERCENTAGE of lowest distance)
             for (WifiMark mark: wifiMarks) {
                 float distance = distance(fingerprint, mark.getFingerprint());
                 if (distance <= maxViableDistance) {
-                    List<WifiMark> candidate;
-                    for (int i = 0 ; i < MAX_NUM_CANDIDATES ; i++) {
-                        // TODO: implement this
+                    candidatesThisRound.add(new LinkableWifiMark(mark, distance));
+                }
+            }
+
+            // Third iteration - of all viable candidates take only the top MAX_NUM_CANDIDATES
+            // and try merging each of them with existing candidate lists (except for first round)
+            for (i = 0; i < MAX_NUM_CANDIDATES; i++) {
+                wmark = candidatesThisRound.pollFirst();
+                if (wmark == null)
+                    break;
+                if (firstRound) {   // No previous list - make list out of top candidates
+                    candidatesList.add(wmark);
+                } else {    // Previous list of candidate chains exists
+                    for (LinkableWifiMark storedmark: candidatesList) {
+                        if (distanceXYsqr(wmark.mark, storedmark.mark) <= MAX_SQRDISTANCE_TWO_WIFIMARKS) {
+                            lwmark = new LinkableWifiMark(wmark.mark);
+                            lwmark.parent = storedmark;
+                            lwmark.totalCost = storedmark.totalCost + wmark.totalCost;
+                            candidatePairs.add(lwmark); // Add only possible chain continuations
+                        }
+                    }
+                    candidatesList.clear();
+                    for (j = 0; j < MAX_NUM_CANDIDATES; j++) {  // Take top candidates from new chains
+                        lwmark = candidatePairs.pollFirst();
+                        if (lwmark == null)
+                            break;
+                        candidatesList.add(lwmark); // Add to candidates list
                     }
                 }
             }
         }
+
+        trajectory.clear();
+        lwmark = candidatesList.first();
+
+        while (lwmark != null) {    // Add points to list in reverse order
+            PointF point = lwmark.mark.getCenter();
+            trajectory.add(0, point);
+            lwmark = lwmark.parent;
+        }
+
+        candidatesList.clear(); // NAHUA ???
     }
 
     @Override
     public float getForce() {
         // TODO: calculate error
         return 0.5f;
+    }
+
+    /* A WifiMark wrapper with the following capabilities:
+     * - Link to another LinkableWifiMark to form chains of marks
+     * - Keep total cost function (for evaluating quality of chains)
+     */
+    public static class LinkableWifiMark implements Comparable<LinkableWifiMark>{
+        public LinkableWifiMark parent = null;
+        public WifiMark mark = null;
+        public float totalCost = 0;
+
+        @Override
+        public int compareTo(LinkableWifiMark another) {
+            if (totalCost < another.totalCost)
+                return -1;
+            if (totalCost > another.totalCost)
+                return 1;
+            return 0;
+        }
+
+        LinkableWifiMark(WifiMark mark) {
+            this.mark = mark;
+        }
+
+        LinkableWifiMark(WifiMark mark, float cost) {
+            this.mark = mark;
+            totalCost = cost;
+        }
+    }
+
+    public static float distanceXYsqr (Footprint a, Footprint b) {
+        return (float)( Math.pow((a.getCenter().x - b.getCenter().x), 2) + Math.pow((a.getCenter().y - b.getCenter().y), 2) );
     }
 
     // Implements a comparable class of WifiMark history (list).
