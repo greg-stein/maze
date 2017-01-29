@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 
 import com.example.neutrino.maze.floorplan.vectorization.ImageArray;
+import com.example.neutrino.maze.floorplan.vectorization.KernelHoughTransform;
 import com.example.neutrino.maze.floorplan.vectorization.PixelBuffer;
 import com.example.neutrino.maze.floorplan.vectorization.PixelBufferChunk;
 
@@ -19,6 +20,7 @@ import org.robolectric.annotation.Config;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -210,5 +212,65 @@ public class PixelBufferTests {
                 assertThat(actual, is(equalTo(point)));
             }
         }
+    }
+
+    @Test
+    public void simpleSubdivideTest() {
+        int[] data = new int[] {
+                //   0            1            2            3            4            5            6            7            8            9
+                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 0
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 1
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 2
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 3
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 4
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 5
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 6
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 7
+                Color.WHITE, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.WHITE, // 8
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 9
+                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 10
+        };
+        ImageArray imageArray = new ImageArray(data, 10, 11);
+        imageArray.findBlackPixels();
+        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        List<PixelBuffer> chains = kht.getPixelChains(imageArray);
+
+        PixelBuffer chain = chains.get(0);
+        chain.initCornersDetection();
+        chain.findStraightSegments();
+        int[] expectedCorners = new int[14];
+        expectedCorners[0] = expectedCorners[13] = expectedCorners[6] = PixelBuffer.CORNER;
+
+        assertThat(chain.mCorners, is(equalTo(expectedCorners)));
+    }
+
+    @Test
+    public void oneRecursiveCallSubdivideTest() { //TODO!!!
+        int[] data = new int[] {
+                //   0            1            2            3            4            5            6            7            8            9
+                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 0
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 1
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 2
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 3
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 4
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 5
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 6
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 7
+                Color.WHITE, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.WHITE, // 8
+                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 9
+                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 10
+        };
+        ImageArray imageArray = new ImageArray(data, 10, 11);
+        imageArray.findBlackPixels();
+        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        List<PixelBuffer> chains = kht.getPixelChains(imageArray);
+
+        PixelBuffer chain = chains.get(0);
+        chain.initCornersDetection();
+        chain.findStraightSegments();
+        int[] expectedCorners = new int[14];
+        expectedCorners[0] = expectedCorners[13] = expectedCorners[6] = PixelBuffer.CORNER;
+
+        assertThat(chain.mCorners, is(equalTo(expectedCorners)));
     }
 }
