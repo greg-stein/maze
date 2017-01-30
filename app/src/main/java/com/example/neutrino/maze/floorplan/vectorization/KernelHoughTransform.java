@@ -6,6 +6,8 @@ import android.graphics.Point;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.neutrino.maze.floorplan.vectorization.PixelBuffer.CORNER;
+
 /**
  * Created by Greg Stein on 1/18/2017.
  */
@@ -16,6 +18,8 @@ public class KernelHoughTransform {
     private static final int INVALID_COORD = -1;
     private static final Point INVALID_PIXEL = new Point(INVALID_COORD, INVALID_COORD);
     private static final int MIN_PIXELS_IN_CHAIN = 3;
+    private static final int MIN_SEGMENT_LENGTH = 4;
+    private static final double MIN_DEVIATION_RATIO = 0.05d;
 
     private ImageArray mImage;
 
@@ -71,5 +75,46 @@ public class KernelHoughTransform {
             }
         }
         return chains;
+    }
+
+    public  void subdivide(PixelBuffer buffer, int startIdx, int endIdx) {
+        Point start = new Point();
+        Point end = new Point();
+        buffer.mCorners[startIdx] = CORNER;
+        buffer.mCorners[endIdx] = CORNER;
+        buffer.get(startIdx, start);
+        buffer.get(endIdx, end);
+        final int xDiff = end.x - start.x;
+        final int yDiff = end.y - start.y;
+
+        int maxDeviation = 0;
+        int maxDevIndex = 0;
+        Point p = new Point();
+        for (int index = startIdx; index <= endIdx; index++) {
+            buffer.get(index, p);
+
+            final int deviation = Math.abs(yDiff * p.x - xDiff * p.y + end.x * start.y - end.y * start.x);
+            if (deviation > maxDeviation) {
+                maxDeviation = deviation;
+                maxDevIndex = index;
+            }
+        }
+
+        // Do both parts satisfy minimum line segment length condition?
+        if (maxDevIndex - startIdx > MIN_SEGMENT_LENGTH && endIdx - maxDevIndex > MIN_SEGMENT_LENGTH) {
+            final int squaredLength = xDiff * xDiff + yDiff * yDiff;
+            // Minimum deviation-to-length ratio condition
+            if ((double)maxDeviation / squaredLength > MIN_DEVIATION_RATIO) {
+                subdivide(buffer, startIdx, maxDevIndex);
+                subdivide(buffer, maxDevIndex, endIdx);
+            }
+        }
+    }
+
+    public void findStraightSegments(PixelBuffer buffer) {
+        int pixelsCount = buffer.getPixelsCount();
+
+        buffer.mCorners = new int[pixelsCount];
+        subdivide(buffer, 0, pixelsCount - 1);
     }
 }
