@@ -21,16 +21,17 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.List;
-import java.util.Random;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import dalvik.annotation.TestTarget;
+
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.closeTo;
@@ -70,21 +71,7 @@ public class AcceptanceTests {
     // This func runs before each @Test in this class.
     @Before
     public void ReadFloorPlanFromResources() {
-        String jsonString = null;
-
-        try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            // Get json file from test resources: app/src/test/resources
-            InputStream in_s = classLoader.getResourceAsStream("floorplan_greg_home_2nd_floor_2.json");
-
-            byte[] b = new byte[in_s.available()];
-            in_s.read(b);
-            jsonString = new String(b);
-        } catch (Exception e) {
-            e.printStackTrace(); // АААА! Жопа!! жопА!!
-        }
-
-        List<IFloorPlanPrimitive> deserializedList = FloorPlanSerializer.deserializeFloorPlan(jsonString);
+        List<IFloorPlanPrimitive> deserializedList = getFloorPlanFromRes("floorplan_greg_home_2nd_floor_2.json");
 
         marks = CommonHelper.getPrimitives(WifiMark.class, deserializedList);
         walls = CommonHelper.getPrimitives(Wall.class, deserializedList);
@@ -94,7 +81,57 @@ public class AcceptanceTests {
         wifiTug.marks = marks;
     }
 
+    private List<IFloorPlanPrimitive> getFloorPlanFromRes(String resourceFile) {
+        String jsonString = null;
+        try {
+            ClassLoader classLoader = getClass().getClassLoader();
+            // Get json file from test resources: app/src/test/resources
+            InputStream in_s = classLoader.getResourceAsStream(resourceFile);
+
+            byte[] b = new byte[in_s.available()];
+            in_s.read(b);
+            jsonString = new String(b);
+        } catch (Exception e) {
+            e.printStackTrace(); // АААА! Жопа!! жопА!!
+        }
+
+        return FloorPlanSerializer.deserializeFloorPlan(jsonString);
+    }
+
     static List<Double> distances = new ArrayList<>();
+
+    @Test
+    public void wifiHistoryTest() {
+        List<IFloorPlanPrimitive> pathMarksAsPrimitives = getFloorPlanFromRes("wifiMarksAsWalkingPath.json");
+        List<WifiMark> pathMarks = new ArrayList<>();
+        for (IFloorPlanPrimitive primitive : pathMarksAsPrimitives) {
+            pathMarks.add((WifiMark) primitive);
+        }
+    }
+
+    @Test
+    public void wifiHistoryTrivialTest() {
+        wifiTug.currentHistory = new WiFiTug.FingerprintHistory(10);
+
+        WifiMark standingMark = marks.get(marks.size() / 2);
+        WiFiTug.Fingerprint standingPrint = standingMark.getFingerprint();
+        for (int i = 0; i < 10; i++) {
+            wifiTug.addToFingerprintHistory(standingPrint);
+        }
+
+        List<PointF> mostProbably = new ArrayList<>();
+
+        wifiTug.getMostProbableTrajectory(mostProbably);
+
+        assertEquals(mostProbably.size(), wifiTug.currentHistory.size());
+
+        for (int i = 0; i < 10; i++) {
+            assertEquals(mostProbably.get(i).x, standingMark.getCenter().x, 1e-5);
+            assertEquals(mostProbably.get(i).y, standingMark.getCenter().y, 1e-5);
+        }
+
+        LOGGER.info("----------------------------------------------------");
+    }
 
     @Test
     public void wifiPositioningAcceptanceTest() {
