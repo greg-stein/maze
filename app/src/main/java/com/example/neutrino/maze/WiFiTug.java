@@ -84,6 +84,10 @@ public class WiFiTug implements TugOfWar.ITugger {
             mQueue.clear();
         }
 
+        public int size() {
+            return mLength;
+        }
+
         @Override
         public Iterator<Fingerprint> iterator() {
             return (mQueue.iterator());
@@ -93,7 +97,7 @@ public class WiFiTug implements TugOfWar.ITugger {
     public List<WifiMark> marks; //TODO: no encapsulation!
     public List<Wall> walls; //TODO: no encapsulation!
     public Fingerprint currentFingerprint = null;
-    private FingerprintHistory currentHistory = null;
+    public FingerprintHistory currentHistory = null;
 
     void addToFingerprintHistory (Fingerprint fingerprint) {
         currentHistory.add(fingerprint);
@@ -428,7 +432,7 @@ public class WiFiTug implements TugOfWar.ITugger {
             List<WifiMark> wifiMarks = getMarksWithSameAps(marks, fingerprint);
             minDistance = 0; maxDistance = Float.MAX_VALUE;
 
-            // First iteration - get min and max distance
+            // First phase - get min and max distance
             for (WifiMark mark: wifiMarks) {
                 float distance = distance(fingerprint, mark.getFingerprint());
                 if (distance < minDistance)
@@ -439,7 +443,7 @@ public class WiFiTug implements TugOfWar.ITugger {
             distanceRange = maxDistance - minDistance;
             maxViableDistance = minDistance + WIFI_DISTANCE_CANDIDATE_PERCENTAGE * distanceRange;
 
-            // Second iteration - take only viable candidates (from top CANDIDATE_PERCENTAGE of lowest distance)
+            // Second phase - take only viable candidates (from top CANDIDATE_PERCENTAGE of lowest distance)
             for (WifiMark mark: wifiMarks) {
                 float distance = distance(fingerprint, mark.getFingerprint());
                 if (distance <= maxViableDistance) {
@@ -447,7 +451,7 @@ public class WiFiTug implements TugOfWar.ITugger {
                 }
             }
 
-            // Third iteration - of all viable candidates take only the top MAX_NUM_CANDIDATES
+            // Third phase - of all viable candidates take only the top MAX_NUM_CANDIDATES
             // and try merging each of them with existing candidate lists (except for first round)
             for (i = 0; i < MAX_NUM_CANDIDATES; i++) {
                 wmark = candidatesThisRound.pollFirst();
@@ -456,7 +460,7 @@ public class WiFiTug implements TugOfWar.ITugger {
                 if (firstRound) {   // No previous list - make list out of top candidates
                     candidatesList.add(wmark);
                 } else {    // Previous list of candidate chains exists
-                    for (LinkableWifiMark storedmark: candidatesList) {
+                    for (LinkableWifiMark storedmark : candidatesList) {
                         if (distanceXYsqr(wmark.mark, storedmark.mark) <= MAX_SQRDISTANCE_TWO_WIFIMARKS) {
                             lwmark = new LinkableWifiMark(wmark.mark);
                             lwmark.parent = storedmark;
@@ -464,15 +468,20 @@ public class WiFiTug implements TugOfWar.ITugger {
                             candidatePairs.add(lwmark); // Add only possible chain continuations
                         }
                     }
-                    candidatesList.clear();
-                    for (j = 0; j < MAX_NUM_CANDIDATES; j++) {  // Take top candidates from new chains
-                        lwmark = candidatePairs.pollFirst();
-                        if (lwmark == null)
-                            break;
-                        candidatesList.add(lwmark); // Add to candidates list
-                    }
                 }
             }
+
+            // Fourth phase - keep only top MAX_NUM_CANDIDATES of the newly formed chains (except first round)
+            if (!firstRound) {
+                candidatesList.clear();
+                for (j = 0; j < MAX_NUM_CANDIDATES; j++) {  // Take top candidates from new chains
+                    lwmark = candidatePairs.pollFirst();
+                    if (lwmark == null)
+                        break;
+                    candidatesList.add(lwmark); // Add to candidates list
+                }
+            }
+            firstRound = false;
         }
 
         trajectory.clear();
