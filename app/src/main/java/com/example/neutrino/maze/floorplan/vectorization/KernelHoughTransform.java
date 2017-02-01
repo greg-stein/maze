@@ -41,6 +41,7 @@ public class KernelHoughTransform {
         p.set(pRef.x, pRef.y);
         next(image, p);
         if (!p.equals(INVALID_PIXEL)) {
+            pixels.prepareForPushingBack();
             do {
                 pixels.pushBackPixel(p); // add in reverse
                 image.set(p, Color.WHITE);
@@ -114,6 +115,7 @@ public class KernelHoughTransform {
     public void findStraightSegments(PixelBuffer buffer) {
         int pixelsCount = buffer.getPixelsCount();
 
+        buffer.initCornersDetection();
         buffer.mCorners = new int[pixelsCount];
         subdivide(buffer, 0, pixelsCount - 1);
     }
