@@ -10,7 +10,6 @@ import com.example.neutrino.maze.floorplan.vectorization.PixelBufferChunk;
 import com.example.neutrino.maze.floorplan.vectorization.PixelBuffer;
 import com.example.neutrino.maze.floorplan.vectorization.PixelBufferChunkReversed;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -193,7 +192,7 @@ public class KernelHoughTransformTests {
         List<PixelBuffer> chains = kht.getPixelChains();
 
         PixelBuffer chain = chains.get(0);
-        chain.initCornersDetection();
+        chain.initDirectIndexing();
         kht.findStraightSegments(chain);
         int[] expectedCorners = new int[14];
         expectedCorners[0] = expectedCorners[13] = expectedCorners[6] = PixelBuffer.CORNER;
@@ -223,7 +222,7 @@ public class KernelHoughTransformTests {
         List<PixelBuffer> chains = kht.getPixelChains();
 
         PixelBuffer chain = chains.get(0);
-        chain.initCornersDetection();
+        chain.initDirectIndexing();
         kht.findStraightSegments(chain);
         int[] expectedCorners = new int[18];
         expectedCorners[0] = expectedCorners[7] = expectedCorners[12] = expectedCorners[17] = PixelBuffer.CORNER;
@@ -259,7 +258,7 @@ public class KernelHoughTransformTests {
         assertThat(chains, hasSize(2));
 
         PixelBuffer chain = chains.get(0);
-        chain.initCornersDetection();
+        chain.initDirectIndexing();
         kht.findStraightSegments(chain);
         int[] expectedCorners = new int[12];
         expectedCorners[0] = expectedCorners[5] = expectedCorners[11] = PixelBuffer.CORNER;
@@ -267,7 +266,7 @@ public class KernelHoughTransformTests {
         assertThat(chain.mCorners, is(equalTo(expectedCorners)));
 
         PixelBuffer chain2 = chains.get(1);
-        chain2.initCornersDetection();
+        chain2.initDirectIndexing();
         kht.findStraightSegments(chain2);
 
         assertThat(chain2.mCorners, is(equalTo(expectedCorners)));

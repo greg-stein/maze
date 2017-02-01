@@ -65,7 +65,7 @@ public class PixelBuffer extends ArrayList<PixelBufferChunk> {
     private int mLastChunkPixelsNum;
     private int mInnerChunksNum;
     private int mPixelsUpToLastChunk;
-    public void initCornersDetection() {
+    public void initDirectIndexing() {
         mFirstChunkPixelsNum = get(0).pixelsCount;
         mLastChunkPixelsNum = get(size()-1).pixelsCount;
         mInnerChunksNum = Math.max(0, size() - 2);

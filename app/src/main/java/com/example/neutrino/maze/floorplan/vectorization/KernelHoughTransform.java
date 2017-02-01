@@ -117,7 +117,7 @@ public class KernelHoughTransform {
     public void findStraightSegments(PixelBuffer buffer) {
         int pixelsCount = buffer.getPixelsCount();
 
-        buffer.initCornersDetection();
+        buffer.initDirectIndexing();
         buffer.mCorners = new int[pixelsCount];
         subdivide(buffer, 0, pixelsCount - 1);
     }
@@ -129,7 +129,7 @@ public class KernelHoughTransform {
             int pixelsCount = buffer.getPixelsCount();
 
             buffer.mCorners = new int[pixelsCount];
-            buffer.initCornersDetection();
+            buffer.initDirectIndexing();
             subdivide(buffer, 0, pixelsCount - 1);
         }
 
