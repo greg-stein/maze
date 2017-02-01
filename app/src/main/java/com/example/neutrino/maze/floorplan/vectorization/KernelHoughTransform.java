@@ -3,6 +3,8 @@ package com.example.neutrino.maze.floorplan.vectorization;
 import android.graphics.Color;
 import android.graphics.Point;
 
+import com.example.neutrino.maze.floorplan.vectorization.HoughTransform.LineSegment;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,13 +64,13 @@ public class KernelHoughTransform {
         pSeed.set(INVALID_PIXEL.x, INVALID_PIXEL.y);
     }
 
-    public List<PixelBuffer> getPixelChains(ImageArray image) {
+    public List<PixelBuffer> getPixelChains() {
         List<PixelBuffer> chains = new ArrayList<>();
 
-        for (PixelBufferChunk chunk : image.pixelBufferChunks) {
+        for (PixelBufferChunk chunk : mImage.pixelBufferChunks) {
             for (Point p : chunk) {
-                if (image.get(p) == Color.BLACK) {
-                    final PixelBuffer chain = link(image, p);
+                if (mImage.get(p) == Color.BLACK) {
+                    final PixelBuffer chain = link(mImage, p);
                     if (chain.getPixelsCount() >= MIN_PIXELS_IN_CHAIN) {
                         chains.add(chain);
                     }
@@ -78,7 +80,7 @@ public class KernelHoughTransform {
         return chains;
     }
 
-    public  void subdivide(PixelBuffer buffer, int startIdx, int endIdx) {
+    public void subdivide(PixelBuffer buffer, int startIdx, int endIdx) {
         Point start = new Point();
         Point end = new Point();
         buffer.mCorners[startIdx] = CORNER;
@@ -118,5 +120,36 @@ public class KernelHoughTransform {
         buffer.initCornersDetection();
         buffer.mCorners = new int[pixelsCount];
         subdivide(buffer, 0, pixelsCount - 1);
+    }
+
+    public List<LineSegment> findStraightSegments() {
+        List<PixelBuffer> buffers = getPixelChains();
+
+        for (PixelBuffer buffer : buffers) {
+            int pixelsCount = buffer.getPixelsCount();
+
+            buffer.mCorners = new int[pixelsCount];
+            buffer.initCornersDetection();
+            subdivide(buffer, 0, pixelsCount - 1);
+        }
+
+        List<LineSegment> segments = new ArrayList<>();
+
+        for (PixelBuffer buffer : buffers) {
+            final int pixelCount = buffer.getPixelsCount();
+            final Point start = new Point();
+            final Point end = new Point();
+
+            buffer.get(0, start);
+            for (int i = 1; i < pixelCount; i++) {
+                if (buffer.mCorners[i] == CORNER) {
+                    buffer.get(i, end);
+                    segments.add(new LineSegment(new Point(start), new Point(end)));
+                    start.set(end.x, end.y);
+                }
+            }
+        }
+
+        return segments;
     }
 }
