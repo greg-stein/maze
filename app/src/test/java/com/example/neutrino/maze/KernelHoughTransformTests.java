@@ -37,16 +37,19 @@ import static org.junit.Assert.assertTrue;
 @Config(manifest=Config.NONE)
 public class KernelHoughTransformTests {
 
+    public static final int W = Color.WHITE;
+    public static final int B = Color.BLACK;
+
     @Test
     public void linkingPixelChains2DisjointChainsTest() {
         int[] data = new int[] {
-                //   0            1            2            3            4            6
-                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 0
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, // 1
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, // 2
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, // 3
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, // 4
-                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 5
+             // 0  1  2  3  4  5
+                W, W, W, W, W, W, // 0
+                W, B, W, B, W, W, // 1
+                W, B, W, B, W, W, // 2
+                W, B, W, B, W, W, // 3
+                W, B, W, B, W, W, // 4
+                W, W, W, W, W, W, // 5
         };
         ImageArray imageArray = new ImageArray(data, 6, 6);
         imageArray.findBlackPixels();
@@ -83,13 +86,13 @@ public class KernelHoughTransformTests {
     @Test
     public void linkingPixelChains2JointChainsOneShortTest() {
         int[] data = new int[] {
-                //   0            1            2            3            4            6
-                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 0
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 1
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 2
-                Color.WHITE, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.WHITE, // 3
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 4
-                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 5
+             // 0  1  2  3  4  5
+                W, W, W, W, W, W, // 0
+                W, B, W, W, W, W, // 1
+                W, B, W, W, W, W, // 2
+                W, B, B, B, B, W, // 3
+                W, B, W, W, W, W, // 4
+                W, W, W, W, W, W, // 5
         };
         ImageArray imageArray = new ImageArray(data, 6, 6);
         imageArray.findBlackPixels();
@@ -117,16 +120,16 @@ public class KernelHoughTransformTests {
     @Test
     public void linkingPixelChains2JointChainsTest() {
         int[] data = new int[] {
-                //   0            1            2            3            4            6
-                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 0
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 1
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 2
-                Color.WHITE, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.WHITE, // 3
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 4
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 5
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 6
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 7
-                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 8
+             // 0  1  2  3  4  5
+                W, W, W, W, W, W, // 0
+                W, B, W, W, W, W, // 1
+                W, B, W, W, W, W, // 2
+                W, B, B, B, B, W, // 3
+                W, B, W, W, W, W, // 4
+                W, B, W, W, W, W, // 5
+                W, B, W, W, W, W, // 6
+                W, B, W, W, W, W, // 7
+                W, W, W, W, W, W, // 8
         };
         ImageArray imageArray = new ImageArray(data, 6, 9);
         imageArray.findBlackPixels();
@@ -167,18 +170,18 @@ public class KernelHoughTransformTests {
     @Test
     public void simpleSubdivideTest() {
         int[] data = new int[] {
-                //   0            1            2            3            4            5            6            7            8            9
-                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 0
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 1
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 2
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 3
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 4
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 5
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 6
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 7
-                Color.WHITE, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.WHITE, // 8
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 9
-                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 10
+             // 0  1  2  3  4  5  6  7  8  9
+                W, W, W, W, W, W, W, W, W, W, // 0
+                W, B, W, W, W, W, W, W, W, W, // 1
+                W, B, W, W, W, W, W, W, W, W, // 2
+                W, B, W, W, W, W, W, W, W, W, // 3
+                W, B, W, W, W, W, W, W, W, W, // 4
+                W, B, W, W, W, W, W, W, W, W, // 5
+                W, B, W, W, W, W, W, W, W, W, // 6
+                W, B, W, W, W, W, W, W, W, W, // 7
+                W, B, B, B, B, B, B, B, B, W, // 8
+                W, B, W, W, W, W, W, W, W, W, // 9
+                W, W, W, W, W, W, W, W, W, W, // 10
         };
         ImageArray imageArray = new ImageArray(data, 10, 11);
         imageArray.findBlackPixels();
@@ -197,18 +200,18 @@ public class KernelHoughTransformTests {
     @Test
     public void oneRecursiveCallSubdivideTest() {
         int[] data = new int[] {
-                //   0            1            2            3            4            5            6            7            8            9            10           11           12           13
-                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 0
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 1
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 2
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.BLACK, Color.WHITE, // 3
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, // 4
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, // 5
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 6
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 7
-                Color.WHITE, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 8
-                Color.WHITE, Color.BLACK, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 9
-                Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, // 10
+             // 0  1  2  3  4  5  6  7  8  9 10 11 12 13
+                W, W, W, W, W, W, W, W, W, W, W, W, W, W, // 0
+                W, B, W, W, W, W, W, W, W, W, W, W, W, W, // 1
+                W, B, W, W, W, W, W, W, W, W, W, W, W, W, // 2
+                W, B, W, W, W, W, W, W, W, W, W, W, B, W, // 3
+                W, B, W, W, W, W, W, W, W, W, W, B, W, W, // 4
+                W, B, W, W, W, W, W, W, W, W, B, W, W, W, // 5
+                W, B, W, W, W, W, W, W, W, B, W, W, W, W, // 6
+                W, B, W, W, W, W, W, W, B, W, W, W, W, W, // 7
+                W, B, B, B, B, B, B, B, W, W, W, W, W, W, // 8
+                W, B, W, W, W, W, W, W, W, W, W, W, W, W, // 9
+                W, W, W, W, W, W, W, W, W, W, W, W, W, W, // 10
         };
         ImageArray imageArray = new ImageArray(data, 14, 11);
         imageArray.findBlackPixels();
