@@ -144,6 +144,8 @@ public class PixelBufferTests {
             buffer.putPixel(p);
         }
 
+        assertThat(buffer.getPixelsCount(), is(equalTo(DATA_SIZE)));
+
         buffer.initCornersDetection();
         Point actual = new Point();
         int i = 0;
@@ -169,6 +171,8 @@ public class PixelBufferTests {
             p.offset(1, 1); // generate sequence of points: (0,1),(1,2),(2,3),...
             buffer.pushBackPixel(p);
         }
+
+        assertThat(buffer.getPixelsCount(), is(equalTo(DATA_SIZE)));
 
         buffer.initCornersDetection();
         Point actual = new Point();
@@ -203,6 +207,7 @@ public class PixelBufferTests {
             buffer.putPixel(p);
         }
 
+        assertThat(buffer.getPixelsCount(), is(equalTo(DATA_SIZE)));
         buffer.initCornersDetection();
         Point actual = new Point();
         int i = 0;
