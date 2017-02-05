@@ -10,9 +10,9 @@ import android.support.test.filters.MediumTest;
 import com.example.neutrino.maze.floorplan.vectorization.HoughTransform;
 import com.example.neutrino.maze.floorplan.vectorization.HoughTransform.LineSegment;
 import com.example.neutrino.maze.floorplan.vectorization.ImageArray;
+import com.example.neutrino.maze.floorplan.vectorization.LineSegmentsRecognizer;
 import com.google.gson.Gson;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Segment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -97,6 +97,22 @@ public class ImageHoughTests {
         HoughTransform houghTransform = new HoughTransform(imageArray);
         houghTransform.buildHoughSpace();
         List<LineSegment> actualSegments = houghTransform.getLineSegments(50);
+
+        System.out.println(actualSegments);
+        assertNotNull(actualSegments);
+        assertThat(actualSegments.size(), is(equalTo(expectedSegments.length)));
+        for (HoughTransform.LineSegment segment : expectedSegments) {
+            assertThat(actualSegments, hasItem(segment));
+        }
+    }
+
+    @Test
+    public void segmentsRecognizerTestCaseCheck() {
+        ImageArray imageArray = new ImageArray(image);
+        imageArray.findBlackPixels();
+        LineSegmentsRecognizer houghTransform = new LineSegmentsRecognizer(imageArray);
+        List<LineSegment> actualSegments = houghTransform.findStraightSegments();
+        List<LineSegment> mergedSegments = HoughTransform.mergeSegments(actualSegments);
 
         System.out.println(actualSegments);
         assertNotNull(actualSegments);
