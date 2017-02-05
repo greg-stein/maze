@@ -102,11 +102,13 @@ public class AcceptanceTests {
 
     @Test
     public void wifiHistoryTest() {
-        List<IFloorPlanPrimitive> pathMarksAsPrimitives = getFloorPlanFromRes("wifiMarksAsWalkingPath.json");
+        List<IFloorPlanPrimitive> pathMarksAsPrimitives = getFloorPlanFromRes("greg_home_2nd_floor_2_walking_path.json");
         List<WifiMark> pathMarks = new ArrayList<>();
         for (IFloorPlanPrimitive primitive : pathMarksAsPrimitives) {
             pathMarks.add((WifiMark) primitive);
         }
+
+        // SKOTINA, your test goes here. pathMarks contains all the fingerprints from the path (in order).
     }
 
     @Test
