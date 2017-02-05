@@ -4,6 +4,8 @@ import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Build;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -52,6 +54,31 @@ public class HoughTransform {
         public int rho;
         public int theta;
 
+        public HoughLine(LineSegment segment) {
+            Point a, b;
+            if (segment.start.x > segment.end.x) {
+                a = segment.end;
+                b = segment.start;
+            } else {
+                a = segment.start;
+                b = segment.end;
+            }
+
+            int dx = a.x - b.x;
+            int dy = a.y - b.y;
+
+            double length = Math.sqrt(dx * dx + dy * dy);
+            rho = (int) (Math.abs(b.x * a.y - a.x * b.y) / length);
+
+            double cosPhi = - dx / length;
+            int phi = (int) Math.toDegrees(Math.acos(cosPhi));
+            if (a.y > b.y) {
+                theta = 90 - phi;
+            } else {
+                theta = 90 + phi;
+            }
+        }
+
         public HoughLine(int rho, int theta) {
             this.rho = rho;
             this.theta = theta;
@@ -78,10 +105,12 @@ public class HoughTransform {
         public LineSegment(Point start, Point end) {
             this.start = start;
             this.end = end;
+            this.line = new HoughLine(this);
         }
 
         public LineSegment(Point start, Point end, HoughLine line) {
-            this(start, end);
+            this.start = start;
+            this.end = end;
             this.line = line;
         }
 
