@@ -13,7 +13,7 @@ import static com.example.neutrino.maze.floorplan.vectorization.PixelBuffer.CORN
 /**
  * Created by Greg Stein on 1/18/2017.
  */
-public class KernelHoughTransform {
+public class LineSegmentsRecognizer {
     private static final int NEIGHBOURS_NUM = 8;
     private static final int[] NEIGHBOURS_X_OFFSET = { 0,  1,  0,  0, -1, -1,  0,  0};
     private static final int[] NEIGHBOURS_Y_OFFSET = {-1,  0,  1,  1,  0,  0, -1, -1};
@@ -25,7 +25,7 @@ public class KernelHoughTransform {
 
     private ImageArray mImage;
 
-    public KernelHoughTransform(ImageArray image) {
+    public LineSegmentsRecognizer(ImageArray image) {
         mImage = image;
     }
 

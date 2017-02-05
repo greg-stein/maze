@@ -5,7 +5,7 @@ import android.graphics.Point;
 
 import com.example.neutrino.maze.floorplan.vectorization.HoughTransform.LineSegment;
 import com.example.neutrino.maze.floorplan.vectorization.ImageArray;
-import com.example.neutrino.maze.floorplan.vectorization.KernelHoughTransform;
+import com.example.neutrino.maze.floorplan.vectorization.LineSegmentsRecognizer;
 import com.example.neutrino.maze.floorplan.vectorization.PixelBufferChunk;
 import com.example.neutrino.maze.floorplan.vectorization.PixelBuffer;
 import com.example.neutrino.maze.floorplan.vectorization.PixelBufferChunkReversed;
@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest=Config.NONE)
-public class KernelHoughTransformTests {
+public class LineSegmentsRecognizerTests {
 
     public static final int W = Color.WHITE;
     public static final int B = Color.BLACK;
@@ -56,7 +56,7 @@ public class KernelHoughTransformTests {
         };
         ImageArray imageArray = new ImageArray(data, 6, 6);
         imageArray.findBlackPixels();
-        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
         List<PixelBuffer> chains = kht.getPixelChains();
 
         PixelBuffer expectedChain1 = new PixelBuffer();
@@ -99,7 +99,7 @@ public class KernelHoughTransformTests {
         };
         ImageArray imageArray = new ImageArray(data, 6, 6);
         imageArray.findBlackPixels();
-        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
         List<PixelBuffer> chains = kht.getPixelChains();
 
         PixelBuffer expectedChain1 = new PixelBuffer();
@@ -111,7 +111,7 @@ public class KernelHoughTransformTests {
         chunk1.putPixel(4, 3);
         expectedChain1.add(chunk1);
 
-        // The second chain is shorter than KernelHoughTransform.MIN_PIXELS_IN_CHAIN, so not reported
+        // The second chain is shorter than LineSegmentsRecognizer.MIN_PIXELS_IN_CHAIN, so not reported
         int[] actualCoords1 =  chains.get(0).get(0).coords;
 
         assertNotNull(chains);
@@ -136,7 +136,7 @@ public class KernelHoughTransformTests {
         };
         ImageArray imageArray = new ImageArray(data, 6, 9);
         imageArray.findBlackPixels();
-        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
         List<PixelBuffer> chains = kht.getPixelChains();
 
         PixelBuffer expectedChain1 = new PixelBuffer();
@@ -157,7 +157,7 @@ public class KernelHoughTransformTests {
         chunk2.putPixel(1, 7);
         expectedChain2.add(chunk2);
 
-        // The second chain is shorter than KernelHoughTransform.MIN_PIXELS_IN_CHAIN, so not reported
+        // The second chain is shorter than LineSegmentsRecognizer.MIN_PIXELS_IN_CHAIN, so not reported
         int[] actualCoords1 =  chains.get(0).get(0).coords;
         int[] actualCoords2 =  chains.get(1).get(0).coords;
 
@@ -188,7 +188,7 @@ public class KernelHoughTransformTests {
         };
         ImageArray imageArray = new ImageArray(data, 10, 11);
         imageArray.findBlackPixels();
-        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
         List<PixelBuffer> chains = kht.getPixelChains();
 
         PixelBuffer chain = chains.get(0);
@@ -218,7 +218,7 @@ public class KernelHoughTransformTests {
         };
         ImageArray imageArray = new ImageArray(data, 14, 11);
         imageArray.findBlackPixels();
-        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
         List<PixelBuffer> chains = kht.getPixelChains();
 
         PixelBuffer chain = chains.get(0);
@@ -251,7 +251,7 @@ public class KernelHoughTransformTests {
         };
         ImageArray imageArray = new ImageArray(data, 14, 14);
         imageArray.findBlackPixels();
-        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
         List<PixelBuffer> chains = kht.getPixelChains();
 
         assertNotNull(chains);
@@ -297,7 +297,7 @@ public class KernelHoughTransformTests {
         };
         ImageArray imageArray = new ImageArray(data, 15, 15);
         imageArray.findBlackPixels();
-        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
         List<PixelBuffer> chains = kht.getPixelChains();
 
         assertNotNull(chains);
@@ -353,7 +353,7 @@ public class KernelHoughTransformTests {
         };
         ImageArray imageArray = new ImageArray(data, 15, 15);
         imageArray.findBlackPixels();
-        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
         List<LineSegment> segments = kht.findStraightSegments();
 
         assertNotNull(segments);
@@ -389,7 +389,7 @@ public class KernelHoughTransformTests {
         };
         ImageArray imageArray = new ImageArray(data, 14, 14);
         imageArray.findBlackPixels();
-        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
         List<LineSegment> segments = kht.findStraightSegments();
 
         assertNotNull(segments);

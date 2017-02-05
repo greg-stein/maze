@@ -38,7 +38,7 @@ public class FloorplanVectorizer {
         Thinning.doZhangSuenThinning(imageArray);
         debugBM = imageArray.toBitmap();
 
-        KernelHoughTransform kht = new KernelHoughTransform(imageArray);
+        LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
         List<LineSegment> lineSegments = kht.findStraightSegments();
         List<Wall> walls = translateToWalls(lineSegments);
 
