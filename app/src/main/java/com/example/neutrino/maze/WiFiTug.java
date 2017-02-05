@@ -103,7 +103,7 @@ public class WiFiTug implements TugOfWar.ITugger {
         currentHistory.add(fingerprint);
     }
 
-    // Mars
+    // Mars - ахтыссука
     public float getAverageDistanceTo(Fingerprint fingerprint) {
         int nMarks = marks.size();
         float distance = 0f;
@@ -184,7 +184,7 @@ public class WiFiTug implements TugOfWar.ITugger {
         return table.toString();
     }
 
-    // Calculates euclidean distance in Decibell space
+    // Calculates euclidean distance in Decibel space
     public static float distance(Fingerprint actual, Fingerprint reference) {
         float distance = 0.0f;
         int bssidLevelDiff;
