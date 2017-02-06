@@ -19,25 +19,11 @@ import java.util.List;
  * Created by neutrino on 7/2/2016.
  */
 public class FloorPlanView extends GLSurfaceView {
-    private static final float CORRIDOR_DEFAULT_WIDTH = 1.0f; // 1m
-
     private final FloorPlanRenderer mRenderer = new FloorPlanRenderer();
     private boolean mDragStarted;
-    private static final PointF mLastBuildWallsLocation = new PointF();
-    private static final PointF mNewWallsLocation =  new PointF();
-    private static final float[] mWallsBuffer = new float[12];
-    private static Wall mPreviousRightWall;
-    private static Wall mPreviousLeftWall;
     private ScaleGestureDetector mScaleDetector;
     private float mScaleFactor = FloorPlanRenderer.DEFAULT_SCALE_FACTOR;
     private boolean mIsInEditMode;
-
-    public static final int BUILDER_MODE_NONE = 0;
-    public static final int BUILDER_MODE_LEFT = 1;
-    public static final int BUILDER_MODE_RIGHT = 2;
-    public static final int BUILDER_MODE_BOTH = 3;
-
-    public int autobuilderMode = BUILDER_MODE_NONE;
     private final PointF mCurrentLocation = new PointF();
 
     public FloorPlanView(Context context) {
@@ -66,9 +52,6 @@ public class FloorPlanView extends GLSurfaceView {
 
     public void setMode(boolean isEditMode) {
         this.mIsInEditMode = isEditMode;
-    }
-
-    public void setSetLocationOp(boolean mSetLocation) {
     }
 
     public void highlightCentroidMarks(List<WifiMark> centroidMarks) {
@@ -192,49 +175,8 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
-    public void initWallsAutobuilder() {
-        // Convert center of view to world coordinates
-        mRenderer.windowToWorld(getMeasuredWidth()/2, getMeasuredHeight()/2, mLastBuildWallsLocation);
-    }
-
-    // This method builds walls from last call
-    public void autobuildWalls() {
-        // Convert center of view to world coordinates
-        mRenderer.windowToWorld(getMeasuredWidth()/2, getMeasuredHeight()/2, mNewWallsLocation);
-
-        VectorHelper.splitLine(mLastBuildWallsLocation, mNewWallsLocation, CORRIDOR_DEFAULT_WIDTH, mWallsBuffer);
-
-        Wall leftWall = null, rightWall = null;
-
-        // Make walls continuous (not dashed)
-        if ((autobuilderMode & BUILDER_MODE_LEFT) != 0) {
-            if (mPreviousLeftWall != null) {
-                mWallsBuffer[3] = mPreviousLeftWall.getB().x;
-                mWallsBuffer[4] = mPreviousLeftWall.getB().y;
-            }
-            leftWall = new Wall(mWallsBuffer[3], mWallsBuffer[4], mWallsBuffer[9], mWallsBuffer[10]);
-            mRenderer.addPrimitive(leftWall);
-        }
-
-        if ((autobuilderMode & BUILDER_MODE_RIGHT) != 0) {
-            if (mPreviousRightWall != null) {
-                mWallsBuffer[0] = mPreviousRightWall.getB().x;
-                mWallsBuffer[1] = mPreviousRightWall.getB().y;
-            }
-            rightWall = new Wall(mWallsBuffer[0], mWallsBuffer[1], mWallsBuffer[6], mWallsBuffer[7]);
-            mRenderer.addPrimitive(rightWall);
-        }
-
-        mPreviousRightWall = rightWall;
-        mPreviousLeftWall = leftWall;
-        mLastBuildWallsLocation.set(mNewWallsLocation);
-    }
-
     public enum ViewMode {VIEW_MODE, EDIT_MODE};
     private ViewMode mViewMode;
-
-    private void initControls() {
-    }
 
     public ViewMode getViewMode() {
         return mViewMode;

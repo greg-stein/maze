@@ -18,7 +18,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
@@ -50,7 +49,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     // One human step
     private static final float STEP_LENGTH = 0.78f; // 78cm
-    private static final float WALL_CREATION_DISTANCE = STEP_LENGTH;
+    private static final float WIFIMARK_SPACING = 3*STEP_LENGTH;
 
     private float mTravelledDistance = 0;
 
@@ -61,9 +60,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FloatingActionButton uiFabDeleteWall;
     private FloatingActionButton uiFabAddWall;
     private FloatingActionButton uiFabSetLocation;
-    private FloatingActionButton uiFabAutobuilderMode;
-    private FloatingActionButton uiFabAutobuilderLeft;
-    private FloatingActionButton uiFabAutobuilderRight;
+    private FloatingActionButton uiFabAutoscanMode;
     private FloatingActionButton uiFabFindMeOnMap;
     private FloatingActionButton uiFabAddFloorplanFromPic;
     private FloatingActionButton uiFabAddFloorplanFromGallery;
@@ -76,8 +73,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float currentDegree = 0f;
     private float mOffsetX;
     private float mOffsetY;
-
-    private boolean mAutobuilderFabsVisible = true;
 
     // device sensor manager
     private SensorManager mSensorManager;
@@ -113,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final PointF mCurrentLocation = new PointF();
     private float mCurrentWallLength = 1;
     private boolean mIsMapRotationLocked = false;
+    private boolean mAutoScanEnabled = false;
 
     public MainActivity() {
         mTow.registerTugger(mWiFiTug);
@@ -128,9 +124,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabDeleteWall = (FloatingActionButton) findViewById(R.id.fab_delete_wall);
         uiFabAddWall = (FloatingActionButton) findViewById(R.id.fab_add_wall);
         uiFabSetLocation = (FloatingActionButton) findViewById(R.id.fab_set_location);
-        uiFabAutobuilderMode = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder);
-        uiFabAutobuilderLeft = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder_left);
-        uiFabAutobuilderRight = (FloatingActionButton) findViewById(R.id.fab_map_autobuilder_right);
+        uiFabAutoscanMode = (FloatingActionButton) findViewById(R.id.fab_autoscan);
         uiFabFindMeOnMap = (FloatingActionButton) findViewById(R.id.fab_find_me_on_map);
         uiFabAddFloorplanFromPic = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_camera);
         uiFabAddFloorplanFromGallery = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_gallery);
@@ -419,7 +413,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     uiFabDeleteWall.show(mPreserveAlphaOnShow);
                     uiFabSetLocation.show(mPreserveAlphaOnShow);
                     uiFabAddWall.show(mPreserveAlphaOnShow);
-                    uiFabAutobuilderMode.show(mPreserveAlphaOnShow);
+                    uiFabAutoscanMode.show(mPreserveAlphaOnShow);
                     uiFabAddFloorplanFromPic.show(mPreserveAlphaOnShow);
                     uiFabAddFloorplanFromGallery.show(mPreserveAlphaOnShow);
                     uiFabMapRotateLock.show(mPreserveAlphaOnShow);
@@ -428,7 +422,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     uiFabDeleteWall.hide();
                     uiFabSetLocation.hide();
                     uiFabAddWall.hide();
-                    uiFabAutobuilderMode.hide();
+                    uiFabAutoscanMode.hide();
                     uiFabAddFloorplanFromPic.hide();
                     uiFabAddFloorplanFromGallery.hide();
                     uiFabMapRotateLock.hide();
@@ -445,36 +439,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        uiFabAutobuilderMode.setOnClickListener(new View.OnClickListener() {
+        uiFabAutoscanMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mAutobuilderFabsVisible = !mAutobuilderFabsVisible;
-                if (mAutobuilderFabsVisible) {
-                    final float alpha = getAlphaFromRes();
-
-                    uiFabAutobuilderLeft.show(mPreserveAlphaOnShow);
-                    uiFabAutobuilderRight.show(mPreserveAlphaOnShow);
+                mAutoScanEnabled = !mAutoScanEnabled;
+                if (mAutoScanEnabled) {
+                    exciteFab(uiFabAutoscanMode);
+                } else {
+                    calmFab(uiFabAutoscanMode);
                 }
-                else {
-                    uiFabAutobuilderLeft.hide();
-                    uiFabAutobuilderRight.hide();
-                }
-            }
-        });
-
-        uiFabAutobuilderLeft.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                uiFloorPlanView.autobuilderMode ^= uiFloorPlanView.BUILDER_MODE_LEFT;
-                updateAutobuilderFabsState();
-            }
-        });
-
-        uiFabAutobuilderRight.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                uiFloorPlanView.autobuilderMode ^= uiFloorPlanView.BUILDER_MODE_RIGHT;
-                updateAutobuilderFabsState();
             }
         });
 
@@ -518,11 +491,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        uiFabAutobuilderMode.callOnClick();
         uiFabDeleteWall.hide();
         uiFabSetLocation.hide();
         uiFabAddWall.hide();
-        uiFabAutobuilderMode.hide();
+        uiFabAutoscanMode.hide();
         uiFabAddFloorplanFromPic.hide();
         uiFabAddFloorplanFromGallery.hide();
         uiFabMapRotateLock.hide();
@@ -573,41 +545,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    private void updateAutobuilderFabsState() {
-        if ((uiFloorPlanView.autobuilderMode & uiFloorPlanView.BUILDER_MODE_LEFT) != 0) {
-            exciteFab(uiFabAutobuilderLeft);
-        }
-        else {
-            calmFab(uiFabAutobuilderLeft);
-        }
-
-        if ((uiFloorPlanView.autobuilderMode & uiFloorPlanView.BUILDER_MODE_RIGHT) != 0) {
-            exciteFab(uiFabAutobuilderRight);
-        }
-        else {
-            calmFab(uiFabAutobuilderRight);
-        }
-
-        switch (uiFloorPlanView.autobuilderMode) {
-            case FloorPlanView.BUILDER_MODE_NONE:
-                calmFab(uiFabAutobuilderMode);
-                uiFabAutobuilderMode.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_directions_walk_white_24dp));
-                break;
-            case FloorPlanView.BUILDER_MODE_LEFT:
-                exciteFab(uiFabAutobuilderMode);
-                uiFabAutobuilderMode.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_directions_walk_left_wall_white_24dp));
-                break;
-            case FloorPlanView.BUILDER_MODE_RIGHT:
-                exciteFab(uiFabAutobuilderMode);
-                uiFabAutobuilderMode.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_directions_walk_right_wall_white_24dp));
-                break;
-            case FloorPlanView.BUILDER_MODE_BOTH:
-                exciteFab(uiFabAutobuilderMode);
-                uiFabAutobuilderMode.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_directions_walk_both_walls_white_24dp));
-                break;
-        }
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -650,7 +587,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // Step detector
         mHaveStepDetector = mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_UI);
-        uiFloorPlanView.initWallsAutobuilder();
 
         mWifiScanner.enable();
     }
@@ -697,14 +633,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 break;
             }
             case Sensor.TYPE_STEP_DETECTOR: {
-                if (uiFloorPlanView.autobuilderMode != FloorPlanView.BUILDER_MODE_NONE) {
+                if (mAutoScanEnabled) {
                     mOffsetX += (float) (Math.sin(Math.toRadians(currentDegree)) * STEP_LENGTH);
                     mOffsetY += (float) (Math.cos(Math.toRadians(currentDegree)) * STEP_LENGTH);
                     uiFloorPlanView.updateOffset(mOffsetX, -mOffsetY); // -y for moving map downwards
 
                     mTravelledDistance += STEP_LENGTH;
-                    if (mTravelledDistance >= WALL_CREATION_DISTANCE) {
-                        uiFloorPlanView.autobuildWalls();
+                    if (mTravelledDistance >= WIFIMARK_SPACING) {
                         mTravelledDistance = 0;
                     }
                 }
