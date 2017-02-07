@@ -71,8 +71,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float mapNorth = 0.0f;
 
     private float currentDegree = 0f;
-    private float mOffsetX;
-    private float mOffsetY;
 
     // device sensor manager
     private SensorManager mSensorManager;
@@ -634,12 +632,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             case Sensor.TYPE_STEP_DETECTOR: {
                 if (mAutoScanEnabled) {
-                    mOffsetX += (float) (Math.sin(Math.toRadians(currentDegree)) * STEP_LENGTH);
-                    mOffsetY += (float) (Math.cos(Math.toRadians(currentDegree)) * STEP_LENGTH);
-                    uiFloorPlanView.updateOffset(mOffsetX, -mOffsetY); // -y for moving map downwards
+                    final float offsetX = (float) (Math.sin(Math.toRadians(currentDegree)) * STEP_LENGTH);
+                    final float offsetY = (float) (Math.cos(Math.toRadians(currentDegree)) * STEP_LENGTH);
+                    uiFloorPlanView.updateOffset(offsetX, -offsetY);
 
                     mTravelledDistance += STEP_LENGTH;
                     if (mTravelledDistance >= WIFIMARK_SPACING) {
+                        // Place WifiMark at center of the screen
+                        uiFloorPlanView.setLocation(uiFloorPlanView.getWidth()/2, uiFloorPlanView.getHeight()/2);
                         mTravelledDistance = 0;
                     }
                 }

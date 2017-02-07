@@ -74,7 +74,9 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     public void updateOffset(float offsetX, float offsetY) {
-        mRenderer.setOffset(offsetX, offsetY);
+        float newOffsetX = mRenderer.getOffsetX() + offsetX;
+        float newOffsetY = mRenderer.getOffsetY() + offsetY;
+        mRenderer.setOffset(newOffsetX, newOffsetY);
         requestRender();
     }
 
@@ -228,7 +230,7 @@ public class FloorPlanView extends GLSurfaceView {
 
 
     // This overloaded method is used internally when user clicks on location
-    private void setLocation(int x, int y) {
+    protected void setLocation(int x, int y) {
         PointF worldLocation = new PointF();
         mRenderer.windowToWorld(x, y, worldLocation);
         setLocation(worldLocation.x, worldLocation.y);

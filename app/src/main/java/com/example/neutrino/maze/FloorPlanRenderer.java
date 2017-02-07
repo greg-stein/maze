@@ -471,4 +471,12 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             });
         }
     }
+
+    public float getOffsetX() {
+        return mOffsetX;
+    }
+
+    public float getOffsetY() {
+        return mOffsetY;
+    }
 }
