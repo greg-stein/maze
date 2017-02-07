@@ -246,8 +246,19 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
+    public void centerToPoint(PointF point) {
+        mRenderer.setOffset(-point.x, -point.y);
+    }
+
+    public void centerToPoint(int x, int y) {
+        PointF worldLocation = new PointF();
+        mRenderer.windowToWorld(x, y, worldLocation);
+        centerToPoint(worldLocation);
+    }
+
     public void putLocationMarkAt(PointF location) {
         mRenderer.drawLocationMarkAt(location);
+        centerToPoint(location);
     }
 
     public interface IOnLocationPlacedListener {
