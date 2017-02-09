@@ -479,4 +479,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public float getOffsetY() {
         return mOffsetY;
     }
+
+    public PointF getMapAnyVertex() {
+        PointF center = mGlEngine.getFirstVertex();
+        return center;
+    }
 }

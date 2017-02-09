@@ -10,7 +10,6 @@ import android.view.ScaleGestureDetector;
 
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
 import java.util.List;
@@ -248,6 +247,11 @@ public class FloorPlanView extends GLSurfaceView {
 
     public void centerToPoint(PointF point) {
         mRenderer.setOffset(-point.x, -point.y);
+    }
+
+    public void showMap() {
+        PointF mapVertex = mRenderer.getMapAnyVertex();
+        centerToPoint(mapVertex);
     }
 
     public void centerToPoint(int x, int y) {

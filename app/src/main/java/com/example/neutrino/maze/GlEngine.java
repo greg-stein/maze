@@ -295,4 +295,12 @@ public class GlEngine {
             }
         }
     }
+
+    public PointF getFirstVertex() {
+        PointF vertex = new PointF();
+        vertex.x = mVerticesBuffer.get(0);
+        vertex.y = mVerticesBuffer.get(1);
+
+        return vertex;
+    }
 }

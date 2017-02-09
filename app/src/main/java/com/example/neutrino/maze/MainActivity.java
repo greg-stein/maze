@@ -180,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         List<Wall> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
         uiFloorPlanView.setFloorPlan(walls, false); // not in init phase
         mWiFiTug.walls = walls;
+        uiFloorPlanView.showMap();
     }
 
 
