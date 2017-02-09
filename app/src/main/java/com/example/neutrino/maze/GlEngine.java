@@ -1,11 +1,14 @@
 package com.example.neutrino.maze;
 
+import android.content.res.Resources;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -42,42 +45,37 @@ public class GlEngine {
     private final int[] mIndicesBufferId = new int[BUFFERS_COUNT];
 
 
-    private final String vertexShaderCode =
-            // This matrix member variable provides a hook to manipulate
-            // the coordinates of the objects that use this vertex shader
-            "uniform mat4 uMVPMatrix;" +
-                    "uniform mat4 u_MVPMatrix;" +
-                    "attribute vec4 a_Position;" + // Per-vertex position information we will pass in.
-                    "attribute vec4 a_Color;" +    // Per-vertex color information we will pass in."
-//                    "attribute vec4 vPosition;" +
-                    "varying vec3 v_Position;" +
-                    "varying vec4 v_Color;" + // This will be passed into the fragment shader.
-                    "void main() {" +
-                    "   v_Position = vec3(uMVPMatrix * a_Position);" +
-                    // Pass through the color.
-                    "   v_Color = a_Color;" +
-                    // the matrix must be included as a modifier of gl_Position
-                    // Note that the uMVPMatrix factor *must be first* in order
-                    // for the matrix multiplication product to be correct.
-                    "   gl_Position = u_MVPMatrix * a_Position;" +
-                    "}";
-
+    static private String vertexShaderCode;
+    static private String fragmentShaderCode;
     // Use to access and set the view transformation
     private int mMVPMatrixHandle;
 
-    private final String fragmentShaderCode =
-            "precision mediump float;" +
-                    "varying vec3 v_Position;" +		// Interpolated position for this fragment.
-                    "varying vec4 v_Color;" +          	// This is the color from the vertex shader interpolated across the
-                                                        // triangle per fragment.
-                    "void main() {" +
-                    "  gl_FragColor = v_Color;" +
-                    "}";
 
     private final int mProgram;
 
     private int mPositionAttributeHandle;
     private int mColorAttributeHandle;
+
+    static {
+        vertexShaderCode = readResourceAsString(R.raw.vertex_shader);
+        fragmentShaderCode = readResourceAsString(R.raw.fragment_shader);
+    }
+
+    private static String readResourceAsString(int resourceId) {
+        Exception innerException;
+        Resources r = AppSettings.appActivity.getResources();
+        InputStream inputStream = r.openRawResource(resourceId);
+        byte[] bytes = new byte[0];
+        try {
+            bytes = new byte[inputStream.available()];
+            inputStream.read(bytes);
+            return new String(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+            innerException = e;
+        }
+        throw new RuntimeException("Cannot load shader code from resources.", innerException);
+    }
 
     public GlEngine(int verticesNum) {
         mMaxVerticesNum = verticesNum;
