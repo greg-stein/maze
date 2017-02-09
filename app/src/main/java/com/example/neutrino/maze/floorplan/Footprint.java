@@ -2,7 +2,7 @@ package com.example.neutrino.maze.floorplan;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.GlEngine;
+import com.example.neutrino.maze.GlRenderBuffer;
 import com.example.neutrino.maze.VectorHelper;
 
 /**
@@ -11,7 +11,7 @@ import com.example.neutrino.maze.VectorHelper;
 public class Footprint extends FloorPlanPrimitiveBase {
     private static final int SEGMENTS_NUM = 16;
     private static final int VERTICES_NUM = SEGMENTS_NUM + 2; // radial vertices + center
-    private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlEngine.COORDS_PER_VERTEX;
+    private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlRenderBuffer.COORDS_PER_VERTEX;
     private static final int INDICES_DATA_LENGTH = SEGMENTS_NUM * 3;
     private static final float DEFAULT_RADIUS = 0.1f;
     private static final float DEFAULT_CENTER_SOURCE = 0;

@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Created by Greg Stein on 7/12/2016.
  */
-public class GlEngine {
+public class GlRenderBuffer {
     public static final int SIZE_OF_FLOAT = Float.SIZE/Byte.SIZE;
     public static final int SIZE_OF_SHORT = Short.SIZE/Byte.SIZE;
 
@@ -77,7 +77,7 @@ public class GlEngine {
         throw new RuntimeException("Cannot load shader code from resources.", innerException);
     }
 
-    public GlEngine(int verticesNum) {
+    public GlRenderBuffer(int verticesNum) {
         mMaxVerticesNum = verticesNum;
 
         // device hardware's native byte order

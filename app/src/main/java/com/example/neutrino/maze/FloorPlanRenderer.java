@@ -45,7 +45,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private static float[] mRay = new float[6]; // ray represented by 2 points
 
     private GLSurfaceView mGlView;
-    private GlEngine mGlEngine;
+    private GlRenderBuffer mGlRenderBuffer;
     private int mViewPortWidth;
     private int mViewPortHeight;
     private final PointF mDragStart = new PointF();
@@ -124,7 +124,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // Combine the rotation matrix with the projection and camera view
         Matrix.multiplyMM(mScratch, 0, mMVPMatrix, 0, mModelMatrix, 0);
 
-        if (mGlEngine != null) mGlEngine.render(mScratch);
+        if (mGlRenderBuffer != null) mGlRenderBuffer.render(mScratch);
     }
 
     private void updateModelMatrix() {
@@ -230,7 +230,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
                 }
                 else {
-                    mSelectedWall = mGlEngine.findWallHavingPoint(mDragStart.x, mDragStart.y);
+                    mSelectedWall = mGlRenderBuffer.findWallHavingPoint(mDragStart.x, mDragStart.y);
                     if (mSelectedWall != null) {
                         mSelectedWall.setTapLocation(mDragStart.x, mDragStart.y);
                         mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
@@ -249,10 +249,10 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 windowToWorld(x, y, worldPoint);
 
                 if (mSelectedWall != null) {
-                    if (mGlEngine.getWallsNum() > 1) {
+                    if (mGlRenderBuffer.getWallsNum() > 1) {
 //                        // Aligns worldPoint!
 //                        // TODO: Fix flickering with this method!!
-//                        mGlEngine.alignChangeToExistingWalls(mSelectedWall, worldPoint);
+//                        mGlRenderBuffer.alignChangeToExistingWalls(mSelectedWall, worldPoint);
                     }
 
                     if (mAddedWallByDrag) {
@@ -262,7 +262,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                         mSelectedWall.handleChange(worldPoint.x, worldPoint.y);
                     }
                     mSelectedWall.updateVertices();
-                    mGlEngine.updateSingleObject(mSelectedWall);
+                    mGlRenderBuffer.updateSingleObject(mSelectedWall);
                     onWallLengthChanged(mSelectedWall);
                 }
             }
@@ -275,7 +275,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             public void run() {
                 if (mSelectedWall != null) {
                     mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, OPAQUE));
-                    mGlEngine.updateSingleObject(mSelectedWall);
+                    mGlRenderBuffer.updateSingleObject(mSelectedWall);
                 }
                 mSelectedWall = null;
             }
@@ -289,9 +289,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 final PointF worldPoint = new PointF();
                 windowToWorld(x, y, worldPoint);
 
-                Wall candidate = mGlEngine.findWallHavingPoint(worldPoint.x, worldPoint.y);
+                Wall candidate = mGlRenderBuffer.findWallHavingPoint(worldPoint.x, worldPoint.y);
                 if (candidate != null) {
-                    mGlEngine.removePrimitive(candidate);
+                    mGlRenderBuffer.removePrimitive(candidate);
                 }
             }
         });
@@ -301,9 +301,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         runOnGlThread(new Runnable() {
             @Override
             public void run()  {
-                if (mGlEngine == null) {
-                    mGlEngine = new GlEngine(8000);
-                    mGlEngine.allocateGpuBuffers();
+                if (mGlRenderBuffer == null) {
+                    mGlRenderBuffer = new GlRenderBuffer(8000);
+                    mGlRenderBuffer.allocateGpuBuffers();
                 }
 
                 if (mQueuedTaskForGlThread != null) {
@@ -325,7 +325,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     }
                 }
 
-                mGlEngine.setFloorPlan(primitives);
+                mGlRenderBuffer.setFloorPlan(primitives);
                 refreshGpuBuffers();
             }
         };
@@ -339,7 +339,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void addPrimitive(IFloorPlanPrimitive primitive) {
-        mGlEngine.registerPrimitive(primitive);
+        mGlRenderBuffer.registerPrimitive(primitive);
 
         refreshGpuBuffers();
     }
@@ -348,8 +348,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
-                mGlEngine.deallocateGpuBuffers();
-                mGlEngine.allocateGpuBuffers();
+                mGlRenderBuffer.deallocateGpuBuffers();
+                mGlRenderBuffer.allocateGpuBuffers();
             }
         });
     }
@@ -380,7 +380,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public List<IFloorPlanPrimitive> getFloorPlan() {
-        return mGlEngine.getFloorPlan();
+        return mGlRenderBuffer.getFloorPlan();
     }
 
     private IWallLengthChangedListener mWallLengthChangedListener = null;
@@ -425,19 +425,19 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             runOnGlThread(new Runnable() {
                 @Override
                 public void run() {
-                    mGlEngine.updateSingleObject(mLocationMark);
+                    mGlRenderBuffer.updateSingleObject(mLocationMark);
                 }
             });
         }
     }
 
     public void clearFloorPlan() {
-        mGlEngine.clearFloorPlan();
+        mGlRenderBuffer.clearFloorPlan();
         refreshGpuBuffers();
     }
 
     public void highlightCentroidMarks(List<WifiMark> centroidMarks) {
-        List<IFloorPlanPrimitive> primitives = mGlEngine.getFloorPlan();
+        List<IFloorPlanPrimitive> primitives = mGlRenderBuffer.getFloorPlan();
         for (IFloorPlanPrimitive primitive : primitives) {
             if (primitive instanceof WifiMark) {
                 final WifiMark mark = (WifiMark) primitive;
@@ -448,7 +448,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 runOnGlThread(new Runnable() {
                     @Override
                     public void run() {
-                        mGlEngine.updateSingleObject(mark);
+                        mGlRenderBuffer.updateSingleObject(mark);
                     }
                 });
             }
@@ -456,8 +456,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void rescaleFloorplan(float scaleFactor) {
-        if (mGlEngine == null) return; // TODO: this should be fixed somehow
-        List<IFloorPlanPrimitive> primitives = mGlEngine.getFloorPlan();
+        if (mGlRenderBuffer == null) return; // TODO: this should be fixed somehow
+        List<IFloorPlanPrimitive> primitives = mGlRenderBuffer.getFloorPlan();
 
         for (final IFloorPlanPrimitive primitive : primitives) {
             if (primitive.isRemoved()) continue; // Do not alter removed primitives
@@ -466,7 +466,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             runOnGlThread(new Runnable() {
                 @Override
                 public void run() {
-                    mGlEngine.updateSingleObject(primitive);
+                    mGlRenderBuffer.updateSingleObject(primitive);
                 }
             });
         }

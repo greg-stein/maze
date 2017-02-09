@@ -1,6 +1,6 @@
 package com.example.neutrino.maze.floorplan;
 
-import com.example.neutrino.maze.GlEngine;
+import com.example.neutrino.maze.GlRenderBuffer;
 import com.example.neutrino.maze.VectorHelper;
 
 import java.nio.FloatBuffer;
@@ -26,8 +26,8 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     public void putVertices(FloatBuffer verticesBuffer) {
         mVertexBufferPosition = verticesBuffer.position();
 
-        for (int i = 0; i < mVertices.length; i += GlEngine.COORDS_PER_VERTEX) {
-            verticesBuffer.put(mVertices, i, GlEngine.COORDS_PER_VERTEX);    // put 3 floats of position
+        for (int i = 0; i < mVertices.length; i += GlRenderBuffer.COORDS_PER_VERTEX) {
+            verticesBuffer.put(mVertices, i, GlRenderBuffer.COORDS_PER_VERTEX);    // put 3 floats of position
             verticesBuffer.put(mColor4f);            // put 4 floats of color
         }
     }
@@ -37,7 +37,7 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
         mIndexBufferPosition = indexBuffer.position();
 
         for (int i = 0; i < mIndices.length; i++) {
-            mIndices[i] += mVertexBufferPosition/(GlEngine.COORDS_PER_VERTEX + GlEngine.COLORS_PER_VERTEX);
+            mIndices[i] += mVertexBufferPosition/(GlRenderBuffer.COORDS_PER_VERTEX + GlRenderBuffer.COLORS_PER_VERTEX);
         }
         indexBuffer.put(mIndices);
     }
@@ -54,11 +54,11 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
 
     @Override
     public int getVerticesDataSize() {
-        return getVerticesNum() * (GlEngine.COORDS_PER_VERTEX + GlEngine.COLORS_PER_VERTEX) * GlEngine.SIZE_OF_FLOAT;
+        return getVerticesNum() * (GlRenderBuffer.COORDS_PER_VERTEX + GlRenderBuffer.COLORS_PER_VERTEX) * GlRenderBuffer.SIZE_OF_FLOAT;
     }
 
     private int mColor;
-    private final float[] mColor4f = new float[GlEngine.COLORS_PER_VERTEX];
+    private final float[] mColor4f = new float[GlRenderBuffer.COLORS_PER_VERTEX];
 
     @Override
     public int getColor() {

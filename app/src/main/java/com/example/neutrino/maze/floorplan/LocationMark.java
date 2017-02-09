@@ -2,7 +2,7 @@ package com.example.neutrino.maze.floorplan;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.GlEngine;
+import com.example.neutrino.maze.GlRenderBuffer;
 import com.example.neutrino.maze.VectorHelper;
 
 /**
@@ -11,7 +11,7 @@ import com.example.neutrino.maze.VectorHelper;
 public class LocationMark extends FloorPlanPrimitiveBase {
     private static final int SEGMENTS_NUM = 16;
     private static final int VERTICES_NUM = 2 * (SEGMENTS_NUM + 1); // it is basically two circles
-    private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlEngine.COORDS_PER_VERTEX;
+    private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlRenderBuffer.COORDS_PER_VERTEX;
     private static final int INDICES_DATA_LENGTH = SEGMENTS_NUM * 6; // two triangles per segment
     private static final float DEFAULT_INNER_RADIUS = 0.15f;
     private static final float DEFAULT_OUTER_RADIUS = 0.20f;
