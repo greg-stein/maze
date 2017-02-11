@@ -322,7 +322,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                         break;
                     }
                     primitive.updateVertices();
-                    mGlRenderBuffer.registerPrimitive(primitive);
+                    mGlRenderBuffer.put(primitive);
                     mFloorPlanPrimitives.add(primitive);
                 }
 
@@ -352,7 +352,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void addPrimitive(IFloorPlanPrimitive primitive) {
-        mGlRenderBuffer.registerPrimitive(primitive);
+        mGlRenderBuffer.put(primitive);
         mFloorPlanPrimitives.add(primitive);
 
         refreshGpuBuffers();

@@ -88,7 +88,7 @@ public class GlRenderBuffer {
                 POSITION_ATTRIBUTE, COLOR_ATTRIBUTE);
     }
 
-    public void registerPrimitive(IFloorPlanPrimitive primitive) {
+    public void put(IFloorPlanPrimitive primitive) {
         primitive.putVertices(mVerticesBuffer);
         primitive.putIndices(mIndicesBuffer);
     }
