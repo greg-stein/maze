@@ -289,6 +289,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 Wall candidate = findWallHavingPoint(worldPoint.x, worldPoint.y);
                 if (candidate != null) {
                     mGlRenderBuffer.removePrimitive(candidate);
+                    mFloorPlanPrimitives.remove(candidate);
                 }
             }
         });
@@ -449,6 +450,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         for(IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
             if (!primitive.isRemoved()) {
                 mGlRenderBuffer.removePrimitive(primitive);
+                mFloorPlanPrimitives.remove(primitive);
             }
         }
         refreshGpuBuffers();
