@@ -27,7 +27,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public static final int ALPHA = 128;
     public static final int OPAQUE = 255;
-    public static final float ALIGN_THRESHOLD = 0.1f;
     static final float DEFAULT_SCALE_FACTOR = 0.1f;
 
     public volatile float mAngle;
@@ -253,12 +252,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 windowToWorld(x, y, worldPoint);
 
                 if (mSelectedWall != null) {
-                    if (mGlRenderBuffer.getWallsNum() > 1) {
-//                        // Aligns worldPoint!
-//                        // TODO: Fix flickering with this method!!
-//                        mGlRenderBuffer.alignChangeToExistingWalls(mSelectedWall, worldPoint);
-                    }
-
                     if (mAddedWallByDrag) {
                         mSelectedWall.setB(worldPoint.x, worldPoint.y);
                     }
@@ -356,49 +349,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
 
         return null;
-    }
-
-    @Deprecated // consider removing this func
-    public void alignChangeToExistingWalls(Wall wall, PointF point) {
-        Wall existingWall = getAnotherWall(wall);
-        // NOTE: When using single wall as reference for alignment, current wall
-        //       is moved smoothly. However in the following loop, even if there
-        //       presents only one wall, it still "jumps"
-        // TODO: pick 3 near walls instead of looping through all of them.
-//        for (IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
-//            if (primitive instanceof Wall) {
-//                existingWall = (Wall) primitive;
-
-        if (!existingWall.isRemoved()) {
-            if (wall.getChangeType() == Wall.ChangeType.CHANGE_A) {
-                VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getB(), point, ALIGN_THRESHOLD);
-            } else if (wall.getChangeType() == Wall.ChangeType.CHANGE_B) {
-                VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getA(), point, ALIGN_THRESHOLD);
-            }
-        }
-//            }
-//        }
-    }
-
-    // This func is called when there are at least 2 walls
-    @Deprecated // consider removing this func
-    private Wall getAnotherWall(Wall wall) {
-        Wall firstWall = null;
-        Wall secondWall = null;
-
-        for (IFloorPlanPrimitive primitive: mFloorPlanPrimitives) {
-            if (primitive instanceof Wall) {
-                if (firstWall == null) {
-                    firstWall = wall;
-                }
-                else if (secondWall == null) {
-                    secondWall = wall;
-                    break;
-                }
-            }
-        }
-        if (wall.equals(firstWall)) return secondWall;
-        return firstWall;
     }
 
     public void addPrimitive(IFloorPlanPrimitive primitive) {

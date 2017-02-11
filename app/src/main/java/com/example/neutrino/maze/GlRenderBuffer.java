@@ -32,9 +32,6 @@ public class GlRenderBuffer {
     private static final String POSITION_ATTRIBUTE = "a_Position";
     private static final String COLOR_ATTRIBUTE = "a_Color";
 
-    private int mMaxVerticesNum = 0;
-    private int mActualWallsNum = 0;
-
     private final FloatBuffer mVerticesBuffer;
     private final ShortBuffer mIndicesBuffer;
 
@@ -75,8 +72,6 @@ public class GlRenderBuffer {
     }
 
     public GlRenderBuffer(int verticesNum) {
-        mMaxVerticesNum = verticesNum;
-
         // device hardware's native byte order
         mVerticesBuffer = ByteBuffer.allocateDirect(verticesNum *
                 (COORDS_PER_VERTEX + COLORS_PER_VERTEX)* SIZE_OF_FLOAT).order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -96,14 +91,12 @@ public class GlRenderBuffer {
     public void registerPrimitive(IFloorPlanPrimitive primitive) {
         primitive.putVertices(mVerticesBuffer);
         primitive.putIndices(mIndicesBuffer);
-        if (primitive instanceof Wall) mActualWallsNum++;
     }
 
     public void removePrimitive(IFloorPlanPrimitive primitive) {
         primitive.cloak();
         primitive.setRemoved(true);
         updateSingleObject(primitive);
-        if (primitive instanceof Wall) mActualWallsNum--;
     }
 
     public void copyToGpu(FloatBuffer vertices) {
@@ -207,10 +200,6 @@ public class GlRenderBuffer {
     @Override
     public void finalize() {
         deallocateGpuBuffers();
-    }
-
-    public int getWallsNum() {
-        return mActualWallsNum;
     }
 
     public void clear() {
