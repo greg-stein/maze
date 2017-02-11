@@ -27,7 +27,6 @@ public class GlRenderBuffer {
     public static final int COLORS_PER_VERTEX = 4; // RGB + A
     public static final int INDICES_BUFFER_SIZE_FACTOR = 4; // we allocate indices buffer 4
     private static final int BUFFERS_COUNT = 1;
-    public static final float ALIGN_THRESHOLD = 0.1f;
     private static final int STRIDE = (COORDS_PER_VERTEX + COLORS_PER_VERTEX) * SIZE_OF_FLOAT;
 
     private static final String POSITION_ATTRIBUTE = "a_Position";
@@ -35,8 +34,6 @@ public class GlRenderBuffer {
 
     private int mMaxVerticesNum = 0;
     private int mActualWallsNum = 0;
-    private List<IFloorPlanPrimitive> mFloorPlanPrimitives = new ArrayList<>();
-    private List<IFloorPlanPrimitive> mDeletedFloorPlanPrimitives = new ArrayList<>();
 
     private final FloatBuffer mVerticesBuffer;
     private final ShortBuffer mIndicesBuffer;
@@ -99,29 +96,14 @@ public class GlRenderBuffer {
     public void registerPrimitive(IFloorPlanPrimitive primitive) {
         primitive.putVertices(mVerticesBuffer);
         primitive.putIndices(mIndicesBuffer);
-        mFloorPlanPrimitives.add(primitive);
         if (primitive instanceof Wall) mActualWallsNum++;
     }
 
     public void removePrimitive(IFloorPlanPrimitive primitive) {
         primitive.cloak();
         primitive.setRemoved(true);
-        mDeletedFloorPlanPrimitives.add(primitive);
         updateSingleObject(primitive);
         if (primitive instanceof Wall) mActualWallsNum--;
-    }
-
-    public Wall findWallHavingPoint(float x, float y) {
-        for (IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
-            if (primitive instanceof Wall) {
-                Wall wall = (Wall) primitive;
-                if (!wall.isRemoved() && wall.hasPoint(x, y)) {
-                    return wall;
-                }
-            }
-        }
-
-        return null;
     }
 
     public void copyToGpu(FloatBuffer vertices) {
@@ -227,70 +209,13 @@ public class GlRenderBuffer {
         deallocateGpuBuffers();
     }
 
-    public void alignChangeToExistingWalls(Wall wall, PointF point) {
-
-        Wall existingWall = getAnotherWall(wall);
-        // NOTE: When using single wall as reference for alignment, current wall
-        //       is moved smoothly. However in the following loop, even if there
-        //       presents only one wall, it still "jumps"
-        // TODO: pick 3 near walls instead of looping through all of them.
-//        for (IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
-//            if (primitive instanceof Wall) {
-//                existingWall = (Wall) primitive;
-
-                if (!existingWall.isRemoved()) {
-                    if (wall.getChangeType() == Wall.ChangeType.CHANGE_A) {
-                        VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getB(), point, ALIGN_THRESHOLD);
-                    } else if (wall.getChangeType() == Wall.ChangeType.CHANGE_B) {
-                        VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getA(), point, ALIGN_THRESHOLD);
-                    }
-                }
-//            }
-//        }
-    }
-
-    // This func is called when there are at least 2 walls
-    private Wall getAnotherWall(Wall wall) {
-        Wall firstWall = null;
-        Wall secondWall = null;
-
-        for (IFloorPlanPrimitive primitive: mFloorPlanPrimitives) {
-            if (primitive instanceof Wall) {
-                if (firstWall == null) {
-                    firstWall = wall;
-                }
-                else if (secondWall == null) {
-                    secondWall = wall;
-                    break;
-                }
-            }
-        }
-        if (wall.equals(firstWall)) return secondWall;
-        return firstWall;
-    }
-
     public int getWallsNum() {
         return mActualWallsNum;
     }
 
-    public List<IFloorPlanPrimitive> getFloorPlan() {
-        return mFloorPlanPrimitives;
-    }
-
-    public void setFloorPlan(List<? extends IFloorPlanPrimitive> primitives) {
+    public void clear() {
         mVerticesBuffer.clear();
         mIndicesBuffer.clear();
-        for(IFloorPlanPrimitive primitive: primitives) {
-            primitive.updateVertices();
-            registerPrimitive(primitive);
-        }
-    }
-
-    public void clearFloorPlan() {
-        for(IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
-            if (!primitive.isRemoved()) {
-                removePrimitive(primitive);
-            }
-        }
+        // TODO: more actions to come
     }
 }

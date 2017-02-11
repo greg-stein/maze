@@ -14,6 +14,7 @@ import com.example.neutrino.maze.floorplan.LocationMark;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -26,6 +27,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public static final int ALPHA = 128;
     public static final int OPAQUE = 255;
+    public static final float ALIGN_THRESHOLD = 0.1f;
     static final float DEFAULT_SCALE_FACTOR = 0.1f;
 
     public volatile float mAngle;
@@ -53,6 +55,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private boolean mAddedWallByDrag;
     private static final float[] mBgColorF = new float[4];
     private LocationMark mLocationMark = null;
+    private List<IFloorPlanPrimitive> mFloorPlanPrimitives = new ArrayList<>();
+
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -230,7 +234,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
                 }
                 else {
-                    mSelectedWall = mGlRenderBuffer.findWallHavingPoint(mDragStart.x, mDragStart.y);
+                    mSelectedWall = findWallHavingPoint(mDragStart.x, mDragStart.y);
                     if (mSelectedWall != null) {
                         mSelectedWall.setTapLocation(mDragStart.x, mDragStart.y);
                         mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
@@ -289,7 +293,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 final PointF worldPoint = new PointF();
                 windowToWorld(x, y, worldPoint);
 
-                Wall candidate = mGlRenderBuffer.findWallHavingPoint(worldPoint.x, worldPoint.y);
+                Wall candidate = findWallHavingPoint(worldPoint.x, worldPoint.y);
                 if (candidate != null) {
                     mGlRenderBuffer.removePrimitive(candidate);
                 }
@@ -318,14 +322,16 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         mQueuedTaskForGlThread = new Runnable() {
             @Override
             public void run() {
+                mGlRenderBuffer.clear();
                 for (IFloorPlanPrimitive primitive : primitives) {
                     if (primitive instanceof LocationMark) {
                         mLocationMark = (LocationMark) primitive;
                         break;
                     }
+                    primitive.updateVertices();
+                    mGlRenderBuffer.registerPrimitive(primitive);
                 }
 
-                mGlRenderBuffer.setFloorPlan(primitives);
                 refreshGpuBuffers();
             }
         };
@@ -338,8 +344,65 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
+    public Wall findWallHavingPoint(float x, float y) {
+        for (IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
+            if (primitive instanceof Wall) {
+                Wall wall = (Wall) primitive;
+                if (!wall.isRemoved() && wall.hasPoint(x, y)) {
+                    return wall;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    @Deprecated // consider removing this func
+    public void alignChangeToExistingWalls(Wall wall, PointF point) {
+        Wall existingWall = getAnotherWall(wall);
+        // NOTE: When using single wall as reference for alignment, current wall
+        //       is moved smoothly. However in the following loop, even if there
+        //       presents only one wall, it still "jumps"
+        // TODO: pick 3 near walls instead of looping through all of them.
+//        for (IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
+//            if (primitive instanceof Wall) {
+//                existingWall = (Wall) primitive;
+
+        if (!existingWall.isRemoved()) {
+            if (wall.getChangeType() == Wall.ChangeType.CHANGE_A) {
+                VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getB(), point, ALIGN_THRESHOLD);
+            } else if (wall.getChangeType() == Wall.ChangeType.CHANGE_B) {
+                VectorHelper.alignVector(existingWall.getA(), existingWall.getB(), wall.getA(), point, ALIGN_THRESHOLD);
+            }
+        }
+//            }
+//        }
+    }
+
+    // This func is called when there are at least 2 walls
+    @Deprecated // consider removing this func
+    private Wall getAnotherWall(Wall wall) {
+        Wall firstWall = null;
+        Wall secondWall = null;
+
+        for (IFloorPlanPrimitive primitive: mFloorPlanPrimitives) {
+            if (primitive instanceof Wall) {
+                if (firstWall == null) {
+                    firstWall = wall;
+                }
+                else if (secondWall == null) {
+                    secondWall = wall;
+                    break;
+                }
+            }
+        }
+        if (wall.equals(firstWall)) return secondWall;
+        return firstWall;
+    }
+
     public void addPrimitive(IFloorPlanPrimitive primitive) {
         mGlRenderBuffer.registerPrimitive(primitive);
+        mFloorPlanPrimitives.add(primitive);
 
         refreshGpuBuffers();
     }
@@ -380,7 +443,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public List<IFloorPlanPrimitive> getFloorPlan() {
-        return mGlRenderBuffer.getFloorPlan();
+        return mFloorPlanPrimitives;
     }
 
     private IWallLengthChangedListener mWallLengthChangedListener = null;
@@ -432,12 +495,16 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void clearFloorPlan() {
-        mGlRenderBuffer.clearFloorPlan();
+        for(IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
+            if (!primitive.isRemoved()) {
+                mGlRenderBuffer.removePrimitive(primitive);
+            }
+        }
         refreshGpuBuffers();
     }
 
     public void highlightCentroidMarks(List<WifiMark> centroidMarks) {
-        List<IFloorPlanPrimitive> primitives = mGlRenderBuffer.getFloorPlan();
+        List<IFloorPlanPrimitive> primitives = mFloorPlanPrimitives;
         for (IFloorPlanPrimitive primitive : primitives) {
             if (primitive instanceof WifiMark) {
                 final WifiMark mark = (WifiMark) primitive;
@@ -457,7 +524,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public void rescaleFloorplan(float scaleFactor) {
         if (mGlRenderBuffer == null) return; // TODO: this should be fixed somehow
-        List<IFloorPlanPrimitive> primitives = mGlRenderBuffer.getFloorPlan();
+        List<IFloorPlanPrimitive> primitives = mFloorPlanPrimitives;
 
         for (final IFloorPlanPrimitive primitive : primitives) {
             if (primitive.isRemoved()) continue; // Do not alter removed primitives
