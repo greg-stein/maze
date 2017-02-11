@@ -330,6 +330,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     }
                     primitive.updateVertices();
                     mGlRenderBuffer.registerPrimitive(primitive);
+                    mFloorPlanPrimitives.add(primitive);
                 }
 
                 refreshGpuBuffers();
