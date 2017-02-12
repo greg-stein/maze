@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.opengl.GLES20;
@@ -14,6 +15,8 @@ import com.example.neutrino.maze.floorplan.LocationMark;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +59,30 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private LocationMark mLocationMark = null;
     private List<IFloorPlanPrimitive> mFloorPlanPrimitives = new ArrayList<>();
 
+    static private String vertexShaderCode;
+    static private String fragmentShaderCode;
+
+    static {
+        vertexShaderCode = readResourceAsString("/res/raw/vertex_shader.glsl");
+        fragmentShaderCode = readResourceAsString("/res/raw/fragment_shader.glsl");
+    }
+
+    private static String readResourceAsString(String path) {
+        Exception innerException;
+        Class<? extends FloorPlanRenderer> aClass = FloorPlanRenderer.class;
+        InputStream inputStream = aClass.getResourceAsStream(path);
+
+        byte[] bytes;
+        try {
+            bytes = new byte[inputStream.available()];
+            inputStream.read(bytes);
+            return new String(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+            innerException = e;
+        }
+        throw new RuntimeException("Cannot load shader code from resources.", innerException);
+    }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -90,6 +117,15 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
         // Set the view matrix. This matrix can be said to represent the camera position.
         Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+
+        int vertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER,
+                vertexShaderCode);
+        int fragmentShader = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER,
+                fragmentShaderCode);
+
+        AppSettings.oglProgram = ShaderHelper.createAndLinkProgram(vertexShader, fragmentShader,
+                ShaderHelper.POSITION_ATTRIBUTE, ShaderHelper.COLOR_ATTRIBUTE);
+
         loadEngine();
     }
 

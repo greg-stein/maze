@@ -1,11 +1,9 @@
 package com.example.neutrino.maze;
 
 import android.content.res.Resources;
-import android.graphics.PointF;
 import android.opengl.GLES20;
 
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.Wall;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,8 +11,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Greg Stein on 7/12/2016.
@@ -29,47 +25,11 @@ public class GlRenderBuffer {
     private static final int BUFFERS_COUNT = 1;
     private static final int STRIDE = (COORDS_PER_VERTEX + COLORS_PER_VERTEX) * SIZE_OF_FLOAT;
 
-    private static final String POSITION_ATTRIBUTE = "a_Position";
-    private static final String COLOR_ATTRIBUTE = "a_Color";
-
     private final FloatBuffer mVerticesBuffer;
     private final ShortBuffer mIndicesBuffer;
 
     private final int[] mVerticesBufferId = new int[BUFFERS_COUNT];
     private final int[] mIndicesBufferId = new int[BUFFERS_COUNT];
-
-
-    static private String vertexShaderCode;
-    static private String fragmentShaderCode;
-    // Use to access and set the view transformation
-    private int mMVPMatrixHandle;
-
-
-    private final int mProgram;
-
-    private int mPositionAttributeHandle;
-    private int mColorAttributeHandle;
-
-    static {
-        vertexShaderCode = readResourceAsString(R.raw.vertex_shader);
-        fragmentShaderCode = readResourceAsString(R.raw.fragment_shader);
-    }
-
-    private static String readResourceAsString(int resourceId) {
-        Exception innerException;
-        Resources r = AppSettings.appActivity.getResources();
-        InputStream inputStream = r.openRawResource(resourceId);
-        byte[] bytes = new byte[0];
-        try {
-            bytes = new byte[inputStream.available()];
-            inputStream.read(bytes);
-            return new String(bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
-            innerException = e;
-        }
-        throw new RuntimeException("Cannot load shader code from resources.", innerException);
-    }
 
     public GlRenderBuffer(int verticesNum) {
         // device hardware's native byte order
@@ -78,14 +38,6 @@ public class GlRenderBuffer {
 
         mIndicesBuffer = ByteBuffer.allocateDirect(verticesNum *
                 INDICES_BUFFER_SIZE_FACTOR * SIZE_OF_SHORT).order(ByteOrder.nativeOrder()).asShortBuffer();
-
-        int vertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER,
-                vertexShaderCode);
-        int fragmentShader = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER,
-                fragmentShaderCode);
-
-        mProgram = ShaderHelper.createAndLinkProgram(vertexShader, fragmentShader,
-                POSITION_ATTRIBUTE, COLOR_ATTRIBUTE);
     }
 
     public void put(IFloorPlanPrimitive primitive) {
@@ -139,24 +91,24 @@ public class GlRenderBuffer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mVerticesBufferId[0]);
-        GLES20.glUseProgram(mProgram);
+        GLES20.glUseProgram(AppSettings.oglProgram);
 
-        mPositionAttributeHandle = GLES20.glGetAttribLocation(mProgram, POSITION_ATTRIBUTE);
-        GLES20.glVertexAttribPointer(mPositionAttributeHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false,
+        int positionAttributeHandle = GLES20.glGetAttribLocation(AppSettings.oglProgram, ShaderHelper.POSITION_ATTRIBUTE);
+        GLES20.glVertexAttribPointer(positionAttributeHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false,
                 STRIDE, 0);
-        GLES20.glEnableVertexAttribArray(mPositionAttributeHandle);
+        GLES20.glEnableVertexAttribArray(positionAttributeHandle);
 
-        mColorAttributeHandle = GLES20.glGetAttribLocation(mProgram, COLOR_ATTRIBUTE);
-        GLES20.glVertexAttribPointer(mColorAttributeHandle, COLORS_PER_VERTEX, GLES20.GL_FLOAT, false,
+        int colorAttributeHandle = GLES20.glGetAttribLocation(AppSettings.oglProgram, ShaderHelper.COLOR_ATTRIBUTE);
+        GLES20.glVertexAttribPointer(colorAttributeHandle, COLORS_PER_VERTEX, GLES20.GL_FLOAT, false,
                 STRIDE, COORDS_PER_VERTEX * SIZE_OF_FLOAT);
-        GLES20.glEnableVertexAttribArray(mColorAttributeHandle);
+        GLES20.glEnableVertexAttribArray(colorAttributeHandle);
 
         GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mIndicesBufferId[0]);
 
         // get handle to shape's transformation matrix
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "u_MVPMatrix");
+        int mvpMatrixHandle = GLES20.glGetUniformLocation(AppSettings.oglProgram, ShaderHelper.MVP_MATRIX);
         // Pass the projection and view transformation to the shader
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
+        GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false, mvpMatrix, 0);
 
 
         // Draw quads

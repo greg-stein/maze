@@ -9,6 +9,9 @@ import android.util.Log;
 public class ShaderHelper
 {
     private static final String TAG = "ShaderHelper";
+    public static final String MVP_MATRIX = "u_MVPMatrix";
+    static final String POSITION_ATTRIBUTE = "a_Position";
+    static final String COLOR_ATTRIBUTE = "a_Color";
 
     /**
      * Helper function to compile a shader.
