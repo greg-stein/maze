@@ -39,6 +39,8 @@ public class ImageArray {
         this.dataLength = dataArray.length;
     }
 
+    public int get(Point p) { return dataArray[p.y * width + p.x]; }
+
     public int get(int x, int y) {
         return dataArray[y * width + x];
     }

@@ -1,9 +1,9 @@
 package com.example.neutrino.maze;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.test.filters.MediumTest;
 
+import com.example.neutrino.maze.floorplan.vectorization.FloorplanVectorizer;
 import com.example.neutrino.maze.floorplan.vectorization.ImageArray;
 import com.example.neutrino.maze.floorplan.vectorization.Thinning;
 
@@ -11,11 +11,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -53,6 +51,7 @@ public class ImageThinningTests {
             resourcesExist = original != null && expected != null;
 
             if (resourcesExist) {
+                original = FloorplanVectorizer.toGrayscale(original, 1);
                 parameters.add(new Object[]{original, expected, Integer.valueOf(index)});
             }
 
@@ -62,21 +61,6 @@ public class ImageThinningTests {
         return parameters;
     }
 
-    private void assertBitmapsEqual(Bitmap expected, Bitmap actual) {
-        assertThat(expected.getWidth(), is(equalTo(actual.getWidth())));
-        assertThat(expected.getHeight(), is(equalTo(actual.getHeight())));
-
-        int width = expected.getWidth();
-        int height = expected.getHeight();
-
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                if (x == 0 && y == 0) continue; // skip first pixel, it marks end of pixel data
-                assertThat(String.format("(x, y)=(%d, %d)", x, y), expected.getPixel(x, y), is(equalTo(actual.getPixel(x, y))));
-            }
-        }
-    }
-
     @Test
     public void bitmapToImageArrayTest() {
         assertNotNull(mOriginal);
@@ -84,7 +68,7 @@ public class ImageThinningTests {
         Bitmap actual = imageArray.toBitmap();
 
         assertNotNull(actual);
-        assertBitmapsEqual(mOriginal, actual);
+        TestHelper.assertBitmapsEqual(mOriginal, actual);
     }
 
     @Test
@@ -96,7 +80,7 @@ public class ImageThinningTests {
         imageArray.findBlackPixels();
         Thinning.doZhangSuenThinning(imageArray);
         Bitmap actual = imageArray.toBitmap();
-        assertBitmapsEqual(mExpected, actual);
+        TestHelper.assertBitmapsEqual(mExpected, actual);
     }
 }
 

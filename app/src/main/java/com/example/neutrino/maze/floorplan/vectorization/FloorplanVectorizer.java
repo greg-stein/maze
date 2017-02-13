@@ -7,7 +7,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-
+import com.example.neutrino.maze.floorplan.vectorization.HoughTransform.LineSegment;
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Wall;
 
@@ -18,6 +18,7 @@ import java.util.List;
  * Created by Greg Stein on 12/13/2016.
  */
 public class FloorplanVectorizer {
+    public static final int PADDING = 1;
     public static Bitmap debugBM;
 
     public static List<Wall> vectorize(Bitmap image) {
@@ -25,7 +26,7 @@ public class FloorplanVectorizer {
 //        Bitmap scaledImage = getResizedBitmap(image, image.getWidth()/2, image.getHeight()/2);
 //        image.recycle();
 
-        Bitmap grayImage = toGrayscale(image);
+        Bitmap grayImage = toGrayscale(image, PADDING);
         image.recycle();
 
         ImageArray imageArray = new ImageArray(grayImage);
@@ -37,10 +38,8 @@ public class FloorplanVectorizer {
         Thinning.doZhangSuenThinning(imageArray);
         debugBM = imageArray.toBitmap();
 
-        HoughTransform houghTransform = new HoughTransform(imageArray);
-        houghTransform.buildHoughSpace();
-        List<HoughTransform.LineSegment> lineSegments = houghTransform.getLineSegments(50);
-
+        LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
+        List<LineSegment> lineSegments = kht.findStraightSegments();
         List<Wall> walls = translateToWalls(lineSegments);
 
         return walls;
@@ -78,11 +77,10 @@ public class FloorplanVectorizer {
         return resizedBitmap;
     }
 
-    public static Bitmap toGrayscale(Bitmap bmpOriginal)
+    public static Bitmap toGrayscale(Bitmap bmpOriginal, int padding)
     {
-        int width, height;
-        height = bmpOriginal.getHeight();
-        width = bmpOriginal.getWidth();
+        int width = bmpOriginal.getWidth() + 2 * padding;
+        int height = bmpOriginal.getHeight() + 2 * padding;
 
         Bitmap bmpGrayscale = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas c = new Canvas(bmpGrayscale);
@@ -99,7 +97,8 @@ public class FloorplanVectorizer {
 //        ColorMatrixColorFilter f = new ColorMatrixColorFilter(mat);
 
         paint.setColorFilter(f);
-        c.drawBitmap(bmpOriginal, 0, 0, paint);
+        c.drawColor(Color.WHITE);
+        c.drawBitmap(bmpOriginal, padding, padding, paint);
         return bmpGrayscale;
     }
 
