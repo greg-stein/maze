@@ -71,7 +71,7 @@ public class AcceptanceTests {
     // This func runs before each @Test in this class.
     @Before
     public void ReadFloorPlanFromResources() {
-        List<IFloorPlanPrimitive> deserializedList = getFloorPlanFromRes("floorplan_greg_home_2nd_floor_2.json");
+        List<IFloorPlanPrimitive> deserializedList = getFloorPlanFromRes("haifa_mall_floorplan.json");
 
         marks = CommonHelper.getPrimitives(WifiMark.class, deserializedList);
         walls = CommonHelper.getPrimitives(Wall.class, deserializedList);
@@ -102,13 +102,34 @@ public class AcceptanceTests {
 
     @Test
     public void wifiHistoryTest() {
-        List<IFloorPlanPrimitive> pathMarksAsPrimitives = getFloorPlanFromRes("greg_home_2nd_floor_2_walking_path.json");
-        List<WifiMark> pathMarks = new ArrayList<>();
-        for (IFloorPlanPrimitive primitive : pathMarksAsPrimitives) {
-            pathMarks.add((WifiMark) primitive);
+        List<WifiMark> floorPlanMarks = loadWifiMarksFromRes("haifa_mall_floorplan.json");
+        List<WifiMark> pathMarks = loadWifiMarksFromRes("walking_path.json");
+
+        wifiTug.marks = floorPlanMarks;
+        wifiTug.currentHistory = new WiFiTug.FingerprintHistory(10);
+        for (int i = 3; i < 13; i++) {
+            wifiTug.addToFingerprintHistory(pathMarks.get(i).getFingerprint());
         }
 
-        // SKOTINA, your test goes here. pathMarks contains all the fingerprints from the path (in order).
+        List<PointF> mostProbably = new ArrayList<>();
+        wifiTug.getMostProbableTrajectory(mostProbably);
+
+        assertEquals(10, mostProbably.size());
+
+        for (int i = 3; i < 13; i++) {
+            System.out.print ("actual: (" + pathMarks.get(i).getCenter().x + " , " + pathMarks.get(i).getCenter().y + ") ");
+            System.out.println ("xpectd: (" + mostProbably.get(i-3).x + " , " + mostProbably.get(i-3).y + ")");
+        }
+    }
+
+    private List<WifiMark> loadWifiMarksFromRes(String resFileName) {
+        List<IFloorPlanPrimitive> pathMarksAsPrimitives = getFloorPlanFromRes(resFileName);
+        List<WifiMark> pathMarks = new ArrayList<>();
+        for (IFloorPlanPrimitive primitive : pathMarksAsPrimitives) {
+            if (primitive instanceof WifiMark)
+                pathMarks.add((WifiMark) primitive);
+        }
+        return pathMarks;
     }
 
     @Test
@@ -122,7 +143,6 @@ public class AcceptanceTests {
         }
 
         List<PointF> mostProbably = new ArrayList<>();
-
         wifiTug.getMostProbableTrajectory(mostProbably);
 
         assertEquals(mostProbably.size(), wifiTug.currentHistory.size());
