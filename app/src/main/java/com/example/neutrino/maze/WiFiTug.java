@@ -38,7 +38,7 @@ import org.apache.commons.math3.distribution.TDistribution;
 public class WiFiTug implements TugOfWar.ITugger {
 
     private static final double CORR_THRESHOLD = 0.9;
-    private static final float WIFI_DISTANCE_CANDIDATE_PERCENTAGE = 0.1f;
+    private static final float WIFI_DISTANCE_CANDIDATE_PERCENTAGE = 0.5f;
     private static final int MAX_NUM_CANDIDATES = 5;
     private static final float MAX_SQRDISTANCE_TWO_WIFIMARKS = 100;   // maximum allowed sqrdistance
 
@@ -430,7 +430,7 @@ public class WiFiTug implements TugOfWar.ITugger {
 
         for (Fingerprint fingerprint: currentHistory) {
             List<WifiMark> wifiMarks = getMarksWithSameAps(marks, fingerprint);
-            minDistance = 0; maxDistance = Float.MAX_VALUE;
+            maxDistance = 0; minDistance = Float.MAX_VALUE;
 
             // First phase - get min and max distance
             for (WifiMark mark: wifiMarks) {
@@ -442,6 +442,9 @@ public class WiFiTug implements TugOfWar.ITugger {
             }
             distanceRange = maxDistance - minDistance;
             maxViableDistance = minDistance + WIFI_DISTANCE_CANDIDATE_PERCENTAGE * distanceRange;
+
+            candidatesThisRound.clear();
+            candidatePairs.clear();
 
             // Second phase - take only viable candidates (from top CANDIDATE_PERCENTAGE of lowest distance)
             for (WifiMark mark: wifiMarks) {
@@ -485,7 +488,7 @@ public class WiFiTug implements TugOfWar.ITugger {
         }
 
         trajectory.clear();
-        lwmark = candidatesList.first();
+        lwmark = candidatesList.pollFirst();
 
         while (lwmark != null) {    // Add points to list in reverse order
             PointF point = lwmark.mark.getCenter();
