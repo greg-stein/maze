@@ -26,8 +26,6 @@ public class GlRenderBuffer {
     private static final int BUFFERS_COUNT = 1;
     private static final int STRIDE = (COORDS_PER_VERTEX + COLORS_PER_VERTEX) * SIZE_OF_FLOAT;
 
-    private boolean mGpuAllocated = false;
-
     private final FloatBuffer mVerticesBuffer;
     private final ShortBuffer mIndicesBuffer;
 
@@ -139,7 +137,6 @@ public class GlRenderBuffer {
 
         mVerticesBuffer.position(vertexPos);
         mIndicesBuffer.position(indexPos);
-        mGpuAllocated = true;
     }
 
     public void deallocateGpuBuffers() {
@@ -153,11 +150,6 @@ public class GlRenderBuffer {
         }
     }
 
-    public void refreshGpuBuffers() {
-        deallocateGpuBuffers();
-        allocateGpuBuffers();
-    }
-
     @Override
     public void finalize() {
         deallocateGpuBuffers();
@@ -167,10 +159,6 @@ public class GlRenderBuffer {
         mVerticesBuffer.clear();
         mIndicesBuffer.clear();
         // TODO: more actions to come
-    }
-
-    public boolean isGpuAllocated() {
-        return mGpuAllocated;
     }
 
     public PointF getFirstVertex() {
