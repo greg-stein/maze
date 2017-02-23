@@ -131,27 +131,27 @@ public class VectorHelper {
         vertices[offset + 1] += center.y;
     }
 
-    // vertices should contain at least segments * GlEngine.COORDS_PER_VERTEX * 2
+    // vertices should contain at least segments * GlRenderBuffer.COORDS_PER_VERTEX * 2
     public static void buildRing(PointF center, float inner_radius, float outer_radius, int segments, float[] vertices) {
-        final int STRIDE = GlEngine.COORDS_PER_VERTEX * 2;
+        final int STRIDE = GlRenderBuffer.COORDS_PER_VERTEX * 2;
         float theta = 360f / segments;
         Matrix rotationMatrix = new Matrix();
         rotationMatrix.setRotate(theta);
 
         approximateCircle(center, outer_radius, segments, rotationMatrix, vertices, 0, STRIDE);
-        approximateCircle(center, inner_radius, segments, rotationMatrix, vertices, GlEngine.COORDS_PER_VERTEX, STRIDE);
+        approximateCircle(center, inner_radius, segments, rotationMatrix, vertices, GlRenderBuffer.COORDS_PER_VERTEX, STRIDE);
     }
 
-    // vertices should contain at least segments * GlEngine.COORDS_PER_VERTEX
+    // vertices should contain at least segments * GlRenderBuffer.COORDS_PER_VERTEX
     public static void buildCircle(PointF center, float radius, int segments, float[] vertices) {
-        final int STRIDE = GlEngine.COORDS_PER_VERTEX;
+        final int STRIDE = GlRenderBuffer.COORDS_PER_VERTEX;
         float theta = 360f / segments;
         Matrix rotationMatrix = new Matrix();
         rotationMatrix.setRotate(theta);
 
         vertices[0] = center.x;
         vertices[1] = center.y;
-        approximateCircle(center, radius, segments, rotationMatrix, vertices, GlEngine.COORDS_PER_VERTEX, STRIDE);
+        approximateCircle(center, radius, segments, rotationMatrix, vertices, GlRenderBuffer.COORDS_PER_VERTEX, STRIDE);
     }
 
     public static boolean linesIntersect(PointF A, PointF B, PointF O, PointF M) {

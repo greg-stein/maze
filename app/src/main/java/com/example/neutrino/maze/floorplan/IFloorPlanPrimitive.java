@@ -1,5 +1,7 @@
 package com.example.neutrino.maze.floorplan;
 
+import com.example.neutrino.maze.GlRenderBuffer;
+
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
@@ -8,6 +10,8 @@ import java.nio.ShortBuffer;
  */
 public interface IFloorPlanPrimitive {
     int getVerticesDataSize();
+
+    int getIndicesDataSize();
 
     void updateVertices();
 
@@ -35,4 +39,10 @@ public interface IFloorPlanPrimitive {
     void cloak();
 
     void scaleVertices(float scaleFactor);
+
+    GlRenderBuffer getContainingBuffer();
+
+    void setContainingBuffer(GlRenderBuffer mGlBuffer);
+
+    void rewriteToBuffer();
 }

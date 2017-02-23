@@ -14,6 +14,9 @@ import com.example.neutrino.maze.floorplan.LocationMark;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -27,6 +30,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public static final int ALPHA = 128;
     public static final int OPAQUE = 255;
     static final float DEFAULT_SCALE_FACTOR = 0.1f;
+    private static final int DEFAULT_BUFFER_VERTICES_NUM = 4096;
 
     public volatile float mAngle;
     private float mOffsetX;
@@ -45,7 +49,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private static float[] mRay = new float[6]; // ray represented by 2 points
 
     private GLSurfaceView mGlView;
-    private GlEngine mGlEngine;
+    private List<GlRenderBuffer> mGlBuffers = new ArrayList<>();
+    private GlRenderBuffer mCurrentBuffer = null;
     private int mViewPortWidth;
     private int mViewPortHeight;
     private final PointF mDragStart = new PointF();
@@ -53,6 +58,32 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private boolean mAddedWallByDrag;
     private static final float[] mBgColorF = new float[4];
     private LocationMark mLocationMark = null;
+    private List<IFloorPlanPrimitive> mFloorPlanPrimitives = new ArrayList<>();
+
+    static private String vertexShaderCode;
+    static private String fragmentShaderCode;
+
+    static {
+        vertexShaderCode = readResourceAsString("/res/raw/vertex_shader.glsl");
+        fragmentShaderCode = readResourceAsString("/res/raw/fragment_shader.glsl");
+    }
+
+    private static String readResourceAsString(String path) {
+        Exception innerException;
+        Class<? extends FloorPlanRenderer> aClass = FloorPlanRenderer.class;
+        InputStream inputStream = aClass.getResourceAsStream(path);
+
+        byte[] bytes;
+        try {
+            bytes = new byte[inputStream.available()];
+            inputStream.read(bytes);
+            return new String(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+            innerException = e;
+        }
+        throw new RuntimeException("Cannot load shader code from resources.", innerException);
+    }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -87,7 +118,24 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
         // Set the view matrix. This matrix can be said to represent the camera position.
         Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
-        loadEngine();
+
+        int vertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER,
+                vertexShaderCode);
+        int fragmentShader = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER,
+                fragmentShaderCode);
+
+        AppSettings.oglProgram = ShaderHelper.createAndLinkProgram(vertexShader, fragmentShader,
+                ShaderHelper.POSITION_ATTRIBUTE, ShaderHelper.COLOR_ATTRIBUTE);
+
+        mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
+//        mCurrentBuffer.allocateGpuBuffers();
+        mGlBuffers.add(mCurrentBuffer);
+
+        GLES20.glUseProgram(AppSettings.oglProgram);
+
+        if (mQueuedTaskForGlThread != null) {
+            mQueuedTaskForGlThread.run();
+        }
     }
 
     @Override
@@ -124,7 +172,44 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // Combine the rotation matrix with the projection and camera view
         Matrix.multiplyMM(mScratch, 0, mMVPMatrix, 0, mModelMatrix, 0);
 
-        if (mGlEngine != null) mGlEngine.render(mScratch);
+        // Clear frame
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+
+        for (GlRenderBuffer glBuffer : mGlBuffers) {
+            glBuffer.render(mScratch);
+        }
+    }
+
+    public void addPrimitive(IFloorPlanPrimitive primitive) {
+        if (!mCurrentBuffer.put(primitive)) {
+            mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
+            mGlBuffers.add(mCurrentBuffer);
+            mCurrentBuffer.put(primitive);
+        }
+
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                mCurrentBuffer.allocateGpuBuffers();
+            }
+        });
+        mFloorPlanPrimitives.add(primitive);
+    }
+
+    private void addPrimitives(List<? extends IFloorPlanPrimitive> primitives) {
+        for (IFloorPlanPrimitive primitive : primitives) {
+            primitive.updateVertices();
+
+            if (!mCurrentBuffer.put(primitive)) {
+                mCurrentBuffer.allocateGpuBuffers();
+                mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
+                mGlBuffers.add(mCurrentBuffer);
+                mCurrentBuffer.put(primitive);
+            }
+        }
+        mCurrentBuffer.allocateGpuBuffers();
+
+        mFloorPlanPrimitives.addAll(primitives);
     }
 
     private void updateModelMatrix() {
@@ -230,7 +315,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
                 }
                 else {
-                    mSelectedWall = mGlEngine.findWallHavingPoint(mDragStart.x, mDragStart.y);
+                    mSelectedWall = findWallHavingPoint(mDragStart.x, mDragStart.y);
                     if (mSelectedWall != null) {
                         mSelectedWall.setTapLocation(mDragStart.x, mDragStart.y);
                         mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
@@ -249,12 +334,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 windowToWorld(x, y, worldPoint);
 
                 if (mSelectedWall != null) {
-                    if (mGlEngine.getWallsNum() > 1) {
-//                        // Aligns worldPoint!
-//                        // TODO: Fix flickering with this method!!
-//                        mGlEngine.alignChangeToExistingWalls(mSelectedWall, worldPoint);
-                    }
-
                     if (mAddedWallByDrag) {
                         mSelectedWall.setB(worldPoint.x, worldPoint.y);
                     }
@@ -262,7 +341,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                         mSelectedWall.handleChange(worldPoint.x, worldPoint.y);
                     }
                     mSelectedWall.updateVertices();
-                    mGlEngine.updateSingleObject(mSelectedWall);
+                    mSelectedWall.rewriteToBuffer();
                     onWallLengthChanged(mSelectedWall);
                 }
             }
@@ -275,7 +354,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             public void run() {
                 if (mSelectedWall != null) {
                     mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, OPAQUE));
-                    mGlEngine.updateSingleObject(mSelectedWall);
+                    mSelectedWall.rewriteToBuffer();
                 }
                 mSelectedWall = null;
             }
@@ -289,35 +368,22 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 final PointF worldPoint = new PointF();
                 windowToWorld(x, y, worldPoint);
 
-                Wall candidate = mGlEngine.findWallHavingPoint(worldPoint.x, worldPoint.y);
+                Wall candidate = findWallHavingPoint(worldPoint.x, worldPoint.y);
                 if (candidate != null) {
-                    mGlEngine.removePrimitive(candidate);
+                    candidate.cloak();
+                    mFloorPlanPrimitives.remove(candidate);
                 }
             }
         });
     }
 
-    public void loadEngine() {
-        runOnGlThread(new Runnable() {
-            @Override
-            public void run()  {
-                if (mGlEngine == null) {
-                    mGlEngine = new GlEngine(8000);
-                    mGlEngine.allocateGpuBuffers();
-                }
-
-                if (mQueuedTaskForGlThread != null) {
-                    mQueuedTaskForGlThread.run();
-                }
-            }
-        });
-    }
-
+    // TODO: remove queued task and use simpler method to run this on start
     private Runnable mQueuedTaskForGlThread = null;
     public void setFloorPlan(final List<? extends IFloorPlanPrimitive> primitives) {
         mQueuedTaskForGlThread = new Runnable() {
             @Override
             public void run() {
+                // TODO: this code should be removed
                 for (IFloorPlanPrimitive primitive : primitives) {
                     if (primitive instanceof LocationMark) {
                         mLocationMark = (LocationMark) primitive;
@@ -325,8 +391,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     }
                 }
 
-                mGlEngine.setFloorPlan(primitives);
-                refreshGpuBuffers();
+                addPrimitives(primitives);
             }
         };
     }
@@ -338,20 +403,17 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public void addPrimitive(IFloorPlanPrimitive primitive) {
-        mGlEngine.registerPrimitive(primitive);
-
-        refreshGpuBuffers();
-    }
-
-    private void refreshGpuBuffers() {
-        runOnGlThread(new Runnable() {
-            @Override
-            public void run() {
-                mGlEngine.deallocateGpuBuffers();
-                mGlEngine.allocateGpuBuffers();
+    public Wall findWallHavingPoint(float x, float y) {
+        for (IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
+            if (primitive instanceof Wall) {
+                Wall wall = (Wall) primitive;
+                if (!wall.isRemoved() && wall.hasPoint(x, y)) {
+                    return wall;
+                }
             }
-        });
+        }
+
+        return null;
     }
 
     private static final PointF mPanStart = new PointF();
@@ -380,7 +442,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public List<IFloorPlanPrimitive> getFloorPlan() {
-        return mGlEngine.getFloorPlan();
+        return mFloorPlanPrimitives;
     }
 
     private IWallLengthChangedListener mWallLengthChangedListener = null;
@@ -425,19 +487,32 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             runOnGlThread(new Runnable() {
                 @Override
                 public void run() {
-                    mGlEngine.updateSingleObject(mLocationMark);
+                    mLocationMark.rewriteToBuffer();
                 }
             });
         }
     }
 
     public void clearFloorPlan() {
-        mGlEngine.clearFloorPlan();
-        refreshGpuBuffers();
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                for(IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
+                    if (!primitive.isRemoved()) { // TODO: check if this is always true
+                        primitive.cloak();
+                    }
+                }
+                for (GlRenderBuffer buffer : mGlBuffers) {
+                    buffer.deallocateGpuBuffers();
+                }
+                mGlBuffers.clear();
+                mFloorPlanPrimitives.clear();
+            }
+        });
     }
 
     public void highlightCentroidMarks(List<WifiMark> centroidMarks) {
-        List<IFloorPlanPrimitive> primitives = mGlEngine.getFloorPlan();
+        List<IFloorPlanPrimitive> primitives = mFloorPlanPrimitives;
         for (IFloorPlanPrimitive primitive : primitives) {
             if (primitive instanceof WifiMark) {
                 final WifiMark mark = (WifiMark) primitive;
@@ -448,7 +523,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 runOnGlThread(new Runnable() {
                     @Override
                     public void run() {
-                        mGlEngine.updateSingleObject(mark);
+                        mark.rewriteToBuffer();
                     }
                 });
             }
@@ -456,8 +531,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void rescaleFloorplan(float scaleFactor) {
-        if (mGlEngine == null) return; // TODO: this should be fixed somehow
-        List<IFloorPlanPrimitive> primitives = mGlEngine.getFloorPlan();
+        if (mGlBuffers == null) return; // TODO: this should be fixed somehow
+        List<IFloorPlanPrimitive> primitives = mFloorPlanPrimitives;
 
         for (final IFloorPlanPrimitive primitive : primitives) {
             if (primitive.isRemoved()) continue; // Do not alter removed primitives
@@ -466,7 +541,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             runOnGlThread(new Runnable() {
                 @Override
                 public void run() {
-                    mGlEngine.updateSingleObject(primitive);
+                    primitive.rewriteToBuffer();
                 }
             });
         }
@@ -481,7 +556,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public PointF getMapAnyVertex() {
-        PointF center = mGlEngine.getFirstVertex();
-        return center;
+        if (mFloorPlanPrimitives.size() > 0) {
+            return mGlBuffers.get(0).getFirstVertex();
+        }
+        return new PointF();
     }
 }

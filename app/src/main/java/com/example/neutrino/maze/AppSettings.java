@@ -17,6 +17,7 @@ public class AppSettings {
     public static int editModeColor;
     public static int accentColor;
     public static Activity appActivity = null;
+    public static int oglProgram;
 
     public static void init(Context context) {
         if (context instanceof Activity) {

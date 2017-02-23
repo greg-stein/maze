@@ -3,7 +3,7 @@ package com.example.neutrino.maze.floorplan;
 import android.graphics.PointF;
 import android.graphics.RectF;
 
-import com.example.neutrino.maze.GlEngine;
+import com.example.neutrino.maze.GlRenderBuffer;
 import com.example.neutrino.maze.VectorHelper;
 
 /**
@@ -11,7 +11,7 @@ import com.example.neutrino.maze.VectorHelper;
  */
 public class Wall extends FloorPlanPrimitiveBase {
     private static final int VERTICES_NUM = 4; // it's a rect after all
-    private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlEngine.COORDS_PER_VERTEX;
+    private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlRenderBuffer.COORDS_PER_VERTEX;
     private static final int INDICES_DATA_LENGTH = 6;
     private static final float DEFAULT_WIDTH = 0.2f; // 20cm
     private static final float DEFAULT_COORDS_SOURCE = 0.5f;
