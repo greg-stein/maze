@@ -445,25 +445,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         return mFloorPlanPrimitives;
     }
 
-    private IWallLengthChangedListener mWallLengthChangedListener = null;
-    public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
-        this.mWallLengthChangedListener = listener;
-    }
-    private void onWallLengthChanged(final Wall wall) {
-        if (mWallLengthChangedListener != null) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    PointF wallVector = new PointF();
-                    wallVector.set(wall.getB());
-                    wallVector.offset(-wall.getA().x, -wall.getA().y);
-
-                    mWallLengthChangedListener.onWallLengthChanged(wallVector.length());
-                }
-            });
-        }
-    }
-
     public void putStep(final float x, final float y) {
         Footprint footprint = new Footprint(x, y);
         footprint.setColor(AppSettings.footprintColor);
@@ -560,5 +541,32 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             return mGlBuffers.get(0).getFirstVertex();
         }
         return new PointF();
+    }
+
+    private IWallLengthChangedListener mWallLengthChangedListener = null;
+    public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
+        this.mWallLengthChangedListener = listener;
+    }
+
+    private void onWallLengthChanged(final Wall wall) {
+        if (mWallLengthChangedListener != null) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    PointF wallVector = new PointF();
+                    wallVector.set(wall.getB());
+                    wallVector.offset(-wall.getA().x, -wall.getA().y);
+
+                    mWallLengthChangedListener.onWallLengthChanged(wallVector.length());
+                }
+            });
+        }
+    }
+
+    /**
+     * Created by Greg Stein on 9/19/2016.
+     */
+    public static interface IWallLengthChangedListener {
+        void onWallLengthChanged(float wallLength);
     }
 }

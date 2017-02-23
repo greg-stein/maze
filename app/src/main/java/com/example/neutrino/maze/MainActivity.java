@@ -354,7 +354,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        uiFloorPlanView.setOnWallLengthChangedListener(new IWallLengthChangedListener() {
+        uiFloorPlanView.setOnWallLengthChangedListener(new FloorPlanRenderer.IWallLengthChangedListener() {
             @Override
             public void onWallLengthChanged(float wallLength) {
                 mCurrentWallLength = wallLength;
