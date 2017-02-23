@@ -392,6 +392,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 }
 
                 addPrimitives(primitives);
+                onFloorplanLoadComplete();
             }
         };
     }
@@ -568,5 +569,28 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
      */
     public static interface IWallLengthChangedListener {
         void onWallLengthChanged(float wallLength);
+    }
+
+    private IFloorplanLoadCompleteListener mFloorplanLoadCompleteListener = null;
+    public void setOnFloorplanLoadCompleteListener(IFloorplanLoadCompleteListener listener) {
+        this.mFloorplanLoadCompleteListener = listener;
+    }
+
+    private void onFloorplanLoadComplete() {
+        if (mFloorplanLoadCompleteListener != null) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mFloorplanLoadCompleteListener.onFloorplanLoadComplete();
+                }
+            });
+        }
+    }
+
+    /**
+     * Created by Greg Stein on 9/19/2016.
+     */
+    public static interface IFloorplanLoadCompleteListener {
+        void onFloorplanLoadComplete();
     }
 }

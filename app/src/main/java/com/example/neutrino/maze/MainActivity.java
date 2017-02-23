@@ -384,7 +384,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     uiFloorPlanView.setFloorPlan(floorplan);
                     mWiFiTug.marks = CommonHelper.getPrimitives(WifiMark.class, floorplan);
                     mWiFiTug.walls = CommonHelper.getPrimitives(Wall.class, floorplan);
-                    uiFloorPlanView.showMap();
                 }
 
 

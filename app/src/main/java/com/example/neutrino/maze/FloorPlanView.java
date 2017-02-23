@@ -9,6 +9,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
 import com.example.neutrino.maze.FloorPlanRenderer.IWallLengthChangedListener;
+import com.example.neutrino.maze.FloorPlanRenderer.IFloorplanLoadCompleteListener;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.WifiMark;
@@ -44,6 +45,12 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.setGlView(this);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
+        mRenderer.setOnFloorplanLoadCompleteListener(new IFloorplanLoadCompleteListener() {
+            @Override
+            public void onFloorplanLoadComplete() {
+                showMap();
+            }
+        });
     }
 
     public boolean isContentsInEditMode() {
