@@ -25,6 +25,8 @@ public class GlRenderBuffer {
     private static final int BUFFERS_COUNT = 1;
     private static final int STRIDE = (COORDS_PER_VERTEX + COLORS_PER_VERTEX) * SIZE_OF_FLOAT;
 
+    private boolean mGpuAllocated = false;
+
     private final FloatBuffer mVerticesBuffer;
     private final ShortBuffer mIndicesBuffer;
 
@@ -38,22 +40,29 @@ public class GlRenderBuffer {
 
         mIndicesBuffer = ByteBuffer.allocateDirect(verticesNum *
                 INDICES_BUFFER_SIZE_FACTOR * SIZE_OF_SHORT).order(ByteOrder.nativeOrder()).asShortBuffer();
+
+        GLES20.glGenBuffers(BUFFERS_COUNT, mVerticesBufferId, 0);
+        GLES20.glGenBuffers(BUFFERS_COUNT, mIndicesBufferId, 0);
     }
 
-    public void put(IFloorPlanPrimitive primitive) {
+    public boolean put(IFloorPlanPrimitive primitive) {
+        int neededVertexDataSize = primitive.getVerticesDataSize(); // in bytes
+        int neededIndexDataSize = primitive.getIndicesDataSize();   // this too
+
+        // Ensure there is enough space for new primitive
+        final boolean verticesBufferHasEnoughSpace = mVerticesBuffer.remaining() >= neededVertexDataSize / SIZE_OF_FLOAT;
+        final boolean indicesBufferHasEnoughSpace = mIndicesBuffer.remaining() >= neededIndexDataSize / SIZE_OF_SHORT;
+        if (!verticesBufferHasEnoughSpace || !indicesBufferHasEnoughSpace) {
+            return false;
+        }
+
         primitive.putVertices(mVerticesBuffer);
         primitive.putIndices(mIndicesBuffer);
-    }
-
-    public void removePrimitive(IFloorPlanPrimitive primitive) {
-        primitive.cloak();
-        primitive.setRemoved(true);
-        updateSingleObject(primitive);
+        primitive.setContainingBuffer(this);
+        return true;
     }
 
     public void copyToGpu(FloatBuffer vertices) {
-        GLES20.glGenBuffers(BUFFERS_COUNT, mVerticesBufferId, 0);
-
         // Copy vertices data into GPU memory
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mVerticesBufferId[0]);
         // TODO: Should be vertices.limit() instead of vertices.capacity()
@@ -63,8 +72,6 @@ public class GlRenderBuffer {
     }
 
     public void copyToGpu(ShortBuffer indices) {
-        GLES20.glGenBuffers(BUFFERS_COUNT, mIndicesBufferId, 0);
-
         // Copy vertices data into GPU memory
         GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, mIndicesBufferId[0]);
         // TODO: Should be vertices.limit() instead of vertices.capacity()
@@ -88,10 +95,7 @@ public class GlRenderBuffer {
     }
 
     public void render(float[] mvpMatrix) {
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, mVerticesBufferId[0]);
-        GLES20.glUseProgram(AppSettings.oglProgram);
 
         int positionAttributeHandle = GLES20.glGetAttribLocation(AppSettings.oglProgram, ShaderHelper.POSITION_ATTRIBUTE);
         GLES20.glVertexAttribPointer(positionAttributeHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false,
@@ -110,8 +114,6 @@ public class GlRenderBuffer {
         // Pass the projection and view transformation to the shader
         GLES20.glUniformMatrix4fv(mvpMatrixHandle, 1, false, mvpMatrix, 0);
 
-
-        // Draw quads
         GLES20.glDrawElements(
                 GLES20.GL_TRIANGLES, mIndicesBuffer.position(),
                 GLES20.GL_UNSIGNED_SHORT, 0);
@@ -136,6 +138,7 @@ public class GlRenderBuffer {
 
         mVerticesBuffer.position(vertexPos);
         mIndicesBuffer.position(indexPos);
+        mGpuAllocated = true;
     }
 
     public void deallocateGpuBuffers() {
@@ -149,6 +152,11 @@ public class GlRenderBuffer {
         }
     }
 
+    public void refreshGpuBuffers() {
+        deallocateGpuBuffers();
+        allocateGpuBuffers();
+    }
+
     @Override
     public void finalize() {
         deallocateGpuBuffers();
@@ -158,5 +166,9 @@ public class GlRenderBuffer {
         mVerticesBuffer.clear();
         mIndicesBuffer.clear();
         // TODO: more actions to come
+    }
+
+    public boolean isGpuAllocated() {
+        return mGpuAllocated;
     }
 }

@@ -17,6 +17,8 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     protected abstract int getVerticesNum();
     protected abstract int getIndicesNum();
 
+    private transient GlRenderBuffer mGlBuffer;
+
     protected FloorPlanPrimitiveBase() {
         mVertices = new float[getVerticesNum()];
         mIndices = new short[getIndicesNum()];
@@ -55,6 +57,11 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     @Override
     public int getVerticesDataSize() {
         return getVerticesNum() * (GlRenderBuffer.COORDS_PER_VERTEX + GlRenderBuffer.COLORS_PER_VERTEX) * GlRenderBuffer.SIZE_OF_FLOAT;
+    }
+
+    @Override
+    public int getIndicesDataSize() {
+        return getIndicesNum() * GlRenderBuffer.SIZE_OF_SHORT;
     }
 
     private int mColor;
@@ -96,6 +103,8 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     @Override
     public void cloak() {
         Arrays.fill(mVertices, 0);
+        setRemoved(true);
+        mGlBuffer.updateSingleObject(this);
     }
 
     @Override
@@ -110,4 +119,18 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
         return true;
     }
 
+    @Override
+    public GlRenderBuffer getContainingBuffer() {
+        return mGlBuffer;
+    }
+
+    @Override
+    public void setContainingBuffer(GlRenderBuffer mGlBuffer) {
+        this.mGlBuffer = mGlBuffer;
+    }
+
+    @Override
+    public void rewriteToBuffer() {
+        mGlBuffer.updateSingleObject(this);
+    }
 }
