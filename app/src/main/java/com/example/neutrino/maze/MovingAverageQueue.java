@@ -14,17 +14,21 @@ import java.util.Queue;
  */
 public class MovingAverageQueue {
     public static final int MAX_SCANS_TO_AVERAGE = 3;
-    private int mMaxScans = MAX_SCANS_TO_AVERAGE;
+    private int mWindowSize = MAX_SCANS_TO_AVERAGE;
     private WiFiTug.Fingerprint mSumFingerprint = new WiFiTug.Fingerprint();
-    private Queue<List<ScanResult>> mQueue = new ArrayDeque<>(mMaxScans);
+    private Queue<List<ScanResult>> mQueue = new ArrayDeque<>(mWindowSize);
     // Maintain map of counters per MAC, counter++ in case scanResult.level present
     private Map<String, Integer> counters = new HashMap<>();
 
     @Deprecated
     private final List<ScanResult> mAverageScans = new ArrayList<>();
 
+    public MovingAverageQueue(int windowSize) {
+        setWindowSize(windowSize);
+    }
+
     public void add(List<ScanResult> results) {
-        if (mQueue.size() == mMaxScans) {
+        if (mQueue.size() == mWindowSize) {
             subtractFromSum(mQueue.remove());
         }
 
@@ -75,5 +79,9 @@ public class MovingAverageQueue {
     public Map<String, Integer> getCounters() { return counters; }
     public int getNumScans() {
         return mQueue.size();
+    }
+    public int getWindowSize() {return mWindowSize;}
+    public void setWindowSize(int windowSize) {
+        mWindowSize = windowSize;
     }
 }

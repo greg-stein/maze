@@ -6,20 +6,17 @@ import android.content.Intent;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 
-import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 /**
  * Created by Greg Stein on 8/10/2016.
  */
 public class WifiScanner extends BroadcastReceiver {
     private static final int MAX_WIFI_LEVEL = 100; // Percent of signal reception
+    public static final int MOVING_AVERAGE_WINDOW_SIZE = 1;
 
-    private MovingAverageQueue mQueue = new MovingAverageQueue();
+    private MovingAverageQueue mQueue = new MovingAverageQueue(MOVING_AVERAGE_WINDOW_SIZE);
     private List<ScanResult> mLastScan;
     private WifiManager mWifiManager;
     private boolean mIsEnabled = false;
