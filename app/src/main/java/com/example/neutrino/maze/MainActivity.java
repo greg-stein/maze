@@ -48,8 +48,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     // One human step
-    private static final float STEP_LENGTH = 0.78f; // 78cm
-    private static final float WIFIMARK_SPACING = 3*STEP_LENGTH;
+    private static final float STEP_LENGTH = 0.68f; // 78cm
+    private static final float WIFIMARK_SPACING = 3 * STEP_LENGTH;
 
     private float mTravelledDistance = 0;
 
@@ -338,6 +338,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onFingerprintAvailable(WiFiTug.Fingerprint fingerprint) {
                 if (!mPlacedMarkAtCurrentLocation) {
                     uiFloorPlanView.placeWiFiMarkAt(mCurrentLocation, fingerprint);
+                    // TODO: There is costly stupidity in these two lines:
                     mWiFiTug.marks = uiFloorPlanView.getPrimitives(WifiMark.class);
                     mWiFiTug.walls = uiFloorPlanView.getPrimitives(Wall.class);
                     mPlacedMarkAtCurrentLocation = true;
