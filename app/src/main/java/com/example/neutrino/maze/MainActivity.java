@@ -68,9 +68,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private EditText uiWallLengthText;
 
     // Map north angle
-    private float mapNorth = 0.0f;
+    private float mMapNorth = 0.0f;
 
-    private float currentDegree = 0f;
+    private boolean mIsMapRotationLocked = false;
+    private float mDegreeOffset;
+    private float mCurrentDegree = 0f;
 
     // device sensor manager
     private SensorManager mSensorManager;
@@ -105,7 +107,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final float LOW_PASS_ALPHA = 0.5f;
     private static final PointF mCurrentLocation = new PointF();
     private float mCurrentWallLength = 1;
-    private boolean mIsMapRotationLocked = false;
     private boolean mAutoScanEnabled = false;
 
     public MainActivity() {
@@ -267,7 +268,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     exciteFab(uiFabMapRotateLock);
                 } else {
                     calmFab(uiFabMapRotateLock);
+                    mMapNorth = mDegreeOffset;
                 }
+                mDegreeOffset = 0;
 
                 // if (enable) {
                 //     rememberedNorth = currentNorth
@@ -634,8 +637,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             case Sensor.TYPE_STEP_DETECTOR: {
                 if (mAutoScanEnabled) {
-                    final float offsetX = (float) (Math.sin(Math.toRadians(currentDegree)) * STEP_LENGTH);
-                    final float offsetY = (float) (Math.cos(Math.toRadians(currentDegree)) * STEP_LENGTH);
+                    final float offsetX = (float) (Math.sin(Math.toRadians(mCurrentDegree)) * STEP_LENGTH);
+                    final float offsetY = (float) (Math.cos(Math.toRadians(mCurrentDegree)) * STEP_LENGTH);
                     uiFloorPlanView.updateOffset(offsetX, -offsetY);
 
                     mTravelledDistance += STEP_LENGTH;
@@ -657,11 +660,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (gotRotationMatrix) {
             SensorManager.getOrientation(mRotationMatrix, mOrientation);
-            float degree = Math.round(Math.toDegrees(mOrientation[0]) + mapNorth);
+            float degree = Math.round(Math.toDegrees(mOrientation[0]) + mMapNorth);
+
+            mDegreeOffset = mCurrentDegree - degree;
             if (!mIsMapRotationLocked) {
-                uiFloorPlanView.updateAngle(currentDegree - degree);
+                uiFloorPlanView.updateAngle(mDegreeOffset);
+                mCurrentDegree = degree;
             }
-            currentDegree = degree;
         }
     }
 
