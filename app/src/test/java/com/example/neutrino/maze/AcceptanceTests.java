@@ -71,7 +71,7 @@ public class AcceptanceTests {
     // This func runs before each @Test in this class.
     @Before
     public void ReadFloorPlanFromResources() {
-        List<IFloorPlanPrimitive> deserializedList = getFloorPlanFromRes("haifa_mall_floorplan.json");
+        List<IFloorPlanPrimitive> deserializedList = getFloorPlanFromRes("haifa_mall_many_fingerprints.json");
 
         marks = CommonHelper.getPrimitives(WifiMark.class, deserializedList);
         walls = CommonHelper.getPrimitives(Wall.class, deserializedList);
@@ -161,10 +161,14 @@ public class AcceptanceTests {
             wifiPositioningAcceptanceTest(index);
         }
 
+        int badFingerprints = 0;
         double[] distancesArray = new double[distances.size()];
         for (int i = 0; i < distances.size(); i++) {
             distancesArray[i] = distances.get(i);
-            LOGGER.info(String.format(Locale.getDefault(), "Distance: %.2f", distancesArray[i]));
+            WifiMark mark = marks.get(i);
+            if (distancesArray[i] > 10) badFingerprints++;
+
+            LOGGER.info(String.format(Locale.getDefault(), "Fingerprint: %.2f %.2f Error: %.2f", mark.getCenter().x, mark.getCenter().y,  distancesArray[i]));
         }
 
         double mean = StatUtils.mean(distancesArray);
@@ -174,6 +178,28 @@ public class AcceptanceTests {
         LOGGER.info("----------------------------------------------------");
         LOGGER.info(String.format(Locale.getDefault(), "Mean:     %.2f", mean));
         LOGGER.info(String.format(Locale.getDefault(), "Stdev:    %.2f", stdev));
+        LOGGER.info(String.format(Locale.getDefault(), "Total:    %d", distances.size()));
+        LOGGER.info(String.format(Locale.getDefault(), "Bad:      %d", badFingerprints));
+
+        LOGGER.info("====================================================");
+
+        int cnt = 0;
+        double[] distancesArrayFiltered = new double[distances.size() - badFingerprints];
+        for (int i = 0; i < distances.size(); i++) {
+            final double distance = distances.get(i);
+            if (distance <= 10) {
+                distancesArrayFiltered[cnt++] = distance;
+            }
+        }
+
+        mean = StatUtils.mean(distancesArrayFiltered);
+        variance = StatUtils.variance(distancesArrayFiltered, mean);
+        stdev = Math.sqrt(variance);
+
+        LOGGER.info("----------------------------------------------------");
+        LOGGER.info(String.format(Locale.getDefault(), "Mean:     %.2f", mean));
+        LOGGER.info(String.format(Locale.getDefault(), "Stdev:    %.2f", stdev));
+        LOGGER.info(String.format(Locale.getDefault(), "Total:    %d", distances.size() - badFingerprints));
     }
 
     /**
