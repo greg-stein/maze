@@ -95,7 +95,7 @@ public class MovingAverageQueueTests {
 
     @Test
     public void oneApTest() {
-        MovingAverageQueue queue = new MovingAverageQueue(3);
+        MovingAverageScanResultsQueue queue = new MovingAverageScanResultsQueue(3);
 
         List<ScanResult> scanResults1 = new ArrayList<>();
         scanResults1.add(buildScanResult(MAC1, 50));
@@ -155,7 +155,7 @@ public class MovingAverageQueueTests {
 
     @Test
     public void oneApNegativeTest() {
-        MovingAverageQueue queue = new MovingAverageQueue(3);
+        MovingAverageScanResultsQueue queue = new MovingAverageScanResultsQueue(3);
 
         List<ScanResult> scanResults1 = new ArrayList<>();
         scanResults1.add(buildScanResult(MAC1, -50));
@@ -216,7 +216,7 @@ public class MovingAverageQueueTests {
 
     @Test
     public void twoApTest() {
-        MovingAverageQueue queue = new MovingAverageQueue(3);
+        MovingAverageScanResultsQueue queue = new MovingAverageScanResultsQueue(3);
 
         List<ScanResult> scanResults1 = new ArrayList<>();
         scanResults1.add(buildScanResult(MAC1, -50));

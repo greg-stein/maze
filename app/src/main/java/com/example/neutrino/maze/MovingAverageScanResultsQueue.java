@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Created by Greg Stein on 10/25/2016.
  */
-public class MovingAverageQueue extends MovingAverageQueueBase<List<ScanResult>> {
+public class MovingAverageScanResultsQueue extends MovingAverageQueueBase<List<ScanResult>> {
     private WiFiTug.Fingerprint mSumFingerprint = new WiFiTug.Fingerprint();
     // Maintain map of counters per MAC, counter++ in case scanResult.level present
     private Map<String, Integer> counters = new HashMap<>();
@@ -18,7 +18,7 @@ public class MovingAverageQueue extends MovingAverageQueueBase<List<ScanResult>>
     @Deprecated
     private final List<ScanResult> mAverageScans = new ArrayList<>();
 
-    public MovingAverageQueue(int windowSize) {
+    public MovingAverageScanResultsQueue(int windowSize) {
         super(windowSize);
     }
 

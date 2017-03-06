@@ -16,7 +16,7 @@ public class WifiScanner extends BroadcastReceiver {
     private static final int MAX_WIFI_LEVEL = 100; // Percent of signal reception
     public static final int MOVING_AVERAGE_WINDOW_SIZE = 1;
 
-    private MovingAverageQueue mQueue = new MovingAverageQueue(MOVING_AVERAGE_WINDOW_SIZE);
+    private MovingAverageScanResultsQueue mQueue = new MovingAverageScanResultsQueue(MOVING_AVERAGE_WINDOW_SIZE);
     private List<ScanResult> mLastScan;
     private WifiManager mWifiManager;
     private boolean mIsEnabled = false;
