@@ -2,21 +2,16 @@
 
 import android.net.wifi.ScanResult;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 /**
  * Created by Greg Stein on 10/25/2016.
  */
-public class MovingAverageQueue {
-    public static final int MAX_SCANS_TO_AVERAGE = 3;
-    private int mWindowSize = MAX_SCANS_TO_AVERAGE;
+public class MovingAverageQueue extends MovingAverageQueueBase<List<ScanResult>> {
     private WiFiTug.Fingerprint mSumFingerprint = new WiFiTug.Fingerprint();
-    private Queue<List<ScanResult>> mQueue = new ArrayDeque<>(mWindowSize);
     // Maintain map of counters per MAC, counter++ in case scanResult.level present
     private Map<String, Integer> counters = new HashMap<>();
 
@@ -24,23 +19,11 @@ public class MovingAverageQueue {
     private final List<ScanResult> mAverageScans = new ArrayList<>();
 
     public MovingAverageQueue(int windowSize) {
-        setWindowSize(windowSize);
+        super(windowSize);
     }
 
-    public void add(List<ScanResult> results) {
-        if (mQueue.size() == mWindowSize) {
-            subtractFromSum(mQueue.remove());
-        }
-
-        if (mQueue.add(results)) {
-            addToSum(results);
-        }
-        else {
-            throw new RuntimeException("Unable to add new scan results to queue.");
-        }
-    }
-
-    private void addToSum(List<ScanResult> scanResults) {
+    @Override
+    protected void addToSum(List<ScanResult> scanResults) {
         for(ScanResult scanResult : scanResults) {
             Integer oSum = mSumFingerprint.get(scanResult.BSSID);
 
@@ -57,7 +40,8 @@ public class MovingAverageQueue {
         }
     }
 
-    private void subtractFromSum(List<ScanResult> scanResults) {
+    @Override
+    protected void subtractFromSum(List<ScanResult> scanResults) {
         for(ScanResult scanResult : scanResults) {
             // Scan result with this`` MAC should exist
             int sum = mSumFingerprint.get(scanResult.BSSID);
@@ -67,21 +51,8 @@ public class MovingAverageQueue {
         }
     }
 
-    @Deprecated
-    public List<ScanResult> getMovingAverage() {
-        return mAverageScans;
-    }
-
-    // Use these two methods instead to calculate average later
     public WiFiTug.Fingerprint getSumFingerprint() {
         return mSumFingerprint;
     }
     public Map<String, Integer> getCounters() { return counters; }
-    public int getNumScans() {
-        return mQueue.size();
-    }
-    public int getWindowSize() {return mWindowSize;}
-    public void setWindowSize(int windowSize) {
-        mWindowSize = windowSize;
-    }
 }

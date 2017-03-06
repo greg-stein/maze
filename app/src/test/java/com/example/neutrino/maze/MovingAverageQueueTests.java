@@ -5,9 +5,6 @@ import android.os.Parcel;
 
 import com.google.common.collect.Iterables;
 
-import org.apache.tools.ant.taskdefs.PathConvert;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -28,7 +25,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
@@ -110,7 +106,7 @@ public class MovingAverageQueueTests {
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
         assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(50)));
-        assertThat(queue.getNumScans(), is(equalTo(1)));
+        assertThat(queue.getItemsNum(), is(equalTo(1)));
 
         List<ScanResult> scanResults2 = new ArrayList<>();
         scanResults2.add(buildScanResult(MAC1, 70));
@@ -121,7 +117,7 @@ public class MovingAverageQueueTests {
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
         assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(50 + 70)));
-        assertThat(queue.getNumScans(), is(equalTo(2)));
+        assertThat(queue.getItemsNum(), is(equalTo(2)));
 
         List<ScanResult> scanResults3 = new ArrayList<>();
         scanResults3.add(buildScanResult(MAC1, 30));
@@ -132,7 +128,7 @@ public class MovingAverageQueueTests {
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
         assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(50 + 70 + 30)));
-        assertThat(queue.getNumScans(), is(equalTo(3)));
+        assertThat(queue.getItemsNum(), is(equalTo(3)));
 
         List<ScanResult> scanResults4 = new ArrayList<>();
         scanResults4.add(buildScanResult(MAC1, 90));
@@ -143,7 +139,7 @@ public class MovingAverageQueueTests {
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
         assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(70 + 30 + 90)));
-        assertThat(queue.getNumScans(), is(equalTo(3)));
+        assertThat(queue.getItemsNum(), is(equalTo(3)));
 
         List<ScanResult> scanResults5 = new ArrayList<>();
         scanResults5.add(buildScanResult(MAC1, 60));
@@ -154,7 +150,7 @@ public class MovingAverageQueueTests {
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
         assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(30 + 90 + 60)));
-        assertThat(queue.getNumScans(), is(equalTo(3)));
+        assertThat(queue.getItemsNum(), is(equalTo(3)));
     }
 
     @Test
@@ -170,7 +166,7 @@ public class MovingAverageQueueTests {
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
         assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(-50)));
-        assertThat(queue.getNumScans(), is(equalTo(1)));
+        assertThat(queue.getItemsNum(), is(equalTo(1)));
 
         List<ScanResult> scanResults2 = new ArrayList<>();
         scanResults2.add(buildScanResult(MAC1, -70));
@@ -181,7 +177,7 @@ public class MovingAverageQueueTests {
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
         assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(-50 + -70)));
-        assertThat(queue.getNumScans(), is(equalTo(2)));
+        assertThat(queue.getItemsNum(), is(equalTo(2)));
 
         List<ScanResult> scanResults3 = new ArrayList<>();
         scanResults3.add(buildScanResult(MAC1, -30));
@@ -192,7 +188,7 @@ public class MovingAverageQueueTests {
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
         assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(-50 + -70 + -30)));
-        assertThat(queue.getNumScans(), is(equalTo(3)));
+        assertThat(queue.getItemsNum(), is(equalTo(3)));
 
         List<ScanResult> scanResults4 = new ArrayList<>();
         scanResults4.add(buildScanResult(MAC1, -90));
@@ -203,7 +199,7 @@ public class MovingAverageQueueTests {
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
         assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(-70 + -30 + -90)));
-        assertThat(queue.getNumScans(), is(equalTo(3)));
+        assertThat(queue.getItemsNum(), is(equalTo(3)));
 
         List<ScanResult> scanResults5 = new ArrayList<>();
         scanResults5.add(buildScanResult(MAC1, -60));
@@ -214,7 +210,7 @@ public class MovingAverageQueueTests {
         assertThat(queue.getSumFingerprint().entrySet(), hasSize(1));
         assertThat(entry.getKey(), is(equalTo(MAC1)));
         assertThat(entry.getValue(), is(equalTo(-30 + -90 + -60)));
-        assertThat(queue.getNumScans(), is(equalTo(3)));
+        assertThat(queue.getItemsNum(), is(equalTo(3)));
     }
 
 
