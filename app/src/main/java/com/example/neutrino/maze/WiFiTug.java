@@ -27,6 +27,7 @@ import org.apache.commons.math3.distribution.TDistribution;
 /* DR TODO:
  *  Implement currentFingerPrintList - like MovingAverageQueue - DONE
  *  Implement addtoFingerPrintList() API - DONE
+ *  Implement addtoFingerPrintList() API - DONE
    *  Implement getMostProbablyTrajectory() API for last MovingAverage based on
    *  algorithm as was discussed:
    *  for first scan find K most likely marks (based on distance)
@@ -41,6 +42,7 @@ public class WiFiTug implements TugOfWar.ITugger {
     private static final float WIFI_DISTANCE_CANDIDATE_PERCENTAGE = 0.5f;
     private static final int MAX_NUM_CANDIDATES = 5;
     private static final float MAX_SQRDISTANCE_TWO_WIFIMARKS = 100;   // maximum allowed sqrdistance
+    private static final int RSS_OFFSET = 100;
 
     public static List<WifiMark> centroidMarks = null;
     // 20% of total marks
@@ -187,6 +189,7 @@ public class WiFiTug implements TugOfWar.ITugger {
     // Calculates euclidean distance in Decibel space
     public static float distance(Fingerprint actual, Fingerprint reference) {
         float distance = 0.0f;
+        int distanceSq = 0;
         int bssidLevelDiff;
 
         if (actual == null || reference == null) return Float.MAX_VALUE;
@@ -196,19 +199,20 @@ public class WiFiTug implements TugOfWar.ITugger {
             if (reference.containsKey(mac)) {
                 bssidLevelDiff = actual.get(mac) - reference.get(mac);
             } else {
-                bssidLevelDiff = actual.get(mac);
+                bssidLevelDiff = actual.get(mac) + RSS_OFFSET;
             }
 
-            distance += Math.pow(bssidLevelDiff, 2);
+            distanceSq += bssidLevelDiff * bssidLevelDiff;
         }
 
         for (String mac : reference.keySet()) {
             if (!actual.containsKey(mac)) {
-                distance += Math.pow(reference.get(mac), 2);
+                bssidLevelDiff = reference.get(mac) + RSS_OFFSET;
+                distanceSq += bssidLevelDiff * bssidLevelDiff;
             }
         }
 
-        distance = (float) Math.sqrt(distance);
+        distance = (float) Math.sqrt(distanceSq);
         // division by zero handling:
         if (distance == 0.0f) distance = Float.MIN_VALUE;
         return distance;
@@ -383,11 +387,11 @@ public class WiFiTug implements TugOfWar.ITugger {
 
         List<WifiMark> wifiMarks = getMarksWithSameAps(marks, currentFingerprint);
 //        List<WifiMark> wifiMarks = getMostCorrelatedMarks(currentFingerprint, marks);
-        PointF centroid = new PointF();
-        boolean outlierFound;
-        do {
-            outlierFound = eliminateOutliers(wifiMarks, centroid);
-        } while (outlierFound);
+//        PointF centroid = new PointF();
+//        boolean outlierFound;
+//        do {
+//            outlierFound = eliminateOutliers(wifiMarks, centroid);
+//        } while (outlierFound);
 
 //        for (int i = 0; i < CENTROID_OPT_ITERATIONS; i++) {
 //            if (centroid != null) {
@@ -535,5 +539,9 @@ public class WiFiTug implements TugOfWar.ITugger {
 
     public static float distanceXYsqr (Footprint a, Footprint b) {
         return (float)( Math.pow((a.getCenter().x - b.getCenter().x), 2) + Math.pow((a.getCenter().y - b.getCenter().y), 2) );
+    }
+
+    public void setFingerprints(Iterable<WifiMark> fingerprints) {
+
     }
 }

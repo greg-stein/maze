@@ -54,7 +54,7 @@ public class WiFiTugTests {
     public void oneSsidExistsInSingleFingerprintTest() {
         WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
         WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
-        a.put("44-85-00-11-DA-EC", 75);
+        a.put("44-85-00-11-DA-EC", 75-100);
 
         float distanceA_B = WiFiTug.distance(a, b);
         float distanceB_A = WiFiTug.distance(b, a);
@@ -67,8 +67,8 @@ public class WiFiTugTests {
     public void twoSsidExistInSingleFingerprintTest() {
         WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
         WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
-        a.put("44-85-00-11-DA-EC", 3);
-        a.put("44-85-FF-11-DA-EC", 4);
+        a.put("44-85-00-11-DA-EC", 3-100);
+        a.put("44-85-FF-11-DA-EC", 4-100);
 
         float distanceA_B = WiFiTug.distance(a, b);
         float distanceB_A = WiFiTug.distance(b, a);
