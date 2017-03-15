@@ -6,6 +6,7 @@ import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
+import com.opencsv.CSVWriter;
 
 import org.apache.commons.math3.stat.StatUtils;
 import org.junit.Before;
@@ -17,30 +18,22 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
-import java.util.List;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
-import dalvik.annotation.TestTarget;
-
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.closeTo;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 /**
  * Created by Greg Stein on 11/23/2016.
@@ -50,6 +43,7 @@ import static org.junit.Assert.assertThat;
 public class AcceptanceTests {
     private static final double MAX_ERROR = 5; // meters
     private static final Logger LOGGER = Logger.getLogger(AcceptanceTests.class.getName());
+    private static CSVWriter csvWriter;
 
     private List<WifiMark> marks;
     private List<Wall> walls;
@@ -66,6 +60,14 @@ public class AcceptanceTests {
         consoleHandler.setFormatter(formatter);
         LOGGER.setUseParentHandlers(false);
         LOGGER.addHandler(consoleHandler);
+    }
+
+    private static void logToFile(String filename) {
+        try {
+            csvWriter = new CSVWriter(new FileWriter(filename), ',');
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // This func runs before each @Test in this class.
@@ -155,6 +157,7 @@ public class AcceptanceTests {
         LOGGER.info("----------------------------------------------------");
     }
 
+    private Map<WifiMark, PointF> predictedLocations = new HashMap<>();
     @Test
     public void wifiPositioningAcceptanceTest() {
         for (int index = 0; index < marks.size(); index++) {
@@ -168,7 +171,9 @@ public class AcceptanceTests {
             WifiMark mark = marks.get(i);
             if (distancesArray[i] > 10) badFingerprints++;
 
-            LOGGER.info(String.format(Locale.getDefault(), "Fingerprint: %.2f %.2f Error: %.2f", mark.getCenter().x, mark.getCenter().y,  distancesArray[i]));
+            final PointF expected = mark.getCenter();
+            final PointF predicted = predictedLocations.get(mark);
+            LOGGER.info(String.format(Locale.getDefault(), "Fingerprint: %.2f %.2f Predicted: %.2f %.2f Error: %g", expected.x, expected.y, predicted.x, predicted.y, distancesArray[i]));
         }
 
         double mean = StatUtils.mean(distancesArray);
@@ -202,6 +207,97 @@ public class AcceptanceTests {
         LOGGER.info(String.format(Locale.getDefault(), "Total:    %d", distances.size() - badFingerprints));
     }
 
+    @Test
+    public void buildFingerprintsTable() {
+        logToFile("C:\\jopa\\haifa_mall_fingerprints.csv");
+        Map<String, Integer> macIndices = new HashMap<>();
+        int macIndex = 0;
+
+        for (WifiMark mark : marks) {
+            final WiFiTug.Fingerprint fingerprint = mark.getFingerprint();
+            for (String mac : fingerprint.keySet()) {
+                if (!macIndices.containsKey(mac)) {
+                    macIndices.put(mac, macIndex++);
+                }
+            }
+        }
+
+        final int macNum = macIndices.size();
+        List<String[]> table = new ArrayList<>();
+        String[] row;
+        for (WifiMark mark : marks) {
+
+            row = new String[macNum + 2]; // x, y, mac1, mac2, ...
+            row[0] = String.valueOf(mark.getCenter().x);
+            row[1] = String.valueOf(mark.getCenter().y);
+
+            int[] macData = new int[macNum];
+            for (String mac : mark.getFingerprint().keySet()) {
+                macIndex = macIndices.get(mac);
+                final int macLevel = mark.getFingerprint().get(mac);
+                macData[macIndex] = macLevel;
+            }
+
+            for (int i = 0; i < macNum; i++) {
+                row[i + 2] = String.valueOf(macData[i]);
+            }
+
+            table.add(row);
+        }
+
+        csvWriter.writeAll(table);
+    }
+
+    @Test
+    public void buildMacTable() {
+        logToFile("C:\\jopa\\haifa_mall_macs.csv");
+
+        Map<String, Integer> macIndices = new HashMap<>();
+        List<String[]> macs = new ArrayList<>();
+        int macIndex = 0;
+
+        for (WifiMark mark : marks) {
+            final WiFiTug.Fingerprint fingerprint = mark.getFingerprint();
+            for (String mac : fingerprint.keySet()) {
+                if (!macIndices.containsKey(mac)) {
+                    macIndices.put(mac, macIndex);
+                    macs.add(new String[] {String.valueOf(mac), String.valueOf(macIndex)});
+                    macIndex++;
+                }
+            }
+        }
+
+        try {
+            csvWriter.writeAll(macs);
+            csvWriter.flush();
+            csvWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void distance_likelihood_table() {
+        logToFile("C:\\jopa\\haifa_mall_distance_likelihood.csv");
+        csvWriter.writeNext(new String[] {"Mark1", "Mark2", "Distance", "Likelihood"});
+
+        for (WifiMark mark1 : marks) {
+            for (WifiMark mark2 : marks) {
+                final float likelihood = WiFiTug.distance(mark1.getFingerprint(), mark2.getFingerprint());
+                final double  distance = Math.sqrt(WiFiTug.distanceXYsqr(mark1, mark2));
+                csvWriter.writeNext(new String[] {String.valueOf(mark1.instanceId), String.valueOf(mark2.instanceId), String.valueOf(distance), String.valueOf(likelihood)});
+            }
+        }
+
+        try {
+            csvWriter.flush();
+            csvWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     /**
      * The purpose of this test is to allow testing of positioning algorithm without involving the
      * device. The logic is quite simple and avoids mocking of tons of classes.
@@ -223,6 +319,7 @@ public class AcceptanceTests {
         PointF actualPosition = new PointF();
         PointF expectedPosition = fingerprintMark.getCenter();
         wifiTug.getPosition(actualPosition);
+        predictedLocations.put(fingerprintMark, actualPosition);
 
         // Calculate distance between expected and actual positions
 //        actualPosition.offset(expectedPosition.x, expectedPosition.y);
