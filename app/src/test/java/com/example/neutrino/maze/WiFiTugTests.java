@@ -5,7 +5,6 @@ import android.graphics.PointF;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -45,7 +44,7 @@ public class WiFiTugTests {
         a.put("44-85-00-11-DA-EC", 75);
         b.put("44-85-00-11-DA-EC", 57);
 
-        float distance = WiFiTug.distance(a, b);
+        float distance = WiFiTug.difference(a, b);
 
         assertThat(distance, is(18f));
     }
@@ -56,8 +55,8 @@ public class WiFiTugTests {
         WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
         a.put("44-85-00-11-DA-EC", 75-100);
 
-        float distanceA_B = WiFiTug.distance(a, b);
-        float distanceB_A = WiFiTug.distance(b, a);
+        float distanceA_B = WiFiTug.difference(a, b);
+        float distanceB_A = WiFiTug.difference(b, a);
 
         assertThat(distanceA_B, is(75f));
         assertThat(distanceB_A, is(equalTo(distanceA_B)));
@@ -70,8 +69,8 @@ public class WiFiTugTests {
         a.put("44-85-00-11-DA-EC", 3-100);
         a.put("44-85-FF-11-DA-EC", 4-100);
 
-        float distanceA_B = WiFiTug.distance(a, b);
-        float distanceB_A = WiFiTug.distance(b, a);
+        float distanceA_B = WiFiTug.difference(a, b);
+        float distanceB_A = WiFiTug.difference(b, a);
 
         assertThat(distanceA_B, is(5f));
         assertThat(distanceB_A, is(equalTo(distanceA_B)));
@@ -87,8 +86,8 @@ public class WiFiTugTests {
         b.put("44-85-00-11-DA-EC", 75); // diff = 3
         b.put("44-85-FF-11-DA-EC", 68); // diff = 4
 
-        float distanceA_B = WiFiTug.distance(a, b);
-        float distanceB_A = WiFiTug.distance(b, a);
+        float distanceA_B = WiFiTug.difference(a, b);
+        float distanceB_A = WiFiTug.difference(b, a);
 
         assertThat(distanceA_B, is(5f));
         assertThat(distanceB_A, is(equalTo(distanceA_B)));
@@ -107,7 +106,7 @@ public class WiFiTugTests {
         b.put("44-85-00-11-DA-EC", 78);
         b.put("44-85-FF-11-DA-EC", 64);
 
-        // distance = 5 from b, 15 from a
+        // difference = 5 from b, 15 from a
         WiFiTug.Fingerprint current = new WiFiTug.Fingerprint();
         current.put("44-85-00-11-DA-EC", 75); // diff = 3
         current.put("44-85-FF-11-DA-EC", 68); // diff = 4

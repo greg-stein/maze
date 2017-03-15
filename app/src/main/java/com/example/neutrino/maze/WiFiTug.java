@@ -1,7 +1,6 @@
 package com.example.neutrino.maze;
 
 import android.graphics.PointF;
-import android.util.Pair;
 
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.Wall;
@@ -30,9 +29,9 @@ import org.apache.commons.math3.distribution.TDistribution;
  *  Implement addtoFingerPrintList() API - DONE
    *  Implement getMostProbablyTrajectory() API for last MovingAverage based on
    *  algorithm as was discussed:
-   *  for first scan find K most likely marks (based on distance)
+   *  for first scan find K most likely marks (based on difference)
    *  for each next scan - try to append K most likely to the previous list and discard
-   *  the impossible ones (based on maximum distance requirement). Keep at most the top K.
+   *  the impossible ones (based on maximum difference requirement). Keep at most the top K.
    *  Continue until full trajectory exists.
    *  Play with: K, MaxDistThr, ListLength...
  */
@@ -110,7 +109,7 @@ public class WiFiTug implements TugOfWar.ITugger {
         int nMarks = marks.size();
         float distance = 0f;
         for (WifiMark mark: marks) {
-            distance += distance(mark.getFingerprint(),fingerprint);
+            distance += difference(mark.getFingerprint(),fingerprint);
         }
         return (distance /= nMarks);
     }
@@ -120,7 +119,7 @@ public class WiFiTug implements TugOfWar.ITugger {
         float distance = 0f;
         float[] distanceArray = new float[nMarks];
         for (int i = 0 ; i < nMarks; i++) {
-            distanceArray[i] = distance(marks.get(i).getFingerprint(),fingerprint);
+            distanceArray[i] = difference(marks.get(i).getFingerprint(),fingerprint);
             distance += distanceArray[i];
         }
         Arrays.sort(distanceArray);
@@ -146,11 +145,11 @@ public class WiFiTug implements TugOfWar.ITugger {
                 }
 
                 if (visible) {
-                    float likelihood = distance(outerMark.getFingerprint(), innerMark.getFingerprint());
+                    float difference = difference(outerMark.getFingerprint(), innerMark.getFingerprint());
                     float distance = (float) Math.sqrt(
                             Math.pow(outerMark.getCenter().x - innerMark.getCenter().x, 2) +
                                     Math.pow(outerMark.getCenter().y - innerMark.getCenter().y, 2));
-                    table.append(likelihood).append(',').append(distance).append('\n');
+                    table.append(difference).append(',').append(distance).append('\n');
                 }
             }
         }
@@ -187,8 +186,8 @@ public class WiFiTug implements TugOfWar.ITugger {
     }
 
     // Calculates euclidean distance in Decibel space
-    public static float distance(Fingerprint actual, Fingerprint reference) {
-        float distance = 0.0f;
+    public static float difference(Fingerprint actual, Fingerprint reference) {
+        float difference = 0.0f;
         int distanceSq = 0;
         int bssidLevelDiff;
 
@@ -212,10 +211,10 @@ public class WiFiTug implements TugOfWar.ITugger {
             }
         }
 
-        distance = (float) Math.sqrt(distanceSq);
+        difference = (float) Math.sqrt(distanceSq);
         // division by zero handling:
-        if (distance == 0.0f) distance = Float.MIN_VALUE;
-        return distance;
+        if (difference == 0.0f) difference = Float.MIN_VALUE;
+        return difference;
     }
 
     public static double correlation(Fingerprint actual, Fingerprint reference) {
@@ -251,7 +250,7 @@ public class WiFiTug implements TugOfWar.ITugger {
 
         for(WifiMark mark: wifiMarks) {
             Fingerprint markFingerprint = mark.getFingerprint();
-            float distance = distance(fingerprint, markFingerprint);
+            float distance = difference(fingerprint, markFingerprint);
 
             List<WifiMark> sameDistanceMarks = sortedMarks.get(distance);
             if (sameDistanceMarks == null) {
@@ -400,7 +399,7 @@ public class WiFiTug implements TugOfWar.ITugger {
 
             for (WifiMark mark : wifiMarks) {
                 Fingerprint markFingerprint = mark.getFingerprint();
-                float distance = distance(currentFingerprint, markFingerprint);
+                float distance = difference(currentFingerprint, markFingerprint);
                 weight = 1 / distance;
 
                 x += weight * mark.getCenter().x;
@@ -436,13 +435,13 @@ public class WiFiTug implements TugOfWar.ITugger {
             List<WifiMark> wifiMarks = getMarksWithSameAps(marks, fingerprint);
             maxDistance = 0; minDistance = Float.MAX_VALUE;
 
-            // First phase - get min and max distance
+            // First phase - get min and max difference
             for (WifiMark mark: wifiMarks) {
-                float distance = distance(fingerprint, mark.getFingerprint());
-                if (distance < minDistance)
-                    minDistance = distance;
-                if (distance > maxDistance)
-                    maxDistance = distance;
+                float difference = difference(fingerprint, mark.getFingerprint());
+                if (difference < minDistance)
+                    minDistance = difference;
+                if (difference > maxDistance)
+                    maxDistance = difference;
             }
             distanceRange = maxDistance - minDistance;
             maxViableDistance = minDistance + WIFI_DISTANCE_CANDIDATE_PERCENTAGE * distanceRange;
@@ -450,11 +449,11 @@ public class WiFiTug implements TugOfWar.ITugger {
             candidatesThisRound.clear();
             candidatePairs.clear();
 
-            // Second phase - take only viable candidates (from top CANDIDATE_PERCENTAGE of lowest distance)
+            // Second phase - take only viable candidates (from top CANDIDATE_PERCENTAGE of lowest difference)
             for (WifiMark mark: wifiMarks) {
-                float distance = distance(fingerprint, mark.getFingerprint());
-                if (distance <= maxViableDistance) {
-                    candidatesThisRound.add(new LinkableWifiMark(mark, distance));
+                float difference = difference(fingerprint, mark.getFingerprint());
+                if (difference <= maxViableDistance) {
+                    candidatesThisRound.add(new LinkableWifiMark(mark, difference));
                 }
             }
 

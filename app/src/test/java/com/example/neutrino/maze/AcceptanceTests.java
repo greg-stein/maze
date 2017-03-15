@@ -283,7 +283,7 @@ public class AcceptanceTests {
 
         for (WifiMark mark1 : marks) {
             for (WifiMark mark2 : marks) {
-                final float likelihood = WiFiTug.distance(mark1.getFingerprint(), mark2.getFingerprint());
+                final float likelihood = WiFiTug.difference(mark1.getFingerprint(), mark2.getFingerprint());
                 final double  distance = Math.sqrt(WiFiTug.distanceXYsqr(mark1, mark2));
                 csvWriter.writeNext(new String[] {String.valueOf(mark1.instanceId), String.valueOf(mark2.instanceId), String.valueOf(distance), String.valueOf(likelihood)});
             }
