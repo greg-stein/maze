@@ -41,6 +41,7 @@ import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
 import com.example.neutrino.maze.floorplan.vectorization.FloorplanVectorizer;
+import com.opencsv.CSVWriter;
 
 import java.io.File;
 import java.io.IOException;
@@ -108,6 +109,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final PointF mCurrentLocation = new PointF();
     private float mCurrentWallLength = 1;
     private boolean mAutoScanEnabled = false;
+    private CSVWriter mCsvWriter;
+
 
     public MainActivity() {
         mTow.registerTugger(mWiFiTug);
