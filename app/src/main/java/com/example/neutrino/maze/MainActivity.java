@@ -57,14 +57,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     // One human step
     private static final float STEP_LENGTH = 0.68f; // 78cm
     private static final float WIFIMARK_SPACING = 3 * STEP_LENGTH;
-    public static final String SENSOR_DATA_DIR = "sensor_data";
-    private static final String MAGNETOMETER_SENSOR_LOG_FILENAME = "magnetometer_sensor_data.csv";
-    private static final String ACCELEROMETER_SENSOR_LOG_FILENAME = "accelerometer_sensor_data.csv";
-    private static final String GYROSCOPE_SENSOR_LOG_FILENAME = "gyroscope_sensor_data.csv";
-    private static final String ROTATION_FUSED_SENSOR_LOG_FILENAME = "rotation_fused_sensor_data.csv";
-    private static final String GRAVITY_SENSOR_LOG_FILENAME = "gravity_sensor_data.csv";
-    private static final String GYROSCOPE_UNCALIBRATED_SENSOR_LOG_FILENAME = "gyroscope_uncalibrated_sensor_data.csv";
-    private static final String MAGNETOMETER_UNCALIBRATED_SENSOR_LOG_FILENAME = "magnetometer_uncalibrated_sensor_data.csv";
 
     private float mTravelledDistance = 0;
 
@@ -97,9 +89,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private Sensor mGravity;
     private Sensor mRotation;
     private Sensor mStepDetector;
-    private Sensor mGyroscope;
-    private Sensor mGyroscopeUncalibrated;
-    private Sensor mMagnetometerUncalibrated;
     private float[] mGravitySensorRawData;
     private float[] mGeomagneticSensorRawData;
     private static final float[] mRotationMatrix = new float[9];
@@ -127,14 +116,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final PointF mCurrentLocation = new PointF();
     private float mCurrentWallLength = 1;
     private boolean mAutoScanEnabled = false;
-    private CSVWriter mMagnetometerCsvWriter;
-    private CSVWriter mAccelerometerCsvWriter;
-    private CSVWriter mGyroscopeCsvWriter;
-    private CSVWriter mRotationFusedCsvWriter;
-    private CSVWriter mGravityCsvWriter;
-    private CSVWriter mGyroscopeUncalibratedCsvWriter;
-    private CSVWriter mMagnetometerUncalibratedCsvWriter;
-    private boolean mIsRecording;
+    private SensorDataGrabber mSensorDataGrabber;
 
     public MainActivity() {
         mTow.registerTugger(mWiFiTug);
@@ -169,13 +151,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         mWifiScanner = new WifiScanner(mWifiManager);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        mSensorDataGrabber = new SensorDataGrabber(mSensorManager);
+
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
         mRotation = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        mGyroscopeUncalibrated = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE_UNCALIBRATED);
-        mMagnetometerUncalibrated = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED);
         mStepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 
         setUiListeners();
@@ -294,16 +275,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabSensorRecording.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mIsRecording) {
-                    mIsRecording = false;
+                if (mSensorDataGrabber.isRecording()) {
+                    mSensorDataGrabber.setIsRecording(false);
                     calmFab(uiFabSensorRecording);
-                    stopListeningToSensors();
-                    closeSensorLogFiles();
+                    mSensorDataGrabber.stopListeningToSensors();
+                    mSensorDataGrabber.closeSensorLogFiles();
                 } else {
-                    mIsRecording = true;
+                    mSensorDataGrabber.setIsRecording(true);
                     exciteFab(uiFabSensorRecording);
-                    openSensorLogFiles();
-                    startListeningToSensors();
+                    mSensorDataGrabber.openSensorLogFiles();
+                    mSensorDataGrabber.startListeningToSensors();
                 }
             }
         });
@@ -626,15 +607,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // for the system's orientation sensor registered listeners
         mHaveRotation = mSensorManager.registerListener(this, mRotation, SensorManager.SENSOR_DELAY_GAME);
-//        if (!mHaveRotation) {
-//            mHaveGravity = mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME);
-//
-//            // if there is a gravity sensor we do not need the accelerometer
-//            if (!mHaveGravity) {
-//                mHaveAccelerometer = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
-//            }
-//            mHaveMagnetometer = mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
-//        }
+        if (!mHaveRotation) {
+            mHaveGravity = mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME);
+
+            // if there is a gravity sensor we do not need the accelerometer
+            if (!mHaveGravity) {
+                mHaveAccelerometer = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
+            }
+            mHaveMagnetometer = mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
+        }
 
         // Step detector
         mHaveStepDetector = mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_UI);
@@ -659,15 +640,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             oldSensorData[i] = newSensorData[i] + LOW_PASS_ALPHA * (oldSensorData[i] - newSensorData[i]);
         }
         return oldSensorData;
-    }
-
-    private String[] toStrings(float[] data) {
-        String[] strings = new String[data.length];
-        for (int i = 0; i < data.length; i++) {
-            strings[i] = String.valueOf(data[i]);
-        }
-
-        return strings;
     }
 
     @Override
@@ -696,137 +668,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    private FileWriter createWriter(String filename) {
-        ActivityCompat.requestPermissions(MainActivity.this,
-                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                1);
-
-        String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state) == false) {
-            return null;
-        }
-
-        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-        File sensorDir = new File(path, SENSOR_DATA_DIR);
-        sensorDir.mkdirs();
-
-        File file = new File(sensorDir, filename);
-        FileWriter writer = null;
-        try {
-            file.createNewFile();
-            writer = new FileWriter(file);
-        } catch (FileNotFoundException e) {
-             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return writer;
-    }
-
-    private void startListeningToSensors() {
-        mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
-        mSensorManager.registerListener(this, mMagnetometerUncalibrated, SensorManager.SENSOR_DELAY_GAME);
-        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
-        mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME);
-        mSensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_GAME);
-        mSensorManager.registerListener(this, mGyroscopeUncalibrated, SensorManager.SENSOR_DELAY_GAME);
-    }
-
-    private void stopListeningToSensors() {
-        mSensorManager.unregisterListener(this, mMagnetometer);
-        mSensorManager.unregisterListener(this, mMagnetometerUncalibrated);
-        mSensorManager.unregisterListener(this, mAccelerometer);
-        mSensorManager.unregisterListener(this, mGravity);
-        mSensorManager.unregisterListener(this, mGyroscope);
-        mSensorManager.unregisterListener(this, mGyroscopeUncalibrated);
-    }
-
-    private void openSensorLogFiles() {
-        mMagnetometerCsvWriter = new CSVWriter(createWriter(MAGNETOMETER_SENSOR_LOG_FILENAME), ',');
-        mAccelerometerCsvWriter = new CSVWriter(createWriter(ACCELEROMETER_SENSOR_LOG_FILENAME), ',');
-        mGyroscopeCsvWriter = new CSVWriter(createWriter(GYROSCOPE_SENSOR_LOG_FILENAME), ',');
-        mRotationFusedCsvWriter = new CSVWriter(createWriter(ROTATION_FUSED_SENSOR_LOG_FILENAME), ',');
-        mGravityCsvWriter = new CSVWriter(createWriter(GRAVITY_SENSOR_LOG_FILENAME), ',');
-        mGyroscopeUncalibratedCsvWriter = new CSVWriter(createWriter(GYROSCOPE_UNCALIBRATED_SENSOR_LOG_FILENAME), ',');
-        mMagnetometerUncalibratedCsvWriter = new CSVWriter(createWriter(MAGNETOMETER_UNCALIBRATED_SENSOR_LOG_FILENAME), ',');
-    }
-
-    private void closeSensorLogFiles() {
-        try {
-            mMagnetometerCsvWriter.flush();
-            mAccelerometerCsvWriter.flush();
-            mGyroscopeCsvWriter.flush();
-            mRotationFusedCsvWriter.flush();
-            mGravityCsvWriter.flush();
-            mGyroscopeUncalibratedCsvWriter.flush();
-            mMagnetometerUncalibratedCsvWriter.flush();
-
-            mMagnetometerCsvWriter.close();
-            mAccelerometerCsvWriter.close();
-            mGyroscopeCsvWriter.close();
-            mRotationFusedCsvWriter.close();
-            mGravityCsvWriter.close();
-            mGyroscopeUncalibratedCsvWriter.close();
-            mMagnetometerUncalibratedCsvWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public void onSensorChanged(SensorEvent event) {
         boolean gotRotationMatrix = false;
 
         switch (event.sensor.getType()) {
-            case Sensor.TYPE_GYROSCOPE_UNCALIBRATED: {
-                if (mIsRecording) {
-                    String[] row = toStrings(event.values);
-                    mGyroscopeUncalibratedCsvWriter.writeNext(row);
-                }
-            }
-            case Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED: {
-                if (mIsRecording) {
-                    String[] row = toStrings(event.values);
-                    mMagnetometerUncalibratedCsvWriter.writeNext(row);
-                }
-            }
-            case Sensor.TYPE_GYROSCOPE: {
-                if (mIsRecording) {
-                    String[] row = toStrings(event.values);
-                    mGyroscopeCsvWriter.writeNext(row);
-                }
-            }
             case Sensor.TYPE_GRAVITY: {
-                if (mIsRecording) {
-                    String[] row = toStrings(event.values);
-                    mGravityCsvWriter.writeNext(row);
-                }
                 mGravitySensorRawData = lowPass(event.values.clone(), mGravitySensorRawData);
                 break;
             }
             case Sensor.TYPE_ACCELEROMETER: {
-                if (mIsRecording) {
-                    String[] row = toStrings(event.values);
-                    mAccelerometerCsvWriter.writeNext(row);
-                }
                 mGravitySensorRawData = lowPass(event.values.clone(), mGravitySensorRawData);
                 break;
             }
             case Sensor.TYPE_MAGNETIC_FIELD: {
-                if (mIsRecording) {
-                    String[] row = toStrings(event.values);
-                    mMagnetometerCsvWriter.writeNext(row);
-                }
                 mGeomagneticSensorRawData = lowPass(event.values.clone(), mGeomagneticSensorRawData);
                 break;
             }
             case Sensor.TYPE_ROTATION_VECTOR: {
                 // calculate the rotation matrix
-                if (mIsRecording) {
-                    String[] row = toStrings(event.values);
-                    mRotationFusedCsvWriter.writeNext(row);
-                }
                 SensorManager.getRotationMatrixFromVector( mRotationMatrix, event.values );
                 gotRotationMatrix = true;
                 break;
