@@ -12,7 +12,7 @@ import java.util.Map;
  * This class is for debugging/development only!!
  */
 public class WifiMark extends Footprint {
-    private static int instanceNum = 0;
+    public static int instanceNum = 0;
     public final transient int instanceId = instanceNum++;
     public static final float MARK_RADIUS = 0.05f;
 

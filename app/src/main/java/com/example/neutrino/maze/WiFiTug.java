@@ -1,6 +1,7 @@
 package com.example.neutrino.maze;
 
 import android.graphics.PointF;
+import android.support.v4.util.Pair;
 
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.Wall;
@@ -19,6 +20,13 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.commons.math3.distribution.TDistribution;
+import org.apache.commons.math3.linear.DecompositionSolver;
+import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.QRDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 /**
  * Created by Greg Stein on 9/25/2016.
@@ -42,6 +50,8 @@ public class WiFiTug implements TugOfWar.ITugger {
     private static final int MAX_NUM_CANDIDATES = 5;
     private static final float MAX_SQRDISTANCE_TWO_WIFIMARKS = 100;   // maximum allowed sqrdistance
     private static final int RSS_OFFSET = 100;
+    public static final int MAX_REGRESSION_DISTANCE_BETWEEN_MARKS = 70;
+    public static final double MINIMUM_CORRELATION_COEFF = 0.2;
 
     public static List<WifiMark> centroidMarks = null;
     // 20% of total marks
@@ -542,5 +552,73 @@ public class WiFiTug implements TugOfWar.ITugger {
 
     public void setFingerprints(Iterable<WifiMark> fingerprints) {
 
+    }
+
+    public int lessThen10marks = 0;
+    public void getPositionStat(PointF pos) {
+        List<WifiMark> wifiMarks = getMarksWithSameAps(marks, currentFingerprint);
+        int fingerprintsNum = wifiMarks.size();
+        // Disable this method.
+        if (fingerprintsNum < 5) {
+            getPosition(pos);
+            lessThen10marks++;
+            return;
+        }
+
+        Pair<Float, Float> regressionCoeffs = getTrendlineCoeffs(wifiMarks);
+        float slope = regressionCoeffs.first;
+        float intercept = regressionCoeffs.second;
+
+
+        float[] distances = new float[fingerprintsNum];
+        for (int i = 0; i < fingerprintsNum; i++) {
+            distances[i] = difference(wifiMarks.get(i).getFingerprint(), currentFingerprint) * slope + intercept;
+        }
+
+        final float x1 = wifiMarks.get(0).getCenter().x;
+        final float y1 = wifiMarks.get(0).getCenter().y;
+        final float d1 = distances[0];
+        double[][] matrixData = new double[fingerprintsNum-1][2];
+        double[] vectorData = new double[fingerprintsNum-1];
+
+        for (int i = 1; i < fingerprintsNum; i++) {
+            final float xi = wifiMarks.get(i).getCenter().x;
+            final float yi = wifiMarks.get(i).getCenter().y;
+            final float di = distances[i];
+            matrixData[i-1][0] = 2 * (xi - x1);
+            matrixData[i-1][1] = 2 * (yi - y1);
+            vectorData[i-1] =  xi*xi - x1*x1 + yi*yi - y1*y1 + d1*d1 - di*di;
+        }
+        RealMatrix A = MatrixUtils.createRealMatrix(matrixData);
+        RealVector b = MatrixUtils.createRealVector(vectorData);
+        DecompositionSolver solver = new QRDecomposition(A).getSolver();
+        RealVector solution = solver.solve(b);
+        pos.set((float)solution.getEntry(0), (float)solution.getEntry(1));
+    }
+
+    private Pair<Float, Float> getTrendlineCoeffs(Iterable<WifiMark> fingerprints) {
+        Pair<Float, Float> regressionCoefficients = null;
+
+        SimpleRegression regression = new SimpleRegression();
+
+        for (WifiMark markA : fingerprints) {
+            for (WifiMark markB : fingerprints) {
+                final float difference = difference(markA.getFingerprint(), markB.getFingerprint());
+                final float distance = (float) Math.sqrt(distanceXYsqr(markA, markB));
+                if (distance < MAX_REGRESSION_DISTANCE_BETWEEN_MARKS) {
+//                    System.out.println(String.format("%.4f, %.4f", distance, difference));
+                    regression.addData(difference, distance);
+                }
+            }
+        }
+
+        double R2 = regression.getRSquare();
+//        if (R2 > MINIMUM_CORRELATION_COEFF) {
+            float interceptionPoint = (float) regression.getIntercept();
+            float slope = (float) regression.getSlope();
+            regressionCoefficients = new Pair<>(slope, interceptionPoint);
+//        }
+
+        return regressionCoefficients;
     }
 }

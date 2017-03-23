@@ -185,6 +185,7 @@ public class AcceptanceTests {
         LOGGER.info(String.format(Locale.getDefault(), "Stdev:    %.2f", stdev));
         LOGGER.info(String.format(Locale.getDefault(), "Total:    %d", distances.size()));
         LOGGER.info(String.format(Locale.getDefault(), "Bad:      %d", badFingerprints));
+        LOGGER.info(String.format(Locale.getDefault(), "<10 marks:%d", wifiTug.lessThen10marks));
 
         LOGGER.info("====================================================");
 
@@ -298,6 +299,35 @@ public class AcceptanceTests {
 
     }
 
+    @Test
+    public void likelihoodMatrix() {
+        logToFile("C:\\jopa\\likelihood_matrix.csv");
+
+        for (WifiMark mark1 : marks) {
+            String[] row = new String[WifiMark.instanceNum];
+
+            for (WifiMark mark2 : marks) {
+                final double distance = Math.sqrt(WiFiTug.distanceXYsqr(mark1, mark2));
+                float difference = Float.POSITIVE_INFINITY;
+
+                if (distance <= 70) {
+                    difference = WiFiTug.difference(mark1.getFingerprint(), mark2.getFingerprint());
+                }
+                row[mark2.instanceId] = String.valueOf(difference);
+            }
+
+            csvWriter.writeNext(row);
+        }
+
+        try {
+            csvWriter.flush();
+            csvWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     /**
      * The purpose of this test is to allow testing of positioning algorithm without involving the
      * device. The logic is quite simple and avoids mocking of tons of classes.
@@ -318,7 +348,7 @@ public class AcceptanceTests {
 
         PointF actualPosition = new PointF();
         PointF expectedPosition = fingerprintMark.getCenter();
-        wifiTug.getPosition(actualPosition);
+        wifiTug.getPositionStat(actualPosition);
         predictedLocations.put(fingerprintMark, actualPosition);
 
         // Calculate distance between expected and actual positions
