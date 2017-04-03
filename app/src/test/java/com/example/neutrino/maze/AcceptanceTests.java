@@ -325,7 +325,27 @@ public class AcceptanceTests {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    @Test
+    public void generateMarksTable() {
+        logToFile("C:\\jopa\\marks.csv");
+
+        String[] row = new String[3];
+        for (WifiMark mark : marks) {
+            row[0] = String.valueOf(mark.instanceId);
+            row[1] = String.valueOf(mark.getCenter().x);
+            row[2] = String.valueOf(mark.getCenter().y);
+
+            csvWriter.writeNext(row);
+        }
+
+        try {
+            csvWriter.flush();
+            csvWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
