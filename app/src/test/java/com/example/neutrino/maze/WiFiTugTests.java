@@ -44,7 +44,7 @@ public class WiFiTugTests {
         a.put("44-85-00-11-DA-EC", 75);
         b.put("44-85-00-11-DA-EC", 57);
 
-        float distance = WiFiTug.difference(a, b);
+        float distance = WiFiTug.dissimilarity(a, b);
 
         assertThat(distance, is(18f));
     }
@@ -55,8 +55,8 @@ public class WiFiTugTests {
         WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 75-100);
 
-        float distanceA_B = WiFiTug.difference(a, b);
-        float distanceB_A = WiFiTug.difference(b, a);
+        float distanceA_B = WiFiTug.dissimilarity(a, b);
+        float distanceB_A = WiFiTug.dissimilarity(b, a);
 
         assertThat(distanceA_B, is(75f));
         assertThat(distanceB_A, is(equalTo(distanceA_B)));
@@ -69,8 +69,8 @@ public class WiFiTugTests {
         a.put("44-85-00-11-DA-EC", 3-100);
         a.put("44-85-FF-11-DA-EC", 4-100);
 
-        float distanceA_B = WiFiTug.difference(a, b);
-        float distanceB_A = WiFiTug.difference(b, a);
+        float distanceA_B = WiFiTug.dissimilarity(a, b);
+        float distanceB_A = WiFiTug.dissimilarity(b, a);
 
         assertThat(distanceA_B, is(5f));
         assertThat(distanceB_A, is(equalTo(distanceA_B)));
@@ -86,8 +86,8 @@ public class WiFiTugTests {
         b.put("44-85-00-11-DA-EC", 75); // diff = 3
         b.put("44-85-FF-11-DA-EC", 68); // diff = 4
 
-        float distanceA_B = WiFiTug.difference(a, b);
-        float distanceB_A = WiFiTug.difference(b, a);
+        float distanceA_B = WiFiTug.dissimilarity(a, b);
+        float distanceB_A = WiFiTug.dissimilarity(b, a);
 
         assertThat(distanceA_B, is(5f));
         assertThat(distanceB_A, is(equalTo(distanceA_B)));
@@ -106,7 +106,7 @@ public class WiFiTugTests {
         b.put("44-85-00-11-DA-EC", 78);
         b.put("44-85-FF-11-DA-EC", 64);
 
-        // difference = 5 from b, 15 from a
+        // dissimilarity = 5 from b, 15 from a
         WiFiTug.WiFiFingerprint current = new WiFiTug.WiFiFingerprint();
         current.put("44-85-00-11-DA-EC", 75); // diff = 3
         current.put("44-85-FF-11-DA-EC", 68); // diff = 4

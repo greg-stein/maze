@@ -36,9 +36,9 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
  *  Implement addtoFingerPrintList() API - DONE
    *  Implement getMostProbablyTrajectory() API for last MovingAverage based on
    *  algorithm as was discussed:
-   *  for first scan find K most likely marks (based on difference)
+   *  for first scan find K most likely marks (based on dissimilarity)
    *  for each next scan - try to append K most likely to the previous list and discard
-   *  the impossible ones (based on maximum difference requirement). Keep at most the top K.
+   *  the impossible ones (based on maximum dissimilarity requirement). Keep at most the top K.
    *  Continue until full trajectory exists.
    *  Play with: K, MaxDistThr, ListLength...
  */
@@ -118,7 +118,7 @@ public class WiFiTug implements TugOfWar.ITugger {
         int nMarks = marks.size();
         float distance = 0f;
         for (Fingerprint mark: marks) {
-            distance += difference(mark.getFingerprint(),fingerprint);
+            distance += dissimilarity(mark.getFingerprint(),fingerprint);
         }
         return (distance /= nMarks);
     }
@@ -128,7 +128,7 @@ public class WiFiTug implements TugOfWar.ITugger {
         float distance = 0f;
         float[] distanceArray = new float[nMarks];
         for (int i = 0 ; i < nMarks; i++) {
-            distanceArray[i] = difference(marks.get(i).getFingerprint(),fingerprint);
+            distanceArray[i] = dissimilarity(marks.get(i).getFingerprint(),fingerprint);
             distance += distanceArray[i];
         }
         Arrays.sort(distanceArray);
@@ -154,7 +154,7 @@ public class WiFiTug implements TugOfWar.ITugger {
                 }
 
                 if (visible) {
-                    float difference = difference(outerMark.getFingerprint(), innerMark.getFingerprint());
+                    float difference = dissimilarity(outerMark.getFingerprint(), innerMark.getFingerprint());
                     float distance = (float) Math.sqrt(
                             Math.pow(outerMark.getCenter().x - innerMark.getCenter().x, 2) +
                                     Math.pow(outerMark.getCenter().y - innerMark.getCenter().y, 2));
@@ -195,14 +195,14 @@ public class WiFiTug implements TugOfWar.ITugger {
     }
 
     // Calculates euclidean distance in Decibel space
-    public static float difference(WiFiFingerprint actual, WiFiFingerprint reference) {
+    public static float dissimilarity(WiFiFingerprint actual, WiFiFingerprint reference) {
         float difference = 0.0f;
         int distanceSq = 0;
         int bssidLevelDiff;
 
         if (actual == null || reference == null) return Float.MAX_VALUE;
 
-        // Calculate difference between signal strengths
+        // Calculate dissimilarity between signal strengths
         for (String mac : actual.keySet()) {
             if (reference.containsKey(mac)) {
                 bssidLevelDiff = actual.get(mac) - reference.get(mac);
@@ -259,7 +259,7 @@ public class WiFiTug implements TugOfWar.ITugger {
 
         for(Fingerprint mark: fingerprints) {
             WiFiFingerprint markWiFiFingerprint = mark.getFingerprint();
-            float distance = difference(fingerprint, markWiFiFingerprint);
+            float distance = dissimilarity(fingerprint, markWiFiFingerprint);
 
             List<Fingerprint> sameDistanceMarks = sortedMarks.get(distance);
             if (sameDistanceMarks == null) {
@@ -408,7 +408,7 @@ public class WiFiTug implements TugOfWar.ITugger {
 
             for (Fingerprint mark : fingerprints) {
                 WiFiFingerprint wiFiFingerprint = mark.getFingerprint();
-                float distance = difference(currentWiFiFingerprint, wiFiFingerprint);
+                float distance = dissimilarity(currentWiFiFingerprint, wiFiFingerprint);
                 weight = 1 / distance;
 
                 x += weight * mark.getCenter().x;
@@ -444,9 +444,9 @@ public class WiFiTug implements TugOfWar.ITugger {
             List<Fingerprint> fingerprints = getMarksWithSameAps(marks, fingerprint);
             maxDistance = 0; minDistance = Float.MAX_VALUE;
 
-            // First phase - get min and max difference
+            // First phase - get min and max dissimilarity
             for (Fingerprint mark: fingerprints) {
-                float difference = difference(fingerprint, mark.getFingerprint());
+                float difference = dissimilarity(fingerprint, mark.getFingerprint());
                 if (difference < minDistance)
                     minDistance = difference;
                 if (difference > maxDistance)
@@ -458,9 +458,9 @@ public class WiFiTug implements TugOfWar.ITugger {
             candidatesThisRound.clear();
             candidatePairs.clear();
 
-            // Second phase - take only viable candidates (from top CANDIDATE_PERCENTAGE of lowest difference)
+            // Second phase - take only viable candidates (from top CANDIDATE_PERCENTAGE of lowest dissimilarity)
             for (Fingerprint mark: fingerprints) {
-                float difference = difference(fingerprint, mark.getFingerprint());
+                float difference = dissimilarity(fingerprint, mark.getFingerprint());
                 if (difference <= maxViableDistance) {
                     candidatesThisRound.add(new LinkableWifiMark(mark, difference));
                 }
@@ -571,7 +571,7 @@ public class WiFiTug implements TugOfWar.ITugger {
 
         float[] distances = new float[fingerprintsNum];
         for (int i = 0; i < fingerprintsNum; i++) {
-            distances[i] = difference(fingerprints.get(i).getFingerprint(), currentWiFiFingerprint) * slope + intercept;
+            distances[i] = dissimilarity(fingerprints.get(i).getFingerprint(), currentWiFiFingerprint) * slope + intercept;
         }
 
         final float x1 = fingerprints.get(0).getCenter().x;
@@ -602,10 +602,10 @@ public class WiFiTug implements TugOfWar.ITugger {
 
         for (Fingerprint markA : fingerprints) {
             for (Fingerprint markB : fingerprints) {
-                final float difference = difference(markA.getFingerprint(), markB.getFingerprint());
+                final float difference = dissimilarity(markA.getFingerprint(), markB.getFingerprint());
                 final float distance = (float) Math.sqrt(distanceXYsqr(markA, markB));
                 if (distance < MAX_REGRESSION_DISTANCE_BETWEEN_MARKS) {
-//                    System.out.println(String.format("%.4f, %.4f", distance, difference));
+//                    System.out.println(String.format("%.4f, %.4f", distance, dissimilarity));
                     regression.addData(difference, distance);
                 }
             }

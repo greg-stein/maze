@@ -284,9 +284,9 @@ public class AcceptanceTests {
 
         for (Fingerprint mark1 : marks) {
             for (Fingerprint mark2 : marks) {
-                final float likelihood = WiFiTug.difference(mark1.getFingerprint(), mark2.getFingerprint());
+                final float dissimilarity = WiFiTug.dissimilarity(mark1.getFingerprint(), mark2.getFingerprint());
                 final double  distance = Math.sqrt(WiFiTug.distanceXYsqr(mark1, mark2));
-                csvWriter.writeNext(new String[] {String.valueOf(mark1.instanceId), String.valueOf(mark2.instanceId), String.valueOf(distance), String.valueOf(likelihood)});
+                csvWriter.writeNext(new String[] {String.valueOf(mark1.instanceId), String.valueOf(mark2.instanceId), String.valueOf(distance), String.valueOf(dissimilarity)});
             }
         }
 
@@ -311,7 +311,7 @@ public class AcceptanceTests {
                 float difference = Float.POSITIVE_INFINITY;
 
                 if (distance <= 70) {
-                    difference = WiFiTug.difference(mark1.getFingerprint(), mark2.getFingerprint());
+                    difference = WiFiTug.dissimilarity(mark1.getFingerprint(), mark2.getFingerprint());
                 }
                 row[mark2.instanceId] = String.valueOf(difference);
             }
