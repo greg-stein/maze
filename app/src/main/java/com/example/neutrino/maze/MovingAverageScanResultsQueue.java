@@ -2,6 +2,7 @@
 
 import android.net.wifi.ScanResult;
 
+import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.Map;
  * Created by Greg Stein on 10/25/2016.
  */
 public class MovingAverageScanResultsQueue extends MovingAverageQueueBase<List<ScanResult>> {
-    private WiFiTug.Fingerprint mSumFingerprint = new WiFiTug.Fingerprint();
+    private WiFiFingerprint mSumFingerprint = new WiFiFingerprint();
     // Maintain map of counters per MAC, counter++ in case scanResult.level present
     private Map<String, Integer> counters = new HashMap<>();
 
@@ -51,7 +52,7 @@ public class MovingAverageScanResultsQueue extends MovingAverageQueueBase<List<S
         }
     }
 
-    public WiFiTug.Fingerprint getSumFingerprint() {
+    public WiFiFingerprint getSumFingerprint() {
         return mSumFingerprint;
     }
     public Map<String, Integer> getCounters() { return counters; }

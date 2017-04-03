@@ -13,6 +13,7 @@ import com.example.neutrino.maze.FloorPlanRenderer.IFloorplanLoadCompleteListene
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.WifiMark;
+import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
 
 import java.util.List;
 
@@ -281,8 +282,8 @@ public class FloorPlanView extends GLSurfaceView {
         this.mNewLocationListener = listener;
     }
 
-    public void placeWiFiMarkAt(PointF center, WiFiTug.Fingerprint fingerprint) {
-        mRenderer.putMark(center.x, center.y, fingerprint);
+    public void placeWiFiMarkAt(PointF center, WiFiFingerprint wiFiFingerprint) {
+        mRenderer.putMark(center.x, center.y, wiFiFingerprint);
     }
 
     public void clearFloorPlan() {

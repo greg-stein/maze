@@ -39,8 +39,8 @@ public class WiFiTugTests {
 
     @Test
     public void oneSsidBothExistingTest() {
-        WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
-        WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
+        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 75);
         b.put("44-85-00-11-DA-EC", 57);
 
@@ -51,8 +51,8 @@ public class WiFiTugTests {
 
     @Test
     public void oneSsidExistsInSingleFingerprintTest() {
-        WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
-        WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
+        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 75-100);
 
         float distanceA_B = WiFiTug.difference(a, b);
@@ -64,8 +64,8 @@ public class WiFiTugTests {
 
     @Test
     public void twoSsidExistInSingleFingerprintTest() {
-        WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
-        WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
+        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 3-100);
         a.put("44-85-FF-11-DA-EC", 4-100);
 
@@ -78,8 +78,8 @@ public class WiFiTugTests {
 
     @Test
     public void twoSsidExistInBothFingerprintTest() {
-        WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
-        WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
+        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 78);
         a.put("44-85-FF-11-DA-EC", 64);
 
@@ -98,23 +98,23 @@ public class WiFiTugTests {
         WiFiTug wiFiTug = new WiFiTug();
         wiFiTug.setClosestMarksPercentage(1.00f); // 100% - use all of the given reference points
 
-        WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 60);
         a.put("44-85-FF-11-DA-EC", 68);
 
-        WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
         b.put("44-85-00-11-DA-EC", 78);
         b.put("44-85-FF-11-DA-EC", 64);
 
         // difference = 5 from b, 15 from a
-        WiFiTug.Fingerprint current = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint current = new WiFiTug.WiFiFingerprint();
         current.put("44-85-00-11-DA-EC", 75); // diff = 3
         current.put("44-85-FF-11-DA-EC", 68); // diff = 4
 
         wiFiTug.marks = new ArrayList<>();
         wiFiTug.marks.add(new WifiMark(-1, 0, a));
         wiFiTug.marks.add(new WifiMark(1, 2, b));
-        wiFiTug.currentFingerprint = current;
+        wiFiTug.currentWiFiFingerprint = current;
         wiFiTug.walls = new ArrayList<>();
 
         PointF position = new PointF();
@@ -126,47 +126,47 @@ public class WiFiTugTests {
 
     @Test
     public void getSimilarMarksTest() {
-        WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 1);
         a.put("44-85-FF-11-DA-EC", 0);
 
-        WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
         b.put("44-85-00-11-DA-EC", 1);
         b.put("44-85-FF-11-DA-EC", 1);
 
-        WiFiTug.Fingerprint c = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint c = new WiFiTug.WiFiFingerprint();
         c.put("44-85-00-11-DA-EC", 1);
         c.put("44-85-FF-11-DA-EC", 2);
 
-        WiFiTug.Fingerprint d = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint d = new WiFiTug.WiFiFingerprint();
         d.put("44-85-00-11-DA-EC", 2);
         d.put("44-85-FF-11-DA-EC", 2);
 
-        WiFiTug.Fingerprint e = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint e = new WiFiTug.WiFiFingerprint();
         e.put("44-85-00-11-DA-EC", 2);
         e.put("44-85-FF-11-DA-EC", 3);
 
-        WiFiTug.Fingerprint f = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint f = new WiFiTug.WiFiFingerprint();
         f.put("44-85-00-11-DA-EC", 2);
         f.put("44-85-FF-11-DA-EC", 4);
 
-        WiFiTug.Fingerprint g = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint g = new WiFiTug.WiFiFingerprint();
         g.put("44-85-00-11-DA-EC", 4);
         g.put("44-85-FF-11-DA-EC", 3);
 
-        WiFiTug.Fingerprint h = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint h = new WiFiTug.WiFiFingerprint();
         h.put("44-85-00-11-DA-EC", 4);
         h.put("44-85-FF-11-DA-EC", 4);
 
-        WiFiTug.Fingerprint i = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint i = new WiFiTug.WiFiFingerprint();
         i.put("44-85-00-11-DA-EC", 4);
         i.put("44-85-FF-11-DA-EC", 5);
 
-        WiFiTug.Fingerprint j = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint j = new WiFiTug.WiFiFingerprint();
         j.put("44-85-00-11-DA-EC", 5);
         j.put("44-85-FF-11-DA-EC", 5);
 
-        WiFiTug.Fingerprint fingerprint = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint fingerprint = new WiFiTug.WiFiFingerprint();
         fingerprint.put("44-85-00-11-DA-EC", 0); // diff = 3
         fingerprint.put("44-85-FF-11-DA-EC", 0); // diff = 4
 
@@ -186,7 +186,7 @@ public class WiFiTugTests {
 
         // add another 20 marks farther than those ten
         for (int x = 0; x < 20; x++) {
-            WiFiTug.Fingerprint fingerprint1 = new WiFiTug.Fingerprint();
+            WiFiTug.WiFiFingerprint fingerprint1 = new WiFiTug.WiFiFingerprint();
             fingerprint1.put("44-85-00-11-DA-EC", (int) (Math.random()*50 + 20));
             fingerprint1.put("44-85-FF-11-DA-EC", (int) (Math.random()*50 + 20));
             marks.add(new WifiMark(0, 0, fingerprint1));
@@ -211,23 +211,23 @@ public class WiFiTugTests {
 
     @Test
     public void eliminateOutliersTest() {
-        WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 5);
         a.put("44-85-FF-11-DA-EC", 5);
 
-        WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
         b.put("44-85-00-11-DA-EC", 5);
         b.put("44-85-FF-11-DA-EC", 3);
 
-        WiFiTug.Fingerprint c = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint c = new WiFiTug.WiFiFingerprint();
         c.put("44-85-00-11-DA-EC", 4);
         c.put("44-85-FF-11-DA-EC", 5);
 
-        WiFiTug.Fingerprint d = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint d = new WiFiTug.WiFiFingerprint();
         d.put("44-85-00-11-DA-EC", 0);
         d.put("44-85-FF-11-DA-EC", 0);
 
-        WiFiTug.Fingerprint e = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint e = new WiFiTug.WiFiFingerprint();
         e.put("44-85-00-11-DA-EC", -3);
         e.put("44-85-FF-11-DA-EC", -3);
 
@@ -250,23 +250,23 @@ public class WiFiTugTests {
 
     @Test
     public void eliminateOutliersNegativeTest() {
-        WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 5);
         a.put("44-85-FF-11-DA-EC", 5);
 
-        WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
         b.put("44-85-00-11-DA-EC", 5);
         b.put("44-85-FF-11-DA-EC", 3);
 
-        WiFiTug.Fingerprint c = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint c = new WiFiTug.WiFiFingerprint();
         c.put("44-85-00-11-DA-EC", 4);
         c.put("44-85-FF-11-DA-EC", 5);
 
-        WiFiTug.Fingerprint d = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint d = new WiFiTug.WiFiFingerprint();
         d.put("44-85-00-11-DA-EC", 0);
         d.put("44-85-FF-11-DA-EC", 0);
 
-        WiFiTug.Fingerprint e = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint e = new WiFiTug.WiFiFingerprint();
         e.put("44-85-00-11-DA-EC", -3);
         e.put("44-85-FF-11-DA-EC", -3);
 
@@ -292,7 +292,7 @@ public class WiFiTugTests {
     @Test
     public void eliminateInvisiblesSimpleTest() {
         ArrayList<WifiMark> marks = new ArrayList<>();
-        marks.add(new WifiMark(-1, 0, new WiFiTug.Fingerprint()));
+        marks.add(new WifiMark(-1, 0, new WiFiTug.WiFiFingerprint()));
         ArrayList<Wall> walls = new ArrayList<>();
         walls.add(new Wall(0, 1, 0, -1));
 
@@ -304,7 +304,7 @@ public class WiFiTugTests {
     @Test
     public void eliminateInvisiblesSimpleNegativeTest() {
         ArrayList<WifiMark> marks = new ArrayList<>();
-        marks.add(new WifiMark(0.5f, 0, new WiFiTug.Fingerprint()));
+        marks.add(new WifiMark(0.5f, 0, new WiFiTug.WiFiFingerprint()));
         ArrayList<Wall> walls = new ArrayList<>();
         walls.add(new Wall(0, 1, 0, -1));
 
@@ -317,7 +317,7 @@ public class WiFiTugTests {
     @Test
     public void eliminateInvisiblesTest() {
         ArrayList<WifiMark> marks = new ArrayList<>();
-        marks.add(new WifiMark(-1, 0, new WiFiTug.Fingerprint()));
+        marks.add(new WifiMark(-1, 0, new WiFiTug.WiFiFingerprint()));
         ArrayList<Wall> walls = new ArrayList<>();
         walls.add(new Wall(0, 1, 0, -1));
         walls.add(new Wall(0, -0.5f, 2, -0.5f));
@@ -330,7 +330,7 @@ public class WiFiTugTests {
     @Test
     public void eliminateInvisiblesNegativeTest() {
         ArrayList<WifiMark> marks = new ArrayList<>();
-        marks.add(new WifiMark(0.5f, 0, new WiFiTug.Fingerprint()));
+        marks.add(new WifiMark(0.5f, 0, new WiFiTug.WiFiFingerprint()));
         ArrayList<Wall> walls = new ArrayList<>();
         walls.add(new Wall(0, 1, 0, -1));
         walls.add(new Wall(0, -0.5f, 2, -0.5f));
@@ -343,25 +343,25 @@ public class WiFiTugTests {
 
     @Test
     public void getMarksWithSameApsTest() {
-        WiFiTug.Fingerprint a = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 0); // 00
         a.put("44-85-FF-11-DA-EC", 0); // FF
 
-        WiFiTug.Fingerprint b = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
         b.put("44-85-00-11-DA-EC", 0); // 00
         b.put("44-85-FF-11-DA-EC", 0); // FF
         b.put("44-85-AA-11-DA-EC", 0); // AA
 
-        WiFiTug.Fingerprint c = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint c = new WiFiTug.WiFiFingerprint();
         c.put("44-85-00-11-DA-EC", 0); // 00
         c.put("44-85-FF-11-DA-EC", 0); // FF
         c.put("44-85-AA-11-DA-EC", 0); // AA
 
-        WiFiTug.Fingerprint d = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint d = new WiFiTug.WiFiFingerprint();
         d.put("44-85-00-11-DA-EC", 0); // 00
         d.put("44-85-BB-11-DA-EC", 0); // BB
 
-        WiFiTug.Fingerprint e = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint e = new WiFiTug.WiFiFingerprint();
         e.put("44-85-00-11-DA-EC", 0); // 00
         e.put("44-85-BB-11-DA-EC", 0); // BB
         e.put("44-85-FF-11-DA-EC", 0); // FF
@@ -375,7 +375,7 @@ public class WiFiTugTests {
         marks.add(dMark = new WifiMark(0, 0, d));
         marks.add(eMark = new WifiMark(0, 0, e));
 
-        WiFiTug.Fingerprint fingerprint1 = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint fingerprint1 = new WiFiTug.WiFiFingerprint();
         fingerprint1.put("44-85-00-11-DA-EC", 0); // 00
         fingerprint1.put("44-85-FF-11-DA-EC", 0); // FF
 
@@ -388,7 +388,7 @@ public class WiFiTugTests {
 
 // --------------------------------------------------------
 
-        WiFiTug.Fingerprint fingerprint2 = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint fingerprint2 = new WiFiTug.WiFiFingerprint();
         fingerprint2.put("44-85-00-11-DA-EC", 0); // 00
         fingerprint2.put("44-85-BB-11-DA-EC", 0); // BB
 
@@ -401,7 +401,7 @@ public class WiFiTugTests {
 
 // --------------------------------------------------------
 
-        WiFiTug.Fingerprint fingerprint3 = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint fingerprint3 = new WiFiTug.WiFiFingerprint();
         fingerprint3.put("44-85-00-11-DA-EC", 0); // 00
         fingerprint3.put("44-85-BB-11-DA-EC", 0); // BB
         fingerprint3.put("44-85-FF-11-DA-EC", 0); // FF
@@ -415,7 +415,7 @@ public class WiFiTugTests {
 
 // --------------------------------------------------------
 
-        WiFiTug.Fingerprint fingerprint4 = new WiFiTug.Fingerprint();
+        WiFiTug.WiFiFingerprint fingerprint4 = new WiFiTug.WiFiFingerprint();
         fingerprint4.put("44-85-00-11-DA-EC", 0); // 00
         fingerprint4.put("44-85-BB-11-DA-EC", 0); // BB
         fingerprint4.put("44-85-FF-11-DA-EC", 0); // FF

@@ -13,6 +13,7 @@ import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.LocationMark;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
+import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -452,7 +453,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         addPrimitive(footprint);
     }
 
-    public void putMark(final float x, final float y, final WiFiTug.Fingerprint wifiFingerprint) {
+    public void putMark(final float x, final float y, final WiFiFingerprint wifiFingerprint) {
         WifiMark mark = new WifiMark(x, y, wifiFingerprint);
         addPrimitive(mark);
     }

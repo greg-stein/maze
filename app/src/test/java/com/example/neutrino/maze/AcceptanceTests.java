@@ -139,7 +139,7 @@ public class AcceptanceTests {
         wifiTug.currentHistory = new WiFiTug.FingerprintHistory(10);
 
         WifiMark standingMark = marks.get(marks.size() / 2);
-        WiFiTug.Fingerprint standingPrint = standingMark.getFingerprint();
+        WiFiTug.WiFiFingerprint standingPrint = standingMark.getFingerprint();
         for (int i = 0; i < 10; i++) {
             wifiTug.addToFingerprintHistory(standingPrint);
         }
@@ -173,7 +173,7 @@ public class AcceptanceTests {
 
             final PointF expected = mark.getCenter();
             final PointF predicted = predictedLocations.get(mark);
-            LOGGER.info(String.format(Locale.getDefault(), "Fingerprint: %.2f %.2f Predicted: %.2f %.2f Error: %g", expected.x, expected.y, predicted.x, predicted.y, distancesArray[i]));
+            LOGGER.info(String.format(Locale.getDefault(), "WiFiFingerprint: %.2f %.2f Predicted: %.2f %.2f Error: %g", expected.x, expected.y, predicted.x, predicted.y, distancesArray[i]));
         }
 
         double mean = StatUtils.mean(distancesArray);
@@ -215,7 +215,7 @@ public class AcceptanceTests {
         int macIndex = 0;
 
         for (WifiMark mark : marks) {
-            final WiFiTug.Fingerprint fingerprint = mark.getFingerprint();
+            final WiFiTug.WiFiFingerprint fingerprint = mark.getFingerprint();
             for (String mac : fingerprint.keySet()) {
                 if (!macIndices.containsKey(mac)) {
                     macIndices.put(mac, macIndex++);
@@ -258,7 +258,7 @@ public class AcceptanceTests {
         int macIndex = 0;
 
         for (WifiMark mark : marks) {
-            final WiFiTug.Fingerprint fingerprint = mark.getFingerprint();
+            final WiFiTug.WiFiFingerprint fingerprint = mark.getFingerprint();
             for (String mac : fingerprint.keySet()) {
                 if (!macIndices.containsKey(mac)) {
                     macIndices.put(mac, macIndex);
@@ -364,7 +364,7 @@ public class AcceptanceTests {
     public void wifiPositioningAcceptanceTest(int markIndex) {
         fingerprintMark = marks.remove(markIndex);
         // Mimic scanned fingerprint
-        wifiTug.currentFingerprint = fingerprintMark.getFingerprint();
+        wifiTug.currentWiFiFingerprint = fingerprintMark.getFingerprint();
 
         PointF actualPosition = new PointF();
         PointF expectedPosition = fingerprintMark.getCenter();

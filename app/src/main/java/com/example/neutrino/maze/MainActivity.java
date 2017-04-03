@@ -40,6 +40,7 @@ import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.WifiMark;
+import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
 import com.example.neutrino.maze.floorplan.vectorization.FloorplanVectorizer;
 
 import java.io.File;
@@ -338,15 +339,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         mWifiScanner.setFingerprintAvailableListener(new WifiScanner.IFingerprintAvailableListener() {
             @Override
-            public void onFingerprintAvailable(WiFiTug.Fingerprint fingerprint) {
+            public void onFingerprintAvailable(WiFiFingerprint wiFiFingerprint) {
                 if (!mPlacedMarkAtCurrentLocation) {
-                    uiFloorPlanView.placeWiFiMarkAt(mCurrentLocation, fingerprint);
+                    uiFloorPlanView.placeWiFiMarkAt(mCurrentLocation, wiFiFingerprint);
                     // TODO: There is costly stupidity in these two lines:
                     mWiFiTug.marks = uiFloorPlanView.getPrimitives(WifiMark.class);
                     mWiFiTug.walls = uiFloorPlanView.getPrimitives(Wall.class);
                     mPlacedMarkAtCurrentLocation = true;
                 }
-                mWiFiTug.currentFingerprint = fingerprint;
+                mWiFiTug.currentWiFiFingerprint = wiFiFingerprint;
             }
         });
 
