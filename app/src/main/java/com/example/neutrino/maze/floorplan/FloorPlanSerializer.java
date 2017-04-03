@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class FloorPlanSerializer {
 
-    private static final Type TYPE = (new TypeToken<List<FloorPlanPrimitiveBase>>() {}).getType();
+    private static final Type TYPE = (new TypeToken<List<Object>>() {}).getType();
 
     public static String serializeFloorPlan(List<IFloorPlanPrimitive> floorPlan) {
         GsonBuilder builder = new GsonBuilder();
@@ -47,19 +47,19 @@ public class FloorPlanSerializer {
     /**
      * Created by Greg Stein on 9/25/2016.
      */
-    public static class FloorPlanAdapter implements JsonSerializer<List<FloorPlanPrimitiveBase>>,
-            JsonDeserializer<List<FloorPlanPrimitiveBase>> {
+    public static class FloorPlanAdapter implements JsonSerializer<List<Object>>,
+            JsonDeserializer<List<Object>> {
 
         private static final String CLASSNAME = "CLASSNAME";
         private static final String INSTANCE = "INSTANCE";
 
         @Override
-        public JsonElement serialize(List<FloorPlanPrimitiveBase> src, Type typeOfSrc,
+        public JsonElement serialize(List<Object> src, Type typeOfSrc,
                                      JsonSerializationContext context) {
             JsonArray array = new JsonArray();
 
-            for (FloorPlanPrimitiveBase primitiveBase : src) {
-                if (primitiveBase.isRemoved()) continue; // skip removed primitives
+            for (Object primitiveBase : src) {
+//                if (primitiveBase.isRemoved()) continue; // skip removed primitives
 
                 JsonObject primitiveJson = new JsonObject();
 
@@ -75,9 +75,9 @@ public class FloorPlanSerializer {
         }
 
         @Override
-        public List<FloorPlanPrimitiveBase> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public List<Object> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             final String packageName = IFloorPlanPrimitive.class.getPackage().getName();
-            List<FloorPlanPrimitiveBase> result = new ArrayList<>();
+            List<Object> result = new ArrayList<>();
             JsonArray jsonArray = json.getAsJsonArray();
 
             for (JsonElement element : jsonArray) {
