@@ -8,7 +8,7 @@ import java.util.List;
 
 public class FloorPlan {
     private List<IFloorPlanPrimitive> mSketch;
-    private List<WifiMark> mFingerprints;
+    private List<Fingerprint> mFingerprints;
     private List<Tag> mTags;
     private List<String> mBuildingNames;
     private String mFloorName;

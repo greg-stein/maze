@@ -3,9 +3,9 @@ package com.example.neutrino.maze;
 import android.graphics.PointF;
 import android.support.v4.util.Pair;
 
+import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.floorplan.WifiMark;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ public class WiFiTug implements TugOfWar.ITugger {
     public static final int MAX_REGRESSION_DISTANCE_BETWEEN_MARKS = 70;
     public static final double MINIMUM_CORRELATION_COEFF = 0.2;
 
-    public static List<WifiMark> centroidMarks = null;
+    public static List<Fingerprint> centroidMarks = null;
     // 20% of total marks
     public static final float CLOSEST_MARKS_PERCENTAGE = 0.2f;
     private static final int CENTROID_OPT_ITERATIONS = 3;
@@ -104,7 +104,7 @@ public class WiFiTug implements TugOfWar.ITugger {
         }
     }
 
-    public List<WifiMark> marks; //TODO: no encapsulation!
+    public List<Fingerprint> marks; //TODO: no encapsulation!
     public List<Wall> walls; //TODO: no encapsulation!
     public WiFiFingerprint currentWiFiFingerprint = null;
     public FingerprintHistory currentHistory = null;
@@ -117,7 +117,7 @@ public class WiFiTug implements TugOfWar.ITugger {
     public float getAverageDistanceTo(WiFiFingerprint fingerprint) {
         int nMarks = marks.size();
         float distance = 0f;
-        for (WifiMark mark: marks) {
+        for (Fingerprint mark: marks) {
             distance += difference(mark.getFingerprint(),fingerprint);
         }
         return (distance /= nMarks);
@@ -141,8 +141,8 @@ public class WiFiTug implements TugOfWar.ITugger {
     public String buildWifiTable() {
         StringBuilder table = new StringBuilder(10 * marks.size() * marks.size());
 
-        for(WifiMark outerMark : marks) {
-            for (WifiMark innerMark : marks) {
+        for(Fingerprint outerMark : marks) {
+            for (Fingerprint innerMark : marks) {
                 boolean visible = true;
                 if (walls != null) {
                     for (Wall wall : walls) {
@@ -169,7 +169,7 @@ public class WiFiTug implements TugOfWar.ITugger {
     public String buildFingerprintTable() {
         StringBuilder table = new StringBuilder();
 
-        for(WifiMark mark : marks) {
+        for(Fingerprint mark : marks) {
             for(Map.Entry<String, Integer> entry : mark.getFingerprint().entrySet()) {
                 table.append(entry.getKey()).append(", ") // MAC
                         .append(mark.getCenter().x).append(", ")
@@ -253,15 +253,15 @@ public class WiFiTug implements TugOfWar.ITugger {
         return sum / Math.sqrt(lenProduct);
     }
 
-    public static List<WifiMark> getSimilarMarks(List<WifiMark> wifiMarks, WiFiFingerprint fingerprint, float percentage) {
-        NavigableMap<Float, List<WifiMark>> sortedMarks = new TreeMap<>(); // sorted by distance to current fingerprint
-        List<WifiMark> result = new ArrayList<>();
+    public static List<Fingerprint> getSimilarMarks(List<Fingerprint> fingerprints, WiFiFingerprint fingerprint, float percentage) {
+        NavigableMap<Float, List<Fingerprint>> sortedMarks = new TreeMap<>(); // sorted by distance to current fingerprint
+        List<Fingerprint> result = new ArrayList<>();
 
-        for(WifiMark mark: wifiMarks) {
+        for(Fingerprint mark: fingerprints) {
             WiFiFingerprint markWiFiFingerprint = mark.getFingerprint();
             float distance = difference(fingerprint, markWiFiFingerprint);
 
-            List<WifiMark> sameDistanceMarks = sortedMarks.get(distance);
+            List<Fingerprint> sameDistanceMarks = sortedMarks.get(distance);
             if (sameDistanceMarks == null) {
                 sameDistanceMarks = new ArrayList<>();
                 sortedMarks.put(distance, sameDistanceMarks);
@@ -269,14 +269,14 @@ public class WiFiTug implements TugOfWar.ITugger {
             sameDistanceMarks.add(mark);
         }
 
-        int marksNum = (int) Math.ceil(wifiMarks.size() * percentage);
-        int availableMinimumMarks = Math.min(MINIMUM_WIFI_MARKS, wifiMarks.size());
+        int marksNum = (int) Math.ceil(fingerprints.size() * percentage);
+        int availableMinimumMarks = Math.min(MINIMUM_WIFI_MARKS, fingerprints.size());
         marksNum = Math.max(marksNum, availableMinimumMarks);
 
-        Map.Entry<Float, List<WifiMark>> entry = sortedMarks.firstEntry();
+        Map.Entry<Float, List<Fingerprint>> entry = sortedMarks.firstEntry();
         while(result.size() < marksNum) {
             final int remainingMarks = marksNum - result.size();
-            final List<WifiMark> marks = entry.getValue();
+            final List<Fingerprint> marks = entry.getValue();
 
             if (marks.size() >= remainingMarks)
                 result.addAll(marks.subList(0, remainingMarks));
@@ -290,10 +290,10 @@ public class WiFiTug implements TugOfWar.ITugger {
     }
 
     // Returns centroid
-    public static boolean eliminateOutliers(List<WifiMark> wifiMarks, PointF mean) {
+    public static boolean eliminateOutliers(List<Fingerprint> fingerprints, PointF mean) {
         final float ALPHA = 0.05f;
 
-        int n = wifiMarks.size();
+        int n = fingerprints.size();
 
         if (n < 3) return false;
 
@@ -303,7 +303,7 @@ public class WiFiTug implements TugOfWar.ITugger {
 
         // Centroid calculation
         mean.set(0, 0);
-        for (WifiMark mark : wifiMarks) {
+        for (Fingerprint mark : fingerprints) {
             mean.x += mark.getCenter().x;
             mean.y += mark.getCenter().y;
         }
@@ -312,7 +312,7 @@ public class WiFiTug implements TugOfWar.ITugger {
 
         // Find standard deviation
         float standardDeviation = 0;
-        for (WifiMark mark : wifiMarks) {
+        for (Fingerprint mark : fingerprints) {
             standardDeviation += Math.pow(mark.getCenter().x - mean.x, 2) + Math.pow(mark.getCenter().y - mean.y, 2);
         }
         standardDeviation = (float) Math.sqrt(standardDeviation / n);
@@ -320,8 +320,8 @@ public class WiFiTug implements TugOfWar.ITugger {
         // Grubb's test (https://en.wikipedia.org/wiki/Grubbs%27_test_for_outliers)
         boolean outlierFound = false;
         float grubbsTestThreshold = (float) ((n-1)/Math.sqrt(n) * criticalValue / Math.sqrt(n - 2 + Math.pow(criticalValue, 2)));
-        for(Iterator<WifiMark> i = wifiMarks.iterator(); i.hasNext();) {
-            WifiMark mark = i.next();
+        for(Iterator<Fingerprint> i = fingerprints.iterator(); i.hasNext();) {
+            Fingerprint mark = i.next();
             PointF center = mark.getCenter();
             float g = (float) (Math.sqrt(Math.pow(center.x - mean.x, 2) + Math.pow(center.y - mean.y, 2))/standardDeviation);
             if (g > grubbsTestThreshold) {
@@ -333,9 +333,9 @@ public class WiFiTug implements TugOfWar.ITugger {
         return outlierFound;
     }
 
-    public static void eliminateInvisibles(PointF currentPos, List<WifiMark> marks, List<Wall> walls) {
-        for(Iterator<WifiMark> i = marks.iterator(); i.hasNext();) {
-            WifiMark mark = i.next();
+    public static void eliminateInvisibles(PointF currentPos, List<Fingerprint> marks, List<Wall> walls) {
+        for(Iterator<Fingerprint> i = marks.iterator(); i.hasNext();) {
+            Fingerprint mark = i.next();
 
             for (Wall wall : walls) {
                 if (VectorHelper.linesIntersect(wall.getA(), wall.getB(), currentPos, mark.getCenter())) {
@@ -350,12 +350,12 @@ public class WiFiTug implements TugOfWar.ITugger {
     // full set of wifi marks until only those containing all APs in the fingerprint remain.
     // If at some point we get to an empty list, we assume a 'rogue' mark and re-use the list from
     // the previous step.
-    public static List<WifiMark> getMarksWithSameAps(List<WifiMark> wifiMarks, WiFiFingerprint fingerprint) {
-        List<WifiMark> previousMarks = wifiMarks;
-        List<WifiMark> relevantMarks = new ArrayList<>();
+    public static List<Fingerprint> getMarksWithSameAps(List<Fingerprint> fingerprints, WiFiFingerprint fingerprint) {
+        List<Fingerprint> previousMarks = fingerprints;
+        List<Fingerprint> relevantMarks = new ArrayList<>();
 
         for (String mac : fingerprint.keySet()) {
-            for (WifiMark mark : previousMarks) {
+            for (Fingerprint mark : previousMarks) {
                 WiFiFingerprint wiFiFingerprint = mark.getFingerprint();
                 if (wiFiFingerprint.containsKey(mac)) {
                     relevantMarks.add(mark);
@@ -370,11 +370,11 @@ public class WiFiTug implements TugOfWar.ITugger {
         return previousMarks;
     }
 
-    public static List<WifiMark> getMostCorrelatedMarks(WiFiFingerprint fingerprint, List<WifiMark> marks) {
-        List<WifiMark> correlatedMarks = new ArrayList<>();
+    public static List<Fingerprint> getMostCorrelatedMarks(WiFiFingerprint fingerprint, List<Fingerprint> marks) {
+        List<Fingerprint> correlatedMarks = new ArrayList<>();
 
-        for(Iterator<WifiMark> i = marks.iterator(); i.hasNext();) {
-            WifiMark mark = i.next();
+        for(Iterator<Fingerprint> i = marks.iterator(); i.hasNext();) {
+            Fingerprint mark = i.next();
 
             WiFiFingerprint wiFiFingerprint = mark.getFingerprint();
             double correlation = correlation(fingerprint, wiFiFingerprint);
@@ -393,20 +393,20 @@ public class WiFiTug implements TugOfWar.ITugger {
         float weight;
         float weightSum = 0;
 
-        List<WifiMark> wifiMarks = getMarksWithSameAps(marks, currentWiFiFingerprint);
-//        List<WifiMark> wifiMarks = getMostCorrelatedMarks(currentWiFiFingerprint, marks);
+        List<Fingerprint> fingerprints = getMarksWithSameAps(marks, currentWiFiFingerprint);
+//        List<Fingerprint> fingerprints = getMostCorrelatedMarks(currentWiFiFingerprint, marks);
 //        PointF centroid = new PointF();
 //        boolean outlierFound;
 //        do {
-//            outlierFound = eliminateOutliers(wifiMarks, centroid);
+//            outlierFound = eliminateOutliers(fingerprints, centroid);
 //        } while (outlierFound);
 
 //        for (int i = 0; i < CENTROID_OPT_ITERATIONS; i++) {
 //            if (centroid != null) {
-//                eliminateInvisibles(centroid, wifiMarks, walls);
+//                eliminateInvisibles(centroid, fingerprints, walls);
 //            }
 
-            for (WifiMark mark : wifiMarks) {
+            for (Fingerprint mark : fingerprints) {
                 WiFiFingerprint wiFiFingerprint = mark.getFingerprint();
                 float distance = difference(currentWiFiFingerprint, wiFiFingerprint);
                 weight = 1 / distance;
@@ -424,7 +424,7 @@ public class WiFiTug implements TugOfWar.ITugger {
 //        String wallsTable = buildWallsTable();
 
         // For highlighting wifi marks used in location calculation
-        centroidMarks = wifiMarks;
+        centroidMarks = fingerprints;
     }
 
     /* Returns the most probable trajectory of locations, given the current stored history of
@@ -441,11 +441,11 @@ public class WiFiTug implements TugOfWar.ITugger {
         LinkableWifiMark wmark, lwmark;
 
         for (WiFiFingerprint fingerprint: currentHistory) {
-            List<WifiMark> wifiMarks = getMarksWithSameAps(marks, fingerprint);
+            List<Fingerprint> fingerprints = getMarksWithSameAps(marks, fingerprint);
             maxDistance = 0; minDistance = Float.MAX_VALUE;
 
             // First phase - get min and max difference
-            for (WifiMark mark: wifiMarks) {
+            for (Fingerprint mark: fingerprints) {
                 float difference = difference(fingerprint, mark.getFingerprint());
                 if (difference < minDistance)
                     minDistance = difference;
@@ -459,7 +459,7 @@ public class WiFiTug implements TugOfWar.ITugger {
             candidatePairs.clear();
 
             // Second phase - take only viable candidates (from top CANDIDATE_PERCENTAGE of lowest difference)
-            for (WifiMark mark: wifiMarks) {
+            for (Fingerprint mark: fingerprints) {
                 float difference = difference(fingerprint, mark.getFingerprint());
                 if (difference <= maxViableDistance) {
                     candidatesThisRound.add(new LinkableWifiMark(mark, difference));
@@ -517,13 +517,13 @@ public class WiFiTug implements TugOfWar.ITugger {
         return 0.5f;
     }
 
-    /* A WifiMark wrapper with the following capabilities:
+    /* A Fingerprint wrapper with the following capabilities:
      * - Link to another LinkableWifiMark to form chains of marks
      * - Keep total cost function (for evaluating quality of chains)
      */
     public static class LinkableWifiMark implements Comparable<LinkableWifiMark>{
         public LinkableWifiMark parent = null;
-        public WifiMark mark = null;
+        public Fingerprint mark = null;
         public float totalCost = 0;
 
         @Override
@@ -535,11 +535,11 @@ public class WiFiTug implements TugOfWar.ITugger {
             return 0;
         }
 
-        LinkableWifiMark(WifiMark mark) {
+        LinkableWifiMark(Fingerprint mark) {
             this.mark = mark;
         }
 
-        LinkableWifiMark(WifiMark mark, float cost) {
+        LinkableWifiMark(Fingerprint mark, float cost) {
             this.mark = mark;
             totalCost = cost;
         }
@@ -549,14 +549,14 @@ public class WiFiTug implements TugOfWar.ITugger {
         return (float)( Math.pow((a.getCenter().x - b.getCenter().x), 2) + Math.pow((a.getCenter().y - b.getCenter().y), 2) );
     }
 
-    public void setFingerprints(Iterable<WifiMark> fingerprints) {
+    public void setFingerprints(Iterable<Fingerprint> fingerprints) {
 
     }
 
     public int lessThen10marks = 0;
     public void getPositionStat(PointF pos) {
-        List<WifiMark> wifiMarks = getMarksWithSameAps(marks, currentWiFiFingerprint);
-        int fingerprintsNum = wifiMarks.size();
+        List<Fingerprint> fingerprints = getMarksWithSameAps(marks, currentWiFiFingerprint);
+        int fingerprintsNum = fingerprints.size();
         // Disable this method.
         if (fingerprintsNum < 5) {
             getPosition(pos);
@@ -564,25 +564,25 @@ public class WiFiTug implements TugOfWar.ITugger {
             return;
         }
 
-        Pair<Float, Float> regressionCoeffs = getTrendlineCoeffs(wifiMarks);
+        Pair<Float, Float> regressionCoeffs = getTrendlineCoeffs(fingerprints);
         float slope = regressionCoeffs.first;
         float intercept = regressionCoeffs.second;
 
 
         float[] distances = new float[fingerprintsNum];
         for (int i = 0; i < fingerprintsNum; i++) {
-            distances[i] = difference(wifiMarks.get(i).getFingerprint(), currentWiFiFingerprint) * slope + intercept;
+            distances[i] = difference(fingerprints.get(i).getFingerprint(), currentWiFiFingerprint) * slope + intercept;
         }
 
-        final float x1 = wifiMarks.get(0).getCenter().x;
-        final float y1 = wifiMarks.get(0).getCenter().y;
+        final float x1 = fingerprints.get(0).getCenter().x;
+        final float y1 = fingerprints.get(0).getCenter().y;
         final float d1 = distances[0];
         double[][] matrixData = new double[fingerprintsNum-1][2];
         double[] vectorData = new double[fingerprintsNum-1];
 
         for (int i = 1; i < fingerprintsNum; i++) {
-            final float xi = wifiMarks.get(i).getCenter().x;
-            final float yi = wifiMarks.get(i).getCenter().y;
+            final float xi = fingerprints.get(i).getCenter().x;
+            final float yi = fingerprints.get(i).getCenter().y;
             final float di = distances[i];
             matrixData[i-1][0] = 2 * (xi - x1);
             matrixData[i-1][1] = 2 * (yi - y1);
@@ -595,13 +595,13 @@ public class WiFiTug implements TugOfWar.ITugger {
         pos.set((float)solution.getEntry(0), (float)solution.getEntry(1));
     }
 
-    private Pair<Float, Float> getTrendlineCoeffs(Iterable<WifiMark> fingerprints) {
+    private Pair<Float, Float> getTrendlineCoeffs(Iterable<Fingerprint> fingerprints) {
         Pair<Float, Float> regressionCoefficients = null;
 
         SimpleRegression regression = new SimpleRegression();
 
-        for (WifiMark markA : fingerprints) {
-            for (WifiMark markB : fingerprints) {
+        for (Fingerprint markA : fingerprints) {
+            for (Fingerprint markB : fingerprints) {
                 final float difference = difference(markA.getFingerprint(), markB.getFingerprint());
                 final float distance = (float) Math.sqrt(distanceXYsqr(markA, markB));
                 if (distance < MAX_REGRESSION_DISTANCE_BETWEEN_MARKS) {

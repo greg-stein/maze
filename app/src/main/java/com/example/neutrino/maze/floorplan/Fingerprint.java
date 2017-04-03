@@ -9,19 +9,19 @@ import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
  *
  * This class is for debugging/development only!!
  */
-public class WifiMark extends Footprint {
+public class Fingerprint extends Footprint {
     public static int instanceNum = 0;
     public final transient int instanceId = instanceNum++;
     public static final float MARK_RADIUS = 0.05f;
 
     private WiFiFingerprint mWiFiFingerprint;
 
-    public WifiMark() {
+    public Fingerprint() {
         super();
         setColor(Color.BLUE);
     }
 
-    public WifiMark(float cx, float cy, WiFiFingerprint fingerprint) {
+    public Fingerprint(float cx, float cy, WiFiFingerprint fingerprint) {
         super(cx, cy, MARK_RADIUS);
         setColor(Color.BLUE);
         this.mWiFiFingerprint = fingerprint;

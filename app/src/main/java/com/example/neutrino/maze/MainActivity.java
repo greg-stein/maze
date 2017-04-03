@@ -39,7 +39,7 @@ import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.floorplan.WifiMark;
+import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
 import com.example.neutrino.maze.floorplan.vectorization.FloorplanVectorizer;
 
@@ -343,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (!mPlacedMarkAtCurrentLocation) {
                     uiFloorPlanView.placeWiFiMarkAt(mCurrentLocation, wiFiFingerprint);
                     // TODO: There is costly stupidity in these two lines:
-                    mWiFiTug.marks = uiFloorPlanView.getPrimitives(WifiMark.class);
+                    mWiFiTug.marks = uiFloorPlanView.getPrimitives(Fingerprint.class);
                     mWiFiTug.walls = uiFloorPlanView.getPrimitives(Wall.class);
                     mPlacedMarkAtCurrentLocation = true;
                 }
@@ -387,7 +387,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (jsonString != null) {
                     List<IFloorPlanPrimitive> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
                     uiFloorPlanView.setFloorPlan(floorplan);
-                    mWiFiTug.marks = CommonHelper.getPrimitives(WifiMark.class, floorplan);
+                    mWiFiTug.marks = CommonHelper.getPrimitives(Fingerprint.class, floorplan);
                     mWiFiTug.walls = CommonHelper.getPrimitives(Wall.class, floorplan);
                 }
 
@@ -644,7 +644,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     mTravelledDistance += STEP_LENGTH;
                     if (mTravelledDistance >= WIFIMARK_SPACING) {
-                        // Place WifiMark at center of the screen
+                        // Place Fingerprint at center of the screen
                         uiFloorPlanView.setLocation(uiFloorPlanView.getWidth()/2, uiFloorPlanView.getHeight()/2);
                         mTravelledDistance = 0;
                     }

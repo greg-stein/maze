@@ -2,10 +2,10 @@ package com.example.neutrino.maze;
 
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.floorplan.WifiMark;
 import com.opencsv.CSVWriter;
 
 import org.apache.commons.math3.stat.StatUtils;
@@ -45,13 +45,13 @@ public class AcceptanceTests {
     private static final Logger LOGGER = Logger.getLogger(AcceptanceTests.class.getName());
     private static CSVWriter csvWriter;
 
-    private List<WifiMark> marks;
+    private List<Fingerprint> marks;
     private List<Wall> walls;
     private WiFiTug wifiTug;
 
     @Rule
     public ErrorCollector collector = new ErrorCollector();
-    private WifiMark fingerprintMark;
+    private Fingerprint fingerprintMark;
 
     @BeforeClass
     public static void setup() {
@@ -75,7 +75,7 @@ public class AcceptanceTests {
     public void ReadFloorPlanFromResources() {
         List<IFloorPlanPrimitive> deserializedList = getFloorPlanFromRes("haifa_mall_many_fingerprints.json");
 
-        marks = CommonHelper.getPrimitives(WifiMark.class, deserializedList);
+        marks = CommonHelper.getPrimitives(Fingerprint.class, deserializedList);
         walls = CommonHelper.getPrimitives(Wall.class, deserializedList);
 
         wifiTug = new WiFiTug();
@@ -104,8 +104,8 @@ public class AcceptanceTests {
 
     @Test
     public void wifiHistoryTest() {
-        List<WifiMark> floorPlanMarks = loadWifiMarksFromRes("haifa_mall_floorplan.json");
-        List<WifiMark> pathMarks = loadWifiMarksFromRes("walking_path.json");
+        List<Fingerprint> floorPlanMarks = loadWifiMarksFromRes("haifa_mall_floorplan.json");
+        List<Fingerprint> pathMarks = loadWifiMarksFromRes("walking_path.json");
 
         wifiTug.marks = floorPlanMarks;
         wifiTug.currentHistory = new WiFiTug.FingerprintHistory(10);
@@ -124,12 +124,12 @@ public class AcceptanceTests {
         }
     }
 
-    private List<WifiMark> loadWifiMarksFromRes(String resFileName) {
+    private List<Fingerprint> loadWifiMarksFromRes(String resFileName) {
         List<IFloorPlanPrimitive> pathMarksAsPrimitives = getFloorPlanFromRes(resFileName);
-        List<WifiMark> pathMarks = new ArrayList<>();
+        List<Fingerprint> pathMarks = new ArrayList<>();
         for (IFloorPlanPrimitive primitive : pathMarksAsPrimitives) {
-            if (primitive instanceof WifiMark)
-                pathMarks.add((WifiMark) primitive);
+            if (primitive instanceof Fingerprint)
+                pathMarks.add((Fingerprint) primitive);
         }
         return pathMarks;
     }
@@ -138,7 +138,7 @@ public class AcceptanceTests {
     public void wifiHistoryTrivialTest() {
         wifiTug.currentHistory = new WiFiTug.FingerprintHistory(10);
 
-        WifiMark standingMark = marks.get(marks.size() / 2);
+        Fingerprint standingMark = marks.get(marks.size() / 2);
         WiFiTug.WiFiFingerprint standingPrint = standingMark.getFingerprint();
         for (int i = 0; i < 10; i++) {
             wifiTug.addToFingerprintHistory(standingPrint);
@@ -157,7 +157,7 @@ public class AcceptanceTests {
         LOGGER.info("----------------------------------------------------");
     }
 
-    private Map<WifiMark, PointF> predictedLocations = new HashMap<>();
+    private Map<Fingerprint, PointF> predictedLocations = new HashMap<>();
     @Test
     public void wifiPositioningAcceptanceTest() {
         for (int index = 0; index < marks.size(); index++) {
@@ -168,7 +168,7 @@ public class AcceptanceTests {
         double[] distancesArray = new double[distances.size()];
         for (int i = 0; i < distances.size(); i++) {
             distancesArray[i] = distances.get(i);
-            WifiMark mark = marks.get(i);
+            Fingerprint mark = marks.get(i);
             if (distancesArray[i] > 10) badFingerprints++;
 
             final PointF expected = mark.getCenter();
@@ -214,7 +214,7 @@ public class AcceptanceTests {
         Map<String, Integer> macIndices = new HashMap<>();
         int macIndex = 0;
 
-        for (WifiMark mark : marks) {
+        for (Fingerprint mark : marks) {
             final WiFiTug.WiFiFingerprint fingerprint = mark.getFingerprint();
             for (String mac : fingerprint.keySet()) {
                 if (!macIndices.containsKey(mac)) {
@@ -226,7 +226,7 @@ public class AcceptanceTests {
         final int macNum = macIndices.size();
         List<String[]> table = new ArrayList<>();
         String[] row;
-        for (WifiMark mark : marks) {
+        for (Fingerprint mark : marks) {
 
             row = new String[macNum + 2]; // x, y, mac1, mac2, ...
             row[0] = String.valueOf(mark.getCenter().x);
@@ -257,7 +257,7 @@ public class AcceptanceTests {
         List<String[]> macs = new ArrayList<>();
         int macIndex = 0;
 
-        for (WifiMark mark : marks) {
+        for (Fingerprint mark : marks) {
             final WiFiTug.WiFiFingerprint fingerprint = mark.getFingerprint();
             for (String mac : fingerprint.keySet()) {
                 if (!macIndices.containsKey(mac)) {
@@ -282,8 +282,8 @@ public class AcceptanceTests {
         logToFile("C:\\jopa\\haifa_mall_distance_likelihood.csv");
         csvWriter.writeNext(new String[] {"Mark1", "Mark2", "Distance", "Likelihood"});
 
-        for (WifiMark mark1 : marks) {
-            for (WifiMark mark2 : marks) {
+        for (Fingerprint mark1 : marks) {
+            for (Fingerprint mark2 : marks) {
                 final float likelihood = WiFiTug.difference(mark1.getFingerprint(), mark2.getFingerprint());
                 final double  distance = Math.sqrt(WiFiTug.distanceXYsqr(mark1, mark2));
                 csvWriter.writeNext(new String[] {String.valueOf(mark1.instanceId), String.valueOf(mark2.instanceId), String.valueOf(distance), String.valueOf(likelihood)});
@@ -303,10 +303,10 @@ public class AcceptanceTests {
     public void likelihoodMatrix() {
         logToFile("C:\\jopa\\likelihood_matrix.csv");
 
-        for (WifiMark mark1 : marks) {
-            String[] row = new String[WifiMark.instanceNum];
+        for (Fingerprint mark1 : marks) {
+            String[] row = new String[Fingerprint.instanceNum];
 
-            for (WifiMark mark2 : marks) {
+            for (Fingerprint mark2 : marks) {
                 final double distance = Math.sqrt(WiFiTug.distanceXYsqr(mark1, mark2));
                 float difference = Float.POSITIVE_INFINITY;
 
@@ -332,7 +332,7 @@ public class AcceptanceTests {
         logToFile("C:\\jopa\\marks.csv");
 
         String[] row = new String[3];
-        for (WifiMark mark : marks) {
+        for (Fingerprint mark : marks) {
             row[0] = String.valueOf(mark.instanceId);
             row[1] = String.valueOf(mark.getCenter().x);
             row[2] = String.valueOf(mark.getCenter().y);

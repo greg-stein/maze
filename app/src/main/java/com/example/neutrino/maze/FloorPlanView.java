@@ -12,7 +12,7 @@ import com.example.neutrino.maze.FloorPlanRenderer.IWallLengthChangedListener;
 import com.example.neutrino.maze.FloorPlanRenderer.IFloorplanLoadCompleteListener;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.WifiMark;
+import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
 
 import java.util.List;
@@ -62,7 +62,7 @@ public class FloorPlanView extends GLSurfaceView {
         this.mIsInEditMode = isEditMode;
     }
 
-    public void highlightCentroidMarks(List<WifiMark> centroidMarks) {
+    public void highlightCentroidMarks(List<Fingerprint> centroidMarks) {
         if (centroidMarks == null) return;
         mRenderer.highlightCentroidMarks(centroidMarks);
     }

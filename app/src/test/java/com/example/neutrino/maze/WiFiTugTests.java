@@ -2,8 +2,8 @@ package com.example.neutrino.maze;
 
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.floorplan.WifiMark;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -112,8 +112,8 @@ public class WiFiTugTests {
         current.put("44-85-FF-11-DA-EC", 68); // diff = 4
 
         wiFiTug.marks = new ArrayList<>();
-        wiFiTug.marks.add(new WifiMark(-1, 0, a));
-        wiFiTug.marks.add(new WifiMark(1, 2, b));
+        wiFiTug.marks.add(new Fingerprint(-1, 0, a));
+        wiFiTug.marks.add(new Fingerprint(1, 2, b));
         wiFiTug.currentWiFiFingerprint = current;
         wiFiTug.walls = new ArrayList<>();
 
@@ -170,29 +170,29 @@ public class WiFiTugTests {
         fingerprint.put("44-85-00-11-DA-EC", 0); // diff = 3
         fingerprint.put("44-85-FF-11-DA-EC", 0); // diff = 4
 
-        List<WifiMark> marks = new ArrayList<>();
-        WifiMark aMark, bMark, cMark, dMark, eMark, fMark, gMark, hMark, iMark, jMark;
+        List<Fingerprint> marks = new ArrayList<>();
+        Fingerprint aMark, bMark, cMark, dMark, eMark, fMark, gMark, hMark, iMark, jMark;
         // Real location of marks is not important, so place all of them in (0, 0)
-        marks.add(aMark = new WifiMark(0, 0, a));
-        marks.add(bMark = new WifiMark(0, 0, b));
-        marks.add(cMark = new WifiMark(0, 0, c));
-        marks.add(dMark = new WifiMark(0, 0, d));
-        marks.add(eMark = new WifiMark(0, 0, e));
-        marks.add(fMark = new WifiMark(0, 0, f));
-        marks.add(gMark = new WifiMark(0, 0, g));
-        marks.add(hMark = new WifiMark(0, 0, h));
-        marks.add(iMark = new WifiMark(0, 0, i));
-        marks.add(jMark = new WifiMark(0, 0, j));
+        marks.add(aMark = new Fingerprint(0, 0, a));
+        marks.add(bMark = new Fingerprint(0, 0, b));
+        marks.add(cMark = new Fingerprint(0, 0, c));
+        marks.add(dMark = new Fingerprint(0, 0, d));
+        marks.add(eMark = new Fingerprint(0, 0, e));
+        marks.add(fMark = new Fingerprint(0, 0, f));
+        marks.add(gMark = new Fingerprint(0, 0, g));
+        marks.add(hMark = new Fingerprint(0, 0, h));
+        marks.add(iMark = new Fingerprint(0, 0, i));
+        marks.add(jMark = new Fingerprint(0, 0, j));
 
         // add another 20 marks farther than those ten
         for (int x = 0; x < 20; x++) {
             WiFiTug.WiFiFingerprint fingerprint1 = new WiFiTug.WiFiFingerprint();
             fingerprint1.put("44-85-00-11-DA-EC", (int) (Math.random()*50 + 20));
             fingerprint1.put("44-85-FF-11-DA-EC", (int) (Math.random()*50 + 20));
-            marks.add(new WifiMark(0, 0, fingerprint1));
+            marks.add(new Fingerprint(0, 0, fingerprint1));
         }
         // get 20% of total 30, but minimum is 10
-        List<WifiMark> similarMarks = WiFiTug.getSimilarMarks(marks, fingerprint, 0.2f);
+        List<Fingerprint> similarMarks = WiFiTug.getSimilarMarks(marks, fingerprint, 0.2f);
 
         assertNotNull(similarMarks);
         assertThat(similarMarks, hasSize(10));
@@ -231,14 +231,14 @@ public class WiFiTugTests {
         e.put("44-85-00-11-DA-EC", -3);
         e.put("44-85-FF-11-DA-EC", -3);
 
-        List<WifiMark> marks = new ArrayList<>();
-        WifiMark aMark, bMark, cMark, dMark, eMark;
+        List<Fingerprint> marks = new ArrayList<>();
+        Fingerprint aMark, bMark, cMark, dMark, eMark;
 
-        marks.add(aMark = new WifiMark(1, 0, a));
-        marks.add(bMark = new WifiMark(0, 1, b));
-        marks.add(cMark = new WifiMark(-1, 0, c));
-        marks.add(dMark = new WifiMark(0, -1, d));
-        marks.add(eMark = new WifiMark(10, 10, e)); // outlier
+        marks.add(aMark = new Fingerprint(1, 0, a));
+        marks.add(bMark = new Fingerprint(0, 1, b));
+        marks.add(cMark = new Fingerprint(-1, 0, c));
+        marks.add(dMark = new Fingerprint(0, -1, d));
+        marks.add(eMark = new Fingerprint(10, 10, e)); // outlier
 
         PointF centroid = new PointF();
         WiFiTug.eliminateOutliers(marks, centroid);
@@ -270,16 +270,16 @@ public class WiFiTugTests {
         e.put("44-85-00-11-DA-EC", -3);
         e.put("44-85-FF-11-DA-EC", -3);
 
-        List<WifiMark> marks = new ArrayList<>();
-        WifiMark eMark;
+        List<Fingerprint> marks = new ArrayList<>();
+        Fingerprint eMark;
 
-        marks.add(new WifiMark(1, 0, a));
-        marks.add(new WifiMark(0, 1, b));
-        marks.add(new WifiMark(-1, 0, c));
-        marks.add(new WifiMark(0, -1, d));
-        marks.add(eMark = new WifiMark(2, 2, e)); // NOT an outlier
+        marks.add(new Fingerprint(1, 0, a));
+        marks.add(new Fingerprint(0, 1, b));
+        marks.add(new Fingerprint(-1, 0, c));
+        marks.add(new Fingerprint(0, -1, d));
+        marks.add(eMark = new Fingerprint(2, 2, e)); // NOT an outlier
 
-        List<WifiMark> originalMarks = new ArrayList<>(marks);
+        List<Fingerprint> originalMarks = new ArrayList<>(marks);
 
         PointF centroid = new PointF();
         WiFiTug.eliminateOutliers(marks, centroid);
@@ -291,8 +291,8 @@ public class WiFiTugTests {
 
     @Test
     public void eliminateInvisiblesSimpleTest() {
-        ArrayList<WifiMark> marks = new ArrayList<>();
-        marks.add(new WifiMark(-1, 0, new WiFiTug.WiFiFingerprint()));
+        ArrayList<Fingerprint> marks = new ArrayList<>();
+        marks.add(new Fingerprint(-1, 0, new WiFiTug.WiFiFingerprint()));
         ArrayList<Wall> walls = new ArrayList<>();
         walls.add(new Wall(0, 1, 0, -1));
 
@@ -303,8 +303,8 @@ public class WiFiTugTests {
 
     @Test
     public void eliminateInvisiblesSimpleNegativeTest() {
-        ArrayList<WifiMark> marks = new ArrayList<>();
-        marks.add(new WifiMark(0.5f, 0, new WiFiTug.WiFiFingerprint()));
+        ArrayList<Fingerprint> marks = new ArrayList<>();
+        marks.add(new Fingerprint(0.5f, 0, new WiFiTug.WiFiFingerprint()));
         ArrayList<Wall> walls = new ArrayList<>();
         walls.add(new Wall(0, 1, 0, -1));
 
@@ -316,8 +316,8 @@ public class WiFiTugTests {
 
     @Test
     public void eliminateInvisiblesTest() {
-        ArrayList<WifiMark> marks = new ArrayList<>();
-        marks.add(new WifiMark(-1, 0, new WiFiTug.WiFiFingerprint()));
+        ArrayList<Fingerprint> marks = new ArrayList<>();
+        marks.add(new Fingerprint(-1, 0, new WiFiTug.WiFiFingerprint()));
         ArrayList<Wall> walls = new ArrayList<>();
         walls.add(new Wall(0, 1, 0, -1));
         walls.add(new Wall(0, -0.5f, 2, -0.5f));
@@ -329,8 +329,8 @@ public class WiFiTugTests {
 
     @Test
     public void eliminateInvisiblesNegativeTest() {
-        ArrayList<WifiMark> marks = new ArrayList<>();
-        marks.add(new WifiMark(0.5f, 0, new WiFiTug.WiFiFingerprint()));
+        ArrayList<Fingerprint> marks = new ArrayList<>();
+        marks.add(new Fingerprint(0.5f, 0, new WiFiTug.WiFiFingerprint()));
         ArrayList<Wall> walls = new ArrayList<>();
         walls.add(new Wall(0, 1, 0, -1));
         walls.add(new Wall(0, -0.5f, 2, -0.5f));
@@ -366,20 +366,20 @@ public class WiFiTugTests {
         e.put("44-85-BB-11-DA-EC", 0); // BB
         e.put("44-85-FF-11-DA-EC", 0); // FF
 
-        List<WifiMark> marks = new ArrayList<>();
-        WifiMark aMark, bMark, cMark, dMark, eMark;
+        List<Fingerprint> marks = new ArrayList<>();
+        Fingerprint aMark, bMark, cMark, dMark, eMark;
 
-        marks.add(aMark = new WifiMark(0, 0, a));
-        marks.add(bMark = new WifiMark(0, 0, b));
-        marks.add(cMark = new WifiMark(0, 0, c));
-        marks.add(dMark = new WifiMark(0, 0, d));
-        marks.add(eMark = new WifiMark(0, 0, e));
+        marks.add(aMark = new Fingerprint(0, 0, a));
+        marks.add(bMark = new Fingerprint(0, 0, b));
+        marks.add(cMark = new Fingerprint(0, 0, c));
+        marks.add(dMark = new Fingerprint(0, 0, d));
+        marks.add(eMark = new Fingerprint(0, 0, e));
 
         WiFiTug.WiFiFingerprint fingerprint1 = new WiFiTug.WiFiFingerprint();
         fingerprint1.put("44-85-00-11-DA-EC", 0); // 00
         fingerprint1.put("44-85-FF-11-DA-EC", 0); // FF
 
-        List<WifiMark> filteredMarks = WiFiTug.getMarksWithSameAps(marks, fingerprint1);
+        List<Fingerprint> filteredMarks = WiFiTug.getMarksWithSameAps(marks, fingerprint1);
 
         assertNotNull(filteredMarks);
         assertThat(filteredMarks, hasSize(4));

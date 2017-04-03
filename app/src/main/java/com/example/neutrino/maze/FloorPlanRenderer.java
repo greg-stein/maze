@@ -8,11 +8,11 @@ import android.opengl.GLU;
 import android.opengl.Matrix;
 import android.support.v4.graphics.ColorUtils;
 
+import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.LocationMark;
 import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.floorplan.WifiMark;
 import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
 
 import java.io.IOException;
@@ -454,7 +454,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void putMark(final float x, final float y, final WiFiFingerprint wifiFingerprint) {
-        WifiMark mark = new WifiMark(x, y, wifiFingerprint);
+        Fingerprint mark = new Fingerprint(x, y, wifiFingerprint);
         addPrimitive(mark);
     }
 
@@ -494,11 +494,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
-    public void highlightCentroidMarks(List<WifiMark> centroidMarks) {
+    public void highlightCentroidMarks(List<Fingerprint> centroidMarks) {
         List<IFloorPlanPrimitive> primitives = mFloorPlanPrimitives;
         for (IFloorPlanPrimitive primitive : primitives) {
-            if (primitive instanceof WifiMark) {
-                final WifiMark mark = (WifiMark) primitive;
+            if (primitive instanceof Fingerprint) {
+                final Fingerprint mark = (Fingerprint) primitive;
                 if (centroidMarks.contains(mark))
                     mark.setColor(Color.RED);
                 else
