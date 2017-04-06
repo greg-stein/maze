@@ -7,10 +7,10 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.support.test.filters.MediumTest;
 
-import com.example.neutrino.maze.floorplan.vectorization.HoughTransform;
-import com.example.neutrino.maze.floorplan.vectorization.HoughTransform.LineSegment;
-import com.example.neutrino.maze.floorplan.vectorization.ImageArray;
-import com.example.neutrino.maze.floorplan.vectorization.LineSegmentsRecognizer;
+import com.example.neutrino.maze.vectorization.HoughTransform;
+import com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
+import com.example.neutrino.maze.vectorization.ImageArray;
+import com.example.neutrino.maze.vectorization.LineSegmentsRecognizer;
 import com.google.gson.Gson;
 
 import org.junit.Test;

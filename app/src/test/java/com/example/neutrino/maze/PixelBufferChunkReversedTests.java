@@ -3,9 +3,9 @@ package com.example.neutrino.maze;
 import android.graphics.Color;
 import android.graphics.Point;
 
-import com.example.neutrino.maze.floorplan.vectorization.ImageArray;
-import com.example.neutrino.maze.floorplan.vectorization.PixelBufferChunk;
-import com.example.neutrino.maze.floorplan.vectorization.PixelBufferChunkReversed;
+import com.example.neutrino.maze.vectorization.ImageArray;
+import com.example.neutrino.maze.vectorization.PixelBufferChunk;
+import com.example.neutrino.maze.vectorization.PixelBufferChunkReversed;
 
 import junit.framework.Assert;
 

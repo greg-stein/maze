@@ -3,8 +3,8 @@ package com.example.neutrino.maze;
 import android.graphics.Color;
 import android.graphics.Point;
 
-import com.example.neutrino.maze.floorplan.vectorization.ImageArray;
-import com.example.neutrino.maze.floorplan.vectorization.Thinning;
+import com.example.neutrino.maze.vectorization.ImageArray;
+import com.example.neutrino.maze.vectorization.Thinning;
 
 import org.junit.Rule;
 import org.junit.Test;

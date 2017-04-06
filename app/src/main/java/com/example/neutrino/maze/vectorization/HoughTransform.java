@@ -1,11 +1,9 @@
-package com.example.neutrino.maze.floorplan.vectorization;
+package com.example.neutrino.maze.vectorization;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.os.Build;
 import java.util.ArrayList;
 import java.util.Comparator;

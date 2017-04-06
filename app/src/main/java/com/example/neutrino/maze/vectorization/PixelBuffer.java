@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.floorplan.vectorization;
+package com.example.neutrino.maze.vectorization;
 
 import android.graphics.Point;
 

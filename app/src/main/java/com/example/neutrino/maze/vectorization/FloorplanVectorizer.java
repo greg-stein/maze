@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.floorplan.vectorization;
+package com.example.neutrino.maze.vectorization;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -7,7 +7,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import com.example.neutrino.maze.floorplan.vectorization.HoughTransform.LineSegment;
+import com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Wall;
 

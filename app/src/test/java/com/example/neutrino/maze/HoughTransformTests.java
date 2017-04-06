@@ -2,7 +2,7 @@ package com.example.neutrino.maze;
 
 import android.graphics.Point;
 
-import com.example.neutrino.maze.floorplan.vectorization.HoughTransform;
+import com.example.neutrino.maze.vectorization.HoughTransform;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,10 +17,8 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;

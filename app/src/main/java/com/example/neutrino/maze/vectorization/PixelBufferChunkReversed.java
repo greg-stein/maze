@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.floorplan.vectorization;
+package com.example.neutrino.maze.vectorization;
 
 /**
  * Created by Greg Stein on 1/23/2017.

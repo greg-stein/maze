@@ -5,7 +5,7 @@ import android.graphics.Color;
 import android.support.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.example.neutrino.maze.floorplan.vectorization.FloorplanVectorizer;
+import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

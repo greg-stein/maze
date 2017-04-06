@@ -3,9 +3,9 @@ package com.example.neutrino.maze;
 import android.graphics.Bitmap;
 import android.support.test.filters.MediumTest;
 
-import com.example.neutrino.maze.floorplan.vectorization.FloorplanVectorizer;
-import com.example.neutrino.maze.floorplan.vectorization.ImageArray;
-import com.example.neutrino.maze.floorplan.vectorization.Thinning;
+import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
+import com.example.neutrino.maze.vectorization.ImageArray;
+import com.example.neutrino.maze.vectorization.Thinning;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
