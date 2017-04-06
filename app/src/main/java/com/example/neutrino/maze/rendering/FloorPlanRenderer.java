@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.rendering;
 
 import android.graphics.Color;
 import android.graphics.PointF;
@@ -8,6 +8,7 @@ import android.opengl.GLU;
 import android.opengl.Matrix;
 import android.support.v4.graphics.ColorUtils;
 
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;

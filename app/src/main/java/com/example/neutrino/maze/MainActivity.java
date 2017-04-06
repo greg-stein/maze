@@ -42,6 +42,8 @@ import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
 import com.example.neutrino.maze.floorplan.vectorization.FloorplanVectorizer;
+import com.example.neutrino.maze.rendering.FloorPlanRenderer;
+import com.example.neutrino.maze.rendering.FloorPlanView;
 
 import java.io.File;
 import java.io.IOException;

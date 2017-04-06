@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.rendering;
 
 import android.content.Context;
 import android.graphics.PointF;
@@ -8,9 +8,9 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
-import com.example.neutrino.maze.FloorPlanRenderer.IWallLengthChangedListener;
-import com.example.neutrino.maze.FloorPlanRenderer.IFloorplanLoadCompleteListener;
-import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
+import com.example.neutrino.maze.CommonHelper;
+import com.example.neutrino.maze.rendering.FloorPlanRenderer.IWallLengthChangedListener;
+import com.example.neutrino.maze.rendering.FloorPlanRenderer.IFloorplanLoadCompleteListener;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;

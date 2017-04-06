@@ -1,6 +1,6 @@
 package com.example.neutrino.maze.floorplan;
 
-import com.example.neutrino.maze.GlRenderBuffer;
+import com.example.neutrino.maze.rendering.GlRenderBuffer;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;

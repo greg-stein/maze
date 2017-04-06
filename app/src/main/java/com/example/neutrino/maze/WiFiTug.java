@@ -6,6 +6,7 @@ import android.support.v4.util.Pair;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.Wall;
+import com.example.neutrino.maze.rendering.VectorHelper;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

@@ -9,7 +9,7 @@
     tools:showIn="@layout/activity_main"
     tools:context="com.example.neutrino.maze.MainActivity">
 
-    <com.example.neutrino.maze.FloorPlanView
+    <com.example.neutrino.maze.rendering.FloorPlanView
         android:id="@+id/ui_MapContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

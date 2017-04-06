@@ -2,8 +2,8 @@ package com.example.neutrino.maze.floorplan;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.GlRenderBuffer;
-import com.example.neutrino.maze.VectorHelper;
+import com.example.neutrino.maze.rendering.GlRenderBuffer;
+import com.example.neutrino.maze.rendering.VectorHelper;
 
 /**
  * Created by Greg Stein on 9/21/2016.

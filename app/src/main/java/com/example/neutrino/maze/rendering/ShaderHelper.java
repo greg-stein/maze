@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.rendering;
 
 import android.opengl.GLES20;
 import android.util.Log;

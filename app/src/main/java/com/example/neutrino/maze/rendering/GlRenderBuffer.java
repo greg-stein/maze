@@ -1,13 +1,11 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.rendering;
 
-import android.content.res.Resources;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;

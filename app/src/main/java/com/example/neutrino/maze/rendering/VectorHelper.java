@@ -1,8 +1,10 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.rendering;
 
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PointF;
+
+import com.example.neutrino.maze.rendering.GlRenderBuffer;
 
 /**
  * Created by Greg Stein on 8/7/2016.
