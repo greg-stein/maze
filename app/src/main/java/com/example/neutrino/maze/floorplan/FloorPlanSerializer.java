@@ -87,6 +87,7 @@ public class FloorPlanSerializer {
 
                 Class<?> klass = null;
                 try {
+                    if (className.equals("WifiMark")) className = "Fingerprint";
                     klass = Class.forName(packageName + '.' + className);
                     final FloorPlanPrimitiveBase deserializedInstance = context.deserialize(serializedInstance, klass);
                     if (!deserializedInstance.isRemoved()) {
