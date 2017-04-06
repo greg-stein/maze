@@ -1,6 +1,6 @@
 [  
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "06:ae:db:3a:87:a5":-87,
@@ -36,7 +36,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "06:ae:db:3a:87:a5":-89,
@@ -72,7 +72,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "06:ae:db:3a:87:a5":-87,
@@ -109,7 +109,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "06:ae:db:3a:87:a5":-86,
@@ -146,7 +146,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "06:ae:db:3a:87:a5":-82,
@@ -184,7 +184,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "06:ae:db:3a:87:a5":-79,
@@ -220,7 +220,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-75,
@@ -260,7 +260,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-75,
@@ -299,7 +299,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-75,
@@ -338,7 +338,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-72,
@@ -376,7 +376,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-68,
@@ -418,7 +418,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-69,
@@ -462,7 +462,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-72,
@@ -506,7 +506,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-75,
@@ -550,7 +550,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-72,
@@ -594,7 +594,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-72,
@@ -637,7 +637,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-76,
@@ -679,7 +679,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-74,
@@ -724,7 +724,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-71,
@@ -769,7 +769,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "f4:83:cd:6a:c4:d6":-64,
@@ -814,7 +814,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "00:0e:8e:7a:3d:c3":-78,
@@ -860,7 +860,7 @@
       }
    },
    {  
-      "CLASSNAME":"WifiMark",
+      "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
          "mFingerprint":{  
             "20:bb:c0:1d:c3:40":-77,
