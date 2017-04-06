@@ -59,7 +59,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private boolean mAddedWallByDrag;
     private static final float[] mBgColorF = new float[4];
     private LocationMark mLocationMark = null;
-    private List<IFloorPlanPrimitive> mFloorPlanPrimitives = new ArrayList<>();
+    private List<IFloorPlanPrimitive> mFloorPlanPrimitives;
 
     static private String vertexShaderCode;
     static private String fragmentShaderCode;
@@ -197,7 +197,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         mFloorPlanPrimitives.add(primitive);
     }
 
-    private void addPrimitives(List<? extends IFloorPlanPrimitive> primitives) {
+    private void addPrimitives(List<IFloorPlanPrimitive> primitives) {
         for (IFloorPlanPrimitive primitive : primitives) {
             primitive.updateVertices();
 
@@ -210,7 +210,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
         mCurrentBuffer.allocateGpuBuffers();
 
-        mFloorPlanPrimitives.addAll(primitives);
+        mFloorPlanPrimitives = primitives;
     }
 
     private void updateModelMatrix() {
@@ -380,7 +380,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     // TODO: remove queued task and use simpler method to run this on start
     private Runnable mQueuedTaskForGlThread = null;
-    public void setFloorPlan(final List<? extends IFloorPlanPrimitive> primitives) {
+    public void setFloorPlan(final List<IFloorPlanPrimitive> primitives) {
         mQueuedTaskForGlThread = new Runnable() {
             @Override
             public void run() {
@@ -495,7 +495,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void highlightCentroidMarks(List<Fingerprint> centroidMarks) {
-        List<IFloorPlanPrimitive> primitives = mFloorPlanPrimitives;
+        List<? extends IFloorPlanPrimitive> primitives = mFloorPlanPrimitives;
         for (IFloorPlanPrimitive primitive : primitives) {
             if (primitive instanceof Fingerprint) {
                 final Fingerprint mark = (Fingerprint) primitive;
@@ -515,7 +515,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public void rescaleFloorplan(float scaleFactor) {
         if (mGlBuffers == null) return; // TODO: this should be fixed somehow
-        List<IFloorPlanPrimitive> primitives = mFloorPlanPrimitives;
+        List<? extends IFloorPlanPrimitive> primitives = mFloorPlanPrimitives;
 
         for (final IFloorPlanPrimitive primitive : primitives) {
             if (primitive.isRemoved()) continue; // Do not alter removed primitives

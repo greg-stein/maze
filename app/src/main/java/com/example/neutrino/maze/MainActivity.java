@@ -35,8 +35,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.Fingerprint;
@@ -53,6 +53,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final float WIFIMARK_SPACING = 3 * STEP_LENGTH;
 
     private float mTravelledDistance = 0;
+
+    private FloorPlan mFloorPlan;
 
     // GUI-related fields
     private FloorPlanView uiFloorPlanView;
@@ -180,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         List<Wall> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
-        uiFloorPlanView.setFloorPlan(walls, false); // not in init phase
+        uiFloorPlanView.plot(walls, false); // not in init phase
         mWiFiTug.walls = walls;
         uiFloorPlanView.showMap();
     }
