@@ -25,7 +25,7 @@ public class FloorPlanSerializer {
 
     private static final Type TYPE = (new TypeToken<List<Object>>() {}).getType();
 
-    public static String serializeFloorPlan(List<IFloorPlanPrimitive> floorPlan) {
+    public static String serializeFloorPlan(List<Object> floorPlan) {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(TYPE, new FloorPlanAdapter());
         Gson gson = builder.create();
@@ -36,7 +36,7 @@ public class FloorPlanSerializer {
     }
 
     @Nullable
-    public static List<IFloorPlanPrimitive> deserializeFloorPlan(String jsonString) {
+    public static List<Object> deserializeFloorPlan(String jsonString) {
         GsonBuilder builder = new GsonBuilder();
         builder.registerTypeAdapter(TYPE, new FloorPlanAdapter());
         Gson gson = builder.create();

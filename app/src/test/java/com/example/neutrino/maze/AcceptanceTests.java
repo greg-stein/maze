@@ -73,17 +73,17 @@ public class AcceptanceTests {
     // This func runs before each @Test in this class.
     @Before
     public void ReadFloorPlanFromResources() {
-        List<IFloorPlanPrimitive> deserializedList = getFloorPlanFromRes("haifa_mall_many_fingerprints.json");
+        List<Object> deserializedList = getFloorPlanFromRes("haifa_mall_many_fingerprints.json");
 
-        marks = CommonHelper.getPrimitives(Fingerprint.class, deserializedList);
-        walls = CommonHelper.getPrimitives(Wall.class, deserializedList);
+        marks = CommonHelper.extractObjects(Fingerprint.class, deserializedList);
+        walls = CommonHelper.extractObjects(Wall.class, deserializedList);
 
         wifiTug = new WiFiTug();
         wifiTug.walls = walls;
         wifiTug.marks = marks;
     }
 
-    private List<IFloorPlanPrimitive> getFloorPlanFromRes(String resourceFile) {
+    private List<Object> getFloorPlanFromRes(String resourceFile) {
         String jsonString = null;
         try {
             ClassLoader classLoader = getClass().getClassLoader();
@@ -125,12 +125,9 @@ public class AcceptanceTests {
     }
 
     private List<Fingerprint> loadWifiMarksFromRes(String resFileName) {
-        List<IFloorPlanPrimitive> pathMarksAsPrimitives = getFloorPlanFromRes(resFileName);
-        List<Fingerprint> pathMarks = new ArrayList<>();
-        for (IFloorPlanPrimitive primitive : pathMarksAsPrimitives) {
-            if (primitive instanceof Fingerprint)
-                pathMarks.add((Fingerprint) primitive);
-        }
+        List<Object> pathFingerprintsAsObjects = getFloorPlanFromRes(resFileName);
+        List<Fingerprint> pathMarks = CommonHelper.extractObjects(Fingerprint.class, pathFingerprintsAsObjects);
+
         return pathMarks;
     }
 

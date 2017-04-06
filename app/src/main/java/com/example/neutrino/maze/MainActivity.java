@@ -385,10 +385,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //                }
 
                 if (jsonString != null) {
-                    List<IFloorPlanPrimitive> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
-                    uiFloorPlanView.setFloorPlan(floorplan);
-                    mWiFiTug.marks = CommonHelper.getPrimitives(Fingerprint.class, floorplan);
-                    mWiFiTug.walls = CommonHelper.getPrimitives(Wall.class, floorplan);
+                    List<Object> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
+                    mFloorPlan = FloorPlan.build(floorplan);
+                    uiFloorPlanView.plot(mFloorPlan.getSketch());
+                    mWiFiTug.marks = mFloorPlan.getFingerprints();
                 }
 
 
@@ -431,7 +431,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     uiFabAddFloorplanFromGallery.hide();
                     uiFabMapRotateLock.hide();
 
-                    String jsonString = uiFloorPlanView.getFloorPlanAsJSon();
+                    String jsonString = FloorPlanSerializer.serializeFloorPlan(mFloorPlan.disassemble());
                     PersistenceLayer.saveFloorPlan(jsonString);
 //                    if (MazeServer.connectionAvailable(getApplicationContext())) {
 //                        MazeServer server = new MazeServer(getApplicationContext());

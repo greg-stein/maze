@@ -208,23 +208,12 @@ public class FloorPlanView extends GLSurfaceView {
         return CommonHelper.getPrimitives(klazz, floorPlan);
     }
 
-    public String getFloorPlanAsJSon() {
-        List<IFloorPlanPrimitive> floorPlan = mRenderer.getFloorPlan();
-        return FloorPlanSerializer.serializeFloorPlan(floorPlan);
+    public void plot(List<? extends IFloorPlanPrimitive> floorplan) {
+        mRenderer.setFloorPlan((List<IFloorPlanPrimitive>) floorplan);
     }
 
-    public void setFloorPlanAsJSon(String jsonString) {
-        List<IFloorPlanPrimitive> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
-
-        mRenderer.setFloorPlan(floorplan);
-    }
-
-    public void setFloorPlan(List<? extends IFloorPlanPrimitive> floorplan) {
-        mRenderer.setFloorPlan(floorplan);
-    }
-
-    public void setFloorPlan(List<? extends IFloorPlanPrimitive> floorplan, boolean inInit) {
-        mRenderer.setFloorPlan(floorplan);
+    public void plot(List<? extends IFloorPlanPrimitive> floorplan, boolean inInit) {
+        mRenderer.setFloorPlan((List<IFloorPlanPrimitive>) floorplan);
         if (!inInit) mRenderer.performQueuedTask();
     }
 

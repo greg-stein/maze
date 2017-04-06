@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import com.example.neutrino.maze.floorplan.FloorPlanDescriptor;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
@@ -15,6 +16,7 @@ import org.robolectric.annotation.Config;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -31,8 +33,22 @@ import static org.junit.Assert.assertThat;
 public class FloorPlanSerializerTest {
 
     @Test
+    public void FloorplanDescriptorSerializationTest() {
+        FloorPlanDescriptor descriptor = new FloorPlanDescriptor();
+        descriptor.setFloorPlanName("קרקע");
+        List<String> buildingNames = new ArrayList<>();
+        buildingNames.add("קניון חדש");
+        buildingNames.add("קניון לב כרמיאל");
+        descriptor.setBuildingNames(buildingNames);
+
+        List<Object> descriptors = new ArrayList<>();
+        descriptors.add(descriptor);
+        String jsonString = FloorPlanSerializer.serializeFloorPlan(descriptors);
+    }
+
+    @Test
     public void CommonSerializationUnitTest() {
-        List<IFloorPlanPrimitive> originalList = new ArrayList<>();
+        List<Object> originalList = new ArrayList<>();
         originalList.add(new Wall(0.1f, 0.2f, 0.3f, 0.4f));
         originalList.add(new Footprint(0.5f, 0.6f));
         originalList.add(new Fingerprint(0.7f, 0.8f, null));
@@ -40,7 +56,7 @@ public class FloorPlanSerializerTest {
 
         String jsonString = FloorPlanSerializer.serializeFloorPlan(originalList);
 
-        List<IFloorPlanPrimitive> deserializedList = FloorPlanSerializer.deserializeFloorPlan(jsonString);
+        List<Object> deserializedList = FloorPlanSerializer.deserializeFloorPlan(jsonString);
 
         assertThat(deserializedList.size(), is(originalList.size()));
 
@@ -73,7 +89,7 @@ public class FloorPlanSerializerTest {
             e.printStackTrace();
         }
 
-        List<IFloorPlanPrimitive> deserializedList = FloorPlanSerializer.deserializeFloorPlan(jsonString);
+        List<Object> deserializedList = FloorPlanSerializer.deserializeFloorPlan(jsonString);
 
         assertNotNull(deserializedList);
         assertThat(deserializedList, hasSize(70));
