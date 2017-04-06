@@ -27,7 +27,7 @@ public class CommonHelper {
 
         while (iterator.hasNext()) {
             Object o = iterator.next();
-            if (o.getClass().equals(klazz)) {
+            if (klazz.isAssignableFrom(o.getClass())) {
                 result.add(klazz.cast(o));
                 iterator.remove();
             }
