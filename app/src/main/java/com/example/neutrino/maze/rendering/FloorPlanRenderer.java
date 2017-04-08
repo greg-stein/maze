@@ -125,20 +125,10 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // Set the view matrix. This matrix can be said to represent the camera position.
         Matrix.setLookAtM(mViewMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
 
-        int vertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER,
-                vertexShaderCode);
-        int fragmentShader = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER,
-                fragmentShaderCode);
-
-        AppSettings.oglProgram = ShaderHelper.createAndLinkProgram(vertexShader, fragmentShader,
+        AppSettings.oglProgram = ShaderHelper.createAndLinkProgram(vertexShaderCode, fragmentShaderCode,
                 ShaderHelper.POSITION_ATTRIBUTE, ShaderHelper.COLOR_ATTRIBUTE);
 
-        int textRenderVertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER,
-                textRenderVertexShaderCode);
-        int textRenderFragmentShader = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER,
-                textRenderFragmentShaderCode);
-
-        AppSettings.oglTextRenderProgram = ShaderHelper.createAndLinkProgram(textRenderVertexShader, textRenderFragmentShader,
+        AppSettings.oglTextRenderProgram = ShaderHelper.createAndLinkProgram(textRenderVertexShaderCode, textRenderFragmentShaderCode,
                 ShaderHelper.POSITION_ATTRIBUTE, ShaderHelper.TEXTURE_COORDINATE_ATTRIBUTE, ShaderHelper.MVP_MATRIX_INDEX_ATTRIBUTE);
 
         mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);

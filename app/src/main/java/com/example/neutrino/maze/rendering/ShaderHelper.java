@@ -108,4 +108,11 @@ public class ShaderHelper
 
         return programHandle;
     }
+
+    public static int createAndLinkProgram(final String vertexShaderCode, final String fragmentShaderCode, final String... attributes) {
+        int vertexShader = compileShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
+        int fragmentShader = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
+
+        return createAndLinkProgram(vertexShader, fragmentShader, attributes);
+    }
 }
