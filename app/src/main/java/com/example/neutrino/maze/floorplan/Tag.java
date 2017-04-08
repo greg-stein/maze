@@ -17,11 +17,9 @@ public class Tag extends FloorPlanPrimitiveBase {
 
     @Override
     public void updateVertices() {
-
     }
 
     @Override
     public void scaleVertices(float scaleFactor) {
-
     }
 }

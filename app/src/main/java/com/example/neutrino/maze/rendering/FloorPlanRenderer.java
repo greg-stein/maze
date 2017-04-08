@@ -64,10 +64,14 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     static private String vertexShaderCode;
     static private String fragmentShaderCode;
+    static private String textRenderVertexShaderCode;
+    static private String textRenderFragmentShaderCode;
 
     static {
         vertexShaderCode = readResourceAsString("/res/raw/vertex_shader.glsl");
         fragmentShaderCode = readResourceAsString("/res/raw/fragment_shader.glsl");
+        textRenderVertexShaderCode = readResourceAsString("/res/raw/text_render_vertex_shader.glsl");
+        textRenderFragmentShaderCode = readResourceAsString("/res/raw/text_render_fragment_shader.glsl");
     }
 
     private static String readResourceAsString(String path) {
@@ -129,8 +133,15 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         AppSettings.oglProgram = ShaderHelper.createAndLinkProgram(vertexShader, fragmentShader,
                 ShaderHelper.POSITION_ATTRIBUTE, ShaderHelper.COLOR_ATTRIBUTE);
 
+        int textRenderVertexShader = ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER,
+                textRenderVertexShaderCode);
+        int textRenderFragmentShader = ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER,
+                textRenderFragmentShaderCode);
+
+        AppSettings.oglTextRenderProgram = ShaderHelper.createAndLinkProgram(textRenderVertexShader, textRenderFragmentShader,
+                ShaderHelper.POSITION_ATTRIBUTE, ShaderHelper.TEXTURE_COORDINATE_ATTRIBUTE, ShaderHelper.MVP_MATRIX_INDEX_ATTRIBUTE);
+
         mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
-//        mCurrentBuffer.allocateGpuBuffers();
         mGlBuffers.add(mCurrentBuffer);
 
         GLES20.glUseProgram(AppSettings.oglProgram);

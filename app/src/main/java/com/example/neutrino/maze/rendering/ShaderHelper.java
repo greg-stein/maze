@@ -10,8 +10,10 @@ public class ShaderHelper
 {
     private static final String TAG = "ShaderHelper";
     public static final String MVP_MATRIX = "u_MVPMatrix";
-    static final String POSITION_ATTRIBUTE = "a_Position";
-    static final String COLOR_ATTRIBUTE = "a_Color";
+    public static final String POSITION_ATTRIBUTE = "a_Position";
+    public static final String COLOR_ATTRIBUTE = "a_Color";
+    public static final String TEXTURE_COORDINATE_ATTRIBUTE = "a_TexCoordinate";
+    public static final String MVP_MATRIX_INDEX_ATTRIBUTE = "a_MVPMatrixIndex";
 
     /**
      * Helper function to compile a shader.
