@@ -7,6 +7,8 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+
+import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Wall;
@@ -21,7 +23,7 @@ public class FloorplanVectorizer {
     public static final int PADDING = 1;
     public static Bitmap debugBM;
 
-    public static List<Wall> vectorize(Bitmap image) {
+    public static List<IFloorPlanPrimitive> vectorize(Bitmap image) {
         if (image == null) return null;
 //        Bitmap scaledImage = getResizedBitmap(image, image.getWidth()/2, image.getHeight()/2);
 //        image.recycle();
@@ -40,13 +42,13 @@ public class FloorplanVectorizer {
 
         LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
         List<LineSegment> lineSegments = kht.findStraightSegments();
-        List<Wall> walls = translateToWalls(lineSegments);
+        List<IFloorPlanPrimitive> walls = translateToWalls(lineSegments);
 
         return walls;
     }
 
-    private static List<Wall> translateToWalls(List<HoughTransform.LineSegment> lines) {
-        List<Wall> walls = new ArrayList<>(lines.size());
+    private static List<IFloorPlanPrimitive> translateToWalls(List<HoughTransform.LineSegment> lines) {
+        List<IFloorPlanPrimitive> walls = new ArrayList<>(lines.size());
         // TODO: ACHTUNG!! This is only for tests! Scale factor should be set by user!!!
         // TODO: And not in this stage, but later when floorplan is added
         float s = 21.0f/1433; // scale factor

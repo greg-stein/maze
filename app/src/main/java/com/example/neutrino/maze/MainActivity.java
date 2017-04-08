@@ -37,6 +37,7 @@ import android.widget.ToggleButton;
 
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
+import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.Fingerprint;
@@ -183,9 +184,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
 
-        List<Wall> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
+        List<IFloorPlanPrimitive> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
+        mFloorPlan.setSketch(walls);
         uiFloorPlanView.plot(walls, false); // not in init phase
-        mWiFiTug.walls = walls;
+//        mWiFiTug.walls = walls;
         uiFloorPlanView.showMap();
     }
 
