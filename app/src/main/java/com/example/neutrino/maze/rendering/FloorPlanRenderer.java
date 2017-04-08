@@ -1,5 +1,6 @@
 package com.example.neutrino.maze.rendering;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.opengl.GLES20;
@@ -74,6 +75,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         textRenderFragmentShaderCode = readResourceAsString("/res/raw/text_render_fragment_shader.glsl");
     }
 
+    private GLText glText;
+
     private static String readResourceAsString(String path) {
         Exception innerException;
         Class<? extends FloorPlanRenderer> aClass = FloorPlanRenderer.class;
@@ -97,7 +100,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         VectorHelper.colorTo3F(AppSettings.mapBgColor, mBgColorF);
         GLES20.glClearColor(mBgColorF[0], mBgColorF[1], mBgColorF[2], mBgColorF[3]);
         GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+//        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+
+        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
         GLES20.glDepthFunc(GLES20.GL_LESS);
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -134,11 +139,17 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
         mGlBuffers.add(mCurrentBuffer);
 
-        GLES20.glUseProgram(AppSettings.oglProgram);
-
         if (mQueuedTaskForGlThread != null) {
             mQueuedTaskForGlThread.run();
         }
+
+        // Create the GLText
+        glText = new GLText(AppSettings.oglTextRenderProgram, AppSettings.appActivity.getAssets());
+
+        // Load the font from file (set size + padding), creates the texture
+        // NOTE: after a successful call to this the font is ready for rendering!
+        glText.setScale(0.03f);
+        glText.load( "Roboto-Regular.ttf", 72, 0, 0);  // Create Font (Height: 14 Pixels / X+Y Padding 2 Pixels)
     }
 
     @Override
@@ -178,9 +189,24 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // Clear frame
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
+        GLES20.glUseProgram(AppSettings.oglProgram);
+
         for (GlRenderBuffer glBuffer : mGlBuffers) {
             glBuffer.render(mScratch);
         }
+
+        GLES20.glUseProgram(AppSettings.oglTextRenderProgram);
+        glText.begin( 0.0f, 0.0f, 1.0f, 1.0f, mScratch);         // Begin Text Rendering (Set Color WHITE)
+        glText.drawC("0", 0f, 0f);//, -mAngle);
+        glText.drawC("y", 0f, 2f);//, -mAngle);
+        glText.drawC("u", 0f, -2f);//, -mAngle);
+        glText.drawC("x", 2f, 0f);//, -mAngle);
+        glText.drawC("v", -2f, 0f);//, -mAngle);
+
+//        glText.drawC("Test String 3D!", 10f, 10f, -0.1f, 0, -30, 0);
+//        glText.draw( "Diagonal 1", 20, 20, 45);                // Draw Test String
+//        glText.draw( "Column 1", 22, 22, 90);              // Draw Test String
+        glText.end();                                   // End Text Rendering
     }
 
     public void addPrimitive(IFloorPlanPrimitive primitive) {
@@ -541,7 +567,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public PointF getMapAnyVertex() {
-        if (mFloorPlanPrimitives.size() > 0) {
+        if (mFloorPlanPrimitives != null && mFloorPlanPrimitives.size() > 0) {
             return mGlBuffers.get(0).getFirstVertex();
         }
         return new PointF();
