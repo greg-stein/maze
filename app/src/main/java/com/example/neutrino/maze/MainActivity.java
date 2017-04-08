@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private float mTravelledDistance = 0;
 
-    private FloorPlan mFloorPlan;
+    private FloorPlan mFloorPlan = FloorPlan.build();
 
     // GUI-related fields
     private FloorPlanView uiFloorPlanView;

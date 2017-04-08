@@ -30,6 +30,16 @@ public class FloorPlan {
         return floorPlan;
     }
 
+    public static FloorPlan build() {
+        FloorPlan floorPlan = new FloorPlan();
+        floorPlan.mFingerprints = new ArrayList<>();
+        floorPlan.mTags = new ArrayList<>();
+        floorPlan.mSketch = new ArrayList<>();
+        floorPlan.mDescriptor = null;
+
+        return floorPlan;
+    }
+
     public List<Object> disassemble() {
         int entitiesNum =
                 ((mSketch != null) ? mSketch.size() : 0) +
@@ -39,10 +49,10 @@ public class FloorPlan {
 
         List<Object> result = new ArrayList<>(entitiesNum);
 
-        result.addAll(mSketch);
-        result.addAll(mFingerprints);
-        result.addAll(mTags);
-        result.add(mDescriptor);
+        if (mSketch != null) result.addAll(mSketch);
+        if (mFingerprints != null)result.addAll(mFingerprints);
+        if (mTags != null)result.addAll(mTags);
+        if (mDescriptor != null)result.add(mDescriptor);
 
         return result;
     }
@@ -51,7 +61,7 @@ public class FloorPlan {
         return mSketch;
     }
 
-    public void setketch(List<IFloorPlanPrimitive> sketch) {
+    public void setSketch(List<IFloorPlanPrimitive> sketch) {
         this.mSketch = sketch;
     }
 
