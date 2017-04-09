@@ -12,11 +12,13 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Queue;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -52,6 +54,8 @@ public class WiFiTug implements TugOfWar.ITugger {
     private static final int RSS_OFFSET = 100;
     public static final int MAX_REGRESSION_DISTANCE_BETWEEN_MARKS = 70;
     public static final double MINIMUM_CORRELATION_COEFF = 0.2;
+    public static final int MIN_RSS_TO_COUNT = -75;
+    public static final double NEIGHBOUR_MIN_SCORE = 0;
 
     public static List<Fingerprint> centroidMarks = null;
     // 20% of total marks
@@ -347,6 +351,47 @@ public class WiFiTug implements TugOfWar.ITugger {
         }
     }
 
+    public static Set<String> getApsWithMinRSS(WiFiFingerprint fp, int minRSS) {
+        Set<String> strongAps = new HashSet<>();
+        if (fp == null)
+            return strongAps;
+
+        for (String mac : fp.keySet()) {
+            if (fp.get(mac) > minRSS) {
+                strongAps.add(mac);
+            }
+        }
+
+        return strongAps;
+    }
+
+    public static int score(WiFiFingerprint fingerprint, Fingerprint refFp) {
+        Set<String> fingerprintAps = getApsWithMinRSS(fingerprint, MIN_RSS_TO_COUNT);
+        Set<String> refFpAps = getApsWithMinRSS(refFp.getFingerprint(), MIN_RSS_TO_COUNT);
+
+        Set<String> intersection = new HashSet<>(fingerprintAps); // use the copy constructor
+        intersection.retainAll(refFpAps);
+
+        fingerprintAps.removeAll(intersection);
+        refFpAps.removeAll(intersection);
+
+        return intersection.size() * 2 - fingerprintAps.size() - refFpAps.size();
+    }
+
+    public static List<Fingerprint> getMarksWithSameAps2(List<Fingerprint> fingerprints, WiFiFingerprint fingerprint) {
+        List<Fingerprint> result = new ArrayList<>();
+
+        for (Fingerprint f : fingerprints) {
+            final double score = score(fingerprint, f);
+//            System.out.println("score: " + score);
+            if (score > NEIGHBOUR_MIN_SCORE) {
+                result.add(f);
+            }
+        }
+
+        return result;
+    }
+
     // Get list of wifi marks with the same APs as a given fingerprint, by iteratively reducing the
     // full set of wifi marks until only those containing all APs in the fingerprint remain.
     // If at some point we get to an empty list, we assume a 'rogue' mark and re-use the list from
@@ -394,7 +439,7 @@ public class WiFiTug implements TugOfWar.ITugger {
         float weight;
         float weightSum = 0;
 
-        List<Fingerprint> fingerprints = getMarksWithSameAps(marks, currentWiFiFingerprint);
+        List<Fingerprint> fingerprints = getMarksWithSameAps2(marks, currentWiFiFingerprint);
 //        List<Fingerprint> fingerprints = getMostCorrelatedMarks(currentWiFiFingerprint, marks);
 //        PointF centroid = new PointF();
 //        boolean outlierFound;
@@ -556,7 +601,7 @@ public class WiFiTug implements TugOfWar.ITugger {
 
     public int lessThen10marks = 0;
     public void getPositionStat(PointF pos) {
-        List<Fingerprint> fingerprints = getMarksWithSameAps(marks, currentWiFiFingerprint);
+        List<Fingerprint> fingerprints = getMarksWithSameAps2(marks, currentWiFiFingerprint);
         int fingerprintsNum = fingerprints.size();
         // Disable this method.
         if (fingerprintsNum < 5) {

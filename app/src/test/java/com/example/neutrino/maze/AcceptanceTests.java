@@ -365,7 +365,7 @@ public class AcceptanceTests {
 
         PointF actualPosition = new PointF();
         PointF expectedPosition = fingerprintMark.getCenter();
-        wifiTug.getPositionStat(actualPosition);
+        wifiTug.getPosition(actualPosition);
         predictedLocations.put(fingerprintMark, actualPosition);
 
         // Calculate distance between expected and actual positions
