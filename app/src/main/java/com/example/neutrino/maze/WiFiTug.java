@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.commons.math3.distribution.TDistribution;
+import org.apache.commons.math3.geometry.Point;
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.QRDecomposition;
@@ -443,6 +444,20 @@ public class WiFiTug implements TugOfWar.ITugger {
         return correlatedMarks;
     }
 
+    // TODO: Wipe out the deprecated method
+    public PointF getLocation(WiFiFingerprint fingerprint) {
+        currentWiFiFingerprint = fingerprint;
+        PointF location = new PointF();
+        getPosition(location);
+
+        return location;
+    }
+
+    /**
+     * This method is deprecated, use getLocation(WiFiFingerprint) instead
+     * @param position
+     */
+    @Deprecated
     @Override
     public void getPosition(PointF position) {
         float x = 0, y = 0;
