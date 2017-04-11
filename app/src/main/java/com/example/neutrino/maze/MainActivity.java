@@ -42,6 +42,7 @@ import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
+import com.example.neutrino.maze.rendering.VectorHelper;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
@@ -646,13 +647,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (mAutoScanEnabled) {
                     final float offsetX = (float) (Math.sin(Math.toRadians(mCurrentDegree)) * STEP_LENGTH);
                     final float offsetY = (float) (Math.cos(Math.toRadians(mCurrentDegree)) * STEP_LENGTH);
-                    uiFloorPlanView.updateOffset(offsetX, -offsetY);
 
-                    mTravelledDistance += STEP_LENGTH;
-                    if (mTravelledDistance >= WIFIMARK_SPACING) {
-                        // Place Fingerprint at center of the screen
-                        uiFloorPlanView.setLocation(uiFloorPlanView.getWidth()/2, uiFloorPlanView.getHeight()/2);
-                        mTravelledDistance = 0;
+                    PointF previousLocation = uiFloorPlanView.getLocation();
+                    PointF proposedNewLocation = new PointF(previousLocation.x, previousLocation.y);
+                    proposedNewLocation.offset(offsetX, -offsetY);
+
+                    if (!obstaclesBetween(previousLocation, proposedNewLocation)) {
+                        uiFloorPlanView.updateOffset(offsetX, -offsetY);
+
+                        mTravelledDistance += STEP_LENGTH;
+                        if (mTravelledDistance >= WIFIMARK_SPACING) {
+                            // Place Fingerprint at center of the screen
+                            uiFloorPlanView.setLocation(uiFloorPlanView.getWidth() / 2, uiFloorPlanView.getHeight() / 2);
+                            mTravelledDistance = 0;
+                        }
                     }
                 }
             }
@@ -675,6 +683,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 mCurrentDegree = degree;
             }
         }
+    }
+
+    private boolean obstaclesBetween(PointF p1, PointF p2) {
+        List<IFloorPlanPrimitive> sketch = mFloorPlan.getSketch();
+        for (IFloorPlanPrimitive primitive : sketch) {
+            if (primitive instanceof Wall) {
+                Wall wall = (Wall) primitive;
+                if (VectorHelper.linesIntersect(wall.getA(), wall.getB(), p1, p2)) return true;
+            }
+        }
+        return false;
     }
 
     @Override

@@ -243,6 +243,10 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
+    public PointF getLocation() {
+         return mCurrentLocation;
+    }
+
     public void centerToPoint(PointF point) {
         mRenderer.setOffset(-point.x, -point.y);
     }
