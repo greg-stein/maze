@@ -8,6 +8,7 @@ import android.net.wifi.WifiManager;
 
 import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -56,12 +57,12 @@ public class WifiScanner extends BroadcastReceiver {
     public interface IFingerprintAvailableListener {
         void onFingerprintAvailable(WiFiFingerprint fingerprint);
     }
-    private IFingerprintAvailableListener mFingerprintAvailableListener = null;
-    public void setFingerprintAvailableListener(IFingerprintAvailableListener listener) {
-        this.mFingerprintAvailableListener = listener;
+    private List<IFingerprintAvailableListener> mFingerprintAvailableListeners = new ArrayList<>();
+    public void addFingerprintAvailableListener(IFingerprintAvailableListener listener) {
+        this.mFingerprintAvailableListeners.add(listener);
     }
     private void emitWiFiFingerprintAvailableEvent(WiFiFingerprint scanResultsSums, Map<String, Integer> numScans) {
-        if (mFingerprintAvailableListener != null) {
+        if (mFingerprintAvailableListeners.size() > 0) {
             WiFiFingerprint fingerprint = new WiFiFingerprint();
 
             for (Map.Entry<String, Integer> entry : scanResultsSums.entrySet()) {
@@ -71,7 +72,11 @@ public class WifiScanner extends BroadcastReceiver {
                 }
             }
 
-            mFingerprintAvailableListener.onFingerprintAvailable(fingerprint);
+            for (IFingerprintAvailableListener listener : mFingerprintAvailableListeners) {
+                if (listener != null) {
+                    listener.onFingerprintAvailable(fingerprint);
+                }
+            }
         }
     }
 }

@@ -342,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        mWifiScanner.setFingerprintAvailableListener(new WifiScanner.IFingerprintAvailableListener() {
+        mWifiScanner.addFingerprintAvailableListener(new WifiScanner.IFingerprintAvailableListener() {
             @Override
             public void onFingerprintAvailable(WiFiFingerprint wiFiFingerprint) {
                 if (!mPlacedMarkAtCurrentLocation) {
