@@ -99,7 +99,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean mHaveRotation;
     private boolean mHaveStepDetector;
 
-    private WifiManager mWifiManager;
     private WifiScanner mWifiScanner;
     private WiFiTug mWiFiTug = new WiFiTug();
     private TugOfWar mTow = new TugOfWar();
@@ -145,8 +144,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mFabAlpha = getAlphaFromRes();
 
         // initialize your android device sensor capabilities
-        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        mWifiScanner = new WifiScanner(mWifiManager);
+        mWifiScanner = WifiScanner.getInstance();
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);

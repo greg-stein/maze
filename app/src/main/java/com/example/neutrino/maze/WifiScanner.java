@@ -18,14 +18,17 @@ public class WifiScanner extends BroadcastReceiver {
     private static final int MAX_WIFI_LEVEL = 100; // Percent of signal reception
     public static final int MOVING_AVERAGE_WINDOW_SIZE = 1;
 
+    private static WifiScanner instance = new WifiScanner();
+    public static WifiScanner getInstance() {return instance;}
+
     private MovingAverageScanResultsQueue mQueue = new MovingAverageScanResultsQueue(MOVING_AVERAGE_WINDOW_SIZE);
     private List<ScanResult> mLastScan;
     private WifiManager mWifiManager;
     private boolean mIsEnabled = false;
     private int mScanId = 0;
 
-    public WifiScanner(WifiManager wifiManager) {
-        mWifiManager = wifiManager;
+    protected WifiScanner() {
+        mWifiManager = (WifiManager) AppSettings.appActivity.getSystemService(Context.WIFI_SERVICE);
     }
 
     public void enable() {
