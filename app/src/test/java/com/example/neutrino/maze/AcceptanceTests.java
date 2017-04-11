@@ -78,7 +78,7 @@ public class AcceptanceTests {
         marks = CommonHelper.extractObjects(Fingerprint.class, deserializedList);
         walls = CommonHelper.extractObjects(Wall.class, deserializedList);
 
-        wifiTug = new WiFiTug();
+        wifiTug = WiFiTug.getInstance();
         wifiTug.walls = walls;
         wifiTug.marks = marks;
     }

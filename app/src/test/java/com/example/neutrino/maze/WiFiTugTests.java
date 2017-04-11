@@ -95,7 +95,7 @@ public class WiFiTugTests {
 
     @Test
     public void wifiTugCommon2AP2refTest() {
-        WiFiTug wiFiTug = new WiFiTug();
+        WiFiTug wiFiTug = WiFiTug.getInstance();
         wiFiTug.setClosestMarksPercentage(1.00f); // 100% - use all of the given reference points
 
         WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();

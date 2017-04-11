@@ -57,6 +57,12 @@ public class WiFiTug implements TugOfWar.ITugger {
     public static final int MIN_RSS_TO_COUNT = -75;
     public static final double NEIGHBOUR_MIN_SCORE = 0;
 
+    private static WiFiTug instance = new WiFiTug();
+    public static WiFiTug getInstance() {
+        return instance;
+    }
+    private WiFiTug() {}
+
     public static List<Fingerprint> centroidMarks = null;
     // 20% of total marks
     public static final float CLOSEST_MARKS_PERCENTAGE = 0.2f;

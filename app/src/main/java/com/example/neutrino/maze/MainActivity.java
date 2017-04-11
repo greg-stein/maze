@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean mHaveStepDetector;
 
     private WifiScanner mWifiScanner;
-    private WiFiTug mWiFiTug = new WiFiTug();
+    private WiFiTug mWiFiTug = WiFiTug.getInstance();
     private TugOfWar mTow = new TugOfWar();
 
     private boolean mPlacedMarkAtCurrentLocation = true;
