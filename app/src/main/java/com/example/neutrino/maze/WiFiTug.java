@@ -81,6 +81,10 @@ public class WiFiTug implements TugOfWar.ITugger {
         mMinWifiMarks = minWifiMarks;
     }
 
+    public void setCurrentFingerprint(WiFiFingerprint fingerprint) {
+        this.currentWiFiFingerprint = fingerprint;
+    }
+
     // Yeah, fake class is so antipattern...
     public static class WiFiFingerprint extends HashMap<String, Integer> {}
     public static class FingerprintHistory implements Iterable<WiFiFingerprint> {
@@ -117,7 +121,7 @@ public class WiFiTug implements TugOfWar.ITugger {
 
     public List<Fingerprint> marks; //TODO: no encapsulation!
     public List<Wall> walls; //TODO: no encapsulation!
-    public WiFiFingerprint currentWiFiFingerprint = null;
+    private WiFiFingerprint currentWiFiFingerprint = null;
     public FingerprintHistory currentHistory = null;
 
     void addToFingerprintHistory (WiFiFingerprint fingerprint) {

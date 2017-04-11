@@ -352,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     mWiFiTug.walls = uiFloorPlanView.getPrimitives(Wall.class);
                     mPlacedMarkAtCurrentLocation = true;
                 }
-                mWiFiTug.currentWiFiFingerprint = wiFiFingerprint;
+                mWiFiTug.setCurrentFingerprint(wiFiFingerprint);
             }
         });
 

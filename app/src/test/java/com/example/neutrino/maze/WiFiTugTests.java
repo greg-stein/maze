@@ -114,7 +114,7 @@ public class WiFiTugTests {
         wiFiTug.marks = new ArrayList<>();
         wiFiTug.marks.add(new Fingerprint(-1, 0, a));
         wiFiTug.marks.add(new Fingerprint(1, 2, b));
-        wiFiTug.currentWiFiFingerprint = current;
+        wiFiTug.setCurrentFingerprint(current);
         wiFiTug.walls = new ArrayList<>();
 
         PointF position = new PointF();

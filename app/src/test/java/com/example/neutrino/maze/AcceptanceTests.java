@@ -361,7 +361,7 @@ public class AcceptanceTests {
     public void wifiPositioningAcceptanceTest(int markIndex) {
         fingerprintMark = marks.remove(markIndex);
         // Mimic scanned fingerprint
-        wifiTug.currentWiFiFingerprint = fingerprintMark.getFingerprint();
+        wifiTug.setCurrentFingerprint(fingerprintMark.getFingerprint());
 
         PointF actualPosition = new PointF();
         PointF expectedPosition = fingerprintMark.getCenter();
