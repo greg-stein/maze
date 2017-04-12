@@ -72,17 +72,12 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private WifiScanner mWifiScanner;
     private Locator mLocator;
     private WiFiTug mWiFiTug = WiFiTug.getInstance();
-    private TugOfWar mTow = new TugOfWar();
 
     private boolean mPlacedMarkAtCurrentLocation = true;
 
     private static final PointF mCurrentLocation = new PointF();
     private float mCurrentWallLength = 1;
     private boolean mAutoScanEnabled = false;
-
-    public MainActivity() {
-        mTow.registerTugger(mWiFiTug);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

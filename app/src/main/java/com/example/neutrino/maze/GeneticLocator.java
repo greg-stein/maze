@@ -187,7 +187,7 @@ public class GeneticLocator {
             nextGeneration.clear();
             while (population.size() > POPULATION_SIZE) population.pollLast();
             final Chromosome best = population.first();
-            float error = (float) Math.hypot(realHeadLocation.x - best.get(headIndex).x, realHeadLocation.y - best.get(headIndex).y);
+//            float error = (float) Math.hypot(realHeadLocation.x - best.get(headIndex).x, realHeadLocation.y - best.get(headIndex).y);
 //            System.out.println(String.format("Generation %d best solution fitness: %.4f, error: %.4f", generation, best.getFitness(), error));
 //            System.out.println(String.format("%.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f", best.getFitness(),
 //                    best.get(0).x, best.get(0).y,

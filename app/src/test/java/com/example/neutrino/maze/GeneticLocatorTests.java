@@ -8,6 +8,7 @@ import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -77,6 +78,7 @@ public class GeneticLocatorTests {
     private static final float MUTATION_RATE = 0.3f;
     private static final float CRAWLING_RATE = 0.25f;
 
+    @Ignore // This test is very long ~1 min
     @Test
     public void commonGaTest() {
         GeneticLocator.setWorld(fingerprints);
