@@ -2,7 +2,6 @@ package com.example.neutrino.maze;
 
 import android.graphics.PointF;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -12,7 +11,6 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
@@ -31,23 +29,23 @@ public class MovingAveragePointsQueueTests {
     public void commonPointsTest() {
         MovingAveragePointsQueue queue = new MovingAveragePointsQueue(3);
         queue.add(new PointF(1, 2));
-        assertThat(queue.getMeanPoint().x, is(equalTo(1f / 1)));
-        assertThat(queue.getMeanPoint().y, is(equalTo(2f / 1)));
-        assertThat(queue.getStdev(), is(equalTo(0d)));
+        assertThat(queue.meanPoint().x, is(equalTo(1f / 1)));
+        assertThat(queue.meanPoint().y, is(equalTo(2f / 1)));
+        assertThat(queue.variance(), is(equalTo(0d)));
 
         queue.add(new PointF(3, 4));
-        assertThat(queue.getMeanPoint().x, is(equalTo((1f + 3f) / 2)));
-        assertThat(queue.getMeanPoint().y, is(equalTo((2f + 4f) / 2)));
-        assertThat(queue.getStdev(), is(closeTo(Math.sqrt(2), 0.0005d)));
+        assertThat(queue.meanPoint().x, is(equalTo((1f + 3f) / 2)));
+        assertThat(queue.meanPoint().y, is(equalTo((2f + 4f) / 2)));
+        assertThat(queue.variance(), is(closeTo(2, 0.0005d)));
 
         queue.add(new PointF(5, 6));
-        assertThat(queue.getMeanPoint().x, is(equalTo((1f + 3f + 5f) / 3)));
-        assertThat(queue.getMeanPoint().y, is(equalTo((2f + 4f + 6f) / 3)));
-        assertThat(queue.getStdev(), is(closeTo(2.309401076758503d, 0.0005d)));
+        assertThat(queue.meanPoint().x, is(equalTo((1f + 3f + 5f) / 3)));
+        assertThat(queue.meanPoint().y, is(equalTo((2f + 4f + 6f) / 3)));
+        assertThat(queue.variance(), is(closeTo(5.333333333333333d, 0.0005d)));
 
         queue.add(new PointF(7, 8));
-        assertThat(queue.getMeanPoint().x, is(equalTo((3f + 5f + 7f) / 3)));
-        assertThat(queue.getMeanPoint().y, is(equalTo((4f + 6f + 8f) / 3)));
-        assertThat(queue.getStdev(), is(closeTo(2.309401076758503d, 0.0005d)));
+        assertThat(queue.meanPoint().x, is(equalTo((3f + 5f + 7f) / 3)));
+        assertThat(queue.meanPoint().y, is(equalTo((4f + 6f + 8f) / 3)));
+        assertThat(queue.variance(), is(closeTo(5.333333333333333d, 0.0005d)));
     }
 }

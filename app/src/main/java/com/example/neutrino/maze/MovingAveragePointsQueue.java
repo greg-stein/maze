@@ -13,7 +13,7 @@ public class MovingAveragePointsQueue extends MovingAverageQueueBase<PointF> {
         super(windowSize);
     }
 
-    public PointF getMeanPoint() {
+    public PointF meanPoint() {
         PointF mean = new PointF();
 
         final int pointsInQueue = mQueue.size();
@@ -21,8 +21,8 @@ public class MovingAveragePointsQueue extends MovingAverageQueueBase<PointF> {
         return mean;
     }
 
-    public double getStdev() {
-        PointF mean = getMeanPoint();
+    public double variance() {
+        PointF mean = meanPoint();
         double variance = 0;
 
         for (PointF point : mQueue) {
@@ -32,7 +32,7 @@ public class MovingAveragePointsQueue extends MovingAverageQueueBase<PointF> {
             variance += diffX * diffX + diffY * diffY;
         }
 
-        return Math.sqrt(1d/mQueue.size() * variance);
+        return variance/mQueue.size();
     }
 
     @Override
@@ -43,5 +43,9 @@ public class MovingAveragePointsQueue extends MovingAverageQueueBase<PointF> {
     @Override
     protected void subtractFromSum(PointF item) {
         mPointSum.offset(-item.x, -item.y);
+    }
+
+    public PointF lastLocation() {
+        return mQueue.peekLast();
     }
 }

@@ -10,7 +10,7 @@ import java.util.Queue;
 public abstract class MovingAverageQueueBase<T> {
     public static final int MAX_SCANS_TO_AVERAGE = 3;
     protected int mWindowSize = MAX_SCANS_TO_AVERAGE;
-    protected Queue<T> mQueue = new ArrayDeque<>(mWindowSize);
+    protected ArrayDeque<T> mQueue = new ArrayDeque<>(mWindowSize);
 
     public MovingAverageQueueBase(int windowSize) {
         setWindowSize(windowSize);
