@@ -364,15 +364,23 @@ public class WiFiTug implements TugOfWar.ITugger {
 
     public static Set<String> getApsWithMinRSS(WiFiFingerprint fp, int minRSS) {
         Set<String> strongAps = new HashSet<>();
+        Set<String> weakAps = new HashSet<>();
+
         if (fp == null)
             return strongAps;
 
         for (String mac : fp.keySet()) {
             if (fp.get(mac) > minRSS) {
                 strongAps.add(mac);
+            } else {
+                weakAps.add(mac);
             }
         }
 
+        // If not enough strong Aps, use weak as well
+        if (strongAps.size() < 3) {
+            strongAps.addAll(weakAps);
+        }
         return strongAps;
     }
 
@@ -390,17 +398,24 @@ public class WiFiTug implements TugOfWar.ITugger {
     }
 
     public static List<Fingerprint> getMarksWithSameAps2(List<Fingerprint> fingerprints, WiFiFingerprint fingerprint) {
-        List<Fingerprint> result = new ArrayList<>();
+        List<Fingerprint> moreSimilarFingerprints = new ArrayList<>();
+        List<Fingerprint> lessSimilarFingerprints = new ArrayList<>();
 
         for (Fingerprint f : fingerprints) {
             final double score = score(fingerprint, f);
 //            System.out.println("score: " + score);
             if (score > NEIGHBOUR_MIN_SCORE) {
-                result.add(f);
+                moreSimilarFingerprints.add(f);
+            } else if (score > NEIGHBOUR_MIN_SCORE - 1) {
+                lessSimilarFingerprints.add(f);
             }
         }
 
-        return result;
+        if (moreSimilarFingerprints.size() == 0) {
+            return lessSimilarFingerprints;
+        }
+
+        return moreSimilarFingerprints;
     }
 
     // Get list of wifi marks with the same APs as a given fingerprint, by iteratively reducing the
