@@ -2,7 +2,7 @@
 
 import android.net.wifi.ScanResult;
 
-import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
+import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

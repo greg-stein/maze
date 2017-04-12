@@ -3,7 +3,6 @@ package com.example.neutrino.maze;
 import android.graphics.PointF;
 
 import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.Wall;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +21,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
@@ -34,29 +32,29 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest=Config.NONE)
-public class WiFiTugTests {
+public class WiFiLocatorTests {
     public static final double FLOAT_ERROR = 0.00005f;
 
     @Test
     public void oneSsidBothExistingTest() {
-        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
-        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint a = new WiFiLocator.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint b = new WiFiLocator.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 75);
         b.put("44-85-00-11-DA-EC", 57);
 
-        float distance = WiFiTug.dissimilarity(a, b);
+        float distance = WiFiLocator.dissimilarity(a, b);
 
         assertThat(distance, is(18f));
     }
 
     @Test
     public void oneSsidExistsInSingleFingerprintTest() {
-        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
-        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint a = new WiFiLocator.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint b = new WiFiLocator.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 75-100);
 
-        float distanceA_B = WiFiTug.dissimilarity(a, b);
-        float distanceB_A = WiFiTug.dissimilarity(b, a);
+        float distanceA_B = WiFiLocator.dissimilarity(a, b);
+        float distanceB_A = WiFiLocator.dissimilarity(b, a);
 
         assertThat(distanceA_B, is(75f));
         assertThat(distanceB_A, is(equalTo(distanceA_B)));
@@ -64,13 +62,13 @@ public class WiFiTugTests {
 
     @Test
     public void twoSsidExistInSingleFingerprintTest() {
-        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
-        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint a = new WiFiLocator.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint b = new WiFiLocator.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 3-100);
         a.put("44-85-FF-11-DA-EC", 4-100);
 
-        float distanceA_B = WiFiTug.dissimilarity(a, b);
-        float distanceB_A = WiFiTug.dissimilarity(b, a);
+        float distanceA_B = WiFiLocator.dissimilarity(a, b);
+        float distanceB_A = WiFiLocator.dissimilarity(b, a);
 
         assertThat(distanceA_B, is(5f));
         assertThat(distanceB_A, is(equalTo(distanceA_B)));
@@ -78,16 +76,16 @@ public class WiFiTugTests {
 
     @Test
     public void twoSsidExistInBothFingerprintTest() {
-        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
-        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint a = new WiFiLocator.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint b = new WiFiLocator.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 78);
         a.put("44-85-FF-11-DA-EC", 64);
 
         b.put("44-85-00-11-DA-EC", 75); // diff = 3
         b.put("44-85-FF-11-DA-EC", 68); // diff = 4
 
-        float distanceA_B = WiFiTug.dissimilarity(a, b);
-        float distanceB_A = WiFiTug.dissimilarity(b, a);
+        float distanceA_B = WiFiLocator.dissimilarity(a, b);
+        float distanceB_A = WiFiLocator.dissimilarity(b, a);
 
         assertThat(distanceA_B, is(5f));
         assertThat(distanceB_A, is(equalTo(distanceA_B)));
@@ -95,29 +93,29 @@ public class WiFiTugTests {
 
     @Test
     public void wifiTugCommon2AP2refTest() {
-        WiFiTug wiFiTug = WiFiTug.getInstance();
+        WiFiLocator wifiLocator = WiFiLocator.getInstance();
 
-        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint a = new WiFiLocator.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 60);
         a.put("44-85-FF-11-DA-EC", 68);
 
-        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint b = new WiFiLocator.WiFiFingerprint();
         b.put("44-85-00-11-DA-EC", 78);
         b.put("44-85-FF-11-DA-EC", 64);
 
         // dissimilarity = 5 from b, 15 from a
-        WiFiTug.WiFiFingerprint current = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint current = new WiFiLocator.WiFiFingerprint();
         current.put("44-85-00-11-DA-EC", 75); // diff = 3
         current.put("44-85-FF-11-DA-EC", 68); // diff = 4
 
-        wiFiTug.marks = new ArrayList<>();
-        wiFiTug.marks.add(new Fingerprint(-1, 0, a));
-        wiFiTug.marks.add(new Fingerprint(1, 2, b));
-        wiFiTug.setCurrentFingerprint(current);
-        wiFiTug.walls = new ArrayList<>();
+        wifiLocator.marks = new ArrayList<>();
+        wifiLocator.marks.add(new Fingerprint(-1, 0, a));
+        wifiLocator.marks.add(new Fingerprint(1, 2, b));
+        wifiLocator.setCurrentFingerprint(current);
+        wifiLocator.walls = new ArrayList<>();
 
         PointF position = new PointF();
-        wiFiTug.getPosition(position);
+        wifiLocator.getPosition(position);
 
         assertThat((double)position.x, is(closeTo(0.5d, FLOAT_ERROR)));
         assertThat((double)position.y, is(closeTo(1.5d, FLOAT_ERROR)));
@@ -125,47 +123,47 @@ public class WiFiTugTests {
 
     @Test
     public void getSimilarMarksTest() {
-        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint a = new WiFiLocator.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 1);
         a.put("44-85-FF-11-DA-EC", 0);
 
-        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint b = new WiFiLocator.WiFiFingerprint();
         b.put("44-85-00-11-DA-EC", 1);
         b.put("44-85-FF-11-DA-EC", 1);
 
-        WiFiTug.WiFiFingerprint c = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint c = new WiFiLocator.WiFiFingerprint();
         c.put("44-85-00-11-DA-EC", 1);
         c.put("44-85-FF-11-DA-EC", 2);
 
-        WiFiTug.WiFiFingerprint d = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint d = new WiFiLocator.WiFiFingerprint();
         d.put("44-85-00-11-DA-EC", 2);
         d.put("44-85-FF-11-DA-EC", 2);
 
-        WiFiTug.WiFiFingerprint e = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint e = new WiFiLocator.WiFiFingerprint();
         e.put("44-85-00-11-DA-EC", 2);
         e.put("44-85-FF-11-DA-EC", 3);
 
-        WiFiTug.WiFiFingerprint f = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint f = new WiFiLocator.WiFiFingerprint();
         f.put("44-85-00-11-DA-EC", 2);
         f.put("44-85-FF-11-DA-EC", 4);
 
-        WiFiTug.WiFiFingerprint g = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint g = new WiFiLocator.WiFiFingerprint();
         g.put("44-85-00-11-DA-EC", 4);
         g.put("44-85-FF-11-DA-EC", 3);
 
-        WiFiTug.WiFiFingerprint h = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint h = new WiFiLocator.WiFiFingerprint();
         h.put("44-85-00-11-DA-EC", 4);
         h.put("44-85-FF-11-DA-EC", 4);
 
-        WiFiTug.WiFiFingerprint i = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint i = new WiFiLocator.WiFiFingerprint();
         i.put("44-85-00-11-DA-EC", 4);
         i.put("44-85-FF-11-DA-EC", 5);
 
-        WiFiTug.WiFiFingerprint j = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint j = new WiFiLocator.WiFiFingerprint();
         j.put("44-85-00-11-DA-EC", 5);
         j.put("44-85-FF-11-DA-EC", 5);
 
-        WiFiTug.WiFiFingerprint fingerprint = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint fingerprint = new WiFiLocator.WiFiFingerprint();
         fingerprint.put("44-85-00-11-DA-EC", 0); // diff = 3
         fingerprint.put("44-85-FF-11-DA-EC", 0); // diff = 4
 
@@ -185,13 +183,13 @@ public class WiFiTugTests {
 
         // add another 20 marks farther than those ten
         for (int x = 0; x < 20; x++) {
-            WiFiTug.WiFiFingerprint fingerprint1 = new WiFiTug.WiFiFingerprint();
+            WiFiLocator.WiFiFingerprint fingerprint1 = new WiFiLocator.WiFiFingerprint();
             fingerprint1.put("44-85-00-11-DA-EC", (int) (Math.random()*50 + 20));
             fingerprint1.put("44-85-FF-11-DA-EC", (int) (Math.random()*50 + 20));
             marks.add(new Fingerprint(0, 0, fingerprint1));
         }
         // get 20% of total 30, but minimum is 10
-        List<Fingerprint> similarMarks = WiFiTug.getSimilarMarks(marks, fingerprint, 0.2f);
+        List<Fingerprint> similarMarks = WiFiLocator.getSimilarMarks(marks, fingerprint, 0.2f);
 
         assertNotNull(similarMarks);
         assertThat(similarMarks, hasSize(10));
@@ -210,25 +208,25 @@ public class WiFiTugTests {
 
     @Test
     public void getMarksWithSameApsTest() {
-        WiFiTug.WiFiFingerprint a = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint a = new WiFiLocator.WiFiFingerprint();
         a.put("44-85-00-11-DA-EC", 0); // 00
         a.put("44-85-FF-11-DA-EC", 0); // FF
 
-        WiFiTug.WiFiFingerprint b = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint b = new WiFiLocator.WiFiFingerprint();
         b.put("44-85-00-11-DA-EC", 0); // 00
         b.put("44-85-FF-11-DA-EC", 0); // FF
         b.put("44-85-AA-11-DA-EC", 0); // AA
 
-        WiFiTug.WiFiFingerprint c = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint c = new WiFiLocator.WiFiFingerprint();
         c.put("44-85-00-11-DA-EC", 0); // 00
         c.put("44-85-FF-11-DA-EC", 0); // FF
         c.put("44-85-AA-11-DA-EC", 0); // AA
 
-        WiFiTug.WiFiFingerprint d = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint d = new WiFiLocator.WiFiFingerprint();
         d.put("44-85-00-11-DA-EC", 0); // 00
         d.put("44-85-BB-11-DA-EC", 0); // BB
 
-        WiFiTug.WiFiFingerprint e = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint e = new WiFiLocator.WiFiFingerprint();
         e.put("44-85-00-11-DA-EC", 0); // 00
         e.put("44-85-BB-11-DA-EC", 0); // BB
         e.put("44-85-FF-11-DA-EC", 0); // FF
@@ -242,11 +240,11 @@ public class WiFiTugTests {
         marks.add(dMark = new Fingerprint(0, 0, d));
         marks.add(eMark = new Fingerprint(0, 0, e));
 
-        WiFiTug.WiFiFingerprint fingerprint1 = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint fingerprint1 = new WiFiLocator.WiFiFingerprint();
         fingerprint1.put("44-85-00-11-DA-EC", 0); // 00
         fingerprint1.put("44-85-FF-11-DA-EC", 0); // FF
 
-        List<Fingerprint> filteredMarks = WiFiTug.getMarksWithSameAps(marks, fingerprint1);
+        List<Fingerprint> filteredMarks = WiFiLocator.getMarksWithSameAps(marks, fingerprint1);
 
         assertNotNull(filteredMarks);
         assertThat(filteredMarks, hasSize(4));
@@ -255,11 +253,11 @@ public class WiFiTugTests {
 
 // --------------------------------------------------------
 
-        WiFiTug.WiFiFingerprint fingerprint2 = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint fingerprint2 = new WiFiLocator.WiFiFingerprint();
         fingerprint2.put("44-85-00-11-DA-EC", 0); // 00
         fingerprint2.put("44-85-BB-11-DA-EC", 0); // BB
 
-        filteredMarks = WiFiTug.getMarksWithSameAps(marks, fingerprint2);
+        filteredMarks = WiFiLocator.getMarksWithSameAps(marks, fingerprint2);
 
         assertNotNull(filteredMarks);
         assertThat(filteredMarks, hasSize(2));
@@ -268,12 +266,12 @@ public class WiFiTugTests {
 
 // --------------------------------------------------------
 
-        WiFiTug.WiFiFingerprint fingerprint3 = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint fingerprint3 = new WiFiLocator.WiFiFingerprint();
         fingerprint3.put("44-85-00-11-DA-EC", 0); // 00
         fingerprint3.put("44-85-BB-11-DA-EC", 0); // BB
         fingerprint3.put("44-85-FF-11-DA-EC", 0); // FF
 
-        filteredMarks = WiFiTug.getMarksWithSameAps(marks, fingerprint3);
+        filteredMarks = WiFiLocator.getMarksWithSameAps(marks, fingerprint3);
 
         assertNotNull(filteredMarks);
         assertThat(filteredMarks, hasSize(1));
@@ -282,13 +280,13 @@ public class WiFiTugTests {
 
 // --------------------------------------------------------
 
-        WiFiTug.WiFiFingerprint fingerprint4 = new WiFiTug.WiFiFingerprint();
+        WiFiLocator.WiFiFingerprint fingerprint4 = new WiFiLocator.WiFiFingerprint();
         fingerprint4.put("44-85-00-11-DA-EC", 0); // 00
         fingerprint4.put("44-85-BB-11-DA-EC", 0); // BB
         fingerprint4.put("44-85-FF-11-DA-EC", 0); // FF
         fingerprint4.put("44-85-AA-11-DA-EC", 0); // AA
 
-        filteredMarks = WiFiTug.getMarksWithSameAps(marks, fingerprint4);
+        filteredMarks = WiFiLocator.getMarksWithSameAps(marks, fingerprint4);
 
         assertNotNull(filteredMarks);
         assertThat(filteredMarks, either(

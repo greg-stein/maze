@@ -1,10 +1,8 @@
 package com.example.neutrino.maze;
 
-import android.graphics.PointF;
-
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
-import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
+import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -93,7 +91,7 @@ public class GeneticLocatorTests {
 //        GeneticLocator.headIndex = headIndex;
 
 //        PointF pointF = new PointF();
-//        WiFiTug wiFiTug = new WiFiTug();
+//        WiFiLocator wiFiTug = new WiFiLocator();
 //        wiFiTug.marks = fingerprints;
 //        for (int i = 0; i < WALK_PATH_LENGTH; i++) {
 //            wiFiTug.currentWiFiFingerprint = walkPath.get(i).getFingerprint();

@@ -4,7 +4,6 @@ import android.graphics.PointF;
 
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.opencsv.CSVWriter;
 
@@ -48,7 +47,7 @@ public class AcceptanceTests {
 
     private List<Fingerprint> marks;
     private List<Wall> walls;
-    private WiFiTug wifiTug;
+    private WiFiLocator wifiLocator;
 
     @Rule
     public ErrorCollector collector = new ErrorCollector();
@@ -79,9 +78,9 @@ public class AcceptanceTests {
         marks = CommonHelper.extractObjects(Fingerprint.class, deserializedList);
         walls = CommonHelper.extractObjects(Wall.class, deserializedList);
 
-        wifiTug = WiFiTug.getInstance();
-        wifiTug.walls = walls;
-        wifiTug.marks = marks;
+        wifiLocator = WiFiLocator.getInstance();
+        wifiLocator.walls = walls;
+        wifiLocator.marks = marks;
     }
 
     private List<Object> getFloorPlanFromRes(String resourceFile) {
@@ -109,14 +108,14 @@ public class AcceptanceTests {
         List<Fingerprint> floorPlanMarks = loadWifiMarksFromRes("haifa_mall_floorplan.json");
         List<Fingerprint> pathMarks = loadWifiMarksFromRes("walking_path.json");
 
-        wifiTug.marks = floorPlanMarks;
-        wifiTug.currentHistory = new WiFiTug.FingerprintHistory(10);
+        wifiLocator.marks = floorPlanMarks;
+        wifiLocator.currentHistory = new WiFiLocator.FingerprintHistory(10);
         for (int i = 3; i < 13; i++) {
-            wifiTug.addToFingerprintHistory(pathMarks.get(i).getFingerprint());
+            wifiLocator.addToFingerprintHistory(pathMarks.get(i).getFingerprint());
         }
 
         List<PointF> mostProbably = new ArrayList<>();
-        wifiTug.getMostProbableTrajectory(mostProbably);
+        wifiLocator.getMostProbableTrajectory(mostProbably);
 
         assertEquals(10, mostProbably.size());
 
@@ -135,18 +134,18 @@ public class AcceptanceTests {
 
     @Test
     public void wifiHistoryTrivialTest() {
-        wifiTug.currentHistory = new WiFiTug.FingerprintHistory(10);
+        wifiLocator.currentHistory = new WiFiLocator.FingerprintHistory(10);
 
         Fingerprint standingMark = marks.get(marks.size() / 2);
-        WiFiTug.WiFiFingerprint standingPrint = standingMark.getFingerprint();
+        WiFiLocator.WiFiFingerprint standingPrint = standingMark.getFingerprint();
         for (int i = 0; i < 10; i++) {
-            wifiTug.addToFingerprintHistory(standingPrint);
+            wifiLocator.addToFingerprintHistory(standingPrint);
         }
 
         List<PointF> mostProbably = new ArrayList<>();
-        wifiTug.getMostProbableTrajectory(mostProbably);
+        wifiLocator.getMostProbableTrajectory(mostProbably);
 
-        assertEquals(mostProbably.size(), wifiTug.currentHistory.size());
+        assertEquals(mostProbably.size(), wifiLocator.currentHistory.size());
 
         for (int i = 0; i < 10; i++) {
             assertEquals(mostProbably.get(i).x, standingMark.getCenter().x, 1e-5);
@@ -213,7 +212,7 @@ public class AcceptanceTests {
         int macIndex = 0;
 
         for (Fingerprint mark : marks) {
-            final WiFiTug.WiFiFingerprint fingerprint = mark.getFingerprint();
+            final WiFiLocator.WiFiFingerprint fingerprint = mark.getFingerprint();
             for (String mac : fingerprint.keySet()) {
                 if (!macIndices.containsKey(mac)) {
                     macIndices.put(mac, macIndex++);
@@ -256,7 +255,7 @@ public class AcceptanceTests {
         int macIndex = 0;
 
         for (Fingerprint mark : marks) {
-            final WiFiTug.WiFiFingerprint fingerprint = mark.getFingerprint();
+            final WiFiLocator.WiFiFingerprint fingerprint = mark.getFingerprint();
             for (String mac : fingerprint.keySet()) {
                 if (!macIndices.containsKey(mac)) {
                     macIndices.put(mac, macIndex);
@@ -282,8 +281,8 @@ public class AcceptanceTests {
 
         for (Fingerprint mark1 : marks) {
             for (Fingerprint mark2 : marks) {
-                final float dissimilarity = WiFiTug.dissimilarity(mark1.getFingerprint(), mark2.getFingerprint());
-                final double  distance = Math.sqrt(WiFiTug.distanceXYsqr(mark1, mark2));
+                final float dissimilarity = WiFiLocator.dissimilarity(mark1.getFingerprint(), mark2.getFingerprint());
+                final double  distance = Math.sqrt(WiFiLocator.distanceXYsqr(mark1, mark2));
                 csvWriter.writeNext(new String[] {String.valueOf(mark1.instanceId), String.valueOf(mark2.instanceId), String.valueOf(distance), String.valueOf(dissimilarity)});
             }
         }
@@ -305,11 +304,11 @@ public class AcceptanceTests {
             String[] row = new String[Fingerprint.instanceNum];
 
             for (Fingerprint mark2 : marks) {
-                final double distance = Math.sqrt(WiFiTug.distanceXYsqr(mark1, mark2));
+                final double distance = Math.sqrt(WiFiLocator.distanceXYsqr(mark1, mark2));
                 float difference = Float.POSITIVE_INFINITY;
 
                 if (distance <= 70) {
-                    difference = WiFiTug.dissimilarity(mark1.getFingerprint(), mark2.getFingerprint());
+                    difference = WiFiLocator.dissimilarity(mark1.getFingerprint(), mark2.getFingerprint());
                 }
                 row[mark2.instanceId] = String.valueOf(difference);
             }
@@ -362,11 +361,11 @@ public class AcceptanceTests {
     public void wifiPositioningAcceptanceTest(int markIndex) {
         fingerprintMark = marks.remove(markIndex);
         // Mimic scanned fingerprint
-        wifiTug.setCurrentFingerprint(fingerprintMark.getFingerprint());
+        wifiLocator.setCurrentFingerprint(fingerprintMark.getFingerprint());
 
         PointF actualPosition = new PointF();
         PointF expectedPosition = fingerprintMark.getCenter();
-        wifiTug.getPosition(actualPosition);
+        wifiLocator.getPosition(actualPosition);
         predictedLocations.put(fingerprintMark, actualPosition);
 
         // Calculate distance between expected and actual positions

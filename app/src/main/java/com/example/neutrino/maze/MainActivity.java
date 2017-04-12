@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private SensorListener mSensorListener;
     private WifiScanner mWifiScanner;
     private Locator mLocator;
-    private WiFiTug mWiFiTug = WiFiTug.getInstance();
+    private WiFiLocator mWiFiLocator = WiFiLocator.getInstance();
 
     private boolean mPlacedMarkAtCurrentLocation = true;
 
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         List<IFloorPlanPrimitive> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
         mFloorPlan.setSketch(walls);
         uiFloorPlanView.plot(walls, false); // not in init phase
-//        mWiFiTug.walls = walls;
+//        mWiFiLocator.walls = walls;
         uiFloorPlanView.showMap();
     }
 
@@ -304,11 +304,11 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 //                if (!mPlacedMarkAtCurrentLocation) {
 //                    uiFloorPlanView.placeWiFiMarkAt(mCurrentLocation, wiFiFingerprint);
 //                    // TODO: There is costly stupidity in these two lines:
-//                    mWiFiTug.marks = uiFloorPlanView.getPrimitives(Fingerprint.class);
-//                    mWiFiTug.walls = uiFloorPlanView.getPrimitives(Wall.class);
+//                    mWiFiLocator.marks = uiFloorPlanView.getPrimitives(Fingerprint.class);
+//                    mWiFiLocator.walls = uiFloorPlanView.getPrimitives(Wall.class);
 //                    mPlacedMarkAtCurrentLocation = true;
 //                }
-//                mWiFiTug.setCurrentFingerprint(wiFiFingerprint);
+//                mWiFiLocator.setCurrentFingerprint(wiFiFingerprint);
 //            }
 //        });
 
@@ -349,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                     List<Object> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
                     mFloorPlan = FloorPlan.build(floorplan);
                     uiFloorPlanView.plot(mFloorPlan.getSketch());
-                    mWiFiTug.marks = mFloorPlan.getFingerprints();
+                    mWiFiLocator.marks = mFloorPlan.getFingerprints();
                 }
 
 
@@ -574,6 +574,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     public void onLocationUpdated(PointF location) {
         mCurrentLocation.set(location);
         uiFloorPlanView.setLocation(location);
-//        uiFloorPlanView.highlightCentroidMarks(WiFiTug.centroidMarks);
+//        uiFloorPlanView.highlightCentroidMarks(WiFiLocator.centroidMarks);
     }
 }

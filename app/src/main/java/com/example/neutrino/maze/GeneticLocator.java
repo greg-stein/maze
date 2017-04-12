@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.TreeSet;
 
-import static com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
+import static com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 
 /**
  * Created by Greg Stein on 4/9/2017.
@@ -272,7 +272,7 @@ public class GeneticLocator {
         for (Fingerprint f : world) {
             final PointF c = f.getCenter();
             if (Math.hypot(c.x - p.x, c.y - p.y) < ENVIRONMENT_RADIUS) {
-                dissimilaritiesSum += WiFiTug.dissimilarity(fp, f.getFingerprint());
+                dissimilaritiesSum += WiFiLocator.dissimilarity(fp, f.getFingerprint());
                 members++;
             }
         }

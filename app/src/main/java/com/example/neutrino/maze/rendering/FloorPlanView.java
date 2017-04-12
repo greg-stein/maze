@@ -13,7 +13,7 @@ import com.example.neutrino.maze.rendering.FloorPlanRenderer.IWallLengthChangedL
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IFloorplanLoadCompleteListener;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
+import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 
 import java.util.List;
 

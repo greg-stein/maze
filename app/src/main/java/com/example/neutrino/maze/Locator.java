@@ -2,7 +2,7 @@ package com.example.neutrino.maze;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
+import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 import com.example.neutrino.maze.WifiScanner.IFingerprintAvailableListener;
 import com.example.neutrino.maze.SensorListener.IStepDetectedListener;
 import com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
@@ -24,7 +24,7 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
 
     private WifiScanner mWifiScanner = WifiScanner.getInstance();
     private SensorListener mSensorListener = SensorListener.getInstance();
-    private WiFiTug mWifiLocator = WiFiTug.getInstance();
+    private WiFiLocator mWifiLocator = WiFiLocator.getInstance();
     private MovingAveragePointsQueue mLastLocations = new MovingAveragePointsQueue(WINDOW_SIZE);
     private PointF mCurrentLocation = new PointF(Float.MAX_VALUE, Float.MAX_VALUE);
     private float mCurrentDegree;

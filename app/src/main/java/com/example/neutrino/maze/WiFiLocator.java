@@ -1,16 +1,13 @@
 package com.example.neutrino.maze;
 
 import android.graphics.PointF;
-import android.support.v4.util.Pair;
 
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.rendering.VectorHelper;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,19 +19,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.commons.math3.distribution.TDistribution;
-import org.apache.commons.math3.geometry.Point;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.QRDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.stat.regression.SimpleRegression;
-
 /**
  * Created by Greg Stein on 9/25/2016.
  */
-public class WiFiTug {
+public class WiFiLocator {
 
     private static final float WIFI_DISTANCE_CANDIDATE_PERCENTAGE = 0.5f;
     private static final int MAX_NUM_CANDIDATES = 5;
@@ -43,11 +31,11 @@ public class WiFiTug {
     public static final int MIN_RSS_TO_COUNT = -75;
     public static final double NEIGHBOUR_MIN_SCORE = 0;
 
-    private static WiFiTug instance = new WiFiTug();
-    public static WiFiTug getInstance() {
+    private static WiFiLocator instance = new WiFiLocator();
+    public static WiFiLocator getInstance() {
         return instance;
     }
-    private WiFiTug() {}
+    private WiFiLocator() {}
 
     public static List<Fingerprint> centroidMarks = null;
 
