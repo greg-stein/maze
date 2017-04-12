@@ -85,6 +85,7 @@ public class GeneticLocator {
             for (int gene = 0; gene < dnaLength - 1; gene++) {
                 final float geneDistance = random.nextFloat() * MAX_DISTANCE_BETWEEN_GENES;
                 final float geneAngle = random.nextFloat() * (maxAngle - minAngle) + minAngle;
+                // TODO: cos and sin accept angles in RADIANS you stupid bastard! Fix that!
                 final float x = (float) (geneDistance * Math.cos(geneAngle)) + lastGene.x;
                 final float y = (float) (geneDistance * Math.sin(geneAngle)) + lastGene.y;
                 final PointF newGene = new PointF(x, y);
