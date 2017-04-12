@@ -21,6 +21,20 @@ public class MovingAveragePointsQueue extends MovingAverageQueueBase<PointF> {
         return mean;
     }
 
+    public double getStdev() {
+        PointF mean = getMeanPoint();
+        double variance = 0;
+
+        for (PointF point : mQueue) {
+            final float diffX = point.x - mean.x;
+            final float diffY = point.y - mean.y;
+
+            variance += diffX * diffX + diffY * diffY;
+        }
+
+        return Math.sqrt(1d/mQueue.size() * variance);
+    }
+
     @Override
     protected void addToSum(PointF item) {
         mPointSum.offset(item.x, item.y);
