@@ -7,7 +7,8 @@ import android.graphics.PointF;
  */
 
 public class MovingAveragePointsQueue extends MovingAverageQueueBase<PointF> {
-    private PointF mPointSum = new PointF();
+    private float mSumX = 0;
+    private float mSumY = 0;
 
     public MovingAveragePointsQueue(int windowSize) {
         super(windowSize);
@@ -17,7 +18,7 @@ public class MovingAveragePointsQueue extends MovingAverageQueueBase<PointF> {
         PointF mean = new PointF();
 
         final int pointsInQueue = mQueue.size();
-        mean.set(mPointSum.x / pointsInQueue, mPointSum.y / pointsInQueue);
+        mean.set(mSumX / pointsInQueue, mSumY / pointsInQueue);
         return mean;
     }
 
@@ -37,12 +38,14 @@ public class MovingAveragePointsQueue extends MovingAverageQueueBase<PointF> {
 
     @Override
     protected void addToSum(PointF item) {
-        mPointSum.offset(item.x, item.y);
+        mSumX += item.x;
+        mSumY += item.y;
     }
 
     @Override
     protected void subtractFromSum(PointF item) {
-        mPointSum.offset(-item.x, -item.y);
+        mSumX -= item.x;
+        mSumY -= item.y;
     }
 
     public PointF lastLocation() {
