@@ -243,6 +243,10 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
+    public void setLocation(PointF location) {
+        setLocation(location.x, location.y);
+    }
+
     public PointF getLocation() {
          return mCurrentLocation;
     }
