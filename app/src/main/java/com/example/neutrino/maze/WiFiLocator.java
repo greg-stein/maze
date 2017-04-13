@@ -8,6 +8,7 @@ import com.example.neutrino.maze.floorplan.Wall;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,7 +30,7 @@ public class WiFiLocator {
     private static final float MAX_SQRDISTANCE_TWO_WIFIMARKS = 100;   // maximum allowed sqrdistance
     private static final int RSS_OFFSET = 100;
     public static final int MIN_RSS_TO_COUNT = -75;
-    public static final double NEIGHBOUR_MIN_SCORE = 0;
+    public static final double NEIGHBOUR_MIN_SCORE = -1;
 
     private static WiFiLocator instance = new WiFiLocator();
     public static WiFiLocator getInstance() {
@@ -224,28 +225,32 @@ public class WiFiLocator {
     }
 
     public static List<Fingerprint> getMarksWithSameAps2(List<Fingerprint> fingerprints, WiFiFingerprint fingerprint) {
-        List<Fingerprint> moreSimilarFingerprints = new ArrayList<>();
-        List<Fingerprint> lessSimilarFingerprints = new ArrayList<>();
+        NavigableMap<Integer, List<Fingerprint>> fingerprintsByScore = new TreeMap<>(Collections.<Integer>reverseOrder());
 
         for (Fingerprint f : fingerprints) {
-            final double score = score(fingerprint, f);
-//            System.out.println("score: " + score);
+            final int score = score(fingerprint, f);
+
             if (score > NEIGHBOUR_MIN_SCORE) {
-                moreSimilarFingerprints.add(f);
-            } else if (score > NEIGHBOUR_MIN_SCORE - 1) {
-                lessSimilarFingerprints.add(f);
+                List<Fingerprint> list = fingerprintsByScore.get(score);
+                if (list == null) {
+                    list = new ArrayList<>();
+                    fingerprintsByScore.put(score, list);
+                }
+                list.add(f);
             }
         }
 
-        if (moreSimilarFingerprints.size() == 0) {
-            return lessSimilarFingerprints;
+        List<Fingerprint> bestFingerprints = new ArrayList<>();
+        for (List<Fingerprint> goodFingerprints : fingerprintsByScore.values()) {
+            bestFingerprints.addAll(goodFingerprints);
+            if (bestFingerprints.size() > 0) break;
         }
 
-        return moreSimilarFingerprints;
+        return bestFingerprints;
     }
 
-    // Get list of wifi marks with the same APs as a given fingerprint, by iteratively reducing the
-    // full set of wifi marks until only those containing all APs in the fingerprint remain.
+    // Get list of wifi mFingerprints with the same APs as a given fingerprint, by iteratively reducing the
+    // full set of wifi mFingerprints until only those containing all APs in the fingerprint remain.
     // If at some point we get to an empty list, we assume a 'rogue' mark and re-use the list from
     // the previous step.
     public static List<Fingerprint> getMarksWithSameAps(List<Fingerprint> fingerprints, WiFiFingerprint fingerprint) {
