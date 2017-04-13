@@ -454,9 +454,10 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         addPrimitive(footprint);
     }
 
-    public void putMark(final float x, final float y, final WiFiFingerprint wifiFingerprint) {
+    public Fingerprint putMark(final float x, final float y, final WiFiFingerprint wifiFingerprint) {
         Fingerprint mark = new Fingerprint(x, y, wifiFingerprint);
         addPrimitive(mark);
+        return mark;
     }
 
     public void drawLocationMarkAt(final PointF currentLocation) {

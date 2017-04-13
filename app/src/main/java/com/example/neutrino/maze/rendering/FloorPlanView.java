@@ -8,6 +8,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.CommonHelper;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IWallLengthChangedListener;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IFloorplanLoadCompleteListener;
@@ -279,8 +280,8 @@ public class FloorPlanView extends GLSurfaceView {
         this.mNewLocationListener = listener;
     }
 
-    public void placeWiFiMarkAt(PointF center, WiFiFingerprint wiFiFingerprint) {
-        mRenderer.putMark(center.x, center.y, wiFiFingerprint);
+    public Fingerprint placeWiFiMarkAt(PointF center, WiFiFingerprint wiFiFingerprint) {
+        return mRenderer.putMark(center.x, center.y, wiFiFingerprint);
     }
 
     public void clearFloorPlan() {
