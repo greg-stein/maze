@@ -4,7 +4,6 @@ import android.graphics.PointF;
 
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Footprint;
-import com.example.neutrino.maze.floorplan.Wall;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -85,13 +84,16 @@ public class WiFiLocator {
         }
     }
 
-    public List<Fingerprint> marks; //TODO: no encapsulation!
-    public List<Wall> walls; //TODO: no encapsulation!
+    private List<Fingerprint> mFingerprints;
     private WiFiFingerprint currentWiFiFingerprint = null;
-    public FingerprintHistory currentHistory = null;
+    public FingerprintHistory currentHistory = null; //TODO: no encapsulation!
 
-    void addToFingerprintHistory (WiFiFingerprint fingerprint) {
+    void addToFingerprintHistory(WiFiFingerprint fingerprint) {
         currentHistory.add(fingerprint);
+    }
+
+    public void setFingerprintsMap(List<Fingerprint> map) {
+        mFingerprints = map;
     }
 
     // Calculates euclidean distance in Decibel space
@@ -292,7 +294,7 @@ public class WiFiLocator {
         float weight;
         float weightSum = 0;
 
-        List<Fingerprint> fingerprints = getMarksWithSameAps2(marks, currentWiFiFingerprint);
+        List<Fingerprint> fingerprints = getMarksWithSameAps2(mFingerprints, currentWiFiFingerprint);
 
         for (Fingerprint mark : fingerprints) {
             WiFiFingerprint wiFiFingerprint = mark.getFingerprint();
@@ -323,9 +325,10 @@ public class WiFiLocator {
         int i, j;
         LinkableWifiMark wmark, lwmark;
 
-        for (WiFiFingerprint fingerprint: currentHistory) {
-            List<Fingerprint> fingerprints = getMarksWithSameAps(marks, fingerprint);
-            maxDistance = 0; minDistance = Float.MAX_VALUE;
+        for (WiFiFingerprint fingerprint : currentHistory) {
+            List<Fingerprint> fingerprints = getMarksWithSameAps(mFingerprints, fingerprint);
+            maxDistance = 0;
+            minDistance = Float.MAX_VALUE;
 
             // First phase - get min and max dissimilarity
             for (Fingerprint mark: fingerprints) {
@@ -422,11 +425,7 @@ public class WiFiLocator {
         }
     }
 
-    public static float distanceXYsqr (Footprint a, Footprint b) {
-        return (float)( Math.pow((a.getCenter().x - b.getCenter().x), 2) + Math.pow((a.getCenter().y - b.getCenter().y), 2) );
-    }
-
-    public void setFingerprints(Iterable<Fingerprint> fingerprints) {
-
+    public static float distanceXYsqr(Footprint a, Footprint b) {
+        return (float) (Math.pow((a.getCenter().x - b.getCenter().x), 2) + Math.pow((a.getCenter().y - b.getCenter().y), 2));
     }
 }

@@ -349,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                     List<Object> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
                     mFloorPlan = FloorPlan.build(floorplan);
                     uiFloorPlanView.plot(mFloorPlan.getSketch());
-                    mWiFiLocator.marks = mFloorPlan.getFingerprints();
+                    mWiFiLocator.setFingerprintsMap(mFloorPlan.getFingerprints());
                 }
 
 

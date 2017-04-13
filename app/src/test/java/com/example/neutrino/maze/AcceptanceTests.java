@@ -79,8 +79,7 @@ public class AcceptanceTests {
         walls = CommonHelper.extractObjects(Wall.class, deserializedList);
 
         wifiLocator = WiFiLocator.getInstance();
-        wifiLocator.walls = walls;
-        wifiLocator.marks = marks;
+        wifiLocator.setFingerprintsMap(marks);
     }
 
     private List<Object> getFloorPlanFromRes(String resourceFile) {
@@ -108,7 +107,7 @@ public class AcceptanceTests {
         List<Fingerprint> floorPlanMarks = loadWifiMarksFromRes("haifa_mall_floorplan.json");
         List<Fingerprint> pathMarks = loadWifiMarksFromRes("walking_path.json");
 
-        wifiLocator.marks = floorPlanMarks;
+        wifiLocator.setFingerprintsMap(floorPlanMarks);
         wifiLocator.currentHistory = new WiFiLocator.FingerprintHistory(10);
         for (int i = 3; i < 13; i++) {
             wifiLocator.addToFingerprintHistory(pathMarks.get(i).getFingerprint());
