@@ -22,7 +22,7 @@ import java.util.List;
  * Created by neutrino on 7/2/2016.
  */
 public class FloorPlanView extends GLSurfaceView {
-    private final FloorPlanRenderer mRenderer = new FloorPlanRenderer();
+    private FloorPlanRenderer mRenderer;
     private boolean mDragStarted;
     private ScaleGestureDetector mScaleDetector;
     private float mScaleFactor = FloorPlanRenderer.DEFAULT_SCALE_FACTOR;
@@ -30,13 +30,15 @@ public class FloorPlanView extends GLSurfaceView {
     private final PointF mCurrentLocation = new PointF();
 
     public FloorPlanView(Context context) {
-        super(context);
-        init(context, null);
+        this(context, null);
     }
 
     public FloorPlanView(Context context, AttributeSet attrs) {
         super(context,attrs);
-        init(context, attrs);
+        if (!isInEditMode()) {
+            mRenderer = new FloorPlanRenderer();
+            init(context, attrs);
+        }
     }
 
     private void init(Context context, AttributeSet attrs) {
@@ -202,11 +204,6 @@ public class FloorPlanView extends GLSurfaceView {
             case EDIT_MODE:
                 break;
         }
-    }
-
-    public final <T extends IFloorPlanPrimitive> List<T> getPrimitives(Class<T> klazz) {
-        List<IFloorPlanPrimitive> floorPlan = mRenderer.getFloorPlan();
-        return CommonHelper.getPrimitives(klazz, floorPlan);
     }
 
     public void plot(List<? extends IFloorPlanPrimitive> floorplan) {
