@@ -108,11 +108,11 @@ public class WiFiLocatorTests {
         current.put("44-85-00-11-DA-EC", 75); // diff = 3
         current.put("44-85-FF-11-DA-EC", 68); // diff = 4
 
-        wifiLocator.marks = new ArrayList<>();
-        wifiLocator.marks.add(new Fingerprint(-1, 0, a));
-        wifiLocator.marks.add(new Fingerprint(1, 2, b));
+        List<Fingerprint> fingerprints = new ArrayList<>();
+        fingerprints.add(new Fingerprint(-1, 0, a));
+        fingerprints.add(new Fingerprint(1, 2, b));
+        wifiLocator.setFingerprintsMap(fingerprints);
         wifiLocator.setCurrentFingerprint(current);
-        wifiLocator.walls = new ArrayList<>();
 
         PointF position = new PointF();
         wifiLocator.getPosition(position);
