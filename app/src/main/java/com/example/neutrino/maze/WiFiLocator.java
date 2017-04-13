@@ -42,6 +42,7 @@ public class WiFiLocator {
 
     public static final int MINIMUM_WIFI_MARKS = 10;
     private int mMinWifiMarks = MINIMUM_WIFI_MARKS;
+
     public void setMinimumWifiMarks(int minWifiMarks) {
         mMinWifiMarks = minWifiMarks;
     }
@@ -152,8 +153,8 @@ public class WiFiLocator {
                 y = reference.get(mac);
                 counter++;
             }
-            double xD = Math.pow(10, x/20f);
-            double yD = Math.pow(10, y/20f);
+            double xD = Math.pow(10, x / 20f);
+            double yD = Math.pow(10, y / 20f);
             System.out.println(String.format("x=%d y=%d", x, y));
             sum += xD * yD;
             lenX += xD * xD;
@@ -170,7 +171,7 @@ public class WiFiLocator {
         NavigableMap<Float, List<Fingerprint>> sortedMarks = new TreeMap<>(); // sorted by distance to current fingerprint
         List<Fingerprint> result = new ArrayList<>();
 
-        for(Fingerprint mark: fingerprints) {
+        for (Fingerprint mark : fingerprints) {
             WiFiFingerprint markWiFiFingerprint = mark.getFingerprint();
             float distance = dissimilarity(fingerprint, markWiFiFingerprint);
 
@@ -187,7 +188,7 @@ public class WiFiLocator {
         marksNum = Math.max(marksNum, availableMinimumMarks);
 
         Map.Entry<Float, List<Fingerprint>> entry = sortedMarks.firstEntry();
-        while(result.size() < marksNum) {
+        while (result.size() < marksNum) {
             final int remainingMarks = marksNum - result.size();
             final List<Fingerprint> marks = entry.getValue();
 
@@ -297,6 +298,7 @@ public class WiFiLocator {
 
     /**
      * This method is deprecated, use getLocation(WiFiFingerprint) instead
+     *
      * @param position
      */
     @Deprecated
@@ -319,15 +321,16 @@ public class WiFiLocator {
 
         position.set(x / weightSum, y / weightSum);
 
-        // For highlighting wifi marks used in location calculation
-        centroidMarks = fingerprints;
+        // For highlighting wifi mFingerprints used in location calculation
+        if (AppSettings.inDebug) {
+            centroidMarks = fingerprints;
+        }
     }
 
     /* Returns the most probable trajectory of locations, given the current stored history of
      * Wifi fingerprints.
      */
-    public void getMostProbableTrajectory(List<PointF> trajectory)
-    {
+    public void getMostProbableTrajectory(List<PointF> trajectory) {
         float minDistance, maxDistance, distanceRange, maxViableDistance;
         TreeSet<LinkableWifiMark> candidatesThisRound = new TreeSet<>();
         TreeSet<LinkableWifiMark> candidatesList = new TreeSet<>();
@@ -342,7 +345,7 @@ public class WiFiLocator {
             minDistance = Float.MAX_VALUE;
 
             // First phase - get min and max dissimilarity
-            for (Fingerprint mark: fingerprints) {
+            for (Fingerprint mark : fingerprints) {
                 float difference = dissimilarity(fingerprint, mark.getFingerprint());
                 if (difference < minDistance)
                     minDistance = difference;
@@ -356,7 +359,7 @@ public class WiFiLocator {
             candidatePairs.clear();
 
             // Second phase - take only viable candidates (from top CANDIDATE_PERCENTAGE of lowest dissimilarity)
-            for (Fingerprint mark: fingerprints) {
+            for (Fingerprint mark : fingerprints) {
                 float difference = dissimilarity(fingerprint, mark.getFingerprint());
                 if (difference <= maxViableDistance) {
                     candidatesThisRound.add(new LinkableWifiMark(mark, difference));
@@ -409,10 +412,10 @@ public class WiFiLocator {
     }
 
     /* A Fingerprint wrapper with the following capabilities:
-     * - Link to another LinkableWifiMark to form chains of marks
+     * - Link to another LinkableWifiMark to form chains of mFingerprints
      * - Keep total cost function (for evaluating quality of chains)
      */
-    public static class LinkableWifiMark implements Comparable<LinkableWifiMark>{
+    public static class LinkableWifiMark implements Comparable<LinkableWifiMark> {
         public LinkableWifiMark parent = null;
         public Fingerprint mark = null;
         public float totalCost = 0;
