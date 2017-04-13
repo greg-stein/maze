@@ -71,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private SensorListener mSensorListener;
     private WifiScanner mWifiScanner;
     private Locator mLocator;
+    private Mapper mMapper;
+
     private WiFiLocator mWiFiLocator = WiFiLocator.getInstance();
 
     private boolean mPlacedMarkAtCurrentLocation = true;
@@ -109,6 +111,10 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         mSensorListener.addDeviceRotationListener(this);
         mLocator = Locator.getInstance();
         mLocator.addLocationUpdatedListener(this);
+        mMapper = Mapper.getInstance();
+        if (AppSettings.inDebug) {
+            mMapper.setFloorPlanView(uiFloorPlanView);
+        }
 
         setUiListeners();
     }

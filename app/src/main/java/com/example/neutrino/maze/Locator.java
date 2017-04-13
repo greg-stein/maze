@@ -37,11 +37,16 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     }
 
     public interface ILocationUpdatedListener {
+
         void onLocationUpdated(PointF location);
     }
 
     public void addLocationUpdatedListener(ILocationUpdatedListener listener) {
         mLocationUpdatedListeners.add(listener);
+    }
+
+    public void removeLocationUpdatedListener(ILocationUpdatedListener listener) {
+        mLocationUpdatedListeners.remove(listener);
     }
 
     private void emitLocationUpdatedEvent(PointF location) {
