@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.net.wifi.ScanResult;
 import android.graphics.PointF;
 
 import com.example.neutrino.maze.floorplan.Fingerprint;
@@ -50,7 +51,17 @@ public class WiFiLocator {
     }
 
     // Yeah, fake class is so antipattern...
-    public static class WiFiFingerprint extends HashMap<String, Integer> {}
+    public static class WiFiFingerprint extends HashMap<String, Integer> {
+        public static WiFiFingerprint build(List<ScanResult> scanResults) {
+            WiFiFingerprint fingerprint = new WiFiFingerprint();
+
+            for (ScanResult scan : scanResults) {
+                fingerprint.put(scan.BSSID, scan.level);
+            }
+
+            return fingerprint;
+        }
+    }
 
     public static class FingerprintHistory implements Iterable<WiFiFingerprint> {
         private Queue<WiFiFingerprint> mQueue;

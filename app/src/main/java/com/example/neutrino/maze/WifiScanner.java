@@ -48,6 +48,8 @@ public class WifiScanner extends BroadcastReceiver {
         AppSettings.appActivity.unregisterReceiver(this);
     }
 
+    public WiFiFingerprint getLastFingerprint() { return WiFiFingerprint.build(mQueue.getLastItem());}
+
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction() == WifiManager.SCAN_RESULTS_AVAILABLE_ACTION) {
