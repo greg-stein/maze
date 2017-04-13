@@ -86,7 +86,7 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     public void onStepDetected() {
         if (locationFixRequired()) {
             // Location reset required, use wifi locator to estimate location
-            mCurrentLocation = mLastLocations.lastLocation();
+            mCurrentLocation = mLastLocations.getLastItem();
         } else {
             final float stepX = (float) (Math.sin(Math.toRadians(mCurrentDegree)) * STEP_LENGTH);
             final float stepY = (float) (Math.cos(Math.toRadians(mCurrentDegree)) * STEP_LENGTH);

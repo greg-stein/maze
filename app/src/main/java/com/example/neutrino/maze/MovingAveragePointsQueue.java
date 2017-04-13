@@ -47,8 +47,4 @@ public class MovingAveragePointsQueue extends MovingAverageQueueBase<PointF> {
         mSumX -= item.x;
         mSumY -= item.y;
     }
-
-    public PointF lastLocation() {
-        return mQueue.peekLast();
-    }
 }

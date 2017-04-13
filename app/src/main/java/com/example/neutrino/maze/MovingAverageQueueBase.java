@@ -38,6 +38,8 @@ public abstract class MovingAverageQueueBase<T> {
         return mQueue.size();
     }
 
+    public T getLastItem() {return mQueue.getLast();}
+
     public int getWindowSize() {return mWindowSize;}
 
     public void setWindowSize(int windowSize) {
