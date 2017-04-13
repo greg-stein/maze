@@ -18,6 +18,7 @@ public class AppSettings {
     public static int accentColor;
     public static Activity appActivity = null;
     public static int oglProgram;
+    public static boolean inDebug;
 
     public static void init(Context context) {
         if (context instanceof Activity) {
@@ -31,5 +32,6 @@ public class AppSettings {
         primaryDarkColor = ContextCompat.getColor(context, R.color.colorPrimaryDark);
         editModeColor = ContextCompat.getColor(context, R.color.colorEditMode);
         accentColor = ContextCompat.getColor(context, R.color.colorAccent);
+        inDebug = true;
     }
 }

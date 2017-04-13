@@ -574,6 +574,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     public void onLocationUpdated(PointF location) {
         mCurrentLocation.set(location);
         uiFloorPlanView.setLocation(location);
-//        uiFloorPlanView.highlightCentroidMarks(WiFiLocator.centroidMarks);
+
+        if (AppSettings.inDebug) {
+            uiFloorPlanView.highlightCentroidMarks(WiFiLocator.centroidMarks);
+        }
     }
 }

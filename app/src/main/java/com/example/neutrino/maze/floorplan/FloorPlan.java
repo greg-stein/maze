@@ -1,5 +1,6 @@
 package com.example.neutrino.maze.floorplan;
 
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.CommonHelper;
 
 import java.util.ArrayList;
@@ -27,6 +28,9 @@ public class FloorPlan {
             floorPlan.mDescriptor = floorPlanDescriptors.get(0);
         }
 
+        if (AppSettings.inDebug) {
+            floorPlan.mSketch.addAll(floorPlan.mFingerprints);
+        }
         return floorPlan;
     }
 
@@ -41,6 +45,10 @@ public class FloorPlan {
     }
 
     public List<Object> disassemble() {
+        if (AppSettings.inDebug) {
+            if (mSketch != null) mSketch.removeAll(mFingerprints);
+        }
+
         int entitiesNum =
                 ((mSketch != null) ? mSketch.size() : 0) +
                 ((mFingerprints != null) ? mFingerprints.size() : 0) +
