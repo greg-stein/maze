@@ -323,9 +323,10 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             public void onGlobalLayout() {
                 String jsonString = PersistenceLayer.loadFloorPlan();
 
+//                String jsonString = null;
 //                try {
 //                    Resources res = getResources();
-//                    InputStream in_s = res.openRawResource(R.raw.floorplan_greg_home_2nd_floor);
+//                    InputStream in_s = res.openRawResource(R.raw.haifa_mall_many_fingerprints);
 //
 //                    byte[] b = new byte[in_s.available()];
 //                    in_s.read(b);
