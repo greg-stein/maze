@@ -559,17 +559,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         mWifiScanner.onActivityPause();
     }
 
-    private boolean obstaclesBetween(PointF p1, PointF p2) {
-        List<IFloorPlanPrimitive> sketch = mFloorPlan.getSketch();
-        for (IFloorPlanPrimitive primitive : sketch) {
-            if (primitive instanceof Wall) {
-                Wall wall = (Wall) primitive;
-                if (VectorHelper.linesIntersect(wall.getA(), wall.getB(), p1, p2)) return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public void onDeviceRotated(double orientation) {
         synchronized (mAngleLock) {

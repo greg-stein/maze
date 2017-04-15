@@ -2,10 +2,14 @@ package com.example.neutrino.maze;
 
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
+import com.example.neutrino.maze.SensorListener.IStepDetectedListener;
 import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 import com.example.neutrino.maze.WifiScanner.IFingerprintAvailableListener;
-import com.example.neutrino.maze.SensorListener.IStepDetectedListener;
-import com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
+import com.example.neutrino.maze.floorplan.FloorPlan;
+import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
+import com.example.neutrino.maze.floorplan.Wall;
+import com.example.neutrino.maze.rendering.VectorHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -97,9 +101,28 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
         } else {
             final float stepX = (float) (Math.sin(Math.toRadians(mCurrentDegree)) * STEP_LENGTH);
             final float stepY = (float) (Math.cos(Math.toRadians(mCurrentDegree)) * STEP_LENGTH);
-            mCurrentLocation.offset(stepX, stepY);
+            PointF proposedLocation = new PointF(mCurrentLocation.x, mCurrentLocation.y);
+            proposedLocation.offset(-stepX, stepY);
+            if (!hitObstacle(mCurrentLocation, proposedLocation)) {
+                mCurrentLocation = proposedLocation;
+            }
         }
         emitLocationUpdatedEvent(mCurrentLocation);
+    }
+
+
+
+    private boolean hitObstacle(PointF current, PointF next) {
+        List<IFloorPlanPrimitive> sketch = mFloorPlan.getSketch();
+        for (IFloorPlanPrimitive primitive : sketch) {
+            if (primitive instanceof Wall) {
+                Wall wall = (Wall) primitive;
+                if (VectorHelper.linesIntersect(wall.getA(), wall.getB(), current, next)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
