@@ -34,10 +34,8 @@ import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
-import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
-import com.example.neutrino.maze.rendering.VectorHelper;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 
 import java.io.File;
@@ -74,8 +72,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private Mapper mMapper;
 
     private WiFiLocator mWiFiLocator = WiFiLocator.getInstance();
-
-    private boolean mPlacedMarkAtCurrentLocation = true;
 
     private static final PointF mCurrentLocation = new PointF();
     private float mCurrentWallLength = 1;
@@ -151,7 +147,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         List<IFloorPlanPrimitive> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
         mFloorPlan.setSketch(walls);
         uiFloorPlanView.plot(walls, false); // not in init phase
-//        mWiFiLocator.walls = walls;
         uiFloorPlanView.showMap();
     }
 
@@ -309,25 +304,10 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             }
         });
 
-//        mWifiScanner.addFingerprintAvailableListener(new WifiScanner.IFingerprintAvailableListener() {
-//            @Override
-//            public void onFingerprintAvailable(WiFiFingerprint wiFiFingerprint) {
-//                if (!mPlacedMarkAtCurrentLocation) {
-//                    uiFloorPlanView.placeWiFiMarkAt(mCurrentLocation, wiFiFingerprint);
-//                    // TODO: There is costly stupidity in these two lines:
-//                    mWiFiLocator.marks = uiFloorPlanView.getPrimitives(Fingerprint.class);
-//                    mWiFiLocator.walls = uiFloorPlanView.getPrimitives(Wall.class);
-//                    mPlacedMarkAtCurrentLocation = true;
-//                }
-//                mWiFiLocator.setCurrentFingerprint(wiFiFingerprint);
-//            }
-//        });
-
         uiFloorPlanView.setOnLocationPlacedListener(new FloorPlanView.IOnLocationPlacedListener() {
             @Override
             public void onLocationPlaced(float x, float y) {
                 mCurrentLocation.set(x, y);
-                mPlacedMarkAtCurrentLocation = false;
             }
         });
 
