@@ -27,8 +27,10 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     private WiFiLocator mWifiLocator = WiFiLocator.getInstance();
     private MovingAveragePointsQueue mLastLocations = new MovingAveragePointsQueue(WINDOW_SIZE);
     private PointF mCurrentLocation = new PointF(Float.MAX_VALUE, Float.MAX_VALUE);
-    private float mCurrentDegree;
+    private double mCurrentDegree;
     private List<ILocationUpdatedListener> mLocationUpdatedListeners = new ArrayList<>();
+    private float mNorth = 0.0f; // North correction
+    private FloorPlan mFloorPlan;
 
     private Locator() {
         mWifiScanner.addFingerprintAvailableListener(this);
@@ -37,7 +39,6 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     }
 
     public interface ILocationUpdatedListener {
-
         void onLocationUpdated(PointF location);
     }
 
@@ -67,7 +68,8 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
         final float diffY = meanOfLastLocations.y - mCurrentLocation.y;
         double squaredDistanceFromMean = diffX * diffX + diffY * diffY;
 
-        return mLastLocations.getItemsNum() > 2 && squaredDistanceFromMean > MAX_VARIANCES_NUM * mLastLocations.variance();
+        // TODO: Define the threshold. Mind time passed between wifi readings
+        return mLastLocations.getItemsNum() > 0 && squaredDistanceFromMean > MAX_VARIANCES_NUM * mLastLocations.variance();
     }
 
     @Override
@@ -101,7 +103,15 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     }
 
     @Override
-    public void onDeviceRotated(float degree) {
-        mCurrentDegree = degree;
+    public void onDeviceRotated(double degree) {
+        mCurrentDegree = degree + mNorth;
+    }
+
+    public void setNorth(float north) {
+        mNorth = north;
+    }
+
+    public void setFloorPlan(FloorPlan floorPlan) {
+        this.mFloorPlan = floorPlan;
     }
 }

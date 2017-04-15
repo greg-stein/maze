@@ -118,20 +118,20 @@ public class SensorListener implements SensorEventListener {
 
         if (gotRotationMatrix) {
             SensorManager.getOrientation(mRotationMatrix, mOrientation);
-            float degree = Math.round(Math.toDegrees(mOrientation[0]));
+            double degree = Math.toDegrees(mOrientation[0]);
             emitDeviceRotationEvent(degree);
         }
     }
 
     public interface IDeviceRotationListener {
-        void onDeviceRotated(float degree);
+        void onDeviceRotated(double degree);
     }
 
     public void addDeviceRotationListener(IDeviceRotationListener listener) {
         mDeviceRotationEventListeners.add(listener);
     }
 
-    private void emitDeviceRotationEvent(float degree) {
+    private void emitDeviceRotationEvent(double degree) {
         for (IDeviceRotationListener listener : mDeviceRotationEventListeners) {
             listener.onDeviceRotated(degree);
         }

@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         mSensorListener.addDeviceRotationListener(this);
         mLocator = Locator.getInstance();
         mLocator.addLocationUpdatedListener(this);
+        mLocator.setFloorPlan(mFloorPlan);
         mMapper = Mapper.getInstance();
         if (AppSettings.inDebug) {
             mMapper.setFloorPlanView(uiFloorPlanView);
@@ -233,14 +234,18 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiFabMapRotateLock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mIsMapRotationLocked = !mIsMapRotationLocked;
+            synchronized (mAngleLock) {
                 if (mIsMapRotationLocked) {
-                    exciteFab(uiFabMapRotateLock);
-                } else {
                     calmFab(uiFabMapRotateLock);
                     mMapNorth = mDegreeOffset;
+                    mLocator.setNorth(mMapNorth);
+                    mIsMapRotationLocked = false;
+                } else {
+                    exciteFab(uiFabMapRotateLock);
+                    mIsMapRotationLocked = true;
                 }
-                mDegreeOffset = 0;
+            }
+//                mDegreeOffset = 0;
 
                 // if (enable) {
                 //     rememberedNorth = currentNorth
@@ -566,13 +571,15 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     }
 
     @Override
-    public void onDeviceRotated(float degree) {
-        float correctedDegree = degree + mMapNorth;
+    public void onDeviceRotated(double orientation) {
+        synchronized (mAngleLock) {
+            float degree = (float) (orientation + mMapNorth);
 
-        mDegreeOffset = mCurrentDegree - correctedDegree;
-        if (!mIsMapRotationLocked) {
-            uiFloorPlanView.updateAngle(mDegreeOffset);
-            mCurrentDegree = correctedDegree;
+            mDegreeOffset = mCurrentDegree - degree;
+            if (!mIsMapRotationLocked) {
+                uiFloorPlanView.updateAngle(mDegreeOffset);
+                mCurrentDegree = degree;
+            }
         }
     }
 
