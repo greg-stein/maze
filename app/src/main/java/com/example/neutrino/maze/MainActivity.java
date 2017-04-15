@@ -420,8 +420,10 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             public void onClick(View view) {
                 mAutoScanEnabled = !mAutoScanEnabled;
                 if (mAutoScanEnabled) {
+                    mMapper.enable();
                     exciteFab(uiFabAutoscanMode);
                 } else {
+                    mMapper.disable();
                     calmFab(uiFabAutoscanMode);
                 }
             }
