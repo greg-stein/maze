@@ -229,16 +229,14 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiFabMapRotateLock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-            synchronized (mAngleLock) {
-                if (mIsMapRotationLocked) {
-                    calmFab(uiFabMapRotateLock);
-                    mMapNorth = mDegreeOffset;
-                    mLocator.setNorth(mMapNorth);
-                    mIsMapRotationLocked = false;
-                } else {
-                    exciteFab(uiFabMapRotateLock);
-                    mIsMapRotationLocked = true;
-                }
+            if (mIsMapRotationLocked) {
+                calmFab(uiFabMapRotateLock);
+                mMapNorth = mDegreeOffset;
+                mLocator.setNorth(mMapNorth);
+                mIsMapRotationLocked = false;
+            } else {
+                exciteFab(uiFabMapRotateLock);
+                mIsMapRotationLocked = true;
             }
 //                mDegreeOffset = 0;
 
@@ -543,14 +541,12 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     @Override
     public void onDeviceRotated(double orientation) {
-        synchronized (mAngleLock) {
-            float degree = (float) (orientation + mMapNorth);
+        float degree = (float) (orientation + mMapNorth);
 
-            mDegreeOffset = mCurrentDegree - degree;
-            if (!mIsMapRotationLocked) {
-                uiFloorPlanView.updateAngle(mDegreeOffset);
-                mCurrentDegree = degree;
-            }
+        mDegreeOffset = mCurrentDegree - degree;
+        if (!mIsMapRotationLocked) {
+            uiFloorPlanView.updateAngle(mDegreeOffset);
+            mCurrentDegree = degree;
         }
     }
 
