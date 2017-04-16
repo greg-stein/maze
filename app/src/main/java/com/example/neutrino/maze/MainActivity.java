@@ -340,6 +340,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                     mFloorPlan = FloorPlan.build(floorplan);
                     uiFloorPlanView.plot(mFloorPlan.getSketch());
                     mWiFiLocator.setFingerprintsMap(mFloorPlan.getFingerprints());
+                    mLocator.setFloorPlan(mFloorPlan);
                 }
 
 
