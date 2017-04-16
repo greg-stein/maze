@@ -68,6 +68,8 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
             return true;
         }
 
+        if (mCurrentLocation == null) return true;
+
         final float diffX = meanOfLastLocations.x - mCurrentLocation.x;
         final float diffY = meanOfLastLocations.y - mCurrentLocation.y;
         double squaredDistanceFromMean = diffX * diffX + diffY * diffY;
@@ -107,7 +109,10 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
                 mCurrentLocation = proposedLocation;
             }
         }
-        emitLocationUpdatedEvent(mCurrentLocation);
+
+        if (mCurrentLocation != null) {
+            emitLocationUpdatedEvent(mCurrentLocation);
+        }
     }
 
 
