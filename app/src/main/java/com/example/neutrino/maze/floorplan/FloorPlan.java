@@ -2,6 +2,7 @@ package com.example.neutrino.maze.floorplan;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.CommonHelper;
+import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,10 @@ public class FloorPlan {
         FloorPlan floorPlan = new FloorPlan();
         floorPlan.mFingerprints = CommonHelper.extractObjects(Fingerprint.class, entities);
         floorPlan.mTags = CommonHelper.extractObjects(Tag.class, entities);
+        List<Wall> walls = FloorplanVectorizer.connect(CommonHelper.extractObjects(Wall.class, entities));
+
         floorPlan.mSketch = CommonHelper.extractObjects(IFloorPlanPrimitive.class, entities);
+        floorPlan.mSketch.addAll(walls);
 
         final List<FloorPlanDescriptor> floorPlanDescriptors = CommonHelper.extractObjects(FloorPlanDescriptor.class, entities);
         if (floorPlanDescriptors != null && floorPlanDescriptors.size() > 0) {

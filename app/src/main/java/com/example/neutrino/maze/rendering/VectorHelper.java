@@ -178,4 +178,10 @@ public class VectorHelper {
         float crossV3V2 = v3[0]*v2[1] - v3[1]*v2[0];
         return (crossV1V3 < 0) == (crossV3V2 < 0);
     }
+
+    public static float squareDistance(PointF p1, PointF p2) {
+        final float diffX = p1.x - p2.x;
+        final float diffY = p1.y - p2.y;
+        return diffX * diffX + diffY * diffY;
+    }
 }

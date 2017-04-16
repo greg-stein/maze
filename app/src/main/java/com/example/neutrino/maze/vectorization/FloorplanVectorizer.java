@@ -9,6 +9,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
+import com.example.neutrino.maze.rendering.VectorHelper;
 import com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Wall;
@@ -21,6 +22,8 @@ import java.util.List;
  */
 public class FloorplanVectorizer {
     public static final int PADDING = 1;
+    public static final float MIN_CONNECT_DISTANCE = 0.5f;
+    private static final float MIN_CONNECT_SQ_DISTANCE = MIN_CONNECT_DISTANCE * MIN_CONNECT_DISTANCE;
     public static Bitmap debugBM;
 
     public static List<IFloorPlanPrimitive> vectorize(Bitmap image) {
@@ -161,5 +164,25 @@ public class FloorplanVectorizer {
             final int grayValue = grayScaledImage.dataArray[index] & 0xFF;
             grayScaledImage.dataArray[index] = (grayValue > threshold)? Color.WHITE : Color.BLACK;
         }
+    }
+
+    public static List<Wall> connect(List<Wall> walls) {
+        for (Wall wall : walls) {
+            for (Wall anotherWall : walls) {
+                if (wall != anotherWall) {
+                    if (VectorHelper.squareDistance(wall.getA(), anotherWall.getA()) < MIN_CONNECT_SQ_DISTANCE) {
+                        wall.setA(anotherWall.getA()); // consider also maintaining a pointer: wall.connectedAtA.add(anotherWall)
+                    } else if (VectorHelper.squareDistance(wall.getA(), anotherWall.getB()) < MIN_CONNECT_SQ_DISTANCE) {
+                        wall.setA(anotherWall.getB());
+                    } else if (VectorHelper.squareDistance(wall.getB(), anotherWall.getA()) < MIN_CONNECT_SQ_DISTANCE) {
+                        wall.setB(anotherWall.getA());
+                    } else if (VectorHelper.squareDistance(wall.getB(), anotherWall.getB()) < MIN_CONNECT_SQ_DISTANCE) {
+                        wall.setB(anotherWall.getB());
+                    }
+                }
+            }
+        }
+
+        return walls;
     }
 }
