@@ -95,6 +95,13 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
         }
     }
 
+    // Greg TODO: 4/17/2017
+    //          - try longer average queue (4, 5, ...) and see if it makes less jumps
+    //          - consider timestamping the fingerprints IN THE QUEUE, so you know max distance
+    //            travelled between them. This can result in better threshold locationFixRequired()
+    //          - instead of halting the location marker when it hits obstacle, move it along
+    //            the obstacle, either based on angle or wifi location
+    //          - draw circle showing stdev
     @Override
     public void onStepDetected() {
         if (locationFixRequired()) {
@@ -105,7 +112,9 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
             final float stepY = (float) (Math.cos(Math.toRadians(mCurrentDegree)) * STEP_LENGTH);
             PointF proposedLocation = new PointF(mCurrentLocation.x, mCurrentLocation.y);
             proposedLocation.offset(-stepX, stepY);
-            if (!hitObstacle(mCurrentLocation, proposedLocation)) {
+            if (hitObstacle(mCurrentLocation, proposedLocation)) {
+                correctLocation(getObstacle(), proposedLocation);
+            } else {
                 mCurrentLocation = proposedLocation;
             }
         }
@@ -115,19 +124,33 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
         }
     }
 
-
-
     private boolean hitObstacle(PointF current, PointF next) {
         List<IFloorPlanPrimitive> sketch = mFloorPlan.getSketch();
         for (IFloorPlanPrimitive primitive : sketch) {
             if (primitive instanceof Wall) {
                 Wall wall = (Wall) primitive;
                 if (VectorHelper.linesIntersect(wall.getA(), wall.getB(), current, next)) {
+                    mObstacle = wall;
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    private Wall mObstacle = null;
+    protected Wall getObstacle() {return mObstacle;}
+
+    private void correctLocation(Wall obstacle, PointF proposedLocation) {
+        PointF proj = VectorHelper.projection(obstacle.getA(), obstacle.getB(), mCurrentLocation, proposedLocation);
+        mCurrentLocation.offset(proj.x, proj.y);
+    }
+
+    private void correctLocationAlongObstacle(Wall obstacle, PointF proposedLocation) {
+        PointF proj = VectorHelper.projection(obstacle.getA(), obstacle.getB(), mCurrentLocation, proposedLocation);
+        float magnitude = proj.length();
+        proj.set(proj.x / magnitude, proj.y / magnitude); // unit projection vector
+        mCurrentLocation.offset(proj.x * STEP_LENGTH, proj.y * STEP_LENGTH);
     }
 
     @Override

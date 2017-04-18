@@ -6,6 +6,8 @@ import android.graphics.PointF;
 
 import com.example.neutrino.maze.rendering.GlRenderBuffer;
 
+import org.apache.commons.math3.geometry.Point;
+
 /**
  * Created by Greg Stein on 8/7/2016.
  */
@@ -183,5 +185,15 @@ public class VectorHelper {
         final float diffX = p1.x - p2.x;
         final float diffY = p1.y - p2.y;
         return diffX * diffX + diffY * diffY;
+    }
+
+    public static PointF projection(PointF a1, PointF a2, PointF b1, PointF b2) {
+        float a[] = {a2.x - a1.x, a2.y - a1.y};
+        float b[] = {b2.x - b1.x, b2.y - b1.y};
+        float bMagnitude = (float) Math.hypot(b[0], b[1]);
+        float bUnit[] = {b[0] / bMagnitude, b[1] / bMagnitude};
+
+        float aScalar = a[0] * bUnit[0] + a[1] * bUnit[1];
+        return new PointF(aScalar * bUnit[0], aScalar * bUnit[1]);
     }
 }
