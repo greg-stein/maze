@@ -44,7 +44,7 @@ import java.util.List;
 
 import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
 
-public class MainActivity extends AppCompatActivity implements IDeviceRotationListener, ILocationUpdatedListener {
+public class MainActivity extends AppCompatActivity implements IDeviceRotationListener, ILocationUpdatedListener, Locator.IDistributionUpdatedListener {
     // GUI-related fields
     private FloorPlanView uiFloorPlanView;
     private Toolbar uiToolbar;
@@ -107,7 +107,12 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         mSensorListener.addDeviceRotationListener(this);
         mLocator = Locator.getInstance();
         mLocator.addLocationUpdatedListener(this);
+        if (AppSettings.inDebug) {
+            mLocator.addDistributionUpdatedListener(this);
+        }
         mLocator.setFloorPlan(mFloorPlan);
+
+
         mMapper = Mapper.getInstance();
         if (AppSettings.inDebug) {
             mMapper.setFloorPlanView(uiFloorPlanView);
@@ -560,5 +565,10 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         if (AppSettings.inDebug) {
             uiFloorPlanView.highlightCentroidMarks(WiFiLocator.centroidMarks);
         }
+    }
+
+    @Override
+    public void onDistributionUpdated(PointF mean, float stdev) {
+        uiFloorPlanView.drawDistribution(mean, stdev);
     }
 }

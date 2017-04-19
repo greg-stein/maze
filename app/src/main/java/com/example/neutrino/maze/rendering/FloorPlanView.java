@@ -57,6 +57,12 @@ public class FloorPlanView extends GLSurfaceView {
         });
     }
 
+    public void drawDistribution(PointF mean, float stdev) {
+        if (AppSettings.inDebug) {
+            mRenderer.drawDistribution(mean, stdev);
+        }
+    }
+
     public boolean isContentsInEditMode() {
         return mIsInEditMode;
     }

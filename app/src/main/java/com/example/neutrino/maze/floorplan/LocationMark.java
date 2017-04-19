@@ -13,8 +13,8 @@ public class LocationMark extends FloorPlanPrimitiveBase {
     private static final int VERTICES_NUM = 2 * (SEGMENTS_NUM + 1); // it is basically two circles
     private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlRenderBuffer.COORDS_PER_VERTEX;
     private static final int INDICES_DATA_LENGTH = SEGMENTS_NUM * 6; // two triangles per segment
-    private static final float DEFAULT_INNER_RADIUS = 0.15f;//4f;
-    private static final float DEFAULT_OUTER_RADIUS = 0.2f;//5f;
+    private static final float DEFAULT_INNER_RADIUS = 4f;
+    private static final float DEFAULT_OUTER_RADIUS = 5f;
     private static final float DEFAULT_CENTER_SOURCE = 0;
 
     private final PointF mCenter = new PointF(0, 0);
@@ -87,5 +87,21 @@ public class LocationMark extends FloorPlanPrimitiveBase {
         if (anotherLocationMark.mOuterRadius!= this.mOuterRadius) return false;
 
         return true;
+    }
+
+    public float getInnerRadius() {
+        return mInnerRadius;
+    }
+
+    public void setInnerRadius(float innerRadius) {
+        this.mInnerRadius = innerRadius;
+    }
+
+    public float getOuterRadius() {
+        return mOuterRadius;
+    }
+
+    public void setOuterRadius(float outerRadius) {
+        this.mOuterRadius = outerRadius;
     }
 }

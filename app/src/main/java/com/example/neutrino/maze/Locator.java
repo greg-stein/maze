@@ -36,10 +36,28 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     private float mNorth = 0.0f; // North correction
     private FloorPlan mFloorPlan;
 
+    // For debug mode only
+    private List<IDistributionUpdatedListener> mDistributionUpdatedListeners = new ArrayList<>();
+
     private Locator() {
         mWifiScanner.addFingerprintAvailableListener(this);
         mSensorListener.addStepDetectedListener(this);
         mSensorListener.addDeviceRotationListener(this);
+    }
+
+    public interface IDistributionUpdatedListener {
+        void onDistributionUpdated(PointF mean, float stdev);
+    }
+
+    public void addDistributionUpdatedListener(IDistributionUpdatedListener listener) {
+        mDistributionUpdatedListeners.add(listener);
+    }
+
+    private void emitDistributionUpdatedEvent(PointF mean, float stdev) {
+        if (stdev == 0) return;
+        for (IDistributionUpdatedListener listener : mDistributionUpdatedListeners) {
+            listener.onDistributionUpdated(mean, stdev);
+        }
     }
 
     public interface ILocationUpdatedListener {
@@ -55,8 +73,7 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     }
 
     private void emitLocationUpdatedEvent(PointF location) {
-        for (ILocationUpdatedListener listener : mLocationUpdatedListeners)
-        {
+        for (ILocationUpdatedListener listener : mLocationUpdatedListeners) {
             listener.onLocationUpdated(location);
         }
     }
@@ -73,6 +90,10 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
         final float diffX = meanOfLastLocations.x - mCurrentLocation.x;
         final float diffY = meanOfLastLocations.y - mCurrentLocation.y;
         double squaredDistanceFromMean = diffX * diffX + diffY * diffY;
+
+        if (AppSettings.inDebug) {
+            emitDistributionUpdatedEvent(meanOfLastLocations, (float) Math.sqrt(mLastLocations.variance()));
+        }
 
         // TODO: Define the threshold. Mind time passed between wifi readings
         return mLastLocations.getItemsNum() > 0 && squaredDistanceFromMean > MAX_VARIANCES_NUM * mLastLocations.variance();
@@ -91,7 +112,7 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
         if (locationFixRequired()) {
             // Location reset required, use wifi locator to estimate location
             mCurrentLocation = location;
-            emitLocationUpdatedEvent(location);
+            emitLocationUpdatedEvent(mCurrentLocation);
         }
     }
 
@@ -99,9 +120,10 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     //          - try longer average queue (4, 5, ...) and see if it makes less jumps
     //          - consider timestamping the fingerprints IN THE QUEUE, so you know max distance
     //            travelled between them. This can result in better threshold locationFixRequired()
-    //          - instead of halting the location marker when it hits obstacle, move it along
+    //          V instead of halting the location marker when it hits obstacle, move it along
     //            the obstacle, either based on angle or wifi location
-    //          - draw circle showing stdev
+    //          V draw circle showing stdev
+    //          - instead of last location use mean of locations
     @Override
     public void onStepDetected() {
         if (locationFixRequired()) {

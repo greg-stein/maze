@@ -70,6 +70,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         fragmentShaderCode = readResourceAsString("/res/raw/fragment_shader.glsl");
     }
 
+    // Used for debug only to show distribution of active fingerprints
+    private LocationMark mDistributionIndicator;
+
     private static String readResourceAsString(String path) {
         Exception innerException;
         Class<? extends FloorPlanRenderer> aClass = FloorPlanRenderer.class;
@@ -478,6 +481,29 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
+    public void drawDistribution(final PointF mean, final float stdev) {
+        if (AppSettings.inDebug) {
+            float innerRadius = Math.max(0, stdev - 1);
+
+            if (mDistributionIndicator == null) {
+                mDistributionIndicator = new LocationMark(mean.x, mean.y, innerRadius, stdev);
+                mDistributionIndicator.setColor(Color.GREEN);
+                addPrimitive(mDistributionIndicator);
+            } else {
+                mDistributionIndicator.setCenter(mean);
+                mDistributionIndicator.setInnerRadius(innerRadius);
+                mDistributionIndicator.setOuterRadius(stdev);
+                mDistributionIndicator.updateVertices();
+                runOnGlThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mLocationMark.rewriteToBuffer();
+                    }
+                });
+            }
+        }
+    }
+
     public void clearFloorPlan() {
         runOnGlThread(new Runnable() {
             @Override
@@ -546,8 +572,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
         return new PointF();
     }
-
     private IWallLengthChangedListener mWallLengthChangedListener = null;
+
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
         this.mWallLengthChangedListener = listener;
     }

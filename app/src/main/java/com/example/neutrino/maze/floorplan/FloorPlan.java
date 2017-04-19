@@ -24,6 +24,8 @@ public class FloorPlan {
         floorPlan.mTags = CommonHelper.extractObjects(Tag.class, entities);
         List<Wall> walls = FloorplanVectorizer.connect(CommonHelper.extractObjects(Wall.class, entities));
 
+        // Remove location marks from floorplan
+        CommonHelper.extractObjects(LocationMark.class, entities);
         floorPlan.mSketch = CommonHelper.extractObjects(IFloorPlanPrimitive.class, entities);
         floorPlan.mSketch.addAll(walls);
 
