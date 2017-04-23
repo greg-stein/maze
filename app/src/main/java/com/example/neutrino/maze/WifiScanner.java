@@ -66,6 +66,10 @@ public class WifiScanner extends BroadcastReceiver {
         void onFingerprintAvailable(WiFiFingerprint fingerprint);
     }
 
+    public void removeFingerprintAvailableListener(IFingerprintAvailableListener listener) {
+        this.mFingerprintAvailableListeners.remove(listener);
+    }
+
     public void addFingerprintAvailableListener(IFingerprintAvailableListener listener) {
         this.mFingerprintAvailableListeners.add(listener);
     }
