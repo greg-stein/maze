@@ -22,12 +22,12 @@ public class FloorPlan {
         FloorPlan floorPlan = new FloorPlan();
         floorPlan.mFingerprints = CommonHelper.extractObjects(Fingerprint.class, entities);
         floorPlan.mTags = CommonHelper.extractObjects(Tag.class, entities);
-        List<Wall> walls = FloorplanVectorizer.connect(CommonHelper.extractObjects(Wall.class, entities));
+//        List<Wall> walls = FloorplanVectorizer.connect(CommonHelper.extractObjects(Wall.class, entities));
 
         // Remove location marks from floorplan
         CommonHelper.extractObjects(LocationMark.class, entities);
         floorPlan.mSketch = CommonHelper.extractObjects(IFloorPlanPrimitive.class, entities);
-        floorPlan.mSketch.addAll(walls);
+//        floorPlan.mSketch.addAll(walls);
 
         final List<FloorPlanDescriptor> floorPlanDescriptors = CommonHelper.extractObjects(FloorPlanDescriptor.class, entities);
         if (floorPlanDescriptors != null && floorPlanDescriptors.size() > 0) {
