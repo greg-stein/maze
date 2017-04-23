@@ -36,6 +36,7 @@ import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
+import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 
 import java.io.File;
@@ -44,7 +45,7 @@ import java.util.List;
 
 import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
 
-public class MainActivity extends AppCompatActivity implements IDeviceRotationListener, ILocationUpdatedListener, Locator.IDistributionUpdatedListener {
+public class MainActivity extends AppCompatActivity implements IDeviceRotationListener, ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener {
     // GUI-related fields
     private FloorPlanView uiFloorPlanView;
     private Toolbar uiToolbar;
@@ -306,12 +307,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             }
         });
 
-        uiFloorPlanView.setOnLocationPlacedListener(new FloorPlanView.IOnLocationPlacedListener() {
-            @Override
-            public void onLocationPlaced(float x, float y) {
-                // update location in mLocator!
-            }
-        });
+        uiFloorPlanView.setOnLocationPlacedListener(this);
 
         uiFloorPlanView.setOnWallLengthChangedListener(new FloorPlanRenderer.IWallLengthChangedListener() {
             @Override
@@ -563,6 +559,11 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         if (AppSettings.inDebug) {
             uiFloorPlanView.highlightCentroidMarks(WiFiLocator.centroidMarks);
         }
+    }
+
+    @Override
+    public void onLocationPlaced(PointF location) {
+        mLocator.resetLocationTo(location);
     }
 
     @Override

@@ -238,17 +238,16 @@ public class FloorPlanView extends GLSurfaceView {
     protected void setLocation(int x, int y) {
         PointF worldLocation = new PointF();
         mRenderer.windowToWorld(x, y, worldLocation);
-        setLocation(worldLocation.x, worldLocation.y);
+
+        if (mNewLocationListener != null) {
+            mNewLocationListener.onLocationPlaced(worldLocation);
+        }
     }
 
     // This method is used when you want to set location programmatically
     public void setLocation(float x, float y) {
         mCurrentLocation.set(x, y);
         mRenderer.drawLocationMarkAt(mCurrentLocation);
-
-        if (mNewLocationListener != null) {
-            mNewLocationListener.onLocationPlaced(x, y);
-        }
     }
 
     public void setLocation(PointF location) {
@@ -284,7 +283,7 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     public interface IOnLocationPlacedListener {
-        void onLocationPlaced(float x, float y);
+        void onLocationPlaced(PointF location);
     }
     private IOnLocationPlacedListener mNewLocationListener = null;
     public void setOnLocationPlacedListener(IOnLocationPlacedListener listener) {

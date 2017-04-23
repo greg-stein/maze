@@ -187,4 +187,9 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     public void setFloorPlan(FloorPlan floorPlan) {
         this.mFloorPlan = floorPlan;
     }
+
+    public void resetLocationTo(PointF location) {
+        mCurrentLocation.set(location.x, location.y);
+        emitLocationUpdatedEvent(location);
+    }
 }
