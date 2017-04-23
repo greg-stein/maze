@@ -73,7 +73,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     private WiFiLocator mWiFiLocator = WiFiLocator.getInstance();
 
-    private static final PointF mCurrentLocation = new PointF();
     private float mCurrentWallLength = 1;
     private boolean mAutoScanEnabled = false;
 
@@ -310,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiFloorPlanView.setOnLocationPlacedListener(new FloorPlanView.IOnLocationPlacedListener() {
             @Override
             public void onLocationPlaced(float x, float y) {
-                mCurrentLocation.set(x, y);
+                // update location in mLocator!
             }
         });
 
@@ -559,7 +558,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     @Override
     public void onLocationUpdated(PointF location) {
-        mCurrentLocation.set(location);
         uiFloorPlanView.setLocation(location);
 
         if (AppSettings.inDebug) {
