@@ -63,6 +63,10 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
+    public void renderPrimitive(IFloorPlanPrimitive primitive) {
+        mRenderer.renderPrimitive(primitive);
+    }
+
     public boolean isContentsInEditMode() {
         return mIsInEditMode;
     }

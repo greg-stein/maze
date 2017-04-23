@@ -504,6 +504,15 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
+    public void renderPrimitive(final IFloorPlanPrimitive primitive) {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                primitive.rewriteToBuffer();
+            }
+        });
+    }
+
     public void clearFloorPlan() {
         runOnGlThread(new Runnable() {
             @Override
