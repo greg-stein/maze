@@ -3,10 +3,10 @@ package com.example.neutrino.maze.rendering;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PointF;
+import android.graphics.RectF;
 
-import com.example.neutrino.maze.rendering.GlRenderBuffer;
-
-import org.apache.commons.math3.geometry.Point;
+import org.apache.commons.math3.geometry.euclidean.twod.SubLine;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
  * Created by Greg Stein on 8/7/2016.
@@ -159,20 +159,35 @@ public class VectorHelper {
     }
 
     public static boolean linesIntersect(PointF A, PointF B, PointF O, PointF M) {
-        float v1[] = {A.x - O.x, A.y - O.y};
-        float v2[] = {B.x - O.x, B.y - O.y};
-        float v3[] = {M.x - O.x, M.y - O.y};
-        float v4[] = {A.x - M.x, A.y - M.y};
-        float v5[] = {B.x - M.x, B.y - M.y};
+        float v1[] = {A.x - O.x, A.y - O.y}; // OA
+        float v2[] = {B.x - O.x, B.y - O.y}; // OB
+        float v3[] = {M.x - O.x, M.y - O.y}; // OM
+        float v4[] = {M.x - A.x, M.y - A.y}; // AM
+        float v5[] = {B.x - A.x, B.y - A.y}; // AB
 
-        // Test if point is "below" line respective to O: (v1 + v2)•(v4 + v5) < 0
-        v4[0] += v5[0]; // v4 = v4 + v5
-        v4[1] += v5[1];
-        v5[0] = v1[0] + v2[0]; // v5 = v1 + v2
-        v5[1] = v1[1] + v2[1];
-        float dotProduct = v4[0] * v5[0] + v4[1] * v5[1];
-        // In most cases line does not obscure a point M from O
-        if (dotProduct > 0) return false;
+        // Calculate point M' = M mirrored by AB
+        float abLengthSq = v5[0] * v5[0] + v5[1] * v5[1]; // AB • AB
+        float abDam = v5[0] * v4[0] + v5[1] * v4[1]; // AB • AM
+        v5[0] *= 2 * (1 / abLengthSq) * abDam;
+        v5[1] *= 2 * (1 / abLengthSq) * abDam;
+        v5[0] -= v4[0];
+        v5[1] -= v4[1];
+        v5[0] += v1[0]; // v5 now holds vector OM'
+        v5[1] += v1[1];
+
+        float omLengthSq = v3[0] * v3[0] + v3[1] * v3[1]; // OM • OM
+        float omMirroredLengthSq = v5[0] * v5[0] + v5[1] * v5[1]; // OM' • OM'
+        if (omMirroredLengthSq > omLengthSq) return false; // mirrored M is farther (on opposite side of/above AB) than M
+
+        if (omMirroredLengthSq == omLengthSq) { // M == M'? => M on line that goes through AB
+            if (v1[0]/v3[0] == v1[1]/v3[1]) {// OA || OM ? => All four points lay on same line
+                // Yeah, this code is not as efficient. But it got called once per eon. It just covers
+                // the case when all four points are on same line.
+                RectF rectAB = new RectF(A.x, A.y, B.x, B.y); rectAB.sort();
+                RectF rectOM = new RectF(O.x, O.y, M.x, M.y); rectOM.sort();
+                return rectAB.intersect(rectOM);
+            }
+        }
 
         // Otherwise point M is "above" line A-B, we need to test if its obscured
         // Test: sign(v1 x v3) == sign(v3 x v2)
