@@ -294,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiFabFindMeOnMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                uiFloorPlanView.centerToPoint(mCurrentLocation);
+                uiFloorPlanView.centerToLocation();
             }
         });
 

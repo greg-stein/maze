@@ -268,6 +268,10 @@ public class FloorPlanView extends GLSurfaceView {
         centerToPoint(mapVertex);
     }
 
+    public void centerToLocation() {
+        centerToPoint(mCurrentLocation);
+    }
+
     public void centerToPoint(int x, int y) {
         PointF worldLocation = new PointF();
         mRenderer.windowToWorld(x, y, worldLocation);
