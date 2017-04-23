@@ -164,12 +164,12 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     protected Wall getObstacle() {return mObstacle;}
 
     private void correctLocation(Wall obstacle, PointF proposedLocation) {
-        PointF proj = VectorHelper.projection(obstacle.getA(), obstacle.getB(), mCurrentLocation, proposedLocation);
+        PointF proj = VectorHelper.projection(mCurrentLocation, proposedLocation, obstacle.getA(), obstacle.getB());
         mCurrentLocation.offset(proj.x, proj.y);
     }
 
     private void correctLocationAlongObstacle(Wall obstacle, PointF proposedLocation) {
-        PointF proj = VectorHelper.projection(obstacle.getA(), obstacle.getB(), mCurrentLocation, proposedLocation);
+        PointF proj = VectorHelper.projection(mCurrentLocation, proposedLocation, obstacle.getA(), obstacle.getB());
         float magnitude = proj.length();
         proj.set(proj.x / magnitude, proj.y / magnitude); // unit projection vector
         mCurrentLocation.offset(proj.x * STEP_LENGTH, proj.y * STEP_LENGTH);
