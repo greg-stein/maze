@@ -53,6 +53,9 @@ public class WiFiLocator {
 
     // Yeah, fake class is so antipattern...
     public static class WiFiFingerprint extends HashMap<String, Integer> {
+        // ACHTUNG! This is not supposed to be stored in DB, hence transient. For DB use currentTimeMillis()
+        public final transient long timestamp = System.nanoTime();
+
         public static WiFiFingerprint build(List<ScanResult> scanResults) {
             WiFiFingerprint fingerprint = new WiFiFingerprint();
 
@@ -78,7 +81,7 @@ public class WiFiLocator {
             }
 
             if (!mQueue.add(fingerprint)) {
-                throw new RuntimeException("Unable to add new fingerpting to queue.");
+                throw new RuntimeException("Unable to add new fingerprint to queue.");
             }
         }
 
