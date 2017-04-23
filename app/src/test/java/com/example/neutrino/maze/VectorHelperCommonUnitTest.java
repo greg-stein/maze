@@ -300,4 +300,17 @@ public class VectorHelperCommonUnitTest {
             assertThat(VectorHelper.linesIntersect(A, B, O, M), is(equalTo(result)));
         }
     }
+
+    @Test
+    public void projectionCommonTest() {
+        PointF a = new PointF(0f, 0f);
+        PointF b = new PointF(10f, 0f);
+        PointF c = new PointF(0f, 0f);
+        PointF d = new PointF(5f, 7f);
+
+        PointF proj = VectorHelper.projection(c, d, a, b);
+
+        assertThat(proj.x, is(equalTo(5f)));
+        assertThat(proj.y, is(equalTo(0f)));
+    }
 }
