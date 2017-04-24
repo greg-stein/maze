@@ -154,7 +154,8 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
             PointF proposedLocation = new PointF(mCurrentLocation.x, mCurrentLocation.y);
             proposedLocation.offset(-stepX, stepY);
             if (hitObstacle(mCurrentLocation, proposedLocation)) {
-                correctLocation(getObstacle(), proposedLocation);
+//                correctLocation(getObstacle(), proposedLocation);
+                correctLocationAlongObstacle(getObstacle(), proposedLocation);
             } else {
                 mCurrentLocation = proposedLocation;
             }
@@ -210,5 +211,9 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     public void resetLocationTo(PointF location) {
         mCurrentLocation.set(location.x, location.y);
         emitLocationUpdatedEvent(location);
+    }
+
+    public PointF getLocation() {
+        return mCurrentLocation;
     }
 }
