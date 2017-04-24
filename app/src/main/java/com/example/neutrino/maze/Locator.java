@@ -29,6 +29,7 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     private WifiScanner mWifiScanner = WifiScanner.getInstance();
     private SensorListener mSensorListener = SensorListener.getInstance();
     private WiFiLocator mWifiLocator = WiFiLocator.getInstance();
+    private boolean mUseWifiScanner;
     private MovingAveragePointsQueue mLastLocations = new MovingAveragePointsQueue(WINDOW_SIZE);
     private PointF mCurrentLocation = new PointF(Float.MAX_VALUE, Float.MAX_VALUE);
     private double mCurrentDegree;
@@ -43,6 +44,22 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
         mWifiScanner.addFingerprintAvailableListener(this);
         mSensorListener.addStepDetectedListener(this);
         mSensorListener.addDeviceRotationListener(this);
+        mUseWifiScanner = true;
+    }
+
+    public boolean isWifiScannerUsed() {
+        return mUseWifiScanner;
+    }
+
+    public void useWifiScanner(boolean useWifiScanner) {
+        if (mUseWifiScanner == useWifiScanner) return;
+
+        this.mUseWifiScanner = useWifiScanner;
+        if (useWifiScanner) {
+            mWifiScanner.addFingerprintAvailableListener(this);
+        } else {
+            mWifiScanner.removeFingerprintAvailableListener(this);
+        }
     }
 
     public interface IDistributionUpdatedListener {
@@ -79,6 +96,8 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     }
 
     private boolean locationFixRequired() {
+        if (!mUseWifiScanner) return false; // no need to fix location if no wifi used
+
         PointF meanOfLastLocations = mLastLocations.meanPoint();
         // If queue is empty, location fix is needed for sure
         if (Float.isNaN(meanOfLastLocations.x) || Float.isNaN(meanOfLastLocations.y)) {
