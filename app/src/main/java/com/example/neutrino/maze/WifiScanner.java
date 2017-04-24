@@ -32,7 +32,7 @@ public class WifiScanner extends BroadcastReceiver {
     private MovingAverageScanResultsQueue mQueue = new MovingAverageScanResultsQueue(MOVING_AVERAGE_WINDOW_SIZE);
     private List<ScanResult> mLastScan;
     private WifiManager mWifiManager;
-    private boolean mIsEnabled = false;
+    private boolean mIsEnabled = true;
 
     protected WifiScanner() {
         mWifiManager = (WifiManager) AppSettings.appActivity.getSystemService(Context.WIFI_SERVICE);
@@ -41,11 +41,18 @@ public class WifiScanner extends BroadcastReceiver {
     public void onActivityResume() {
         AppSettings.appActivity.registerReceiver(this, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         mWifiManager.startScan();
-        mIsEnabled = true;
     }
 
     public void onActivityPause() {
         AppSettings.appActivity.unregisterReceiver(this);
+    }
+
+    public void setEnabled(boolean isEnabled) {
+        mIsEnabled = isEnabled;
+    }
+
+    public boolean isEnabled() {
+        return mIsEnabled;
     }
 
     public WiFiFingerprint getLastFingerprint() { return WiFiFingerprint.build(mQueue.getLastItem());}
@@ -75,7 +82,7 @@ public class WifiScanner extends BroadcastReceiver {
     }
 
     private void emitWiFiFingerprintAvailableEvent(WiFiFingerprint scanResultsSums, Map<String, Integer> numScans) {
-        if (mFingerprintAvailableListeners.size() > 0) {
+        if (mIsEnabled && mFingerprintAvailableListeners.size() > 0) {
             WiFiFingerprint fingerprint = new WiFiFingerprint();
 
             for (Map.Entry<String, Integer> entry : scanResultsSums.entrySet()) {
