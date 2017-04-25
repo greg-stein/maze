@@ -27,7 +27,7 @@ public class Wall extends FloorPlanPrimitiveBase {
         CHANGE_WALL
     };
 
-    private static final float CHANGE_ONE_END_THRESHOLD = 0.10f;
+    private static final float CHANGE_ONE_END_THRESHOLD = 0.30f;
 
     private transient final short mDrawOrder[] = { 0, 1, 2,   // first triangle
             1, 2, 3 }; // second triangle
