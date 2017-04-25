@@ -122,6 +122,11 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     public void onFingerprintAvailable(WiFiFingerprint fingerprint) {
         if (fingerprint.size() == 0) return; // cannot estimate location based on nothing
 
+        // For debugging while not in HaifaMall
+//        mCurrentLocation = new PointF(141.16f, 58.31f);
+//        emitLocationUpdatedEvent(mCurrentLocation);
+//        mWifiScanner.removeFingerprintAvailableListener(this);
+
         PointF location = mWifiLocator.getLocation(fingerprint);
         // Failed to estimate location - nothing to report.
         if (Float.isNaN(location.x) || Float.isNaN(location.y)) return;
@@ -136,13 +141,8 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     }
 
     // Greg TODO: 4/17/2017
-    //          - try longer average queue (4, 5, ...) and see if it makes less jumps
     //          - consider timestamping the fingerprints IN THE QUEUE, so you know max distance
     //            travelled between them. This can result in better threshold locationFixRequired()
-    //          V instead of halting the location marker when it hits obstacle, move it along
-    //            the obstacle, either based on angle or wifi location
-    //          V draw circle showing stdev
-    //          - instead of last location use mean of locations
     @Override
     public void onStepDetected() {
         if (locationFixRequired()) {
