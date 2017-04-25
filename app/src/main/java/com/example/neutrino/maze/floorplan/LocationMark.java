@@ -9,7 +9,7 @@ import com.example.neutrino.maze.rendering.VectorHelper;
  * Created by Greg Stein on 9/22/2016.
  */
 public class LocationMark extends FloorPlanPrimitiveBase {
-    private static final int SEGMENTS_NUM = 64;
+    private static final int SEGMENTS_NUM = 32;
     private static final int VERTICES_NUM = 2 * (SEGMENTS_NUM + 1); // it is basically two circles
     private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlRenderBuffer.COORDS_PER_VERTEX;
     private static final int INDICES_DATA_LENGTH = SEGMENTS_NUM * 6; // two triangles per segment
