@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         mLocator = Locator.getInstance();
         mLocator.addLocationUpdatedListener(this);
         if (AppSettings.inDebug) {
-            mLocator.addDistributionUpdatedListener(this);
+//            mLocator.addDistributionUpdatedListener(this);
         }
         mLocator.setFloorPlan(mFloorPlan);
 
