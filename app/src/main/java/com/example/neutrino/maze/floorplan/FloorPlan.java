@@ -34,7 +34,7 @@ public class FloorPlan {
             floorPlan.mDescriptor = floorPlanDescriptors.get(0);
         }
 
-        if (AppSettings.inDebug) {
+        if (AppSettings.inDebug && floorPlan.mFingerprints != null) {
             floorPlan.mSketch.addAll(floorPlan.mFingerprints);
         }
         return floorPlan;
@@ -52,7 +52,7 @@ public class FloorPlan {
 
     public List<Object> disassemble() {
         if (AppSettings.inDebug) {
-            if (mSketch != null) mSketch.removeAll(mFingerprints);
+            if (mSketch != null && mFingerprints != null) mSketch.removeAll(mFingerprints);
         }
 
         int entitiesNum =

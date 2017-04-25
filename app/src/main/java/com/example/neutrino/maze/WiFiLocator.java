@@ -310,6 +310,8 @@ public class WiFiLocator {
         float weight;
         float weightSum = 0;
 
+        // TODO: return null instead of this shit.
+        if (mFingerprints == null) return; // if no fingerprints provided can't locate
         List<Fingerprint> fingerprints = getMarksWithSameAps2(mFingerprints, currentWiFiFingerprint);
 
         for (Fingerprint mark : fingerprints) {
