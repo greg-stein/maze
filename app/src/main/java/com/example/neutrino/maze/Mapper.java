@@ -9,13 +9,18 @@ import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 
 import java.util.Stack;
+import static com.example.neutrino.maze.WifiScanner.IFingerprintAvailableListener;
 
 /**
  * Created by Greg Stein on 4/13/2017.
  */
 
-public class Mapper implements ILocationUpdatedListener {
+public class Mapper implements ILocationUpdatedListener, IFingerprintAvailableListener {
     private static Mapper instance = new Mapper();
+    private boolean mOldWifiScannerState;
+    private boolean mFingerprintPlacedAtCurrentLocation = true;
+    private PointF mCurrentLocation;
+
     private Mapper() {}
     public static Mapper getInstance() {return instance;}
 
@@ -32,27 +37,42 @@ public class Mapper implements ILocationUpdatedListener {
     public void enable() {
         if (!mIsEnabled) {
             mIsEnabled = true;
+            mOldWifiScannerState = mLocator.isWifiScannerUsed();
+            mLocator.useWifiScanner(false);
             mLocator.addLocationUpdatedListener(this);
+            mWifiScanner.addFingerprintAvailableListener(this);
         }
     }
 
     public void disable() {
         if (mIsEnabled) {
             mIsEnabled = false;
+            mLocator.useWifiScanner(mOldWifiScannerState);
             mLocator.removeLocationUpdatedListener(this);
+            mWifiScanner.removeFingerprintAvailableListener(this);
         }
     }
+
     @Override
     public void onLocationUpdated(PointF location) {
-        WiFiFingerprint wifiFingerprint = mWifiScanner.getLastFingerprint();
+        mCurrentLocation = location;
+        mFingerprintPlacedAtCurrentLocation = false;
+    }
 
-        // To display the fingerprint in debug mode
-        if (AppSettings.inDebug) {
-            final Fingerprint fingerprint = mFloorPlanView.placeWiFiMarkAt(location, wifiFingerprint);
-            mRecentlyAddedFingerprints.push(fingerprint); // to undo addition
-        } else {
-            Fingerprint fingerprint = new Fingerprint(location, wifiFingerprint);
-            mFloorPlan.getFingerprints().add(fingerprint);
+    @Override
+    public void onFingerprintAvailable(WiFiFingerprint fingerprint) {
+        if (!mFingerprintPlacedAtCurrentLocation) {
+            // To display the fingerprint in debug mode
+            if (AppSettings.inDebug) {
+                // This call will also add the fingerprint to FloorPlan
+                final Fingerprint newFp = mFloorPlanView.placeWiFiMarkAt(mCurrentLocation, fingerprint);
+                mRecentlyAddedFingerprints.push(newFp); // to undo addition
+            } else {
+                Fingerprint newFp = new Fingerprint(mCurrentLocation, fingerprint);
+                mFloorPlan.getFingerprints().add(newFp);
+            }
+
+            mFingerprintPlacedAtCurrentLocation = true;
         }
     }
 
