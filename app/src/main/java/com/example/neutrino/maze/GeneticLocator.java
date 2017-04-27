@@ -187,8 +187,8 @@ public class GeneticLocator {
             nextGeneration.clear();
             while (population.size() > POPULATION_SIZE) population.pollLast();
             final Chromosome best = population.first();
-//            float error = (float) Math.hypot(realHeadLocation.x - best.get(headIndex).x, realHeadLocation.y - best.get(headIndex).y);
-//            System.out.println(String.format("Generation %d best solution fitness: %.4f, error: %.4f", generation, best.getFitness(), error));
+            float error = (float) Math.hypot(realHeadLocation.x - best.get(headIndex).x, realHeadLocation.y - best.get(headIndex).y);
+            System.out.println(String.format("Generation %d best solution fitness: %.4f, error: %.4f", generation, best.getFitness(), error));
 //            System.out.println(String.format("%.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f", best.getFitness(),
 //                    best.get(0).x, best.get(0).y,
 //                    best.get(1).x, best.get(1).y,
@@ -258,7 +258,7 @@ public class GeneticLocator {
     static void crawl(Chromosome chromosome) {
         int magnitude = random.nextInt(MAX_MOVE_MAGNITUDE);
         int angle = random.nextInt(360);
-        PointF offset = new PointF((float)(magnitude * Math.cos(angle)), (float)(magnitude * Math.sin(angle)));
+        PointF offset = new PointF((float)(magnitude * Math.cos(Math.toRadians(angle))), (float)(magnitude * Math.sin(Math.toRadians(angle))));
 
         for (PointF gene : chromosome) {
             gene.offset(offset.x, offset.y);
