@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private FloatingActionButton uiFabAddFloorplanFromPic;
     private FloatingActionButton uiFabAddFloorplanFromGallery;
     private FloatingActionButton uiFabMapRotateLock;
+    private FloatingActionButton uiFabRemoveLastFingerprint;
     private EditText uiWallLengthText;
     // Map north angle
     private float mMapNorth = 0.0f;
@@ -92,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiFabAddFloorplanFromPic = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_camera);
         uiFabAddFloorplanFromGallery = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_gallery);
         uiFabMapRotateLock = (FloatingActionButton) findViewById(R.id.fab_map_rotate_lock);
+        uiFabRemoveLastFingerprint = (FloatingActionButton) findViewById(R.id.fab_remove_last_fingerprint);
         uiModeSwitch = (ToggleButton) findViewById(R.id.tb_edit_mode);
         uiWallLengthText = (EditText) findViewById(R.id.et_wall_length);
 
@@ -229,6 +231,13 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                     return true;
                 }
                 return false;
+            }
+        });
+
+        uiFabRemoveLastFingerprint.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mMapper.undoLastFingerprint();
             }
         });
 
@@ -374,6 +383,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                     uiFabAddFloorplanFromPic.show(mPreserveAlphaOnShow);
                     uiFabAddFloorplanFromGallery.show(mPreserveAlphaOnShow);
                     uiFabMapRotateLock.show(mPreserveAlphaOnShow);
+                    uiFabRemoveLastFingerprint.show(mPreserveAlphaOnShow);
                 } else {
                     uiToolbar.setBackgroundColor(AppSettings.primaryColor);
                     uiFabDeleteWall.hide();
@@ -383,6 +393,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                     uiFabAddFloorplanFromPic.hide();
                     uiFabAddFloorplanFromGallery.hide();
                     uiFabMapRotateLock.hide();
+                    uiFabRemoveLastFingerprint.hide();
 
                     String jsonString = FloorPlanSerializer.serializeFloorPlan(mFloorPlan.disassemble());
                     PersistenceLayer.saveFloorPlan(jsonString);
@@ -457,6 +468,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiFabAddFloorplanFromPic.hide();
         uiFabAddFloorplanFromGallery.hide();
         uiFabMapRotateLock.hide();
+        uiFabRemoveLastFingerprint.hide();
     }
 
     private FloatingActionButton.OnVisibilityChangedListener mPreserveAlphaOnShow = new FloatingActionButton.OnVisibilityChangedListener() {
