@@ -114,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
 
         mMapper = Mapper.getInstance();
+        mMapper.setFloorPlan(mFloorPlan);
         if (AppSettings.inDebug) {
             mMapper.setFloorPlanView(uiFloorPlanView);
         }

@@ -78,8 +78,12 @@ public class Mapper implements ILocationUpdatedListener, IFingerprintAvailableLi
 
     public void undoLastFingerprint() {
         if (AppSettings.inDebug) {
+            if (mRecentlyAddedFingerprints.size() == 0) return;
+
             Fingerprint recentFingerprint = mRecentlyAddedFingerprints.pop();
+            mFloorPlan.getSketch().remove(recentFingerprint);
             recentFingerprint.cloak();
+            mFloorPlanView.renderPrimitive(recentFingerprint);
         }
     }
 
@@ -87,5 +91,9 @@ public class Mapper implements ILocationUpdatedListener, IFingerprintAvailableLi
         if (AppSettings.inDebug) {
             this.mFloorPlanView = floorPlanView;
         }
+    }
+
+    public void setFloorPlan(FloorPlan floorPlan) {
+        this.mFloorPlan = floorPlan;
     }
 }
