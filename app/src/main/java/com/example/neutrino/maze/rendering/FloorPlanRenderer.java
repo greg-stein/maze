@@ -32,7 +32,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public static final int ALPHA = 128;
     public static final int OPAQUE = 255;
     static final float DEFAULT_SCALE_FACTOR = 0.1f;
-    private static final int DEFAULT_BUFFER_VERTICES_NUM = 4096;
+    private static final int DEFAULT_BUFFER_VERTICES_NUM = 65536;
 
     public volatile float mAngle;
     private float mOffsetX;
@@ -304,12 +304,19 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         worldPoint.y = mRay[1];
     }
 
+    // Only for NONE mode (moving existing wall).
+    public boolean startDragHandled() {
+        return mSelectedWall != null;
+    }
+
     public void handleStartDrag(final int x, final int y, final FloorPlanView.Operation operation) {
+        // This is needed for FloorPlanView to know if there is any object under tap location
+        windowToWorld(x, y, mDragStart);
+        mSelectedWall = findWallHavingPoint(mDragStart.x, mDragStart.y);
+
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
-                windowToWorld(x, y, mDragStart);
-
                 mAddedWallByDrag = false;
 
                 if (operation == FloorPlanView.Operation.ADD_WALL) {
@@ -320,13 +327,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
                 }
                 else {
-                    mSelectedWall = findWallHavingPoint(mDragStart.x, mDragStart.y);
                     if (mSelectedWall != null) {
                         mSelectedWall.setTapLocation(mDragStart.x, mDragStart.y);
                         mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
                     }
                 }
-
             }
         });
     }
@@ -381,9 +386,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             }
         });
     }
-
     // TODO: remove queued task and use simpler method to run this on start
     private Runnable mQueuedTaskForGlThread = null;
+
     public void setFloorPlan(final List<IFloorPlanPrimitive> primitives) {
         mQueuedTaskForGlThread = new Runnable() {
             @Override
@@ -423,6 +428,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     private static final PointF mPanStart = new PointF();
+
     public void handleStartPan(final int x, final int y) {
         runOnGlThread(new Runnable() {
             @Override
@@ -431,8 +437,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             }
         });
     }
-
     private static final PointF mCurrentPan = new PointF();
+
     public void handlePan(final int x, final int y) {
         runOnGlThread(new Runnable() {
             @Override
@@ -574,13 +580,13 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public float getOffsetY() {
         return mOffsetY;
     }
-
     public PointF getMapAnyVertex() {
         if (mFloorPlanPrimitives.size() > 0) {
             return mGlBuffers.get(0).getFirstVertex();
         }
         return new PointF();
     }
+
     private IWallLengthChangedListener mWallLengthChangedListener = null;
 
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {

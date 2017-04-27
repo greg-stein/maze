@@ -124,7 +124,14 @@ public class FloorPlanView extends GLSurfaceView {
         switch (action) {
             case MotionEvent.ACTION_DOWN:
                 switch (operation) {
-                    case NONE:
+                    case NONE: // move existing wall if under tap location
+                        mRenderer.handleStartDrag(xPos, yPos, operation);
+                        if (mRenderer.startDragHandled()) {
+                            mDragStarted = true;
+                        } else {
+                            handlePanAndZoom(event);
+                        }
+                        break;
                     case ADD_WALL:
                         mDragStarted = true;
                         mRenderer.handleStartDrag(xPos, yPos, operation);
@@ -138,16 +145,22 @@ public class FloorPlanView extends GLSurfaceView {
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (mDragStarted && !mScaleDetector.isInProgress()) {
-                    mRenderer.handleDrag(xPos, yPos);
+                if (mDragStarted) {
+                    if (!mScaleDetector.isInProgress()) {
+                        mRenderer.handleDrag(xPos, yPos);
+                    }
+                } else {
+                    handlePanAndZoom(event);
                 }
                 break;
             case MotionEvent.ACTION_UP:
                 if (mDragStarted) {
                     mRenderer.handleEndDrag(xPos, yPos);
+                    mDragStarted = false;
+                } else {
+                    handlePanAndZoom(event);
                 }
 
-                mDragStarted = false;
                 break;
         }
     }
