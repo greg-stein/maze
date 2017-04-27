@@ -68,9 +68,6 @@ public class FloorPlanSerializerTest {
 
         assertThat(deserializedList.get(2), is(instanceOf(Fingerprint.class)));
         assertThat(deserializedList.get(2), is(equalTo(originalList.get(2))));
-
-        assertThat(deserializedList.get(3), is(instanceOf(LocationMark.class)));
-        assertThat(deserializedList.get(3), is(equalTo(originalList.get(3))));
     }
 
     @Test

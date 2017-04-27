@@ -76,7 +76,7 @@ public class GeneticLocatorTests {
     private static final float MUTATION_RATE = 0.3f;
     private static final float CRAWLING_RATE = 0.25f;
 
-//    @Ignore // This test is very long ~1 min
+    @Ignore // This test is very long ~1 min
     @Test
     public void commonGaTest() {
         GeneticLocator.setWorld(fingerprints);
