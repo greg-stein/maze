@@ -3,11 +3,13 @@ package com.example.neutrino.maze;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 
-import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
+import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,24 +20,42 @@ public class WifiScanner extends BroadcastReceiver {
     private static final int MAX_WIFI_LEVEL = 100; // Percent of signal reception
     public static final int MOVING_AVERAGE_WINDOW_SIZE = 1;
 
+    private static WifiScanner instance = null;
+    public static WifiScanner getInstance() {
+        if (instance == null) {
+            instance = new WifiScanner();
+        }
+        return instance;
+    }
+
+    private List<IFingerprintAvailableListener> mFingerprintAvailableListeners = new ArrayList<>();
     private MovingAverageScanResultsQueue mQueue = new MovingAverageScanResultsQueue(MOVING_AVERAGE_WINDOW_SIZE);
     private List<ScanResult> mLastScan;
     private WifiManager mWifiManager;
-    private boolean mIsEnabled = false;
-    private int mScanId = 0;
+    private boolean mIsEnabled = true;
 
-    public WifiScanner(WifiManager wifiManager) {
-        mWifiManager = wifiManager;
+    protected WifiScanner() {
+        mWifiManager = (WifiManager) AppSettings.appActivity.getSystemService(Context.WIFI_SERVICE);
     }
 
-    public void enable() {
+    public void onActivityResume() {
+        AppSettings.appActivity.registerReceiver(this, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         mWifiManager.startScan();
-        mIsEnabled = true;
     }
 
-    public void disable() {
-        mIsEnabled = false;
+    public void onActivityPause() {
+        AppSettings.appActivity.unregisterReceiver(this);
     }
+
+    public void setEnabled(boolean isEnabled) {
+        mIsEnabled = isEnabled;
+    }
+
+    public boolean isEnabled() {
+        return mIsEnabled;
+    }
+
+    public WiFiFingerprint getLastFingerprint() { return WiFiFingerprint.build(mQueue.getLastItem());}
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -46,19 +66,23 @@ public class WifiScanner extends BroadcastReceiver {
             mQueue.add(mLastScan);
 
             emitWiFiFingerprintAvailableEvent(mQueue.getSumFingerprint(), mQueue.getCounters());
-            mScanId++;
         }
     }
 
     public interface IFingerprintAvailableListener {
         void onFingerprintAvailable(WiFiFingerprint fingerprint);
     }
-    private IFingerprintAvailableListener mFingerprintAvailableListener = null;
-    public void setFingerprintAvailableListener(IFingerprintAvailableListener listener) {
-        this.mFingerprintAvailableListener = listener;
+
+    public void removeFingerprintAvailableListener(IFingerprintAvailableListener listener) {
+        this.mFingerprintAvailableListeners.remove(listener);
     }
+
+    public void addFingerprintAvailableListener(IFingerprintAvailableListener listener) {
+        this.mFingerprintAvailableListeners.add(listener);
+    }
+
     private void emitWiFiFingerprintAvailableEvent(WiFiFingerprint scanResultsSums, Map<String, Integer> numScans) {
-        if (mFingerprintAvailableListener != null) {
+        if (mIsEnabled && mFingerprintAvailableListeners.size() > 0) {
             WiFiFingerprint fingerprint = new WiFiFingerprint();
 
             for (Map.Entry<String, Integer> entry : scanResultsSums.entrySet()) {
@@ -68,7 +92,11 @@ public class WifiScanner extends BroadcastReceiver {
                 }
             }
 
-            mFingerprintAvailableListener.onFingerprintAvailable(fingerprint);
+            for (IFingerprintAvailableListener listener : mFingerprintAvailableListeners) {
+                if (listener != null) {
+                    listener.onFingerprintAvailable(fingerprint);
+                }
+            }
         }
     }
 }

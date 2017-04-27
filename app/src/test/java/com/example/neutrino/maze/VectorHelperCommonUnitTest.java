@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import com.example.neutrino.maze.rendering.VectorHelper;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -13,6 +14,7 @@ import org.robolectric.annotation.Config;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -89,6 +91,59 @@ public class VectorHelperCommonUnitTest {
     }
 
     @Test
+    public void linesIntersectPositiveTestQuarter2() {
+        // Line1: (O, 4) -- (3, 0)
+        PointF A = new PointF(0, 4);
+        PointF B = new PointF(-3, 0);
+
+        // Line2: (0, 0) -- (3, 4)
+        PointF O = new PointF(0, 0);
+        PointF M = new PointF(-3, 4);
+
+        assertTrue(VectorHelper.linesIntersect(A, B, O, M));
+    }
+
+    @Test
+    public void linesIntersectPositiveTestQuarter2LongLine() {
+        // Line1: (O, 4) -- (3, 0)
+        PointF A = new PointF(-300, -396);
+        PointF B = new PointF(297, 404);
+
+        // Line2: (0, 0) -- (3, 4)
+        PointF O = new PointF(0, 0);
+        PointF M = new PointF(-3, 4);
+
+        assertTrue(VectorHelper.linesIntersect(A, B, O, M));
+    }
+
+    @Test
+    public void linesIntersectMNotObscuredTestQuarter2() {
+        // Line1: (O, 4) -- (3, 0)
+        PointF A = new PointF(0, 4);
+        PointF B = new PointF(-3, 0);
+
+        // Line2: (0, 0) -- (3, 4)
+        PointF O = new PointF(0, 0);
+        PointF M = new PointF(1, 4);
+
+        assertFalse(VectorHelper.linesIntersect(A, B, O, M));
+    }
+
+    @Test
+    public void linesIntersectMBelowLineTestQuarter2() {
+        // Line1: (O, 4) -- (3, 0)
+        PointF A = new PointF(0, 4);
+        PointF B = new PointF(-3, 0);
+
+        // Line2: (0, 0) -- (3, 4)
+        PointF O = new PointF(0, 0);
+        PointF M = new PointF(-1, 2);
+
+        assertFalse(VectorHelper.linesIntersect(A, B, O, M));
+    }
+
+
+    @Test
     public void linesIntersectPositiveTest() {
         // Line1: (O, 4) -- (3, 0)
         PointF A = new PointF(0, 4);
@@ -154,6 +209,19 @@ public class VectorHelperCommonUnitTest {
     }
 
     @Test
+    public void linesIntersectLineInOppositeQuarterPositiveTest() {
+        // Line1: (O, -4) -- (-3, 0)
+        PointF A = new PointF(0, -4);
+        PointF B = new PointF(-3, 0);
+
+        // Line2: (0, 0) -- (-3, -4)
+        PointF O = new PointF(0, 0);
+        PointF M = new PointF(-3, -4);
+
+        assertTrue(VectorHelper.linesIntersect(A, B, O, M));
+    }
+
+    @Test
     public void linesIntersectLineInOppositeQuarterTest2() {
         // Line1: (O, 4) -- (3, 0)
         PointF A = new PointF(0, -4);
@@ -192,4 +260,57 @@ public class VectorHelperCommonUnitTest {
         assertFalse(VectorHelper.linesIntersect(A, B, O, M));
     }
 
+//    @Ignore
+    @Test
+    public void almostParameterizedTestBLAD() {
+        Object[][] parameters = new Object[][] {
+                {127.58f, 57.76f, 147.29f, 62.69f, 137.10f, 59.92f, 137.11f, 60.60f, true}, // <-- intersection
+                {127.58f, 57.76f, 147.29f, 62.69f, 137.11f, 60.60f, 137.11f, 61.28f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 137.11f, 61.28f, 137.10f, 61.96f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 137.10f, 61.96f, 137.08f, 62.64f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 137.08f, 62.64f, 137.07f, 63.32f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 137.07f, 63.32f, 137.03f, 64.00f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 137.03f, 64.00f, 137.04f, 63.32f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 137.04f, 63.32f, 136.99f, 62.64f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 136.99f, 62.64f, 136.88f, 61.97f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 136.88f, 61.97f, 136.76f, 61.30f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 136.76f, 61.30f, 136.66f, 60.63f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 136.66f, 60.63f, 136.54f, 59.96f, true}, // <-- intersection
+                {127.58f, 57.76f, 147.29f, 62.69f, 136.54f, 59.96f, 136.42f, 59.29f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 136.42f, 59.29f, 136.28f, 58.62f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 136.28f, 58.62f, 136.13f, 57.96f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 136.13f, 57.96f, 135.97f, 57.30f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 135.97f, 57.30f, 135.81f, 56.64f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 135.81f, 56.64f, 135.62f, 55.99f, false},
+                {127.58f, 57.76f, 147.29f, 62.69f, 135.62f, 55.99f, 135.62f, 55.31f, false}
+        };
+
+        PointF A = new PointF();
+        PointF B = new PointF();
+        PointF O = new PointF();
+        PointF M = new PointF();
+
+        for (Object[] params : parameters) {
+            A.set((Float)params[0], (Float)params[1]);
+            B.set((Float)params[2], (Float)params[3]);
+            O.set((Float)params[4], (Float)params[5]);
+            M.set((Float)params[6], (Float)params[7]);
+            Boolean result = (Boolean)params[8];
+
+            assertThat(VectorHelper.linesIntersect(A, B, O, M), is(equalTo(result)));
+        }
+    }
+
+    @Test
+    public void projectionCommonTest() {
+        PointF a = new PointF(0f, 0f);
+        PointF b = new PointF(10f, 0f);
+        PointF c = new PointF(0f, 0f);
+        PointF d = new PointF(5f, 7f);
+
+        PointF proj = VectorHelper.projection(c, d, a, b);
+
+        assertThat(proj.x, is(equalTo(5f)));
+        assertThat(proj.y, is(equalTo(0f)));
+    }
 }

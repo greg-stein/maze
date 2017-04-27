@@ -2,18 +2,12 @@ package com.example.neutrino.maze;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -35,30 +29,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.example.neutrino.maze.Locator.ILocationUpdatedListener;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
-import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
-import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
+import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
+import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
-    // One human step
-    private static final float STEP_LENGTH = 0.68f; // 78cm
-    private static final float WIFIMARK_SPACING = 3 * STEP_LENGTH;
+import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
 
-    private float mTravelledDistance = 0;
-
-    private FloorPlan mFloorPlan = FloorPlan.build();
-
+public class MainActivity extends AppCompatActivity implements IDeviceRotationListener, ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener {
     // GUI-related fields
     private FloorPlanView uiFloorPlanView;
     private Toolbar uiToolbar;
@@ -71,53 +58,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private FloatingActionButton uiFabAddFloorplanFromPic;
     private FloatingActionButton uiFabAddFloorplanFromGallery;
     private FloatingActionButton uiFabMapRotateLock;
+    private FloatingActionButton uiFabRemoveLastFingerprint;
     private EditText uiWallLengthText;
-
     // Map north angle
     private float mMapNorth = 0.0f;
 
     private boolean mIsMapRotationLocked = false;
+
     private float mDegreeOffset;
     private float mCurrentDegree = 0f;
-
-    // device sensor manager
-    private SensorManager mSensorManager;
-    private Sensor mAccelerometer;
-    private Sensor mMagnetometer;
-    private Sensor mGravity;
-    private Sensor mRotation;
-    private Sensor mStepDetector;
-    private float[] mGravitySensorRawData;
-    private float[] mGeomagneticSensorRawData;
-    private static final float[] mRotationMatrix = new float[9];
-    private static final float[] mInclinationMatrix = new float[9];
-    private static final float[] mOrientation = new float[3];
-    private boolean mHaveAccelerometer;
-    private boolean mHaveMagnetometer;
-    private boolean mHaveGravity;
-    private boolean mHaveRotation;
-    private boolean mHaveStepDetector;
-
-    private WifiManager mWifiManager;
+    private FloorPlan mFloorPlan = FloorPlan.build();
+    private SensorListener mSensorListener;
     private WifiScanner mWifiScanner;
-    private WiFiTug mWiFiTug = new WiFiTug();
-    private TugOfWar mTow = new TugOfWar();
+    private Locator mLocator;
+    private Mapper mMapper;
 
-    private boolean mPlacedMarkAtCurrentLocation = true;
+    private WiFiLocator mWiFiLocator = WiFiLocator.getInstance();
 
-    /*
-     * time smoothing constant for low-pass filter
-     * 0 ≤ alpha ≤ 1 ; a smaller value basically means more smoothing
-     * See: http://en.wikipedia.org/wiki/Low-pass_filter#Discrete-time_realization
-     */
-    private static final float LOW_PASS_ALPHA = 0.5f;
-    private static final PointF mCurrentLocation = new PointF();
     private float mCurrentWallLength = 1;
     private boolean mAutoScanEnabled = false;
-
-    public MainActivity() {
-        mTow.registerTugger(mWiFiTug);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,24 +93,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabAddFloorplanFromPic = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_camera);
         uiFabAddFloorplanFromGallery = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_gallery);
         uiFabMapRotateLock = (FloatingActionButton) findViewById(R.id.fab_map_rotate_lock);
+        uiFabRemoveLastFingerprint = (FloatingActionButton) findViewById(R.id.fab_remove_last_fingerprint);
         uiModeSwitch = (ToggleButton) findViewById(R.id.tb_edit_mode);
         uiWallLengthText = (EditText) findViewById(R.id.et_wall_length);
 
         setSupportActionBar(uiToolbar);
         getSupportActionBar().setTitle("");
 
-        AppSettings.init(this); //getApplicationContext()
+        AppSettings.init(this);
         mFabAlpha = getAlphaFromRes();
 
         // initialize your android device sensor capabilities
-        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        mWifiScanner = new WifiScanner(mWifiManager);
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-        mRotation = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        mStepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+        mWifiScanner = WifiScanner.getInstance();
+        mSensorListener = SensorListener.getInstance();
+        mSensorListener.addDeviceRotationListener(this);
+        mLocator = Locator.getInstance();
+        mLocator.addLocationUpdatedListener(this);
+        if (AppSettings.inDebug) {
+//            mLocator.addDistributionUpdatedListener(this);
+        }
+        mLocator.setFloorPlan(mFloorPlan);
+
+
+        mMapper = Mapper.getInstance();
+        mMapper.setFloorPlan(mFloorPlan);
+        if (AppSettings.inDebug) {
+            mMapper.setFloorPlanView(uiFloorPlanView);
+        }
 
         setUiListeners();
     }
@@ -187,7 +155,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         List<IFloorPlanPrimitive> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
         mFloorPlan.setSketch(walls);
         uiFloorPlanView.plot(walls, false); // not in init phase
-//        mWiFiTug.walls = walls;
         uiFloorPlanView.showMap();
     }
 
@@ -267,17 +234,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
+        uiFabRemoveLastFingerprint.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mMapper.undoLastFingerprint();
+            }
+        });
+
         uiFabMapRotateLock.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mIsMapRotationLocked = !mIsMapRotationLocked;
-                if (mIsMapRotationLocked) {
-                    exciteFab(uiFabMapRotateLock);
-                } else {
-                    calmFab(uiFabMapRotateLock);
-                    mMapNorth = mDegreeOffset;
-                }
-                mDegreeOffset = 0;
+            if (mIsMapRotationLocked) {
+                calmFab(uiFabMapRotateLock);
+                mMapNorth = mDegreeOffset;
+                mLocator.setNorth(mMapNorth);
+                mIsMapRotationLocked = false;
+            } else {
+                exciteFab(uiFabMapRotateLock);
+                mIsMapRotationLocked = true;
+            }
+//                mDegreeOffset = 0;
 
                 // if (enable) {
                 //     rememberedNorth = currentNorth
@@ -328,9 +304,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabFindMeOnMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PointF location = mTow.getCurrentPosition();
-                uiFloorPlanView.putLocationMarkAt(location);
-                uiFloorPlanView.highlightCentroidMarks(WiFiTug.centroidMarks);
+                uiFloorPlanView.centerToLocation();
             }
         });
 
@@ -343,27 +317,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        mWifiScanner.setFingerprintAvailableListener(new WifiScanner.IFingerprintAvailableListener() {
-            @Override
-            public void onFingerprintAvailable(WiFiFingerprint wiFiFingerprint) {
-                if (!mPlacedMarkAtCurrentLocation) {
-                    uiFloorPlanView.placeWiFiMarkAt(mCurrentLocation, wiFiFingerprint);
-                    // TODO: There is costly stupidity in these two lines:
-                    mWiFiTug.marks = uiFloorPlanView.getPrimitives(Fingerprint.class);
-                    mWiFiTug.walls = uiFloorPlanView.getPrimitives(Wall.class);
-                    mPlacedMarkAtCurrentLocation = true;
-                }
-                mWiFiTug.currentWiFiFingerprint = wiFiFingerprint;
-            }
-        });
-
-        uiFloorPlanView.setOnLocationPlacedListener(new FloorPlanView.IOnLocationPlacedListener() {
-            @Override
-            public void onLocationPlaced(float x, float y) {
-                mCurrentLocation.set(x, y);
-                mPlacedMarkAtCurrentLocation = false;
-            }
-        });
+        uiFloorPlanView.setOnLocationPlacedListener(this);
 
         uiFloorPlanView.setOnWallLengthChangedListener(new FloorPlanRenderer.IWallLengthChangedListener() {
             @Override
@@ -379,9 +333,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onGlobalLayout() {
                 String jsonString = PersistenceLayer.loadFloorPlan();
 
+//                String jsonString = null;
 //                try {
 //                    Resources res = getResources();
-//                    InputStream in_s = res.openRawResource(R.raw.floorplan_greg_home_2nd_floor);
+//                    InputStream in_s = res.openRawResource(R.raw.haifa_mall_many_fingerprints);
 //
 //                    byte[] b = new byte[in_s.available()];
 //                    in_s.read(b);
@@ -394,7 +349,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     List<Object> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
                     mFloorPlan = FloorPlan.build(floorplan);
                     uiFloorPlanView.plot(mFloorPlan.getSketch());
-                    mWiFiTug.marks = mFloorPlan.getFingerprints();
+                    mWiFiLocator.setFingerprintsMap(mFloorPlan.getFingerprints());
+                    mLocator.setFloorPlan(mFloorPlan);
                 }
 
 
@@ -427,6 +383,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     uiFabAddFloorplanFromPic.show(mPreserveAlphaOnShow);
                     uiFabAddFloorplanFromGallery.show(mPreserveAlphaOnShow);
                     uiFabMapRotateLock.show(mPreserveAlphaOnShow);
+                    uiFabRemoveLastFingerprint.show(mPreserveAlphaOnShow);
                 } else {
                     uiToolbar.setBackgroundColor(AppSettings.primaryColor);
                     uiFabDeleteWall.hide();
@@ -436,6 +393,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     uiFabAddFloorplanFromPic.hide();
                     uiFabAddFloorplanFromGallery.hide();
                     uiFabMapRotateLock.hide();
+                    uiFabRemoveLastFingerprint.hide();
 
                     String jsonString = FloorPlanSerializer.serializeFloorPlan(mFloorPlan.disassemble());
                     PersistenceLayer.saveFloorPlan(jsonString);
@@ -454,8 +412,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onClick(View view) {
                 mAutoScanEnabled = !mAutoScanEnabled;
                 if (mAutoScanEnabled) {
+                    mMapper.enable();
                     exciteFab(uiFabAutoscanMode);
                 } else {
+                    mMapper.disable();
                     calmFab(uiFabAutoscanMode);
                 }
             }
@@ -508,6 +468,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         uiFabAddFloorplanFromPic.hide();
         uiFabAddFloorplanFromGallery.hide();
         uiFabMapRotateLock.hide();
+        uiFabRemoveLastFingerprint.hide();
     }
 
     private FloatingActionButton.OnVisibilityChangedListener mPreserveAlphaOnShow = new FloatingActionButton.OnVisibilityChangedListener() {
@@ -580,25 +541,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onResume() {
         super.onResume();
-
-        registerReceiver(mWifiScanner, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-
-        // for the system's orientation sensor registered listeners
-        mHaveRotation = mSensorManager.registerListener(this, mRotation, SensorManager.SENSOR_DELAY_GAME);
-        if (!mHaveRotation) {
-            mHaveGravity = mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME);
-
-            // if there is a gravity sensor we do not need the accelerometer
-            if (!mHaveGravity) {
-                mHaveAccelerometer = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
-            }
-            mHaveMagnetometer = mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
-        }
-
-        // Step detector
-        mHaveStepDetector = mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_UI);
-
-        mWifiScanner.enable();
+        mSensorListener.onActivityResume();
+        mWifiScanner.onActivityResume();
     }
 
     @Override
@@ -606,79 +550,37 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onPause();
 
         // to stop the listener and save battery
-        mSensorManager.unregisterListener(this);
-        unregisterReceiver(mWifiScanner);
-    }
-
-    protected float[] lowPass( float[] newSensorData, float[] oldSensorData ) {
-        if ( oldSensorData == null ) return newSensorData;
-
-        for ( int i=0; i < newSensorData.length; i++ ) {
-            oldSensorData[i] = newSensorData[i] + LOW_PASS_ALPHA * (oldSensorData[i] - newSensorData[i]);
-        }
-        return oldSensorData;
+        mSensorListener.onActivityPause();
+        mWifiScanner.onActivityPause();
     }
 
     @Override
-    public void onSensorChanged(SensorEvent event) {
-        boolean gotRotationMatrix = false;
+    public void onDeviceRotated(double orientation) {
+        float degree = (float) (orientation + mMapNorth);
 
-        switch (event.sensor.getType()) {
-            case Sensor.TYPE_GRAVITY: {
-                mGravitySensorRawData = lowPass(event.values.clone(), mGravitySensorRawData);
-                break;
-            }
-            case Sensor.TYPE_ACCELEROMETER: {
-                mGravitySensorRawData = lowPass(event.values.clone(), mGravitySensorRawData);
-                break;
-            }
-            case Sensor.TYPE_MAGNETIC_FIELD: {
-                mGeomagneticSensorRawData = lowPass(event.values.clone(), mGeomagneticSensorRawData);
-                break;
-            }
-            case Sensor.TYPE_ROTATION_VECTOR: {
-                // calculate the rotation matrix
-                SensorManager.getRotationMatrixFromVector( mRotationMatrix, event.values );
-                gotRotationMatrix = true;
-                break;
-            }
-            case Sensor.TYPE_STEP_DETECTOR: {
-                if (mAutoScanEnabled) {
-                    final float offsetX = (float) (Math.sin(Math.toRadians(mCurrentDegree)) * STEP_LENGTH);
-                    final float offsetY = (float) (Math.cos(Math.toRadians(mCurrentDegree)) * STEP_LENGTH);
-                    uiFloorPlanView.updateOffset(offsetX, -offsetY);
-
-                    mTravelledDistance += STEP_LENGTH;
-                    if (mTravelledDistance >= WIFIMARK_SPACING) {
-                        // Place Fingerprint at center of the screen
-                        uiFloorPlanView.setLocation(uiFloorPlanView.getWidth()/2, uiFloorPlanView.getHeight()/2);
-                        mTravelledDistance = 0;
-                    }
-                }
-            }
-         }
-
-        if (event.sensor.getType() != Sensor.TYPE_ROTATION_VECTOR) {
-            if (mGravitySensorRawData != null && mGeomagneticSensorRawData != null) {
-                gotRotationMatrix = SensorManager.getRotationMatrix(mRotationMatrix, mInclinationMatrix,
-                        mGravitySensorRawData, mGeomagneticSensorRawData);
-            }
-        }
-
-        if (gotRotationMatrix) {
-            SensorManager.getOrientation(mRotationMatrix, mOrientation);
-            float degree = Math.round(Math.toDegrees(mOrientation[0]) + mMapNorth);
-
-            mDegreeOffset = mCurrentDegree - degree;
-            if (!mIsMapRotationLocked) {
-                uiFloorPlanView.updateAngle(mDegreeOffset);
-                mCurrentDegree = degree;
-            }
+        mDegreeOffset = mCurrentDegree - degree;
+        if (!mIsMapRotationLocked) {
+            uiFloorPlanView.updateAngle(mDegreeOffset);
+            mCurrentDegree = degree;
         }
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // Not in use
+    public void onLocationUpdated(PointF location) {
+        uiFloorPlanView.setLocation(location);
+
+        if (AppSettings.inDebug) {
+            uiFloorPlanView.highlightCentroidMarks(WiFiLocator.centroidMarks);
+        }
+    }
+
+    @Override
+    public void onLocationPlaced(PointF location) {
+        mLocator.resetLocationTo(location);
+    }
+
+    @Override
+    public void onDistributionUpdated(PointF mean, float stdev) {
+        uiFloorPlanView.drawDistribution(mean, stdev);
     }
 }

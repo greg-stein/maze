@@ -2,7 +2,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "06:ae:db:3a:87:a5":-87,
             "c4:04:15:54:0a:00":-88,
             "50:a7:2b:62:8b:09":-81,
@@ -38,7 +38,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "06:ae:db:3a:87:a5":-89,
             "c4:04:15:54:0a:00":-87,
             "50:a7:2b:62:8b:09":-80,
@@ -74,7 +74,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "06:ae:db:3a:87:a5":-87,
             "c4:04:15:54:0a:00":-84,
             "50:a7:2b:62:8b:09":-78,
@@ -111,7 +111,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "06:ae:db:3a:87:a5":-86,
             "c4:04:15:54:0a:00":-82,
             "50:a7:2b:62:8b:09":-78,
@@ -148,7 +148,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "06:ae:db:3a:87:a5":-82,
             "c4:04:15:54:0a:00":-82,
             "50:a7:2b:62:8b:09":-78,
@@ -186,7 +186,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "06:ae:db:3a:87:a5":-79,
             "c4:04:15:54:0a:00":-82,
             "c8:be:19:12:17:d6":-84,
@@ -222,7 +222,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-75,
             "06:ae:db:3a:87:a5":-75,
             "c4:04:15:54:0a:00":-78,
@@ -262,7 +262,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-75,
             "06:ae:db:3a:87:a5":-75,
             "c4:04:15:54:0a:00":-77,
@@ -301,7 +301,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-75,
             "06:ae:db:3a:87:a5":-75,
             "c4:04:15:54:0a:00":-76,
@@ -340,7 +340,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-72,
             "06:ae:db:3a:87:a5":-75,
             "c4:04:15:54:0a:00":-76,
@@ -378,7 +378,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-68,
             "06:ae:db:3a:87:a5":-76,
             "c4:04:15:54:0a:00":-74,
@@ -420,7 +420,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-69,
             "00:0e:8e:7a:3d:c3":-81,
             "06:ae:db:3a:87:a5":-75,
@@ -464,7 +464,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-72,
             "00:0e:8e:7a:3d:c3":-81,
             "06:ae:db:3a:87:a5":-76,
@@ -508,7 +508,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-75,
             "00:0e:8e:7a:3d:c3":-81,
             "06:ae:db:3a:87:a5":-76,
@@ -552,7 +552,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-72,
             "00:0e:8e:7a:3d:c3":-81,
             "06:ae:db:3a:87:a5":-76,
@@ -596,7 +596,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-72,
             "9c:97:26:4c:55:21":-76,
             "00:0e:8e:7a:3d:c3":-80,
@@ -639,7 +639,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-76,
             "9c:97:26:4c:55:21":-76,
             "00:0e:8e:7a:3d:c3":-78,
@@ -681,7 +681,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-74,
             "9c:97:26:4c:55:21":-76,
             "00:0e:8e:7a:3d:c3":-77,
@@ -726,7 +726,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-71,
             "9c:97:26:4c:55:21":-75,
             "00:0e:8e:7a:3d:c3":-76,
@@ -771,7 +771,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "f4:83:cd:6a:c4:d6":-64,
             "9c:97:26:4c:55:21":-75,
             "00:0e:8e:7a:3d:c3":-77,
@@ -816,7 +816,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "00:0e:8e:7a:3d:c3":-78,
             "c4:12:f5:81:a1:e4":-84,
             "b4:e9:b0:cb:06:20":-73,
@@ -862,7 +862,7 @@
    {  
       "CLASSNAME":"Fingerprint",
       "INSTANCE":{  
-         "mFingerprint":{  
+         "mWiFiFingerprint":{  
             "20:bb:c0:1d:c3:40":-77,
             "00:0e:8e:7a:3d:c3":-74,
             "c4:12:f5:81:a1:e4":-82,

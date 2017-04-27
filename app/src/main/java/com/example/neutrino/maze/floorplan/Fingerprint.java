@@ -1,8 +1,9 @@
 package com.example.neutrino.maze.floorplan;
 
 import android.graphics.Color;
+import android.graphics.PointF;
 
-import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
+import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 
 /**
  * Created by Greg Stein on 9/25/2016.
@@ -25,6 +26,10 @@ public class Fingerprint extends Footprint {
         super(cx, cy, MARK_RADIUS);
         setColor(Color.BLUE);
         this.mWiFiFingerprint = fingerprint;
+    }
+
+    public Fingerprint(PointF location, WiFiFingerprint fingerprint) {
+        this(location.x, location.y, fingerprint);
     }
 
     public WiFiFingerprint getFingerprint() {

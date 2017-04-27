@@ -227,7 +227,7 @@ public class MovingAverageQueueTests {
         scanResults2.add(buildScanResult(MAC2, -70));
         queue.add(scanResults2);
 
-        WiFiTug.WiFiFingerprint sum = queue.getSumFingerprint();
+        WiFiLocator.WiFiFingerprint sum = queue.getSumFingerprint();
         Map<String, Integer> counters = queue.getCounters();
 
         assertNotNull(sum);

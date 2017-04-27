@@ -8,12 +8,13 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.CommonHelper;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IWallLengthChangedListener;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IFloorplanLoadCompleteListener;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
+import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 
 import java.util.List;
 
@@ -21,7 +22,7 @@ import java.util.List;
  * Created by neutrino on 7/2/2016.
  */
 public class FloorPlanView extends GLSurfaceView {
-    private final FloorPlanRenderer mRenderer = new FloorPlanRenderer();
+    private FloorPlanRenderer mRenderer;
     private boolean mDragStarted;
     private ScaleGestureDetector mScaleDetector;
     private float mScaleFactor = FloorPlanRenderer.DEFAULT_SCALE_FACTOR;
@@ -29,13 +30,15 @@ public class FloorPlanView extends GLSurfaceView {
     private final PointF mCurrentLocation = new PointF();
 
     public FloorPlanView(Context context) {
-        super(context);
-        init(context, null);
+        this(context, null);
     }
 
     public FloorPlanView(Context context, AttributeSet attrs) {
         super(context,attrs);
-        init(context, attrs);
+        if (!isInEditMode()) {
+            mRenderer = new FloorPlanRenderer();
+            init(context, attrs);
+        }
     }
 
     private void init(Context context, AttributeSet attrs) {
@@ -52,6 +55,16 @@ public class FloorPlanView extends GLSurfaceView {
                 showMap();
             }
         });
+    }
+
+    public void drawDistribution(PointF mean, float stdev) {
+        if (AppSettings.inDebug) {
+            mRenderer.drawDistribution(mean, stdev);
+        }
+    }
+
+    public void renderPrimitive(IFloorPlanPrimitive primitive) {
+        mRenderer.renderPrimitive(primitive);
     }
 
     public boolean isContentsInEditMode() {
@@ -111,7 +124,14 @@ public class FloorPlanView extends GLSurfaceView {
         switch (action) {
             case MotionEvent.ACTION_DOWN:
                 switch (operation) {
-                    case NONE:
+                    case NONE: // move existing wall if under tap location
+                        mRenderer.handleStartDrag(xPos, yPos, operation);
+                        if (mRenderer.startDragHandled()) {
+                            mDragStarted = true;
+                        } else {
+                            handlePanAndZoom(event);
+                        }
+                        break;
                     case ADD_WALL:
                         mDragStarted = true;
                         mRenderer.handleStartDrag(xPos, yPos, operation);
@@ -125,16 +145,22 @@ public class FloorPlanView extends GLSurfaceView {
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (mDragStarted && !mScaleDetector.isInProgress()) {
-                    mRenderer.handleDrag(xPos, yPos);
+                if (mDragStarted) {
+                    if (!mScaleDetector.isInProgress()) {
+                        mRenderer.handleDrag(xPos, yPos);
+                    }
+                } else {
+                    handlePanAndZoom(event);
                 }
                 break;
             case MotionEvent.ACTION_UP:
                 if (mDragStarted) {
                     mRenderer.handleEndDrag(xPos, yPos);
+                    mDragStarted = false;
+                } else {
+                    handlePanAndZoom(event);
                 }
 
-                mDragStarted = false;
                 break;
         }
     }
@@ -203,11 +229,6 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
-    public final <T extends IFloorPlanPrimitive> List<T> getPrimitives(Class<T> klazz) {
-        List<IFloorPlanPrimitive> floorPlan = mRenderer.getFloorPlan();
-        return CommonHelper.getPrimitives(klazz, floorPlan);
-    }
-
     public void plot(List<? extends IFloorPlanPrimitive> floorplan) {
         mRenderer.setFloorPlan((List<IFloorPlanPrimitive>) floorplan);
     }
@@ -230,17 +251,24 @@ public class FloorPlanView extends GLSurfaceView {
     protected void setLocation(int x, int y) {
         PointF worldLocation = new PointF();
         mRenderer.windowToWorld(x, y, worldLocation);
-        setLocation(worldLocation.x, worldLocation.y);
+
+        if (mNewLocationListener != null) {
+            mNewLocationListener.onLocationPlaced(worldLocation);
+        }
     }
 
     // This method is used when you want to set location programmatically
     public void setLocation(float x, float y) {
         mCurrentLocation.set(x, y);
         mRenderer.drawLocationMarkAt(mCurrentLocation);
+    }
 
-        if (mNewLocationListener != null) {
-            mNewLocationListener.onLocationPlaced(x, y);
-        }
+    public void setLocation(PointF location) {
+        setLocation(location.x, location.y);
+    }
+
+    public PointF getLocation() {
+         return mCurrentLocation;
     }
 
     public void centerToPoint(PointF point) {
@@ -250,6 +278,10 @@ public class FloorPlanView extends GLSurfaceView {
     public void showMap() {
         PointF mapVertex = mRenderer.getMapAnyVertex();
         centerToPoint(mapVertex);
+    }
+
+    public void centerToLocation() {
+        centerToPoint(mCurrentLocation);
     }
 
     public void centerToPoint(int x, int y) {
@@ -264,15 +296,15 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     public interface IOnLocationPlacedListener {
-        void onLocationPlaced(float x, float y);
+        void onLocationPlaced(PointF location);
     }
     private IOnLocationPlacedListener mNewLocationListener = null;
     public void setOnLocationPlacedListener(IOnLocationPlacedListener listener) {
         this.mNewLocationListener = listener;
     }
 
-    public void placeWiFiMarkAt(PointF center, WiFiFingerprint wiFiFingerprint) {
-        mRenderer.putMark(center.x, center.y, wiFiFingerprint);
+    public Fingerprint placeWiFiMarkAt(PointF center, WiFiFingerprint wiFiFingerprint) {
+        return mRenderer.putMark(center.x, center.y, wiFiFingerprint);
     }
 
     public void clearFloorPlan() {

@@ -15,7 +15,7 @@ import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.LocationMark;
 import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.WiFiTug.WiFiFingerprint;
+import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +33,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public static final int ALPHA = 128;
     public static final int OPAQUE = 255;
     static final float DEFAULT_SCALE_FACTOR = 0.1f;
-    private static final int DEFAULT_BUFFER_VERTICES_NUM = 4096;
+    private static final int DEFAULT_BUFFER_VERTICES_NUM = 65536;
 
     public volatile float mAngle;
     private float mOffsetX;
@@ -63,6 +63,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private LocationMark mLocationMark = null;
     private List<IFloorPlanPrimitive> mFloorPlanPrimitives;
 
+    private GLText glText;
+
     static private String vertexShaderCode;
     static private String fragmentShaderCode;
     static private String textRenderVertexShaderCode;
@@ -75,7 +77,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         textRenderFragmentShaderCode = readResourceAsString("/res/raw/text_render_fragment_shader.glsl");
     }
 
-    private GLText glText;
+    // Used for debug only to show distribution of active fingerprints
+    private LocationMark mDistributionIndicator;
 
     private static String readResourceAsString(String path) {
         Exception innerException;
@@ -328,12 +331,19 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         worldPoint.y = mRay[1];
     }
 
+    // Only for NONE mode (moving existing wall).
+    public boolean startDragHandled() {
+        return mSelectedWall != null;
+    }
+
     public void handleStartDrag(final int x, final int y, final FloorPlanView.Operation operation) {
+        // This is needed for FloorPlanView to know if there is any object under tap location
+        windowToWorld(x, y, mDragStart);
+        mSelectedWall = findWallHavingPoint(mDragStart.x, mDragStart.y);
+
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
-                windowToWorld(x, y, mDragStart);
-
                 mAddedWallByDrag = false;
 
                 if (operation == FloorPlanView.Operation.ADD_WALL) {
@@ -344,13 +354,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
                 }
                 else {
-                    mSelectedWall = findWallHavingPoint(mDragStart.x, mDragStart.y);
                     if (mSelectedWall != null) {
                         mSelectedWall.setTapLocation(mDragStart.x, mDragStart.y);
                         mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
                     }
                 }
-
             }
         });
     }
@@ -405,9 +413,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             }
         });
     }
-
     // TODO: remove queued task and use simpler method to run this on start
     private Runnable mQueuedTaskForGlThread = null;
+
     public void setFloorPlan(final List<IFloorPlanPrimitive> primitives) {
         mQueuedTaskForGlThread = new Runnable() {
             @Override
@@ -447,6 +455,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     private static final PointF mPanStart = new PointF();
+
     public void handleStartPan(final int x, final int y) {
         runOnGlThread(new Runnable() {
             @Override
@@ -455,8 +464,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             }
         });
     }
-
     private static final PointF mCurrentPan = new PointF();
+
     public void handlePan(final int x, final int y) {
         runOnGlThread(new Runnable() {
             @Override
@@ -481,9 +490,10 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         addPrimitive(footprint);
     }
 
-    public void putMark(final float x, final float y, final WiFiFingerprint wifiFingerprint) {
+    public Fingerprint putMark(final float x, final float y, final WiFiFingerprint wifiFingerprint) {
         Fingerprint mark = new Fingerprint(x, y, wifiFingerprint);
         addPrimitive(mark);
+        return mark;
     }
 
     public void drawLocationMarkAt(final PointF currentLocation) {
@@ -502,6 +512,38 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 }
             });
         }
+    }
+
+    public void drawDistribution(final PointF mean, final float stdev) {
+        if (AppSettings.inDebug) {
+            float innerRadius = Math.max(0, stdev - 1);
+
+            if (mDistributionIndicator == null) {
+                mDistributionIndicator = new LocationMark(mean.x, mean.y, innerRadius, stdev);
+                mDistributionIndicator.setColor(Color.GREEN);
+                addPrimitive(mDistributionIndicator);
+            } else {
+                mDistributionIndicator.setCenter(mean);
+                mDistributionIndicator.setInnerRadius(innerRadius);
+                mDistributionIndicator.setOuterRadius(stdev);
+                mDistributionIndicator.updateVertices();
+                runOnGlThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mLocationMark.rewriteToBuffer();
+                    }
+                });
+            }
+        }
+    }
+
+    public void renderPrimitive(final IFloorPlanPrimitive primitive) {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                primitive.rewriteToBuffer();
+            }
+        });
     }
 
     public void clearFloorPlan() {
@@ -565,7 +607,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public float getOffsetY() {
         return mOffsetY;
     }
-
     public PointF getMapAnyVertex() {
         if (mFloorPlanPrimitives != null && mFloorPlanPrimitives.size() > 0) {
             return mGlBuffers.get(0).getFirstVertex();
@@ -574,6 +615,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     private IWallLengthChangedListener mWallLengthChangedListener = null;
+
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
         this.mWallLengthChangedListener = listener;
     }

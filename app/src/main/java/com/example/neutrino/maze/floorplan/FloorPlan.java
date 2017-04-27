@@ -1,6 +1,8 @@
 package com.example.neutrino.maze.floorplan;
 
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.CommonHelper;
+import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,13 +22,21 @@ public class FloorPlan {
         FloorPlan floorPlan = new FloorPlan();
         floorPlan.mFingerprints = CommonHelper.extractObjects(Fingerprint.class, entities);
         floorPlan.mTags = CommonHelper.extractObjects(Tag.class, entities);
+//        List<Wall> walls = FloorplanVectorizer.connect(CommonHelper.extractObjects(Wall.class, entities));
+
+        // Remove location marks from floorplan
+        CommonHelper.extractObjects(LocationMark.class, entities);
         floorPlan.mSketch = CommonHelper.extractObjects(IFloorPlanPrimitive.class, entities);
+//        floorPlan.mSketch.addAll(walls);
 
         final List<FloorPlanDescriptor> floorPlanDescriptors = CommonHelper.extractObjects(FloorPlanDescriptor.class, entities);
         if (floorPlanDescriptors != null && floorPlanDescriptors.size() > 0) {
             floorPlan.mDescriptor = floorPlanDescriptors.get(0);
         }
 
+        if (AppSettings.inDebug && floorPlan.mFingerprints != null) {
+            floorPlan.mSketch.addAll(floorPlan.mFingerprints);
+        }
         return floorPlan;
     }
 
@@ -41,6 +51,10 @@ public class FloorPlan {
     }
 
     public List<Object> disassemble() {
+        if (AppSettings.inDebug) {
+            if (mSketch != null && mFingerprints != null) mSketch.removeAll(mFingerprints);
+        }
+
         int entitiesNum =
                 ((mSketch != null) ? mSketch.size() : 0) +
                 ((mFingerprints != null) ? mFingerprints.size() : 0) +
