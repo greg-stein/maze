@@ -556,9 +556,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     @Override
     public void onDeviceRotated(double orientation) {
-        float degree = (float) (orientation + mMapNorth);
+        float degree = (float) (orientation - mMapNorth);
 
-        mDegreeOffset = mCurrentDegree - degree;
+        mDegreeOffset = degree - mCurrentDegree;
         if (!mIsMapRotationLocked) {
             uiFloorPlanView.updateAngle(mDegreeOffset);
             mCurrentDegree = degree;

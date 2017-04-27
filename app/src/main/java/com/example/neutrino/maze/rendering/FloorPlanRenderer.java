@@ -118,7 +118,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // Position the eye in front of the origin.
         final float eyeX = 0.0f;
         final float eyeY = 0.0f;
-        final float eyeZ = -3.0f;
+        final float eyeZ = 3.0f;
 
         // We are looking toward the distance
         final float lookX = 0.0f;

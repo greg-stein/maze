@@ -152,7 +152,7 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
             final float stepX = (float) (Math.sin(Math.toRadians(mCurrentDegree)) * STEP_LENGTH);
             final float stepY = (float) (Math.cos(Math.toRadians(mCurrentDegree)) * STEP_LENGTH);
             PointF proposedLocation = new PointF(mCurrentLocation.x, mCurrentLocation.y);
-            proposedLocation.offset(-stepX, stepY);
+            proposedLocation.offset(stepX, stepY);
             if (hitObstacle(mCurrentLocation, proposedLocation)) {
 //                correctLocation(getObstacle(), proposedLocation);
                 correctLocationAlongObstacle(getObstacle(), proposedLocation);
@@ -197,7 +197,7 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
 
     @Override
     public void onDeviceRotated(double degree) {
-        mCurrentDegree = degree + mNorth;
+        mCurrentDegree = degree - mNorth;
     }
 
     public void setNorth(float north) {
