@@ -107,8 +107,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
         GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
-        GLES20.glDepthFunc(GLES20.GL_LESS);
-        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+//        GLES20.glDepthFunc(GLES20.GL_LESS);
+//        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
 
         // Initialize the accumulated scale, rotation & translation matrices
         Matrix.setIdentityM(mScaleMatrix, 0);
