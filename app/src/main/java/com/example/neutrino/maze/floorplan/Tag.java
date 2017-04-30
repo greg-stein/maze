@@ -1,25 +1,55 @@
 package com.example.neutrino.maze.floorplan;
 
+import android.graphics.PointF;
+
 /**
  * Created by Greg Stein on 4/3/2017.
  */
-public class Tag extends FloorPlanPrimitiveBase {
+public class Tag {
+    private PointF mLocation;
+    private String mLabel;
+    private boolean mSearchable;
+    private boolean mVisible;
 
-    @Override
-    protected int getVerticesNum() {
-        return 0;
+    public Tag(PointF location, String label) {
+        mLocation = location;
+        mLabel = label;
     }
 
-    @Override
-    protected int getIndicesNum() {
-        return 0;
+    public Tag(float x, float y, String label) {
+        mLocation = new PointF(x, y);
+        mLabel = label;
     }
 
-    @Override
-    public void updateVertices() {
+    public PointF getLocation() {
+        return mLocation;
     }
 
-    @Override
-    public void scaleVertices(float scaleFactor) {
+    public void setLocation(PointF location) {
+        this.mLocation = location;
+    }
+
+    public String getLabel() {
+        return mLabel;
+    }
+
+    public void setLabel(String label) {
+        this.mLabel = label;
+    }
+
+    public boolean isSearchable() {
+        return mSearchable;
+    }
+
+    public void setSearchable(boolean searchable) {
+        this.mSearchable = searchable;
+    }
+
+    public boolean isVisible() {
+        return mVisible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.mVisible = visible;
     }
 }

@@ -14,6 +14,7 @@ import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.LocationMark;
+import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -62,6 +64,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private static final float[] mBgColorF = new float[4];
     private LocationMark mLocationMark = null;
     private List<IFloorPlanPrimitive> mFloorPlanPrimitives;
+    private List<Tag> mTags;
+    private Object mTagsLocker = new Object();
 
     private GLText glText;
 
@@ -152,7 +156,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // Load the font from file (set size + padding), creates the texture
         // NOTE: after a successful call to this the font is ready for rendering!
         glText.setScale(0.03f);
-        glText.load( "Roboto-Regular.ttf", 72, 0, 0);  // Create Font (Height: 14 Pixels / X+Y Padding 2 Pixels)
+        glText.load( "Roboto-Regular.ttf", 36, 0, 0);  // Create Font (Height: 14 Pixels / X+Y Padding 2 Pixels)
     }
 
     @Override
@@ -198,18 +202,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             glBuffer.render(mScratch);
         }
 
-        GLES20.glUseProgram(AppSettings.oglTextRenderProgram);
-        glText.begin( 0.0f, 0.0f, 1.0f, 1.0f, mScratch);         // Begin Text Rendering (Set Color WHITE)
-        glText.drawC("0", 0f, 0f);//, -mAngle);
-        glText.drawC("y", 0f, 2f);//, -mAngle);
-        glText.drawC("u", 0f, -2f);//, -mAngle);
-        glText.drawC("x", 2f, 0f);//, -mAngle);
-        glText.drawC("v", -2f, 0f);//, -mAngle);
-
-//        glText.drawC("Test String 3D!", 10f, 10f, -0.1f, 0, -30, 0);
-//        glText.draw( "Diagonal 1", 20, 20, 45);                // Draw Test String
-//        glText.draw( "Column 1", 22, 22, 90);              // Draw Test String
-        glText.end();                                   // End Text Rendering
+        renderTags();
     }
 
     public void addPrimitive(IFloorPlanPrimitive primitive) {
@@ -441,6 +434,25 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
+    public void setTags(List<Tag> tags) {
+        this.mTags = tags;
+    }
+
+    private void renderTags() {
+        synchronized (mTagsLocker) {
+            if (mTags == null || mTags.size() == 0) return;
+
+            GLES20.glUseProgram(AppSettings.oglTextRenderProgram);
+            glText.begin(0.0f, 0.0f, 1.0f, 1.0f, mScratch); // Begin Text Rendering (Set Color BLUE)
+
+            for (Tag tag : mTags) {
+                final PointF tagLocation = tag.getLocation();
+                glText.drawC(tag.getLabel(), tagLocation.x, tagLocation.y, -mAngle);
+            }
+            glText.end();                                    // End Text Rendering
+        }
+    }
+
     public Wall findWallHavingPoint(float x, float y) {
         for (IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
             if (primitive instanceof Wall) {
@@ -633,6 +645,20 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 }
             });
         }
+    }
+
+    public void createNewTag(final int x, final int y, final String label) {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                PointF location = new PointF();
+                windowToWorld(x, y, location);
+                Tag newTag = new Tag(location, label);
+                synchronized (mTagsLocker) {
+                    mTags.add(newTag);
+                }
+            }
+        });
     }
 
     /**

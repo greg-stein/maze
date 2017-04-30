@@ -46,8 +46,6 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_main"/>
-
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_find_me_on_map"
         android:layout_width="wrap_content"
@@ -61,6 +59,19 @@
         android:layout_marginEnd="0dp"
         android:layout_marginStart="0dp"
         android:layout_marginTop="0dp" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_add_tag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:alpha="@dimen/alpha_default"
+        android:elevation="@dimen/fab_elevation"
+        android:src="@drawable/ic_add_location_white_24dp"
+        android:layout_marginBottom="295dp"
+        android:layout_marginEnd="@dimen/fab_margin"
+        android:layout_marginStart="@dimen/fab_margin"
+        android:layout_marginTop="@dimen/fab_margin"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_map_rotate_lock"
@@ -162,5 +173,7 @@
         android:layout_marginEnd="@dimen/fab_margin"
         android:layout_marginStart="@dimen/fab_margin"
         android:layout_marginTop="@dimen/fab_margin"/>
+
+    <include layout="@layout/content_main"/>
 
 </android.support.design.widget.CoordinatorLayout>

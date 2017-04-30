@@ -1,15 +1,19 @@
 package com.example.neutrino.maze.rendering;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
 import android.support.v4.view.MotionEventCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.widget.EditText;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.CommonHelper;
+import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IWallLengthChangedListener;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IFloorplanLoadCompleteListener;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
@@ -28,6 +32,7 @@ public class FloorPlanView extends GLSurfaceView {
     private float mScaleFactor = FloorPlanRenderer.DEFAULT_SCALE_FACTOR;
     private boolean mIsInEditMode;
     private final PointF mCurrentLocation = new PointF();
+    private boolean mHandlingTagAddition = false;
 
     public FloorPlanView(Context context) {
         this(context, null);
@@ -85,7 +90,7 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     public enum Operation {
-        NONE, ADD_WALL, REMOVE_WALL, SET_LOCATION
+        NONE, ADD_WALL, REMOVE_WALL, ADD_TAG, SET_LOCATION
     }
     public Operation operation = Operation.NONE;
 
@@ -142,6 +147,10 @@ public class FloorPlanView extends GLSurfaceView {
                     case SET_LOCATION:
                         setLocation(xPos, yPos);
                         break;
+                    case ADD_TAG:
+                        mHandlingTagAddition = true;
+                        askForTagName(xPos, yPos);
+                        break;
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -149,7 +158,7 @@ public class FloorPlanView extends GLSurfaceView {
                     if (!mScaleDetector.isInProgress()) {
                         mRenderer.handleDrag(xPos, yPos);
                     }
-                } else {
+                } else if (!mHandlingTagAddition) {
                     handlePanAndZoom(event);
                 }
                 break;
@@ -157,12 +166,32 @@ public class FloorPlanView extends GLSurfaceView {
                 if (mDragStarted) {
                     mRenderer.handleEndDrag(xPos, yPos);
                     mDragStarted = false;
-                } else {
+                } else if (!mHandlingTagAddition) {
                     handlePanAndZoom(event);
                 }
 
                 break;
         }
+    }
+
+    private void askForTagName(final int x, final int y) {
+        final EditText input = new EditText(AppSettings.appActivity);
+        new AlertDialog.Builder(AppSettings.appActivity)
+                .setTitle("New tag")
+                .setView(input)
+//                .setMessage("Paste in the link of an image to moustachify!")
+                .setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        mRenderer.createNewTag(x, y, input.getText().toString());
+                        mHandlingTagAddition = false;
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        mHandlingTagAddition = false;
+                    }
+                })
+                .show();
     }
 
     private int mActivePointerId;
@@ -227,6 +256,11 @@ public class FloorPlanView extends GLSurfaceView {
             case EDIT_MODE:
                 break;
         }
+    }
+
+    public void plot(FloorPlan floorPlan) {
+        mRenderer.setFloorPlan(floorPlan.getSketch());
+        mRenderer.setTags(floorPlan.getTags());
     }
 
     public void plot(List<? extends IFloorPlanPrimitive> floorplan) {

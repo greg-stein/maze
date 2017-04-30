@@ -34,6 +34,7 @@ import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
+import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private FloatingActionButton uiFabAddFloorplanFromGallery;
     private FloatingActionButton uiFabMapRotateLock;
     private FloatingActionButton uiFabRemoveLastFingerprint;
+    private FloatingActionButton uiFabAddTag;
     private EditText uiWallLengthText;
     // Map north angle
     private float mMapNorth = 0.0f;
@@ -94,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiFabAddFloorplanFromGallery = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_gallery);
         uiFabMapRotateLock = (FloatingActionButton) findViewById(R.id.fab_map_rotate_lock);
         uiFabRemoveLastFingerprint = (FloatingActionButton) findViewById(R.id.fab_remove_last_fingerprint);
+        uiFabAddTag = (FloatingActionButton) findViewById(R.id.fab_add_tag);
         uiModeSwitch = (ToggleButton) findViewById(R.id.tb_edit_mode);
         uiWallLengthText = (EditText) findViewById(R.id.et_wall_length);
 
@@ -234,6 +237,19 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             }
         });
 
+        uiFabAddTag.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (uiFloorPlanView.operation == FloorPlanView.Operation.ADD_TAG) {
+                    uiFloorPlanView.operation = FloorPlanView.Operation.NONE;
+                }
+                else {
+                    uiFloorPlanView.operation = FloorPlanView.Operation.ADD_TAG;
+                }
+                updateOperationFabsState();
+            }
+        });
+
         uiFabRemoveLastFingerprint.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -348,7 +364,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 if (jsonString != null) {
                     List<Object> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
                     mFloorPlan = FloorPlan.build(floorplan);
-                    uiFloorPlanView.plot(mFloorPlan.getSketch());
+                    uiFloorPlanView.plot(mFloorPlan);
                     mWiFiLocator.setFingerprintsMap(mFloorPlan.getFingerprints());
                     mLocator.setFloorPlan(mFloorPlan);
                 }
@@ -384,6 +400,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                     uiFabAddFloorplanFromGallery.show(mPreserveAlphaOnShow);
                     uiFabMapRotateLock.show(mPreserveAlphaOnShow);
                     uiFabRemoveLastFingerprint.show(mPreserveAlphaOnShow);
+                    uiFabAddTag.show(mPreserveAlphaOnShow);
                 } else {
                     uiToolbar.setBackgroundColor(AppSettings.primaryColor);
                     uiFabDeleteWall.hide();
@@ -394,6 +411,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                     uiFabAddFloorplanFromGallery.hide();
                     uiFabMapRotateLock.hide();
                     uiFabRemoveLastFingerprint.hide();
+                    uiFabAddTag.hide();
 
                     String jsonString = FloorPlanSerializer.serializeFloorPlan(mFloorPlan.disassemble());
                     PersistenceLayer.saveFloorPlan(jsonString);
@@ -469,6 +487,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiFabAddFloorplanFromGallery.hide();
         uiFabMapRotateLock.hide();
         uiFabRemoveLastFingerprint.hide();
+        uiFabAddTag.hide();
     }
 
     private FloatingActionButton.OnVisibilityChangedListener mPreserveAlphaOnShow = new FloatingActionButton.OnVisibilityChangedListener() {
@@ -493,25 +512,35 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     private void updateOperationFabsState() {
         switch (uiFloorPlanView.operation) {
+            case ADD_TAG:
+                calmFab(uiFabDeleteWall);
+                calmFab(uiFabAddWall);
+                calmFab(uiFabSetLocation);
+                exciteFab(uiFabAddTag);
+                break;
             case ADD_WALL:
                 calmFab(uiFabDeleteWall);
                 exciteFab(uiFabAddWall);
                 calmFab(uiFabSetLocation);
+                calmFab(uiFabAddTag);
                 break;
             case REMOVE_WALL:
                 exciteFab(uiFabDeleteWall);
                 calmFab(uiFabAddWall);
                 calmFab(uiFabSetLocation);
+                calmFab(uiFabAddTag);
                 break;
             case SET_LOCATION:
                 calmFab(uiFabDeleteWall);
                 calmFab(uiFabAddWall);
                 exciteFab(uiFabSetLocation);
+                calmFab(uiFabAddTag);
                 break;
             case NONE:
                 calmFab(uiFabDeleteWall);
                 calmFab(uiFabAddWall);
                 calmFab(uiFabSetLocation);
+                calmFab(uiFabAddTag);
                 break;
         }
     }
