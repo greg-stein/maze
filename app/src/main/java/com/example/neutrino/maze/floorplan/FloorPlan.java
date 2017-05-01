@@ -1,12 +1,28 @@
 package com.example.neutrino.maze.floorplan;
 
+import android.annotation.TargetApi;
+import android.graphics.PointF;
+import android.os.Build;
+import android.support.design.widget.FloatingActionButton;
+
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.CommonHelper;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 
+import org.simmetrics.StringMetric;
+import org.simmetrics.metrics.CosineSimilarity;
+import org.simmetrics.metrics.StringMetrics;
+import org.simmetrics.simplifiers.Simplifiers;
+import org.simmetrics.tokenizers.Tokenizers;
+
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+
+import static org.simmetrics.builders.StringMetricBuilder.with;
 
 /**
  * Created by Greg Stein on 4/3/2017.
@@ -101,5 +117,42 @@ public class FloorPlan {
 
     public void setDescriptor(FloorPlanDescriptor descriptor) {
         this.mDescriptor = descriptor;
+    }
+
+    private static class TagComparator implements Comparator<Tag> {
+        private String sample;
+
+        public TagComparator(String sample) {
+            this.sample = sample;
+        }
+
+        @TargetApi(Build.VERSION_CODES.KITKAT)
+        @Override
+        public int compare(Tag t1, Tag t2) {
+            StringMetric metric = StringMetrics.levenshtein();
+//            StringMetric metric =
+//            with(new CosineSimilarity<String>())
+//                    .simplify(Simplifiers.toLowerCase(Locale.ENGLISH))
+//                    .tokenize(Tokenizers.whitespace())
+//                    .build();
+
+            float t1Similarity = metric.compare(this.sample, t1.getLabel());
+            float t2Similarity = metric.compare(this.sample, t2.getLabel());
+            int compare = Float.compare(t1Similarity, t2Similarity);
+            // Make compare method consistent with equals()
+            if (compare == 0 && !t1.equals(t2)) {
+                PointF t1Location = t1.getLocation();
+                PointF t2Location = t2.getLocation();
+                return Integer.compare(Float.compare(t1Location.x, t2Location.x), Float.compare(t1Location.y, t2Location.y));
+            }
+            return compare;
+        }
+    }
+
+    public List<Tag> searchMostSimilarTags(String sample, int maxResults) {
+        TagComparator comparator = new TagComparator(sample);
+        Collections.sort(mTags, comparator);
+        Collections.reverse(mTags);
+        return mTags.subList(0, maxResults);
     }
 }
