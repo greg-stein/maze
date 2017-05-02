@@ -413,14 +413,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         mQueuedTaskForGlThread = new Runnable() {
             @Override
             public void run() {
-                // TODO: this code should be removed
-                for (IFloorPlanPrimitive primitive : primitives) {
-                    if (primitive instanceof LocationMark) {
-                        mLocationMark = (LocationMark) primitive;
-                        break;
-                    }
-                }
-
                 addPrimitives(primitives);
                 onFloorplanLoadComplete();
             }
