@@ -261,6 +261,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
+    public boolean isFloorPlanSet() {return mFloorPlanPrimitives != null;}
+
     public float getAngle() {
         return mAngle;
     }

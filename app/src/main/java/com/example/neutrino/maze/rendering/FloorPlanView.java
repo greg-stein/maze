@@ -289,8 +289,10 @@ public class FloorPlanView extends GLSurfaceView {
 
     // This method is used when you want to set location programmatically
     public void setLocation(float x, float y) {
-        mCurrentLocation.set(x, y);
-        mRenderer.drawLocationMarkAt(mCurrentLocation);
+        if (mRenderer.isFloorPlanSet()) { // otherwise no need to show current location
+            mCurrentLocation.set(x, y);
+            mRenderer.drawLocationMarkAt(mCurrentLocation);
+        }
     }
 
     public void setLocation(PointF location) {
