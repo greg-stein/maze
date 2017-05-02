@@ -263,10 +263,6 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.setTags(floorPlan.getTags());
     }
 
-    public void plot(List<? extends IFloorPlanPrimitive> floorplan) {
-        mRenderer.setFloorPlan((List<IFloorPlanPrimitive>) floorplan);
-    }
-
     public void plot(List<? extends IFloorPlanPrimitive> floorplan, boolean inInit) {
         mRenderer.setFloorPlan((List<IFloorPlanPrimitive>) floorplan);
         if (!inInit) mRenderer.performQueuedTask();
