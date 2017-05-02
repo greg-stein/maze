@@ -125,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         }
 
         setUiListeners();
+        getSupportActionBar().hide();
     }
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
