@@ -361,14 +361,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 //                     e.printStackTrace();
 //                }
 
-                if (jsonString != null) {
-                    List<Object> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
-                    mFloorPlan = FloorPlan.build(floorplan);
-                    uiFloorPlanView.plot(mFloorPlan);
-                    mWiFiLocator.setFingerprintsMap(mFloorPlan.getFingerprints());
-                    mLocator.setFloorPlan(mFloorPlan);
-                }
-
+                new LoadFloorPlanTask(uiFloorPlanView).execute(jsonString);
 
 //                if (MazeServer.connectionAvailable(getApplicationContext())) {
 //                    MazeServer server = new MazeServer(getApplicationContext());
