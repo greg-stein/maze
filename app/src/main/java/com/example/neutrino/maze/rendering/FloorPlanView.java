@@ -261,10 +261,7 @@ public class FloorPlanView extends GLSurfaceView {
     public void plot(FloorPlan floorPlan) {
         mRenderer.setFloorPlan(floorPlan.getSketch());
         mRenderer.setTags(floorPlan.getTags());
-    }
-
-    public void plot(List<? extends IFloorPlanPrimitive> floorplan) {
-        mRenderer.setFloorPlan((List<IFloorPlanPrimitive>) floorplan);
+        mRenderer.performQueuedTask();
     }
 
     public void plot(List<? extends IFloorPlanPrimitive> floorplan, boolean inInit) {
@@ -293,8 +290,10 @@ public class FloorPlanView extends GLSurfaceView {
 
     // This method is used when you want to set location programmatically
     public void setLocation(float x, float y) {
-        mCurrentLocation.set(x, y);
-        mRenderer.drawLocationMarkAt(mCurrentLocation);
+        if (mRenderer.isFloorPlanSet()) { // otherwise no need to show current location
+            mCurrentLocation.set(x, y);
+            mRenderer.drawLocationMarkAt(mCurrentLocation);
+        }
     }
 
     public void setLocation(PointF location) {

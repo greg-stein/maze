@@ -89,8 +89,13 @@ public class FloorPlanSerializer {
                 try {
                     if (className.equals("WifiMark")) className = "Fingerprint";
                     klass = Class.forName(packageName + '.' + className);
-                    final FloorPlanPrimitiveBase deserializedInstance = context.deserialize(serializedInstance, klass);
-                    if (!deserializedInstance.isRemoved()) {
+                    final Object deserializedInstance = context.deserialize(serializedInstance, klass);
+                    if (deserializedInstance instanceof FloorPlanPrimitiveBase) {
+                        FloorPlanPrimitiveBase primitiveBase = (FloorPlanPrimitiveBase) deserializedInstance;
+                        if (!primitiveBase.isRemoved()) {
+                            result.add(deserializedInstance);
+                        }
+                    } else {
                         result.add(deserializedInstance);
                     }
                 } catch (ClassNotFoundException e) {

@@ -261,6 +261,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
+    public boolean isFloorPlanSet() {return mFloorPlanPrimitives != null;}
+
     public float getAngle() {
         return mAngle;
     }
@@ -413,14 +415,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         mQueuedTaskForGlThread = new Runnable() {
             @Override
             public void run() {
-                // TODO: this code should be removed
-                for (IFloorPlanPrimitive primitive : primitives) {
-                    if (primitive instanceof LocationMark) {
-                        mLocationMark = (LocationMark) primitive;
-                        break;
-                    }
-                }
-
                 addPrimitives(primitives);
                 onFloorplanLoadComplete();
             }
