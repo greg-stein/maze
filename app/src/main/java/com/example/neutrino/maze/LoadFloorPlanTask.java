@@ -14,13 +14,7 @@ import java.util.List;
  */
 
 public class LoadFloorPlanTask extends AsyncTask<String, Void, FloorPlan> {
-    private FloorPlanView mView;
-    private RecyclerView mRecView;
-
-    public LoadFloorPlanTask(FloorPlanView view, RecyclerView recView) {
-        mView = view;
-        mRecView = recView;
-    }
+    private AsyncResponse onFinishHandler;
 
     @Override
     protected FloorPlan doInBackground(String... strings) {
@@ -36,13 +30,20 @@ public class LoadFloorPlanTask extends AsyncTask<String, Void, FloorPlan> {
         return floorPlan;
     }
 
+    public interface AsyncResponse {
+        void onFinish(FloorPlan floorPlan);
+    }
+
+    public LoadFloorPlanTask onFinish(AsyncResponse asyncResponse) {
+        this.onFinishHandler = asyncResponse;
+        return this;
+    }
+
     @Override
     // Runs on UI thread
     protected void onPostExecute(FloorPlan floorPlan) {
-        TagsAdapter adapter = new TagsAdapter(floorPlan.getTags(), AppSettings.appActivity);
-        mRecView.setAdapter(adapter);
-
-        // The main work is done on GL thread!
-        mView.plot(floorPlan);
+        if (onFinishHandler != null) {
+            onFinishHandler.onFinish(floorPlan);
+        }
     }
 }

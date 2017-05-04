@@ -129,10 +129,8 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         if (AppSettings.inDebug) {
 //            mLocator.addDistributionUpdatedListener(this);
         }
-        mLocator.setFloorPlan(mFloorPlan);
-
         mMapper = Mapper.getInstance();
-        mMapper.setFloorPlan(mFloorPlan);
+
         if (AppSettings.inDebug) {
             mMapper.setFloorPlanView(uiFloorPlanView);
         }
@@ -407,7 +405,20 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                      e.printStackTrace();
                 }
 
-                new LoadFloorPlanTask(uiFloorPlanView, uiRecView).execute(jsonString);
+                new LoadFloorPlanTask().onFinish(new LoadFloorPlanTask.AsyncResponse() {
+                    @Override
+                    public void onFinish(FloorPlan floorPlan) {
+                        mFloorPlan = floorPlan;
+                        mLocator.setFloorPlan(mFloorPlan);
+                        mMapper.setFloorPlan(mFloorPlan);
+
+                        mAdapter = new TagsAdapter(floorPlan.getTags(), AppSettings.appActivity);
+                        uiRecView.setAdapter(mAdapter);
+
+                        // The main work is done on GL thread!
+                        uiFloorPlanView.plot(floorPlan);
+                    }
+                }).execute(jsonString);
 
 //                if (MazeServer.connectionAvailable(getApplicationContext())) {
 //                    MazeServer server = new MazeServer(getApplicationContext());
