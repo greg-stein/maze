@@ -27,8 +27,8 @@ import static org.simmetrics.builders.StringMetricBuilder.with;
 /**
  * Created by Greg Stein on 4/3/2017.
  */
-
 public class FloorPlan {
+    public static final Object mTagsListLocker = new Object();
     private List<IFloorPlanPrimitive> mSketch;
     private List<Fingerprint> mFingerprints;
     private List<Tag> mTags;
@@ -151,8 +151,12 @@ public class FloorPlan {
 
     public List<Tag> searchMostSimilarTags(String sample, int maxResults) {
         TagComparator comparator = new TagComparator(sample);
-        Collections.sort(mTags, comparator);
-        Collections.reverse(mTags);
-        return mTags.subList(0, maxResults);
+        synchronized (mTagsListLocker) {
+            Collections.sort(mTags, comparator);
+//        Collections.reverse(mTags); // slower
+            List<Tag> tail = mTags.subList(Math.max(mTags.size() - maxResults, 0), mTags.size());
+            Collections.reverse(tail);
+            return tail;
+        }
     }
 }

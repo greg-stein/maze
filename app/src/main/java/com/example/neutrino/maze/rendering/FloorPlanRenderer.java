@@ -1,6 +1,5 @@
 package com.example.neutrino.maze.rendering;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.opengl.GLES20;
@@ -11,6 +10,7 @@ import android.support.v4.graphics.ColorUtils;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Fingerprint;
+import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.LocationMark;
@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -65,7 +64,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private LocationMark mLocationMark = null;
     private List<IFloorPlanPrimitive> mFloorPlanPrimitives;
     private List<Tag> mTags;
-    private Object mTagsLocker = new Object();
 
     private GLText glText;
 
@@ -433,7 +431,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     private void renderTags() {
-        synchronized (mTagsLocker) {
+        synchronized (FloorPlan.mTagsListLocker) {
             if (mTags == null || mTags.size() == 0) return;
 
             GLES20.glUseProgram(AppSettings.oglTextRenderProgram);
@@ -648,7 +646,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 PointF location = new PointF();
                 windowToWorld(x, y, location);
                 Tag newTag = new Tag(location, label);
-                synchronized (mTagsLocker) {
+                synchronized (FloorPlan.mTagsListLocker) {
                     mTags.add(newTag);
                 }
             }

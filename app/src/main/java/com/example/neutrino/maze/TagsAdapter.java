@@ -1,17 +1,17 @@
 package com.example.neutrino.maze;
 
-import android.app.LauncherActivity;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Tag;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,12 +19,20 @@ import java.util.List;
  */
 public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.TagsHolder> {
 
-    private List<Tag> listData;
+    private List<Tag> listData = new ArrayList<>();
     private LayoutInflater inflater;
 
     public TagsAdapter(List<Tag> listItems, Context context) {
         this.inflater = LayoutInflater.from(context);
-        this.listData = listItems;
+        this.listData.addAll(listItems);
+    }
+
+    public void updateListData(List<Tag> newData) {
+        listData.clear();
+        synchronized (FloorPlan.mTagsListLocker) {
+            listData.addAll(newData);
+        }
+        notifyDataSetChanged();
     }
 
     @Override
@@ -50,6 +58,7 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.TagsHolder> {
         private TextView title;
         private ImageView icon;
         private View container;
+
         public TagsHolder(View itemView) {
             super(itemView);
 

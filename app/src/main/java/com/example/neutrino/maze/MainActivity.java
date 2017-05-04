@@ -42,18 +42,22 @@ import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
+import com.lapism.searchview.SearchView;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
 
 public class MainActivity extends AppCompatActivity implements IDeviceRotationListener, ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener {
     // GUI-related fields
+    private SearchView uiSearchView;
     private RecyclerView uiRecView;
-    private TagsAdapter adapter;
+    private TagsAdapter mAdapter;
     private FloorPlanView uiFloorPlanView;
     private Toolbar uiToolbar;
     private ToggleButton uiModeSwitch;
@@ -91,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        uiSearchView = (SearchView) findViewById(R.id.searchView);
         uiRecView = (RecyclerView) findViewById(R.id.rec_list);
         uiRecView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -125,7 +130,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 //            mLocator.addDistributionUpdatedListener(this);
         }
         mLocator.setFloorPlan(mFloorPlan);
-
 
         mMapper = Mapper.getInstance();
         mMapper.setFloorPlan(mFloorPlan);
@@ -231,6 +235,38 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     }
 
     private void setUiListeners() {
+        uiSearchView.setHint("Search Maze");
+        uiSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // ACHTUNG! Adapter is created in LoadFloorPlanTask.onPostExecute()
+                if (mAdapter == null) {
+                    mAdapter = (TagsAdapter) uiRecView.getAdapter();
+                }
+                mAdapter.updateListData(mFloorPlan.searchMostSimilarTags(newText, 20));
+                return true;
+            }
+        });
+
+        uiSearchView.setOnOpenCloseListener(new SearchView.OnOpenCloseListener() {
+            @Override
+            public boolean onOpen() {
+                /// Hide fabs...
+                return true;
+            }
+
+            @Override
+            public boolean onClose() {
+                /// Show fabs
+                return true;
+            }
+        });
+
         uiWallLengthText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -349,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             @Override
             public void onWallLengthChanged(float wallLength) {
                 mCurrentWallLength = wallLength;
-                uiWallLengthText.setText(String.format(java.util.Locale.US,"%.2f", wallLength));
+                uiWallLengthText.setText(String.format(Locale.US,"%.2f", wallLength));
             }
         });
 
