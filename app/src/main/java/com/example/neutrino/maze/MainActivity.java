@@ -3,6 +3,7 @@ package com.example.neutrino.maze;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,6 +14,8 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -42,12 +45,15 @@ import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
 
 public class MainActivity extends AppCompatActivity implements IDeviceRotationListener, ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener {
     // GUI-related fields
+    private RecyclerView uiRecView;
+    private TagsAdapter adapter;
     private FloorPlanView uiFloorPlanView;
     private Toolbar uiToolbar;
     private ToggleButton uiModeSwitch;
@@ -84,6 +90,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        uiRecView = (RecyclerView) findViewById(R.id.rec_list);
+        uiRecView.setLayoutManager(new LinearLayoutManager(this));
 
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
         uiToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -348,21 +357,21 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                String jsonString = PersistenceLayer.loadFloorPlan();
+//                String jsonString = PersistenceLayer.loadFloorPlan();
 
-//                String jsonString = null;
-//                try {
-//                    Resources res = getResources();
-//                    InputStream in_s = res.openRawResource(R.raw.haifa_mall_many_fingerprints);
-//
-//                    byte[] b = new byte[in_s.available()];
-//                    in_s.read(b);
-//                    jsonString = new String(b);
-//                } catch (Exception e) {
-//                     e.printStackTrace();
-//                }
+                String jsonString = null;
+                try {
+                    Resources res = getResources();
+                    InputStream in_s = res.openRawResource(R.raw.haifa_mall_detailed_tags);
 
-                new LoadFloorPlanTask(uiFloorPlanView).execute(jsonString);
+                    byte[] b = new byte[in_s.available()];
+                    in_s.read(b);
+                    jsonString = new String(b);
+                } catch (Exception e) {
+                     e.printStackTrace();
+                }
+
+                new LoadFloorPlanTask(uiFloorPlanView, uiRecView).execute(jsonString);
 
 //                if (MazeServer.connectionAvailable(getApplicationContext())) {
 //                    MazeServer server = new MazeServer(getApplicationContext());
