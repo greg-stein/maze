@@ -28,6 +28,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -37,7 +38,6 @@ import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
-import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
@@ -47,7 +47,6 @@ import com.lapism.searchview.SearchView;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -57,6 +56,8 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     // GUI-related fields
     private SearchView uiSearchView;
     private RecyclerView uiRecView;
+    private LinearLayout uiRecPanel;
+    private View uiRecPanelSpacer;
     private TagsAdapter mAdapter;
     private FloorPlanView uiFloorPlanView;
     private Toolbar uiToolbar;
@@ -98,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiSearchView = (SearchView) findViewById(R.id.searchView);
         uiRecView = (RecyclerView) findViewById(R.id.rec_list);
         uiRecView.setLayoutManager(new LinearLayoutManager(this));
+        uiRecPanel = (LinearLayout) findViewById(R.id.rec_container);
+        uiRecPanelSpacer = (View) findViewById(R.id.view_spacer);
 
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
         uiToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -254,13 +257,21 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiSearchView.setOnOpenCloseListener(new SearchView.OnOpenCloseListener() {
             @Override
             public boolean onOpen() {
-                /// Hide fabs...
+                uiRecPanel.setVisibility(View.VISIBLE);
+                uiRecPanelSpacer.setVisibility(View.VISIBLE);
+
+                // Hide fabs
+                uiFabFindMeOnMap.hide();
                 return true;
             }
 
             @Override
             public boolean onClose() {
+                uiRecPanel.setVisibility(View.GONE);
+                uiRecPanelSpacer.setVisibility(View.GONE);
+
                 /// Show fabs
+                uiFabFindMeOnMap.show(mPreserveAlphaOnShow);
                 return true;
             }
         });

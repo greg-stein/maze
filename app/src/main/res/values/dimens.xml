@@ -5,5 +5,8 @@
     <dimen name="fab_margin">15dp</dimen>
     <!--<dimen name="fab_spacing">85dp</dimen>-->
     <dimen name="fab_elevation">8dp</dimen>
+    <dimen name="search_item_label_padding">32dp</dimen>
+    <dimen name="search_item_icon_padding">0dp</dimen>
+    <dimen name="search_item_icon_margin">32dp</dimen>
     <item name="alpha_default" type="dimen" format="float">0.75</item>
 </resources>

@@ -1,6 +1,11 @@
 package com.example.neutrino.maze;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,11 +46,13 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.TagsHolder> {
         return new TagsHolder(view);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onBindViewHolder(TagsHolder holder, int position) {
         Tag item = listData.get(position);
         holder.title.setText(item.getLabel());
         holder.icon.setImageResource(R.drawable.ic_add_location_white_24dp);
+        holder.container.setBackgroundColor(AppSettings.accentColor);
     }
 
     @Override

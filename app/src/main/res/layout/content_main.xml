@@ -1,45 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    android:orientation="vertical"
     tools:context="com.example.neutrino.maze.MainActivity"
     tools:showIn="@layout/activity_main">
 
+    <com.example.neutrino.maze.rendering.FloorPlanView
+        android:id="@+id/ui_MapContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <LinearLayout
+        android:id="@+id/rec_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="gone"
         android:orientation="vertical">
 
-        <FrameLayout
+        <View
+            android:id="@+id/view_spacer"
+            android:visibility="gone"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-
-            <com.example.neutrino.maze.rendering.FloorPlanView
-                android:id="@+id/ui_MapContainer"
-                android:layout_width="match_parent"
-                android:layout_height="300dp" />
-
-            <com.lapism.searchview.SearchView
-                android:id="@+id/searchView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="13dp"
-                android:layout_marginStart="13dp"
-                app:layout_behavior="com.lapism.searchview.SearchBehavior" />
-            <!--android:background="@drawable/fasfa" />-->
-
-        </FrameLayout>
+            android:layout_height="60dp"
+            android:background="@color/colorAccent"/>
 
         <android.support.v7.widget.RecyclerView
+            android:id="@+id/rec_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/rec_list">
-
-        </android.support.v7.widget.RecyclerView>
+            android:layout_height="match_parent" />
+            <!--android:visibility="gone" />-->
     </LinearLayout>
-</RelativeLayout>
+
+    <com.lapism.searchview.SearchView
+        android:id="@+id/searchView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="13dp"
+        android:layout_marginStart="13dp"
+        app:layout_behavior="com.lapism.searchview.SearchBehavior"
+        app:search_elevation="@dimen/fab_elevation"
+        app:search_shadow="false"/>
+
+</FrameLayout>
