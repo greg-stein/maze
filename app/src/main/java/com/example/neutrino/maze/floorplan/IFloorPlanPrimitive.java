@@ -1,5 +1,7 @@
 package com.example.neutrino.maze.floorplan;
 
+import android.graphics.RectF;
+
 import com.example.neutrino.maze.rendering.GlRenderBuffer;
 
 import java.nio.FloatBuffer;
@@ -45,4 +47,6 @@ public interface IFloorPlanPrimitive {
     void setContainingBuffer(GlRenderBuffer mGlBuffer);
 
     void rewriteToBuffer();
+
+    RectF getBoundingBox();
 }

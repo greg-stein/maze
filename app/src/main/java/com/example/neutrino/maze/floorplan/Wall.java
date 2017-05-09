@@ -86,6 +86,13 @@ public class Wall extends FloorPlanPrimitiveBase {
         mB.set(mB.x * scaleFactor, mB.y * scaleFactor);
     }
 
+    @Override
+    public RectF getBoundingBox() {
+        RectF boundingBox = new RectF(mA.x, mA.y, mB.x, mB.y);
+        boundingBox.sort();
+        return boundingBox;
+    }
+
     public boolean hasPoint(float x, float y) {
         // First test if the point within bounding box of line
         RectF boundingBox = new RectF(mA.x, mA.y, mB.x, mB.y);

@@ -1,6 +1,7 @@
 package com.example.neutrino.maze.floorplan;
 
 import android.graphics.PointF;
+import android.graphics.RectF;
 
 import com.example.neutrino.maze.rendering.GlRenderBuffer;
 import com.example.neutrino.maze.rendering.VectorHelper;
@@ -69,6 +70,16 @@ public class LocationMark extends FloorPlanPrimitiveBase {
     @Override
     public void scaleVertices(float scaleFactor) {
         mCenter.set(mCenter.x * scaleFactor, mCenter.y * scaleFactor);
+    }
+
+    @Override
+    public RectF getBoundingBox() {
+        return new RectF(
+                mCenter.x - mOuterRadius,
+                mCenter.y - mOuterRadius,
+                mCenter.x + mOuterRadius,
+                mCenter.y + mOuterRadius);
+
     }
 
     public void setCenter(PointF center) {
