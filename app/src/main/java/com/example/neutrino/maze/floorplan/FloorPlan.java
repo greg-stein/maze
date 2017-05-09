@@ -2,6 +2,7 @@ package com.example.neutrino.maze.floorplan;
 
 import android.annotation.TargetApi;
 import android.graphics.PointF;
+import android.graphics.RectF;
 import android.os.Build;
 import android.support.design.widget.FloatingActionButton;
 
@@ -85,6 +86,18 @@ public class FloorPlan {
         if (mDescriptor != null)result.add(mDescriptor);
 
         return result;
+    }
+
+    public RectF getBoundaries() {
+        if (mSketch == null || mSketch.size() == 0) return null;
+
+        RectF boundaries = mSketch.get(0).getBoundingBox();
+
+        for (IFloorPlanPrimitive primitive : mSketch) {
+            boundaries.union(primitive.getBoundingBox());
+        }
+
+        return boundaries;
     }
 
     public List<IFloorPlanPrimitive> getSketch() {
