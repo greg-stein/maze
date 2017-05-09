@@ -10,16 +10,6 @@ import java.util.List;
  * Created by Greg Stein on 11/23/2016.
  */
 public class CommonHelper {
-    public static final <T extends IFloorPlanPrimitive> List<T> getPrimitives(Class<T> klazz, List<IFloorPlanPrimitive> floorPlan) {
-        List<T> result = new ArrayList<>();
-        for(IFloorPlanPrimitive primitive : floorPlan) {
-            if (primitive.getClass().equals(klazz)) {
-                result.add(klazz.cast(primitive));
-            }
-        }
-
-        return result;
-    }
 
     public static final <T> List<T> extractObjects(Class<T> klazz, Iterable<Object> collection) {
         List<T> result = new ArrayList<>();
@@ -30,6 +20,18 @@ public class CommonHelper {
             if (klazz.isAssignableFrom(o.getClass())) {
                 result.add(klazz.cast(o));
                 iterator.remove();
+            }
+        }
+
+        return result;
+    }
+
+    public static final <T> List<T> filterObjects(Class<T> klazz, Iterable<Object> collection) {
+        List<T> result = new ArrayList<>();
+
+        for (Object o : collection) {
+            if (klazz.isAssignableFrom(o.getClass())) {
+                result.add(klazz.cast(o));
             }
         }
 
