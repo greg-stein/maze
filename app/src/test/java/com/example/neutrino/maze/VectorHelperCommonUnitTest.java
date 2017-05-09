@@ -1,6 +1,7 @@
 package com.example.neutrino.maze;
 
 import android.graphics.PointF;
+import android.graphics.RectF;
 
 import com.example.neutrino.maze.rendering.VectorHelper;
 
@@ -24,7 +25,7 @@ import static org.junit.Assert.assertTrue;
  * To work on unit tests, switch the Test Artifact in the Build Variants view.
         */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
+@Config(constants = BuildConfig.class, manifest = Config.NONE)
 public class VectorHelperCommonUnitTest {
 
     private static final Logger LOGGER = Logger.getLogger(VectorHelperCommonUnitTest.class.getName());
@@ -312,5 +313,55 @@ public class VectorHelperCommonUnitTest {
 
         assertThat(proj.x, is(equalTo(5f)));
         assertThat(proj.y, is(equalTo(0f)));
+    }
+
+    @Test
+    public void intersectRectLineGoesThroughDiagonalTest() {
+        PointF a = new PointF(0, 0);
+        PointF b = new PointF(10, 10);
+        RectF rect = new RectF(3, 3, 7, 7);
+        rect.sort();
+
+        assertTrue(VectorHelper.lineIntersect(a, b, rect));
+    }
+
+    @Test
+    public void intersectRectLineGoesThroughOppositeSidesTest() {
+        PointF a = new PointF(0, 0);
+        PointF b = new PointF(10, 10);
+        RectF rect = new RectF(3, 1, 5, 15);
+        rect.sort();
+
+        assertTrue(VectorHelper.lineIntersect(a, b, rect));
+    }
+
+    @Test
+    public void intersectRectLineGoesThroughCornerTest() {
+        PointF a = new PointF(0, 0);
+        PointF b = new PointF(10, 10);
+        RectF rect = new RectF(2, 3, 7, 1);
+        rect.sort();
+
+        assertTrue(VectorHelper.lineIntersect(a, b, rect));
+    }
+
+    @Test
+    public void intersectRectLineTouchesCornerTest() {
+        PointF a = new PointF(0, 0);
+        PointF b = new PointF(10, 10);
+        RectF rect = new RectF(5, 5, 10, 1);
+        rect.sort();
+
+        assertTrue(VectorHelper.lineIntersect(a, b, rect));
+    }
+
+    @Test
+    public void intersectRectLineDoesntIntersectTest() {
+        PointF a = new PointF(0, 0);
+        PointF b = new PointF(10, 10);
+        RectF rect = new RectF(5, 2, 17, 1);
+        rect.sort();
+
+        assertFalse(VectorHelper.lineIntersect(a, b, rect));
     }
 }

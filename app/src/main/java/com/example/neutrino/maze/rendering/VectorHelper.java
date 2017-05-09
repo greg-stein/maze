@@ -211,4 +211,21 @@ public class VectorHelper {
         float aScalar = a[0] * bUnit[0] + a[1] * bUnit[1];
         return new PointF(aScalar * bUnit[0], aScalar * bUnit[1]);
     }
+
+    // Test if line intersects rectangle
+    public static boolean lineIntersect(PointF lineA, PointF lineB, RectF rect) {
+        // If one of line ends are within rect => intersects
+        if (rect.contains(lineA.x, lineA.y))
+            return true;
+        if (rect.contains(lineB.x, lineB.y))
+            return true;
+
+        // Test if given line intersects one of rects diagonals
+        if (linesIntersect(lineA, lineB, new PointF(rect.left, rect.top), new PointF(rect.right, rect.bottom)))
+            return true;
+        if (linesIntersect(lineA, lineB, new PointF(rect.left, rect.bottom), new PointF(rect.right, rect.top)))
+            return true;
+
+        return false;
+    }
 }
