@@ -29,7 +29,7 @@ import static org.junit.Assert.assertThat;
  * Created by Greg Stein on 9/26/2016.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest=Config.NONE)
+@Config(manifest=Config.NONE, sdk = 23)
 public class FloorPlanSerializerTest {
 
     @Test

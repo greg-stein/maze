@@ -37,7 +37,7 @@ import java.util.List;
  * Created by Greg Stein on 4/30/2017.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest=Config.NONE)
+@Config(manifest=Config.NONE, sdk = 23)
 public class FloorPlanTagSearchTests {
     private static CSVReader csvReader;
     private FloorPlan floorPlan;

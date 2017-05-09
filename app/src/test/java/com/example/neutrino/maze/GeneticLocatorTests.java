@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  */
 
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest=Config.NONE)
+@Config(manifest=Config.NONE, sdk = 23)
 public class GeneticLocatorTests {
     private static final Logger LOGGER = Logger.getLogger(GeneticLocatorTests.class.getName());
     private List<Fingerprint> fingerprints;

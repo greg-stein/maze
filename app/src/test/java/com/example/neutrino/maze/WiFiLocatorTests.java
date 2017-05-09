@@ -31,7 +31,7 @@ import static org.junit.Assert.assertThat;
  * Created by Greg Stein on 10/5/2016.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest=Config.NONE)
+@Config(manifest=Config.NONE, sdk = 23)
 public class WiFiLocatorTests {
     public static final double FLOAT_ERROR = 0.00005f;
 

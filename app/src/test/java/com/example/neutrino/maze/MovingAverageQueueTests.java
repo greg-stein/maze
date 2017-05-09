@@ -35,7 +35,7 @@ import static org.junit.Assert.assertThat;
  * Created by Greg Stein on 10/25/2016.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest=Config.NONE)
+@Config(manifest=Config.NONE, sdk = 23)
 public class MovingAverageQueueTests {
 
     private static final Logger LOGGER = Logger.getLogger(MovingAverageQueueTests.class.getName());

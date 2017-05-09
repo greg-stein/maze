@@ -23,7 +23,7 @@ import static org.junit.Assert.assertThat;
  * Created by Greg Stein on 4/11/2017.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest=Config.NONE)
+@Config(manifest=Config.NONE, sdk = 23)
 public class MovingAveragePointsQueueTests {
     @Test
     public void commonPointsTest() {

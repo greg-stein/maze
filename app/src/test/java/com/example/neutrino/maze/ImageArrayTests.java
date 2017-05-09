@@ -34,7 +34,7 @@ import static org.junit.Assert.assertThat;
  * Created by Greg Stein on 12/20/2016.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, sdk = 23)
 public class ImageArrayTests {
 
     @Test

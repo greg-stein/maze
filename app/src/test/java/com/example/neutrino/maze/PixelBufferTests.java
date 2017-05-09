@@ -31,7 +31,7 @@ import static org.junit.Assert.assertTrue;
  * Created by Greg Stein on 1/22/2017.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, sdk = 23)
 public class PixelBufferTests {
 
     @Test

@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
  * Created by Greg Stein on 11/23/2016.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest=Config.NONE)
+@Config(manifest=Config.NONE, sdk = 23)
 public class ThinningTests {
 
     @Rule

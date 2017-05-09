@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
  * Created by Dima Ruinskiy on 03/01/17.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest=Config.NONE)
+@Config(manifest=Config.NONE, sdk = 23)
 public class HoughTransformTests {
 
     private static final Logger LOGGER = Logger.getLogger(HoughTransformTests.class.getName());

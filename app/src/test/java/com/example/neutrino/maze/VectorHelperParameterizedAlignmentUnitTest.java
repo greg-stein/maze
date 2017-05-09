@@ -22,7 +22,7 @@ import static org.junit.Assert.assertThat;
  * Created by Greg Stein on 9/4/2016.
  */
 @RunWith(ParameterizedRobolectricTestRunner.class)
-@Config(manifest=Config.NONE)
+@Config(manifest=Config.NONE, sdk = 23)
 public class VectorHelperParameterizedAlignmentUnitTest {
     private static final float THRESHOLD = 0.1f;
 

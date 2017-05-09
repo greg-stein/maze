@@ -39,7 +39,7 @@ import static org.junit.Assert.assertEquals;
  * Created by Greg Stein on 11/23/2016.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest=Config.NONE)
+@Config(manifest=Config.NONE, sdk = 23)
 public class AcceptanceTests {
     private static final double MAX_ERROR = 5; // meters
     private static final Logger LOGGER = Logger.getLogger(AcceptanceTests.class.getName());

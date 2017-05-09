@@ -25,7 +25,7 @@ import static org.junit.Assert.assertTrue;
  * To work on unit tests, switch the Test Artifact in the Build Variants view.
         */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, manifest = Config.NONE)
+@Config(constants = BuildConfig.class, manifest = Config.NONE, sdk = 23)
 public class VectorHelperCommonUnitTest {
 
     private static final Logger LOGGER = Logger.getLogger(VectorHelperCommonUnitTest.class.getName());
