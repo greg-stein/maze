@@ -55,4 +55,22 @@ public class FloorPlanTests {
         assertThat(boundaries.right, is(equalTo(10f)));
         assertThat(boundaries.bottom, is(equalTo(9f)));
     }
+
+    @Test
+    public void PathFinderFailingTest() {
+        FloorPlan floorPlan = FloorPlan.build();
+        List<IFloorPlanPrimitive> sketch = floorPlan.getSketch();
+
+        // Frame
+        sketch.add(new Wall(0, 0, 40, 0));
+        sketch.add(new Wall(40, 0, 40, 40));
+        sketch.add(new Wall(40, 40, 0, 40));
+        sketch.add(new Wall(0, 40, 0, 0));
+
+        RectF boundaries = floorPlan.getBoundaries();
+        assertThat(boundaries.left, is(equalTo(0f)));
+        assertThat(boundaries.top, is(equalTo(0f)));
+        assertThat(boundaries.right, is(equalTo(40f)));
+        assertThat(boundaries.bottom, is(equalTo(40f)));
+    }
 }
