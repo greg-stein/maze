@@ -214,11 +214,15 @@ public class VectorHelper {
 
     // Test if line intersects rectangle
     public static boolean lineIntersect(PointF lineA, PointF lineB, RectF rect) {
-        // If one of line ends are within rect => intersects
-        if (rect.contains(lineA.x, lineA.y))
+        // If one of line ends within rect => intersects
+        // Rect.contains method tests if left <= x < right and top <= y < bottom
+        // Hence points that lay on left/top edges are included => check if we need to exclude them
+        if (rect.contains(lineA.x, lineA.y) && (lineA.x != rect.left) && (lineA.y != rect.top)) {
             return true;
-        if (rect.contains(lineB.x, lineB.y))
+        }
+        if (rect.contains(lineB.x, lineB.y) && (lineB.x != rect.left) && (lineB.y != rect.top)) {
             return true;
+        }
 
         // Test if given line intersects one of rects diagonals
         if (linesIntersect(lineA, lineB, new PointF(rect.left, rect.top), new PointF(rect.right, rect.bottom)))
