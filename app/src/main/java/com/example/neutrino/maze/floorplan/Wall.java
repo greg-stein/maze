@@ -88,15 +88,22 @@ public class Wall extends FloorPlanPrimitiveBase {
 
     @Override
     public RectF getBoundingBox() {
-        RectF boundingBox = new RectF(mA.x, mA.y, mB.x, mB.y);
+        float endX = mB.x;
+        float endY = mB.y;
+
+        // Avoid empty rect
+        if (mA.x == endX) endX += Float.MIN_VALUE;
+        if (mA.y == endY) endY += Float.MIN_VALUE;
+
+        RectF boundingBox = new RectF(mA.x, mA.y, endX, endY);
         boundingBox.sort();
+
         return boundingBox;
     }
 
     public boolean hasPoint(float x, float y) {
         // First test if the point within bounding box of line
-        RectF boundingBox = new RectF(mA.x, mA.y, mB.x, mB.y);
-        boundingBox.sort();
+        RectF boundingBox = getBoundingBox();
         boundingBox.left -= mWidth/2;
         boundingBox.top -= mWidth/2;
         boundingBox.right += mWidth/2;
@@ -201,5 +208,26 @@ public class Wall extends FloorPlanPrimitiveBase {
         if (anotherWall.mWidth != this.mWidth) return false;
 
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 17;
+
+        hash *= 31;
+        hash += Float.floatToIntBits(mA.x);
+        hash *= 31;
+        hash += Float.floatToIntBits(mA.y);
+        hash *= 31;
+        hash += Float.floatToIntBits(mB.x);
+        hash *= 31;
+        hash += Float.floatToIntBits(mB.y);
+
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("(%.2f, %.2f)--(%.2f, %.2f)", mA.x, mA.y, mB.x, mB.y);
     }
 }
