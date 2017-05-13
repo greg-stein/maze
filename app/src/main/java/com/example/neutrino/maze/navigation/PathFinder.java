@@ -1,18 +1,13 @@
 package com.example.neutrino.maze.navigation;
 
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.annotation.VisibleForTesting;
 
-import org.jgrapht.UndirectedGraph;
 import org.jgrapht.WeightedGraph;
-import org.jgrapht.alg.DijkstraShortestPath;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
-import org.jgrapht.graph.builder.UndirectedWeightedGraphBuilder;
 
 import com.example.neutrino.maze.CommonHelper;
 import com.example.neutrino.maze.floorplan.Fingerprint;
@@ -21,8 +16,6 @@ import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.rendering.VectorHelper;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -158,11 +151,35 @@ public class PathFinder {
 
     private void buildGraph() {
         mGraph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
+
+        for (int x = 0; x < mGridSizeX; x++) {
+            for (int y = 0; y < mGridSizeY; y++) {
+                HashSet<PointF> points = mGrid[x][y].points;
+                for (PointF p : points) {
+                    mGraph.addVertex(p);
+                }
+
+                for (PointF p1 : points) {
+                    for (PointF p2 : points) {
+                        if ((p1 == p2 || obstacleBetween(mGrid[x][y], p1, p2))) {
+                            continue;
+                        }
+                        DefaultWeightedEdge e = mGraph.addEdge(p1, p2);
+                        if (e != null) { // if this edge was added previously
+                            mGraph.setEdgeWeight(e, Math.hypot(p2.x - p1.x, p2.y - p1.y));
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    // For testing only! Fucking Java!!! There are no explicit/implicit interfaces like in C#
-    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    public GridCell[][] getGrid() {
-        return mGrid;
+    private boolean obstacleBetween(GridCell cell, PointF p1, PointF p2) {
+        for (Wall obstacle : cell.obstacles) {
+            if (VectorHelper.linesIntersect(obstacle.getA(), obstacle.getB(), p1, p2)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
