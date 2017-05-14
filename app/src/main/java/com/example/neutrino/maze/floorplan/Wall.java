@@ -13,7 +13,7 @@ public class Wall extends FloorPlanPrimitiveBase {
     private static final int VERTICES_NUM = 4; // it's a rect after all
     private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlRenderBuffer.COORDS_PER_VERTEX;
     private static final int INDICES_DATA_LENGTH = 6;
-    private static final float DEFAULT_WIDTH = 0.2f; // 20cm
+    private static final float DEFAULT_THICKNESS = 0.2f; // 20cm
     private static final float DEFAULT_COORDS_SOURCE = 0.5f;
 
     public ChangeType getChangeType() {
@@ -34,7 +34,7 @@ public class Wall extends FloorPlanPrimitiveBase {
 
     private final PointF mStart = new PointF(0, 0);
     private final PointF mEnd = new PointF(0, 0);
-    private float mWidth;
+    private float mThickness;
 
     private transient ChangeType mChangeType;
     private transient final PointF mTappedLocation = new PointF();
@@ -51,25 +51,25 @@ public class Wall extends FloorPlanPrimitiveBase {
 
     public Wall() {
         init(-DEFAULT_COORDS_SOURCE, DEFAULT_COORDS_SOURCE, DEFAULT_COORDS_SOURCE,
-                -DEFAULT_COORDS_SOURCE, DEFAULT_WIDTH);
+                -DEFAULT_COORDS_SOURCE, DEFAULT_THICKNESS);
     }
 
     public Wall(float x1, float y1, float x2, float y2)
     {
-        init(x1, y1, x2, y2, DEFAULT_WIDTH);
+        init(x1, y1, x2, y2, DEFAULT_THICKNESS);
     }
 
-    public Wall(float x1, float y1, float x2, float y2, float width) {
-        init(x1, y1, x2, y2, width/2);
+    public Wall(float x1, float y1, float x2, float y2, float thickness) {
+        init(x1, y1, x2, y2, thickness/2);
     }
 
-    private void init(float x1, float y1, float x2, float y2, float width) {
+    private void init(float x1, float y1, float x2, float y2, float thickness) {
         mStart.x = x1;
         mStart.y = y1;
         mEnd.x = x2;
         mEnd.y = y2;
-        mWidth = width;
-        VectorHelper.splitLine(mStart, mEnd, mWidth/2, mVertices);
+        mThickness = thickness;
+        VectorHelper.splitLine(mStart, mEnd, mThickness /2, mVertices);
 
         System.arraycopy(mDrawOrder, 0, super.mIndices, 0, INDICES_DATA_LENGTH);
         mChangeType = ChangeType.CHANGE_B;
@@ -77,7 +77,7 @@ public class Wall extends FloorPlanPrimitiveBase {
 
     @Override
     public void updateVertices() {
-        VectorHelper.splitLine(mStart, mEnd, mWidth/2, mVertices);
+        VectorHelper.splitLine(mStart, mEnd, mThickness /2, mVertices);
     }
 
     @Override
@@ -104,16 +104,16 @@ public class Wall extends FloorPlanPrimitiveBase {
     public boolean hasPoint(float x, float y) {
         // First test if the point within bounding box of line
         RectF boundingBox = getBoundingBox();
-        boundingBox.left -= mWidth/2;
-        boundingBox.top -= mWidth/2;
-        boundingBox.right += mWidth/2;
-        boundingBox.bottom += mWidth/2;
+        boundingBox.left -= mThickness /2;
+        boundingBox.top -= mThickness /2;
+        boundingBox.right += mThickness /2;
+        boundingBox.bottom += mThickness /2;
 
         if (! boundingBox.contains(x, y)) {
             return false;
         }
 
-        // Now check if distance from given point to line is less then twice the width
+        // Now check if distance from given point to line is less then twice the thickness
         // This uses method described on Wikipedia (https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line)
         float xDiff = mEnd.x - mStart.x;
         float yDiff = mEnd.y - mStart.y;
@@ -121,15 +121,15 @@ public class Wall extends FloorPlanPrimitiveBase {
         float twiceArea = Math.abs(yDiff * x - xDiff * y + mEnd.x * mStart.y - mEnd.y * mStart.x);
         float distance = (float) (twiceArea / Math.sqrt(yDiff * yDiff + xDiff * xDiff));
 
-        return distance <= mWidth;// /2;
+        return distance <= mThickness;// /2;
     }
 
-    public float getWidth() {
-        return mWidth;
+    public float getThickness() {
+        return mThickness;
     }
 
-    public void setWidth(float mWidth) {
-        this.mWidth = mWidth;
+    public void setThickness(float thickness) {
+        this.mThickness = thickness;
     }
 
     public PointF getStart() {
@@ -205,7 +205,7 @@ public class Wall extends FloorPlanPrimitiveBase {
 
         if (!anotherWall.mStart.equals(this.mStart.x, this.mStart.y)) return false;
         if (!anotherWall.mEnd.equals(this.mEnd.x, this.mEnd.y)) return false;
-        if (anotherWall.mWidth != this.mWidth) return false;
+        if (anotherWall.mThickness != this.mThickness) return false;
 
         return true;
     }
