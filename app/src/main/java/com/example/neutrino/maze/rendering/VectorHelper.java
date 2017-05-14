@@ -232,4 +232,8 @@ public class VectorHelper {
 
         return false;
     }
+
+    public static float manhattanDistance(PointF p1, PointF p2) {
+        return Math.abs(p2.x - p1.x) + Math.abs(p2.y - p1.y);
+    }
 }

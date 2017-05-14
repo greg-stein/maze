@@ -364,4 +364,9 @@ public class VectorHelperCommonUnitTest {
 
         assertFalse(VectorHelper.lineIntersect(a, b, rect));
     }
+
+    @Test
+    public void manhattanDistanceTest() {
+        assertThat(VectorHelper.manhattanDistance(new PointF(-2, -3), new PointF(7, 13)), is(equalTo(25f)));
+    }
 }
