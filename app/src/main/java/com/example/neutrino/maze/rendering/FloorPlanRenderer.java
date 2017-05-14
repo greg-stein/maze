@@ -365,7 +365,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
                 if (mSelectedWall != null) {
                     if (mAddedWallByDrag) {
-                        mSelectedWall.setB(worldPoint.x, worldPoint.y);
+                        mSelectedWall.setEnd(worldPoint.x, worldPoint.y);
                     }
                     else {
                         mSelectedWall.handleChange(worldPoint.x, worldPoint.y);
@@ -630,8 +630,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 @Override
                 public void run() {
                     PointF wallVector = new PointF();
-                    wallVector.set(wall.getB());
-                    wallVector.offset(-wall.getA().x, -wall.getA().y);
+                    wallVector.set(wall.getEnd());
+                    wallVector.offset(-wall.getStart().x, -wall.getStart().y);
 
                     mWallLengthChangedListener.onWallLengthChanged(wallVector.length());
                 }

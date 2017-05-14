@@ -1,6 +1,5 @@
 package com.example.neutrino.maze.navigation;
 
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -63,8 +62,8 @@ public class PathFinder {
             jopa();
             for (int x = 0; x < mGridSizeX; x++) {
                 for (int y = 0; y < mGridSizeY; y++) {
-                    PointF obstacleStart = obstacle.getA();
-                    PointF obstacleEnd = obstacle.getB();
+                    PointF obstacleStart = obstacle.getStart();
+                    PointF obstacleEnd = obstacle.getEnd();
                     RectF cellBox = mGrid[x][y].boundingBox;
 
                     if (VectorHelper.lineIntersect(obstacleStart, obstacleEnd, cellBox)) {
@@ -177,7 +176,7 @@ public class PathFinder {
 
     private boolean obstacleBetween(GridCell cell, PointF p1, PointF p2) {
         for (Wall obstacle : cell.obstacles) {
-            if (VectorHelper.linesIntersect(obstacle.getA(), obstacle.getB(), p1, p2)) {
+            if (VectorHelper.linesIntersect(obstacle.getStart(), obstacle.getEnd(), p1, p2)) {
                 return true;
             }
         }

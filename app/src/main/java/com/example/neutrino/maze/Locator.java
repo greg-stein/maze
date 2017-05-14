@@ -171,7 +171,7 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
         for (IFloorPlanPrimitive primitive : sketch) {
             if (primitive instanceof Wall) {
                 Wall wall = (Wall) primitive;
-                if (VectorHelper.linesIntersect(wall.getA(), wall.getB(), current, next)) {
+                if (VectorHelper.linesIntersect(wall.getStart(), wall.getEnd(), current, next)) {
                     mObstacle = wall;
                     return true;
                 }
@@ -184,12 +184,12 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     protected Wall getObstacle() {return mObstacle;}
 
     private void correctLocation(Wall obstacle, PointF proposedLocation) {
-        PointF proj = VectorHelper.projection(mCurrentLocation, proposedLocation, obstacle.getA(), obstacle.getB());
+        PointF proj = VectorHelper.projection(mCurrentLocation, proposedLocation, obstacle.getStart(), obstacle.getEnd());
         mCurrentLocation.offset(proj.x, proj.y);
     }
 
     private void correctLocationAlongObstacle(Wall obstacle, PointF proposedLocation) {
-        PointF proj = VectorHelper.projection(mCurrentLocation, proposedLocation, obstacle.getA(), obstacle.getB());
+        PointF proj = VectorHelper.projection(mCurrentLocation, proposedLocation, obstacle.getStart(), obstacle.getEnd());
         float magnitude = proj.length();
         proj.set(proj.x / magnitude, proj.y / magnitude); // unit projection vector
         mCurrentLocation.offset(proj.x * STEP_LENGTH, proj.y * STEP_LENGTH);

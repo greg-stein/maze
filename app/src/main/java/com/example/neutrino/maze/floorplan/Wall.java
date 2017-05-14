@@ -32,8 +32,8 @@ public class Wall extends FloorPlanPrimitiveBase {
     private transient final short mDrawOrder[] = { 0, 1, 2,   // first triangle
             1, 2, 3 }; // second triangle
 
-    private final PointF mA = new PointF(0, 0);
-    private final PointF mB = new PointF(0, 0);
+    private final PointF mStart = new PointF(0, 0);
+    private final PointF mEnd = new PointF(0, 0);
     private float mWidth;
 
     private transient ChangeType mChangeType;
@@ -64,12 +64,12 @@ public class Wall extends FloorPlanPrimitiveBase {
     }
 
     private void init(float x1, float y1, float x2, float y2, float width) {
-        mA.x = x1;
-        mA.y = y1;
-        mB.x = x2;
-        mB.y = y2;
+        mStart.x = x1;
+        mStart.y = y1;
+        mEnd.x = x2;
+        mEnd.y = y2;
         mWidth = width;
-        VectorHelper.splitLine(mA, mB, mWidth/2, mVertices);
+        VectorHelper.splitLine(mStart, mEnd, mWidth/2, mVertices);
 
         System.arraycopy(mDrawOrder, 0, super.mIndices, 0, INDICES_DATA_LENGTH);
         mChangeType = ChangeType.CHANGE_B;
@@ -77,25 +77,25 @@ public class Wall extends FloorPlanPrimitiveBase {
 
     @Override
     public void updateVertices() {
-        VectorHelper.splitLine(mA, mB, mWidth/2, mVertices);
+        VectorHelper.splitLine(mStart, mEnd, mWidth/2, mVertices);
     }
 
     @Override
     public void scaleVertices(float scaleFactor) {
-        mA.set(mA.x * scaleFactor, mA.y * scaleFactor);
-        mB.set(mB.x * scaleFactor, mB.y * scaleFactor);
+        mStart.set(mStart.x * scaleFactor, mStart.y * scaleFactor);
+        mEnd.set(mEnd.x * scaleFactor, mEnd.y * scaleFactor);
     }
 
     @Override
     public RectF getBoundingBox() {
-        float endX = mB.x;
-        float endY = mB.y;
+        float endX = mEnd.x;
+        float endY = mEnd.y;
 
         // Avoid empty rect
-        if (mA.x == endX) endX += Float.MIN_VALUE;
-        if (mA.y == endY) endY += Float.MIN_VALUE;
+        if (mStart.x == endX) endX += Float.MIN_VALUE;
+        if (mStart.y == endY) endY += Float.MIN_VALUE;
 
-        RectF boundingBox = new RectF(mA.x, mA.y, endX, endY);
+        RectF boundingBox = new RectF(mStart.x, mStart.y, endX, endY);
         boundingBox.sort();
 
         return boundingBox;
@@ -115,10 +115,10 @@ public class Wall extends FloorPlanPrimitiveBase {
 
         // Now check if distance from given point to line is less then twice the width
         // This uses method described on Wikipedia (https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line)
-        float xDiff = mB.x - mA.x;
-        float yDiff = mB.y - mA.y;
+        float xDiff = mEnd.x - mStart.x;
+        float yDiff = mEnd.y - mStart.y;
 
-        float twiceArea = Math.abs(yDiff * x - xDiff * y + mB.x * mA.y - mB.y * mA.x);
+        float twiceArea = Math.abs(yDiff * x - xDiff * y + mEnd.x * mStart.y - mEnd.y * mStart.x);
         float distance = (float) (twiceArea / Math.sqrt(yDiff * yDiff + xDiff * xDiff));
 
         return distance <= mWidth;// /2;
@@ -132,28 +132,28 @@ public class Wall extends FloorPlanPrimitiveBase {
         this.mWidth = mWidth;
     }
 
-    public PointF getA() {
-        return mA;
+    public PointF getStart() {
+        return mStart;
     }
 
-    public void setA(float x, float y) {
-        this.mA.set(x, y);
+    public void setStart(float x, float y) {
+        this.mStart.set(x, y);
     }
 
-    public void setA(PointF a) {
-        this.mA.set(a);
+    public void setStart(PointF a) {
+        this.mStart.set(a);
     }
 
-    public PointF getB() {
-        return mB;
+    public PointF getEnd() {
+        return mEnd;
     }
 
-    public void setB(float x, float y) {
-        this.mB.set(x, y);
+    public void setEnd(float x, float y) {
+        this.mEnd.set(x, y);
     }
 
-    public void setB(PointF b) {
-        this.mB.set(b);
+    public void setEnd(PointF b) {
+        this.mEnd.set(b);
     }
 
     public void handleChange(float x, float y) {
@@ -162,16 +162,16 @@ public class Wall extends FloorPlanPrimitiveBase {
 
         switch (mChangeType) {
             case CHANGE_A: {
-                mA.offset(dx, dy);
+                mStart.offset(dx, dy);
                 break;
             }
             case CHANGE_B: {
-                mB.offset(dx, dy);
+                mEnd.offset(dx, dy);
                 break;
             }
             case CHANGE_WALL: {
-                mA.offset(dx, dy);
-                mB.offset(dx, dy);
+                mStart.offset(dx, dy);
+                mEnd.offset(dx, dy);
                 break;
             }
         }
@@ -183,11 +183,11 @@ public class Wall extends FloorPlanPrimitiveBase {
         mTappedLocation.set(x, y);
 
         // Tapped point closer to A?
-        if (PointF.length(mTappedLocation.x - mA.x, mTappedLocation.y - mA.y) <= CHANGE_ONE_END_THRESHOLD) {
+        if (PointF.length(mTappedLocation.x - mStart.x, mTappedLocation.y - mStart.y) <= CHANGE_ONE_END_THRESHOLD) {
             mChangeType = ChangeType.CHANGE_A;
         }
         // Closer to B?
-        else if (PointF.length(mTappedLocation.x - mB.x, mTappedLocation.y - mB.y) <= CHANGE_ONE_END_THRESHOLD) {
+        else if (PointF.length(mTappedLocation.x - mEnd.x, mTappedLocation.y - mEnd.y) <= CHANGE_ONE_END_THRESHOLD) {
             mChangeType = ChangeType.CHANGE_B;
         }
         else {
@@ -203,8 +203,8 @@ public class Wall extends FloorPlanPrimitiveBase {
 
         Wall anotherWall = (Wall) another;
 
-        if (!anotherWall.mA.equals(this.mA.x, this.mA.y)) return false;
-        if (!anotherWall.mB.equals(this.mB.x, this.mB.y)) return false;
+        if (!anotherWall.mStart.equals(this.mStart.x, this.mStart.y)) return false;
+        if (!anotherWall.mEnd.equals(this.mEnd.x, this.mEnd.y)) return false;
         if (anotherWall.mWidth != this.mWidth) return false;
 
         return true;
@@ -215,19 +215,19 @@ public class Wall extends FloorPlanPrimitiveBase {
         int hash = 17;
 
         hash *= 31;
-        hash += Float.floatToIntBits(mA.x);
+        hash += Float.floatToIntBits(mStart.x);
         hash *= 31;
-        hash += Float.floatToIntBits(mA.y);
+        hash += Float.floatToIntBits(mStart.y);
         hash *= 31;
-        hash += Float.floatToIntBits(mB.x);
+        hash += Float.floatToIntBits(mEnd.x);
         hash *= 31;
-        hash += Float.floatToIntBits(mB.y);
+        hash += Float.floatToIntBits(mEnd.y);
 
         return hash;
     }
 
     @Override
     public String toString() {
-        return String.format("(%.2f, %.2f)--(%.2f, %.2f)", mA.x, mA.y, mB.x, mB.y);
+        return String.format("(%.2f, %.2f)--(%.2f, %.2f)", mStart.x, mStart.y, mEnd.x, mEnd.y);
     }
 }

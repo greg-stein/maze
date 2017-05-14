@@ -170,14 +170,14 @@ public class FloorplanVectorizer {
         for (Wall wall : walls) {
             for (Wall anotherWall : walls) {
                 if (wall != anotherWall) {
-                    if (VectorHelper.squareDistance(wall.getA(), anotherWall.getA()) < MIN_CONNECT_SQ_DISTANCE) {
-                        wall.setA(anotherWall.getA()); // consider also maintaining a pointer: wall.connectedAtA.add(anotherWall)
-                    } else if (VectorHelper.squareDistance(wall.getA(), anotherWall.getB()) < MIN_CONNECT_SQ_DISTANCE) {
-                        wall.setA(anotherWall.getB());
-                    } else if (VectorHelper.squareDistance(wall.getB(), anotherWall.getA()) < MIN_CONNECT_SQ_DISTANCE) {
-                        wall.setB(anotherWall.getA());
-                    } else if (VectorHelper.squareDistance(wall.getB(), anotherWall.getB()) < MIN_CONNECT_SQ_DISTANCE) {
-                        wall.setB(anotherWall.getB());
+                    if (VectorHelper.squareDistance(wall.getStart(), anotherWall.getStart()) < MIN_CONNECT_SQ_DISTANCE) {
+                        wall.setStart(anotherWall.getStart()); // consider also maintaining a pointer: wall.connectedAtA.add(anotherWall)
+                    } else if (VectorHelper.squareDistance(wall.getStart(), anotherWall.getEnd()) < MIN_CONNECT_SQ_DISTANCE) {
+                        wall.setStart(anotherWall.getEnd());
+                    } else if (VectorHelper.squareDistance(wall.getEnd(), anotherWall.getStart()) < MIN_CONNECT_SQ_DISTANCE) {
+                        wall.setEnd(anotherWall.getStart());
+                    } else if (VectorHelper.squareDistance(wall.getEnd(), anotherWall.getEnd()) < MIN_CONNECT_SQ_DISTANCE) {
+                        wall.setEnd(anotherWall.getEnd());
                     }
                 }
             }
