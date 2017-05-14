@@ -9,7 +9,7 @@ import com.example.neutrino.maze.rendering.VectorHelper;
 /**
  * Created by neutrino on 7/7/2016.
  */
-public class Wall extends FloorPlanPrimitiveBase {
+public class ThickLineSegment extends FloorPlanPrimitiveBase {
     private static final int VERTICES_NUM = 4; // it's a rect after all
     private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlRenderBuffer.COORDS_PER_VERTEX;
     private static final int INDICES_DATA_LENGTH = 6;
@@ -22,9 +22,9 @@ public class Wall extends FloorPlanPrimitiveBase {
 
     // Different change types
     public enum ChangeType {
-        CHANGE_A,
-        CHANGE_B,
-        CHANGE_WALL
+        CHANGE_START,
+        CHANGE_END,
+        CHANGE_SEGMENT
     };
 
     private static final float CHANGE_ONE_END_THRESHOLD = 0.30f;
@@ -49,17 +49,17 @@ public class Wall extends FloorPlanPrimitiveBase {
         return INDICES_DATA_LENGTH;
     }
 
-    public Wall() {
+    public ThickLineSegment() {
         init(-DEFAULT_COORDS_SOURCE, DEFAULT_COORDS_SOURCE, DEFAULT_COORDS_SOURCE,
                 -DEFAULT_COORDS_SOURCE, DEFAULT_THICKNESS);
     }
 
-    public Wall(float x1, float y1, float x2, float y2)
+    public ThickLineSegment(float x1, float y1, float x2, float y2)
     {
         init(x1, y1, x2, y2, DEFAULT_THICKNESS);
     }
 
-    public Wall(float x1, float y1, float x2, float y2, float thickness) {
+    public ThickLineSegment(float x1, float y1, float x2, float y2, float thickness) {
         init(x1, y1, x2, y2, thickness/2);
     }
 
@@ -72,7 +72,7 @@ public class Wall extends FloorPlanPrimitiveBase {
         VectorHelper.splitLine(mStart, mEnd, mThickness /2, mVertices);
 
         System.arraycopy(mDrawOrder, 0, super.mIndices, 0, INDICES_DATA_LENGTH);
-        mChangeType = ChangeType.CHANGE_B;
+        mChangeType = ChangeType.CHANGE_END;
     }
 
     @Override
@@ -161,15 +161,15 @@ public class Wall extends FloorPlanPrimitiveBase {
         float dy = y - mTappedLocation.y;
 
         switch (mChangeType) {
-            case CHANGE_A: {
+            case CHANGE_START: {
                 mStart.offset(dx, dy);
                 break;
             }
-            case CHANGE_B: {
+            case CHANGE_END: {
                 mEnd.offset(dx, dy);
                 break;
             }
-            case CHANGE_WALL: {
+            case CHANGE_SEGMENT: {
                 mStart.offset(dx, dy);
                 mEnd.offset(dx, dy);
                 break;
@@ -184,14 +184,14 @@ public class Wall extends FloorPlanPrimitiveBase {
 
         // Tapped point closer to A?
         if (PointF.length(mTappedLocation.x - mStart.x, mTappedLocation.y - mStart.y) <= CHANGE_ONE_END_THRESHOLD) {
-            mChangeType = ChangeType.CHANGE_A;
+            mChangeType = ChangeType.CHANGE_START;
         }
         // Closer to B?
         else if (PointF.length(mTappedLocation.x - mEnd.x, mTappedLocation.y - mEnd.y) <= CHANGE_ONE_END_THRESHOLD) {
-            mChangeType = ChangeType.CHANGE_B;
+            mChangeType = ChangeType.CHANGE_END;
         }
         else {
-            mChangeType = ChangeType.CHANGE_WALL;
+            mChangeType = ChangeType.CHANGE_SEGMENT;
         }
     }
 
@@ -201,11 +201,11 @@ public class Wall extends FloorPlanPrimitiveBase {
         if (!(another instanceof Wall)) return false;
         if (!super.equals(another)) return false;
 
-        Wall anotherWall = (Wall) another;
+        ThickLineSegment anotherSegment = (ThickLineSegment) another;
 
-        if (!anotherWall.mStart.equals(this.mStart.x, this.mStart.y)) return false;
-        if (!anotherWall.mEnd.equals(this.mEnd.x, this.mEnd.y)) return false;
-        if (anotherWall.mThickness != this.mThickness) return false;
+        if (!anotherSegment.mStart.equals(this.mStart.x, this.mStart.y)) return false;
+        if (!anotherSegment.mEnd.equals(this.mEnd.x, this.mEnd.y)) return false;
+        if (anotherSegment.mThickness != this.mThickness) return false;
 
         return true;
     }
