@@ -3,6 +3,7 @@ package com.example.neutrino.maze;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.GradientDrawable;
+import android.test.MoreAsserts;
 
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
@@ -22,7 +23,9 @@ import org.robolectric.annotation.Config;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -38,8 +41,10 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by Greg Stein on 5/9/2017.
@@ -48,11 +53,16 @@ import static org.junit.Assert.assertThat;
 @Config(manifest=Config.NONE, sdk = 23)
 public class PathFinderTests {
 
-    private static void invokeMethod(PathFinder pathFinder, String methodName) {
+    private static <T> T invokeMethod(PathFinder pathFinder, String methodName, Object... params) {
         try {
-            Method method = pathFinder.getClass().getDeclaredMethod(methodName);
+            Class<?>[] paramTypes = new Class<?>[params.length];
+            int cnt = 0;
+            for (Object o : params) {
+                paramTypes[cnt++] = o.getClass();
+            }
+            Method method = pathFinder.getClass().getDeclaredMethod(methodName, paramTypes);
             method.setAccessible(true);
-            method.invoke(pathFinder);
+            return (T)method.invoke(pathFinder, params);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -60,6 +70,7 @@ public class PathFinderTests {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     private static <T> T readField(PathFinder pathFinder, String fieldName) {
@@ -433,5 +444,79 @@ public class PathFinderTests {
         WeightedGraph<PointF, DefaultWeightedEdge> graph = readField(pathFinder, "mGraph");
         assert graph != null;
         assertThat(graph.edgeSet(), hasSize(15));
+    }
+
+    @Test
+    public void constructPathTest() {
+        FloorPlan floorPlan = FloorPlan.build();
+
+        List<Fingerprint> fingerprints = floorPlan.getFingerprints();
+        fingerprints.add(new Fingerprint(5, 5, null));
+        fingerprints.add(new Fingerprint(20, 5, null));
+        fingerprints.add(new Fingerprint(35, 5, null));
+        fingerprints.add(new Fingerprint(20, 15, null));
+        fingerprints.add(new Fingerprint(35, 15, null));
+        fingerprints.add(new Fingerprint(35, 25, null));
+        fingerprints.add(new Fingerprint(5, 35, null));
+        fingerprints.add(new Fingerprint(20, 35, null));
+        fingerprints.add(new Fingerprint(35, 35, null));
+
+        List<IFloorPlanPrimitive> sketch = floorPlan.getSketch();
+        sketch.add(new Wall(10, 10, 10, 25));
+        sketch.add(new Wall(25, 10, 25, 30));
+        // Frame
+        sketch.add(new Wall(0, 0, 40, 0));
+        sketch.add(new Wall(40, 0, 40, 40));
+        sketch.add(new Wall(40, 40, 0, 40));
+        sketch.add(new Wall(0, 40, 0, 0));
+
+        PathFinder pathFinder = new PathFinder(floorPlan);
+        invokeMethod(pathFinder, "initGrid");
+        invokeMethod(pathFinder, "assignPointsToCells");
+        invokeMethod(pathFinder, "assignObstaclesToCells");
+        invokeMethod(pathFinder, "buildGraph");
+
+        List<PointF> path = pathFinder.constructPath(new PointF(0, 40), new PointF(39, 15));
+
+        assertNotNull(path);
+        assertThat(path, hasSize(4));
+        assertThat(path.get(0), is(equalTo(new PointF(5, 35))));
+        assertThat(path.get(1), is(equalTo(new PointF(20, 35))));
+        assertThat(path.get(2), is(equalTo(new PointF(35, 25))));
+        assertThat(path.get(3), is(equalTo(new PointF(35, 15))));
+    }
+
+    @Test
+    public void findClosestVertexTest() {
+        FloorPlan floorPlan = FloorPlan.build();
+
+        List<Fingerprint> fingerprints = floorPlan.getFingerprints();
+        fingerprints.add(new Fingerprint(5, 5, null));
+        fingerprints.add(new Fingerprint(20, 5, null));
+        fingerprints.add(new Fingerprint(35, 5, null));
+        fingerprints.add(new Fingerprint(20, 15, null));
+        fingerprints.add(new Fingerprint(35, 15, null));
+        fingerprints.add(new Fingerprint(35, 25, null));
+        fingerprints.add(new Fingerprint(5, 35, null));
+        fingerprints.add(new Fingerprint(20, 35, null));
+        fingerprints.add(new Fingerprint(35, 35, null));
+
+        List<IFloorPlanPrimitive> sketch = floorPlan.getSketch();
+        // Frame
+        sketch.add(new Wall(0, 0, 40, 0));
+        sketch.add(new Wall(40, 0, 40, 40));
+        sketch.add(new Wall(40, 40, 0, 40));
+        sketch.add(new Wall(0, 40, 0, 0));
+
+        PathFinder pathFinder = new PathFinder(floorPlan);
+        invokeMethod(pathFinder, "initGrid");
+        invokeMethod(pathFinder, "assignPointsToCells");
+        invokeMethod(pathFinder, "assignObstaclesToCells");
+        invokeMethod(pathFinder, "buildGraph");
+        PointF closestVertex = invokeMethod(pathFinder, "findClosestVertex", new PointF(0, 40));
+
+        assertNotNull(closestVertex);
+        assertThat(closestVertex.x, is(equalTo(5f)));
+        assertThat(closestVertex.y, is(equalTo(35f)));
     }
 }

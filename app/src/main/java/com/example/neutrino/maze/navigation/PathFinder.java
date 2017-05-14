@@ -1,11 +1,12 @@
 package com.example.neutrino.maze.navigation;
 
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.support.annotation.VisibleForTesting;
 
 import org.jgrapht.WeightedGraph;
+import org.jgrapht.alg.DijkstraShortestPath;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
@@ -182,4 +183,54 @@ public class PathFinder {
         }
         return false;
     }
+
+    public List<PointF> constructPath(PointF source, PointF destination) {
+        PointF sourceVertex = findClosestVertex(source);
+        PointF destVertex = findClosestVertex(destination);
+
+        if (sourceVertex != null && destVertex != null) {
+            List<DefaultWeightedEdge> edgesPath = DijkstraShortestPath.findPathBetween(mGraph, sourceVertex, destVertex);
+
+            // Construct path as List<PointF> from edges
+            List<PointF> path = new ArrayList<>(edgesPath.size() + 1); // number of edges + 1
+            path.add(sourceVertex); // TODO: do we need to add source as well?
+            PointF lastVertex = sourceVertex;
+
+            for (DefaultWeightedEdge e : edgesPath) {
+                PointF edgeSource = mGraph.getEdgeSource(e);
+                PointF edgeTarget = mGraph.getEdgeTarget(e);
+
+                if (edgeSource.equals(lastVertex)) {
+                    path.add(edgeTarget);
+                    lastVertex = edgeTarget;
+                } else if (edgeTarget.equals(lastVertex)) {
+                    path.add(edgeSource);
+                    lastVertex = edgeSource;
+                } else jopa();
+            }
+
+            return path;
+        }
+
+        return null;
+    }
+
+    private PointF findClosestVertex(PointF source) {
+        final int gridX = ((int)source.x - mBoundaries.left) / GRID_CELL_SIZE + 1;
+        final int gridY = ((int)source.y - mBoundaries.top) / GRID_CELL_SIZE + 1;
+
+        GridCell cell = mGrid[gridX][gridY];
+        // Assumed as farthest point
+        PointF closestPoint = null;
+        float minDistance = Float.MAX_VALUE;
+        for (PointF p : cell.points) {
+            float newDistance = VectorHelper.manhattanDistance(source, p);
+            if (newDistance < minDistance && !obstacleBetween(cell, source, p)) {
+                closestPoint = p;
+                minDistance = newDistance;
+            }
+        }
+        return closestPoint;
+    }
+
 }
