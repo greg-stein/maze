@@ -20,11 +20,13 @@ public class AppSettings {
     public static int oglProgram;
     public static int oglTextRenderProgram;
     public static boolean inDebug;
+    public static int pathColor;
 
     public static void init(Context context) {
         if (context instanceof Activity) {
             appActivity = (Activity) context;
         }
+        pathColor = ContextCompat.getColor(context, R.color.colorPath);
         locationMarkColor = ContextCompat.getColor(context, R.color.colorLocationMark);
         footprintColor = ContextCompat.getColor(context, R.color.colorFootprint);
         wallColor = ContextCompat.getColor(context, R.color.colorWall);

@@ -63,6 +63,14 @@ public class ThickLineSegment extends FloorPlanPrimitiveBase {
         init(x1, y1, x2, y2, thickness/2);
     }
 
+    public ThickLineSegment(PointF start, PointF end) {
+        init(start.x, start.y, end.x, end.y, DEFAULT_THICKNESS);
+    }
+
+    public ThickLineSegment(PointF start, PointF end, float thickness) {
+        init(start.x, start.y, end.x, end.y, thickness);
+    }
+
     private void init(float x1, float y1, float x2, float y2, float thickness) {
         mStart.x = x1;
         mStart.y = y1;
