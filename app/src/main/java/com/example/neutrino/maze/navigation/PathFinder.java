@@ -50,6 +50,11 @@ public class PathFinder {
         floorPlan.getBoundaries().roundOut(mBoundaries);
     }
 
+    public void init() {
+        buildFingerprintsGrid();
+        buildGraph();
+    }
+
     private void buildFingerprintsGrid() {
         initGrid();
         assignPointsToCells();

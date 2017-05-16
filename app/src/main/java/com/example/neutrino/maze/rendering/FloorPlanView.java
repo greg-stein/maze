@@ -14,6 +14,7 @@ import android.widget.EditText;
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.CommonHelper;
 import com.example.neutrino.maze.floorplan.FloorPlan;
+import com.example.neutrino.maze.floorplan.Path;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IWallLengthChangedListener;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IFloorplanLoadCompleteListener;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
@@ -33,6 +34,7 @@ public class FloorPlanView extends GLSurfaceView {
     private boolean mIsInEditMode;
     private final PointF mCurrentLocation = new PointF();
     private boolean mHandlingTagAddition = false;
+    private Path mPath;
 
     public FloorPlanView(Context context) {
         this(context, null);
@@ -343,4 +345,14 @@ public class FloorPlanView extends GLSurfaceView {
     public void clearFloorPlan() {
         mRenderer.clearFloorPlan();
     }
+
+    public void renderPath(Path path) {
+        if (mPath != null) {
+            mPath.cloak();
+        }
+
+        mPath = path;
+        mRenderer.addPrimitive(path);
+    }
 }
+

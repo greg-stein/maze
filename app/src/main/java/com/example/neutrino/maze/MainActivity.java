@@ -37,7 +37,10 @@ import com.example.neutrino.maze.Locator.ILocationUpdatedListener;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
+import com.example.neutrino.maze.floorplan.Path;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
+import com.example.neutrino.maze.floorplan.Tag;
+import com.example.neutrino.maze.navigation.PathFinder;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
@@ -239,6 +242,21 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     }
 
     private void setUiListeners() {
+        mAdapter.setItemClickListener(new TagsAdapter.ItemClickListener() {
+            @Override
+            public void onItemClick(Tag t) {
+                uiSearchView.close(true);
+                PathFinder pathFinder = new PathFinder(mFloorPlan);
+                pathFinder.init();
+                // tag "enter" from res location:
+                PointF enter = new PointF(244.76593f, 55.589268f);
+                List<PointF> pathPoints = pathFinder.constructPath(enter, t.getLocation());
+//                List<PointF> pathPoints = pathFinder.constructPath(mLocator.getLocation(), t.getLocation());
+                Path path = new Path(pathPoints);
+                uiFloorPlanView.renderPath(path);
+            }
+        });
+
         uiSearchView.setHint("Search Maze");
         uiSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override

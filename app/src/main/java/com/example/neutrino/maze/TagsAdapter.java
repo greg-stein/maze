@@ -1,11 +1,8 @@
 package com.example.neutrino.maze;
 
 import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +23,16 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.TagsHolder> {
 
     private List<Tag> listData = new ArrayList<>();
     private LayoutInflater inflater;
+
+    private ItemClickListener mItemClickListener;
+
+    public interface ItemClickListener {
+
+        void onItemClick(Tag tag);
+    }
+    public void setItemClickListener(final ItemClickListener listener) {
+        this.mItemClickListener = listener;
+    }
 
     public TagsAdapter(List<Tag> listItems, Context context) {
         this.inflater = LayoutInflater.from(context);
@@ -64,7 +71,7 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.TagsHolder> {
         return listData.size();
     }
 
-    class TagsHolder extends RecyclerView.ViewHolder {
+    class TagsHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private TextView title;
         private ImageView icon;
@@ -73,9 +80,22 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.TagsHolder> {
         public TagsHolder(View itemView) {
             super(itemView);
 
-            title = (TextView)itemView.findViewById(R.id.lbl_item_text);
-            icon = (ImageView)itemView.findViewById(R.id.im_item_icon);
+            title = (TextView) itemView.findViewById(R.id.lbl_item_text);
+            title.setOnClickListener(this);
+            icon = (ImageView) itemView.findViewById(R.id.im_item_icon);
+            icon.setOnClickListener(this);
             container = itemView.findViewById(R.id.cont_item_root);
+            container.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            // To test what exactly was clicked:
+//            if (view.getId() == R.id.cont_item_root) {
+                if (mItemClickListener != null) {
+                    mItemClickListener.onItemClick(listData.get(getAdapterPosition()));
+                }
+//            }
         }
     }
 
