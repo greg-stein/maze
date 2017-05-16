@@ -11,8 +11,8 @@ import com.example.neutrino.maze.rendering.VectorHelper;
  */
 public class ThickLineSegment extends FloorPlanPrimitiveBase {
     private static final int VERTICES_NUM = 4; // it's a rect after all
-    private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlRenderBuffer.COORDS_PER_VERTEX;
-    private static final int INDICES_DATA_LENGTH = 6;
+    protected static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlRenderBuffer.COORDS_PER_VERTEX;
+    protected static final int INDICES_DATA_LENGTH = 6;
     private static final float DEFAULT_THICKNESS = 0.2f; // 20cm
     private static final float DEFAULT_COORDS_SOURCE = 0.5f;
 

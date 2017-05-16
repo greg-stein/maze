@@ -24,6 +24,11 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
         mIndices = new short[getIndicesNum()];
     }
 
+    protected FloorPlanPrimitiveBase(int verticesNum, int indicesNum) {
+        mVertices = new float[verticesNum];
+        mIndices = new short[indicesNum];
+    }
+
     @Override
     public void putVertices(FloatBuffer verticesBuffer) {
         mVertexBufferPosition = verticesBuffer.position();

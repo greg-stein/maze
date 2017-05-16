@@ -15,11 +15,13 @@ import java.util.List;
 public class Path extends FloorPlanPrimitiveBase {
     private static final float PATH_THICKNESS = 0.5f; // 50 cm
 
-    private List<PointF> mPoints;
-    private List<ThickLineSegment> mSegments = new ArrayList<>();
+    private final List<ThickLineSegment> mSegments;
 
     public Path(List<PointF> points) {
-        mPoints = points;
+        super((points.size()-1) * ThickLineSegment.INDICES_DATA_LENGTH,
+                (points.size()-1) * ThickLineSegment.VERTICES_DATA_LENGTH);
+
+        mSegments = new ArrayList<>(points.size() - 1);
 
         for (int i = 0; i + 1 < points.size(); i++) {
             PointF start = points.get(i);
