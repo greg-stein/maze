@@ -138,6 +138,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             mMapper.setFloorPlanView(uiFloorPlanView);
         }
 
+        mAdapter = new TagsAdapter(AppSettings.appActivity);
+        uiRecView.setAdapter(mAdapter);
+
         setUiListeners();
         getSupportActionBar().hide();
     }
@@ -245,10 +248,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                // ACHTUNG! Adapter is created in LoadFloorPlanTask.onPostExecute()
-                if (mAdapter == null) {
-                    mAdapter = (TagsAdapter) uiRecView.getAdapter();
-                }
                 mAdapter.updateListData(mFloorPlan.searchMostSimilarTags(newText, 20));
                 return true;
             }
@@ -423,8 +422,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                         mLocator.setFloorPlan(mFloorPlan);
                         mMapper.setFloorPlan(mFloorPlan);
 
-                        mAdapter = new TagsAdapter(floorPlan.getTags(), AppSettings.appActivity);
-                        uiRecView.setAdapter(mAdapter);
+                        mAdapter.updateListData(floorPlan.getTags());
 
                         // The main work is done on GL thread!
                         uiFloorPlanView.plot(floorPlan);

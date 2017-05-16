@@ -32,6 +32,10 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.TagsHolder> {
         this.listData.addAll(listItems);
     }
 
+    public TagsAdapter(Context context) {
+        this.inflater = LayoutInflater.from(context);
+    }
+
     public void updateListData(List<Tag> newData) {
         listData.clear();
         synchronized (FloorPlan.mTagsListLocker) {
