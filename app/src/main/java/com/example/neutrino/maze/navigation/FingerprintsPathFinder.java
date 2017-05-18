@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Created by Greg Stein on 5/7/2017.
  */
-public class PathFinder {
+public class FingerprintsPathFinder {
     public static final int GRID_CELL_SIZE = 20; // in meters
     // NOTE: GRID_CELL_PADDING maybe at its max GRID_CELL_SIZE/2 !!!
     public static final int GRID_CELL_PADDING = 10; // each cell is padded with this much meters on each side
@@ -35,7 +35,7 @@ public class PathFinder {
     private int mGridSizeX;
     private int mGridSizeY;
 
-    public PathFinder(FloorPlan floorPlan) {
+    public FingerprintsPathFinder(FloorPlan floorPlan) {
         List<Fingerprint> fingerprints = floorPlan.getFingerprints();
         mNodes = new ArrayList<>(fingerprints.size());
 
