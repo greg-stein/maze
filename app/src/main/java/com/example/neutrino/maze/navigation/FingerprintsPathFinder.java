@@ -1,19 +1,13 @@
 package com.example.neutrino.maze.navigation;
 
 import android.graphics.PointF;
-import android.graphics.Rect;
-import android.graphics.RectF;
 
-import org.jgrapht.WeightedGraph;
-import org.jgrapht.alg.DijkstraShortestPath;
-import org.jgrapht.graph.DefaultWeightedEdge;
-import org.jgrapht.graph.SimpleWeightedGraph;
-
-import com.example.neutrino.maze.CommonHelper;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.rendering.VectorHelper;
+
+import org.jgrapht.graph.DefaultWeightedEdge;
+import org.jgrapht.graph.SimpleWeightedGraph;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,65 +16,25 @@ import java.util.List;
 /**
  * Created by Greg Stein on 5/7/2017.
  */
-public class FingerprintsPathFinder {
-    public static final int GRID_CELL_SIZE = 20; // in meters
-    // NOTE: GRID_CELL_PADDING maybe at its max GRID_CELL_SIZE/2 !!!
-    public static final int GRID_CELL_PADDING = 10; // each cell is padded with this much meters on each side
+public class FingerprintsPathFinder extends PathFinderBase {
     private List<PointF> mNodes;
-    private List<Wall> mObstacles;
-    private Rect mBoundaries = new Rect();
-
-    private GridCell[][] mGrid;
-    private WeightedGraph<PointF, DefaultWeightedEdge> mGraph;
-    private int mGridSizeX;
-    private int mGridSizeY;
 
     public FingerprintsPathFinder(FloorPlan floorPlan) {
+        super(floorPlan);
         List<Fingerprint> fingerprints = floorPlan.getFingerprints();
         mNodes = new ArrayList<>(fingerprints.size());
 
         for (Fingerprint fingerprint : fingerprints) {
             mNodes.add(fingerprint.getCenter());
         }
-
-        // Java HORROR
-        Iterable<?> objects = floorPlan.getSketch();
-        mObstacles = CommonHelper.filterObjects(Wall.class, (Iterable<Object>) objects);
-
-        floorPlan.getBoundaries().roundOut(mBoundaries);
     }
 
+    @Override
     public void init() {
-        buildFingerprintsGrid();
-        buildGraph();
-    }
-
-    private void buildFingerprintsGrid() {
         initGrid();
         assignPointsToCells();
         assignObstaclesToCells();
-    }
-
-    private void assignObstaclesToCells() {
-        for (Wall obstacle : mObstacles) {
-            // TODO: Instead of this straight-forward method we can adopt much faster Bresenheim Algorithm
-            jopa();
-            for (int x = 0; x < mGridSizeX; x++) {
-                for (int y = 0; y < mGridSizeY; y++) {
-                    PointF obstacleStart = obstacle.getStart();
-                    PointF obstacleEnd = obstacle.getEnd();
-                    RectF cellBox = mGrid[x][y].boundingBox;
-
-                    if (VectorHelper.lineIntersect(obstacleStart, obstacleEnd, cellBox)) {
-                        mGrid[x][y].obstacles.add(obstacle);
-                    }
-                }
-            }
-        }
-    }
-
-    private void jopa() {
-
+        buildGraph();
     }
 
     private void assignPointsToCells() {
@@ -138,23 +92,8 @@ public class FingerprintsPathFinder {
         }
     }
 
-    private void initGrid() {
-        mGridSizeX = mBoundaries.width() / GRID_CELL_SIZE + 2; // pad on left/right
-        mGridSizeY = mBoundaries.height() / GRID_CELL_SIZE + 2; // pad on top/bottom
-        mGrid = new GridCell[mGridSizeX][mGridSizeY];
-
-        for (int x = 0; x < mGridSizeX; x++) {
-            for (int y = 0; y < mGridSizeY; y++) {
-                mGrid[x][y] = new GridCell(new RectF(
-                        mBoundaries.left + (x-1) * GRID_CELL_SIZE - GRID_CELL_PADDING,
-                        mBoundaries.top + (y-1) * GRID_CELL_SIZE - GRID_CELL_PADDING,
-                        mBoundaries.left + (x) * GRID_CELL_SIZE + GRID_CELL_PADDING,
-                        mBoundaries.top + (y) * GRID_CELL_SIZE + GRID_CELL_PADDING));
-            }
-        }
-    }
-
-    private void buildGraph() {
+    @Override
+    protected void buildGraph() {
         mGraph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
 
         for (int x = 0; x < mGridSizeX; x++) {
@@ -179,47 +118,8 @@ public class FingerprintsPathFinder {
         }
     }
 
-    private boolean obstacleBetween(GridCell cell, PointF p1, PointF p2) {
-        for (Wall obstacle : cell.obstacles) {
-            if (VectorHelper.linesIntersect(obstacle.getStart(), obstacle.getEnd(), p1, p2)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public List<PointF> constructPath(PointF source, PointF destination) {
-        PointF sourceVertex = findClosestVertex(source);
-        PointF destVertex = findClosestVertex(destination);
-
-        if (sourceVertex != null && destVertex != null) {
-            List<DefaultWeightedEdge> edgesPath = DijkstraShortestPath.findPathBetween(mGraph, sourceVertex, destVertex);
-
-            // Construct path as List<PointF> from edges
-            List<PointF> path = new ArrayList<>(edgesPath.size() + 1); // number of edges + 1
-            path.add(sourceVertex); // TODO: do we need to add source as well?
-            PointF lastVertex = sourceVertex;
-
-            for (DefaultWeightedEdge e : edgesPath) {
-                PointF edgeSource = mGraph.getEdgeSource(e);
-                PointF edgeTarget = mGraph.getEdgeTarget(e);
-
-                if (edgeSource.equals(lastVertex)) {
-                    path.add(edgeTarget);
-                    lastVertex = edgeTarget;
-                } else if (edgeTarget.equals(lastVertex)) {
-                    path.add(edgeSource);
-                    lastVertex = edgeSource;
-                } else jopa();
-            }
-
-            return path;
-        }
-
-        return null;
-    }
-
-    private PointF findClosestVertex(PointF source) {
+    @Override
+    protected PointF findClosestVertex(PointF source) {
         final int gridX = ((int)source.x - mBoundaries.left) / GRID_CELL_SIZE + 1;
         final int gridY = ((int)source.y - mBoundaries.top) / GRID_CELL_SIZE + 1;
 

@@ -10,6 +10,7 @@ import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.navigation.GridCell;
 import com.example.neutrino.maze.navigation.FingerprintsPathFinder;
+import com.example.neutrino.maze.navigation.PathFinderBase;
 
 import org.jgrapht.WeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
@@ -47,7 +48,7 @@ import static org.junit.Assert.assertTrue;
  * Created by Greg Stein on 5/9/2017.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(manifest=Config.NONE, sdk = 23)
+@Config(manifest = Config.NONE, sdk = 23)
 public class FingerprintsPathFinderTests {
 
     private FloorPlan getFloorPlanFromRes(String resourceFile) {
@@ -69,17 +70,29 @@ public class FingerprintsPathFinderTests {
         return floorPlan;
     }
 
-    private static <T> T invokeMethod(FingerprintsPathFinder pathFinder, String methodName, Object... params) {
+    private static <T> T invokeMethod(Object pathFinder, String methodName, Object... params) {
+        Class<?>[] paramTypes = new Class<?>[params.length];
         try {
-            Class<?>[] paramTypes = new Class<?>[params.length];
             int cnt = 0;
             for (Object o : params) {
                 paramTypes[cnt++] = o.getClass();
             }
             Method method = pathFinder.getClass().getDeclaredMethod(methodName, paramTypes);
             method.setAccessible(true);
-            return (T)method.invoke(pathFinder, params);
+            return (T) method.invoke(pathFinder, params);
         } catch (NoSuchMethodException e) {
+            Method method = null;
+            try {
+                method = PathFinderBase.class.getDeclaredMethod(methodName, paramTypes);
+                method.setAccessible(true);
+                return (T) method.invoke(pathFinder, params);
+            } catch (NoSuchMethodException e1) {
+                e1.printStackTrace();
+            } catch (InvocationTargetException e1) {
+                e1.printStackTrace();
+            } catch (IllegalAccessException e1) {
+                e1.printStackTrace();
+            }
             e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
@@ -93,8 +106,18 @@ public class FingerprintsPathFinderTests {
         try {
             Field field = pathFinder.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
-            return (T)field.get(pathFinder);
+            return (T) field.get(pathFinder);
         } catch (NoSuchFieldException e) {
+            Field field = null;
+            try {
+                field =PathFinderBase.class.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                return (T) field.get(pathFinder);
+            } catch (NoSuchFieldException e1) {
+                e1.printStackTrace();
+            } catch (IllegalAccessException e1) {
+                e1.printStackTrace();
+            }
             e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
@@ -120,103 +143,103 @@ public class FingerprintsPathFinderTests {
         assertThat(grid[0].length, is(equalTo(4)));
 
         // Row 1
-        assertThat( grid[0][0].boundingBox, is(equalTo(new RectF(
+        assertThat(grid[0][0].boundingBox, is(equalTo(new RectF(
                 -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_PADDING, FingerprintsPathFinder.GRID_CELL_PADDING))));
 
-        assertThat( grid[1][0].boundingBox, is(equalTo(new RectF(
-                - FingerprintsPathFinder.GRID_CELL_PADDING,
+        assertThat(grid[1][0].boundingBox, is(equalTo(new RectF(
+                -FingerprintsPathFinder.GRID_CELL_PADDING,
                 -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_PADDING))));
 
-        assertThat( grid[2][0].boundingBox, is(equalTo(new RectF(
+        assertThat(grid[2][0].boundingBox, is(equalTo(new RectF(
                 FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                2* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_PADDING))));
 
-        assertThat( grid[3][0].boundingBox, is(equalTo(new RectF(
-                2* FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
+        assertThat(grid[3][0].boundingBox, is(equalTo(new RectF(
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                3* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_PADDING))));
 
         // Row 2
-        assertThat( grid[0][1].boundingBox, is(equalTo(new RectF(
+        assertThat(grid[0][1].boundingBox, is(equalTo(new RectF(
                 -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 -FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
 
-        assertThat( grid[1][1].boundingBox, is(equalTo(new RectF(
+        assertThat(grid[1][1].boundingBox, is(equalTo(new RectF(
                 -FingerprintsPathFinder.GRID_CELL_PADDING,
                 -FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
 
-        assertThat( grid[2][1].boundingBox, is(equalTo(new RectF(
+        assertThat(grid[2][1].boundingBox, is(equalTo(new RectF(
                 FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 -FingerprintsPathFinder.GRID_CELL_PADDING,
-                2* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
 
-        assertThat( grid[3][1].boundingBox, is(equalTo(new RectF(
-                2* FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
+        assertThat(grid[3][1].boundingBox, is(equalTo(new RectF(
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 -FingerprintsPathFinder.GRID_CELL_PADDING,
-                3* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
 
         // Row 3
-        assertThat( grid[0][2].boundingBox, is(equalTo(new RectF(
+        assertThat(grid[0][2].boundingBox, is(equalTo(new RectF(
                 -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_PADDING,
-                2* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
 
-        assertThat( grid[1][2].boundingBox, is(equalTo(new RectF(
+        assertThat(grid[1][2].boundingBox, is(equalTo(new RectF(
                 -FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                2* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
 
-        assertThat( grid[2][2].boundingBox, is(equalTo(new RectF(
+        assertThat(grid[2][2].boundingBox, is(equalTo(new RectF(
                 FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                2* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                2* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
 
-        assertThat( grid[3][2].boundingBox, is(equalTo(new RectF(
-                2* FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
+        assertThat(grid[3][2].boundingBox, is(equalTo(new RectF(
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                3* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                2* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
 
         // Row 4
-        assertThat( grid[0][3].boundingBox, is(equalTo(new RectF(
+        assertThat(grid[0][3].boundingBox, is(equalTo(new RectF(
                 -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                2* FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_PADDING,
-                3* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
 
-        assertThat( grid[1][3].boundingBox, is(equalTo(new RectF(
+        assertThat(grid[1][3].boundingBox, is(equalTo(new RectF(
                 -FingerprintsPathFinder.GRID_CELL_PADDING,
-                2* FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
                 FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                3* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
 
-        assertThat( grid[2][3].boundingBox, is(equalTo(new RectF(
+        assertThat(grid[2][3].boundingBox, is(equalTo(new RectF(
                 FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                2* FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                2* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                3* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
 
-        assertThat( grid[3][3].boundingBox, is(equalTo(new RectF(
-                2* FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                2* FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                3* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                3* FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+        assertThat(grid[3][3].boundingBox, is(equalTo(new RectF(
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
     }
 
     @Test
@@ -300,7 +323,7 @@ public class FingerprintsPathFinderTests {
         sketch.add(f = new Wall(40, 20, 30, 20));
         sketch.add(g = new Wall(30, 20, 30, 15));
         sketch.add(h = new Wall(30, 15, 35, 15));
-        sketch.add(i= new Wall(35, 15, 35, 5));
+        sketch.add(i = new Wall(35, 15, 35, 5));
         sketch.add(j = new Wall(35, 5, 20, 5));
         sketch.add(k = new Wall(20, 5, 20, 15));
         sketch.add(l = new Wall(20, 15, 25, 15));
@@ -544,22 +567,22 @@ public class FingerprintsPathFinderTests {
         // pathFinder.init(); Does that:
         long start = System.nanoTime();
         invokeMethod(pathFinder, "initGrid");
-        System.out.println(String.format("initGrid. elapsed: %.2f ms", (System.nanoTime() - start)/1000000f));
+        System.out.println(String.format("initGrid. elapsed: %.2f ms", (System.nanoTime() - start) / 1000000f));
         start = System.nanoTime();
         invokeMethod(pathFinder, "assignPointsToCells");
-        System.out.println(String.format("assignPointsToCells. elapsed: %.2f ms", (System.nanoTime() - start)/1000000f));
+        System.out.println(String.format("assignPointsToCells. elapsed: %.2f ms", (System.nanoTime() - start) / 1000000f));
         start = System.nanoTime();
         invokeMethod(pathFinder, "assignObstaclesToCells");
-        System.out.println(String.format("assignObstaclesToCells. elapsed: %.2f ms", (System.nanoTime() - start)/1000000f));
+        System.out.println(String.format("assignObstaclesToCells. elapsed: %.2f ms", (System.nanoTime() - start) / 1000000f));
         start = System.nanoTime();
         invokeMethod(pathFinder, "buildGraph");
-        System.out.println(String.format("buildGraph. elapsed: %.2f ms", (System.nanoTime() - start)/1000000f));
+        System.out.println(String.format("buildGraph. elapsed: %.2f ms", (System.nanoTime() - start) / 1000000f));
 
         PointF startPoint = new PointF(244.76593f, 55.589268f);
         PointF endPoint = new PointF(55.76811f, 49.82863f);
 
         start = System.nanoTime();
         List<PointF> path = pathFinder.constructPath(startPoint, endPoint);
-        System.out.println(String.format("constructPath. elapsed: %.2f ms", (System.nanoTime() - start)/1000000f));
+        System.out.println(String.format("constructPath. elapsed: %.2f ms", (System.nanoTime() - start) / 1000000f));
     }
 }
