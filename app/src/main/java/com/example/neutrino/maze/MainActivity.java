@@ -41,6 +41,8 @@ import com.example.neutrino.maze.floorplan.Path;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.navigation.FingerprintsPathFinder;
+import com.example.neutrino.maze.navigation.GridPathFinder;
+import com.example.neutrino.maze.navigation.PathFinderBase;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
@@ -246,11 +248,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             @Override
             public void onItemClick(Tag t) {
                 uiSearchView.close(true);
-                FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(mFloorPlan);
-                pathFinder.init();
                 // tag "enter" from res location:
                 PointF enter = new PointF(244.76593f, 55.589268f);
-                List<PointF> pathPoints = pathFinder.constructPath(enter, t.getLocation());
+                List<PointF> pathPoints = mFloorPlan.getPathFinder().constructPath(enter, t.getLocation());
 //                List<PointF> pathPoints = pathFinder.constructPath(mLocator.getLocation(), t.getLocation());
                 Path path = new Path(pathPoints);
                 uiFloorPlanView.renderPath(path);

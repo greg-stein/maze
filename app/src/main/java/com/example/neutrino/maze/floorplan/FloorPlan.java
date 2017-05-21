@@ -8,6 +8,9 @@ import android.support.design.widget.FloatingActionButton;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.CommonHelper;
+import com.example.neutrino.maze.navigation.FingerprintsPathFinder;
+import com.example.neutrino.maze.navigation.GridPathFinder;
+import com.example.neutrino.maze.navigation.PathFinderBase;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 
 import org.simmetrics.StringMetric;
@@ -34,6 +37,7 @@ public class FloorPlan {
     private List<Fingerprint> mFingerprints;
     private List<Tag> mTags;
     private FloorPlanDescriptor mDescriptor;
+    private PathFinderBase mPathFinder;
 
     public static FloorPlan build(List<Object> entities) {
         FloorPlan floorPlan = new FloorPlan();
@@ -54,6 +58,14 @@ public class FloorPlan {
         if (AppSettings.inDebug && floorPlan.mFingerprints != null) {
             floorPlan.mSketch.addAll(floorPlan.mFingerprints);
         }
+
+        if (floorPlan.mSketch.size() > 0) {
+            floorPlan.mPathFinder = new GridPathFinder(floorPlan);
+        } else {
+            floorPlan.mPathFinder = new FingerprintsPathFinder(floorPlan);
+        }
+        floorPlan.mPathFinder.init();
+
         return floorPlan;
     }
 
@@ -65,6 +77,14 @@ public class FloorPlan {
         floorPlan.mDescriptor = null;
 
         return floorPlan;
+    }
+
+    public void setPathFinder(PathFinderBase pathFinder) {
+        this.mPathFinder = pathFinder;
+    }
+
+    public PathFinderBase getPathFinder() {
+        return mPathFinder;
     }
 
     public List<Object> disassemble() {
