@@ -114,6 +114,8 @@ public class GridPathFinderTests {
     public void commonTest() {
         FloorPlan floorPlan = getFloorPlanFromRes("haifa_mall_detailed_tags.json");
         GridPathFinder pathFinder = new GridPathFinder(floorPlan);
+        pathFinder.setCellOverlap(2);
+        pathFinder.setCellSize(5);
 
 //        pathFinder.init();// Does that:
         long start = System.nanoTime();

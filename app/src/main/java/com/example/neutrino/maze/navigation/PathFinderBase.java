@@ -31,6 +31,8 @@ public abstract class PathFinderBase {
     protected int mGridSizeX;
     protected int mGridSizeY;
     protected WeightedGraph<PointF, DefaultWeightedEdge> mGraph;
+    protected int mCellOverlap = GRID_CELL_PADDING;
+    protected int mCellSize = GRID_CELL_SIZE;
 
     protected PathFinderBase(FloorPlan floorPlan) {
         Iterable<?> objects = floorPlan.getSketch();
@@ -44,20 +46,28 @@ public abstract class PathFinderBase {
 
     public abstract void init();
 
+    public void setCellSize(int size) {
+        mCellSize = size;
+    }
+
+    public void setCellOverlap(int overlap) {
+        mCellOverlap = overlap;
+    }
+
     protected abstract void buildGraph();
 
     protected void initGrid() {
-        mGridSizeX = mBoundaries.width() / GRID_CELL_SIZE + 2; // pad on left/right
-        mGridSizeY = mBoundaries.height() / GRID_CELL_SIZE + 2; // pad on top/bottom
+        mGridSizeX = mBoundaries.width() / mCellSize + 2; // pad on left/right
+        mGridSizeY = mBoundaries.height() / mCellSize + 2; // pad on top/bottom
         mGrid = new GridCell[mGridSizeX][mGridSizeY];
 
         for (int x = 0; x < mGridSizeX; x++) {
             for (int y = 0; y < mGridSizeY; y++) {
                 mGrid[x][y] = new GridCell(new RectF(
-                        mBoundaries.left + (x-1) * GRID_CELL_SIZE - GRID_CELL_PADDING,
-                        mBoundaries.top + (y-1) * GRID_CELL_SIZE - GRID_CELL_PADDING,
-                        mBoundaries.left + (x) * GRID_CELL_SIZE + GRID_CELL_PADDING,
-                        mBoundaries.top + (y) * GRID_CELL_SIZE + GRID_CELL_PADDING));
+                        mBoundaries.left + (x-1) * mCellSize - mCellOverlap,
+                        mBoundaries.top + (y-1) * mCellSize - mCellOverlap,
+                        mBoundaries.left + (x) * mCellSize + mCellOverlap,
+                        mBoundaries.top + (y) * mCellSize + mCellOverlap));
             }
         }
     }

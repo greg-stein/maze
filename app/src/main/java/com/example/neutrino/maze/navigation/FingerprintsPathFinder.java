@@ -39,13 +39,13 @@ public class FingerprintsPathFinder extends PathFinderBase {
 
     private void assignPointsToCells() {
         for (PointF p : mNodes) {
-            final int cellX = (int) ((p.x - mBoundaries.left) / GRID_CELL_SIZE) + 1;
-            final int cellY = (int) ((p.y - mBoundaries.top) / GRID_CELL_SIZE) + 1; // should be bottom?
+            final int cellX = (int) ((p.x - mBoundaries.left) / mCellSize) + 1;
+            final int cellY = (int) ((p.y - mBoundaries.top) / mCellSize) + 1; // should be bottom?
             mGrid[cellX][cellY].points.add(p);
 
             // Check position within cell to test adjacent cells if their padding overlaps p
-            if (p.x > cellX * GRID_CELL_SIZE + mBoundaries.left - GRID_CELL_SIZE / 2) {
-                if (p.y > cellY * GRID_CELL_SIZE + mBoundaries.top - GRID_CELL_SIZE / 2) {
+            if (p.x > cellX * mCellSize + mBoundaries.left - mCellSize / 2) {
+                if (p.y > cellY * mCellSize + mBoundaries.top - mCellSize / 2) {
                     // bottom right quarter. to check: [ ][ ][ ]
                     //                                 [ ][p][X]
                     //                                 [ ][X][X]
@@ -67,7 +67,7 @@ public class FingerprintsPathFinder extends PathFinderBase {
                         mGrid[cellX + 1][cellY].points.add(p);
                 }
             } else {
-                if (p.y > cellY * GRID_CELL_SIZE + mBoundaries.top - GRID_CELL_SIZE / 2) {
+                if (p.y > cellY * mCellSize + mBoundaries.top - mCellSize / 2) {
                     // bottom left quarter. to check: [ ][ ][ ]
                     //                                [X][p][ ]
                     //                                [X][X][ ]
@@ -120,8 +120,8 @@ public class FingerprintsPathFinder extends PathFinderBase {
 
     @Override
     protected PointF findClosestVertex(PointF source) {
-        final int gridX = ((int)source.x - mBoundaries.left) / GRID_CELL_SIZE + 1;
-        final int gridY = ((int)source.y - mBoundaries.top) / GRID_CELL_SIZE + 1;
+        final int gridX = ((int)source.x - mBoundaries.left) / mCellSize + 1;
+        final int gridY = ((int)source.y - mBoundaries.top) / mCellSize + 1;
 
         GridCell cell = mGrid[gridX][gridY];
         // Assumed as farthest point

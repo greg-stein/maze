@@ -29,8 +29,8 @@ public class GridPathFinder extends PathFinderBase {
 
         for (int x = mBoundaries.left; x < mBoundaries.right - 1; x++) {
             for (int y = mBoundaries.top; y < mBoundaries.bottom - 1; y++) {
-                final int cellX = (x - mBoundaries.left) / GRID_CELL_SIZE + 1;
-                final int cellY = (y - mBoundaries.top) / GRID_CELL_SIZE + 1;
+                final int cellX = (x - mBoundaries.left) / mCellSize + 1;
+                final int cellY = (y - mBoundaries.top) / mCellSize + 1;
                 GridCell cell = mGrid[cellX][cellY];
 
                 PointF topLeft = new PointF(x, y);
@@ -54,8 +54,8 @@ public class GridPathFinder extends PathFinderBase {
 
     @Override
     protected PointF findClosestVertex(PointF source) {
-        final int cellX = (int) ((source.x - mBoundaries.left) / GRID_CELL_SIZE + 1);
-        final int cellY = (int) ((source.y - mBoundaries.top) / GRID_CELL_SIZE + 1);
+        final int cellX = (int) ((source.x - mBoundaries.left) / mCellSize + 1);
+        final int cellY = (int) ((source.y - mBoundaries.top) / mCellSize + 1);
         GridCell cell = mGrid[cellX][cellY];
 
         PointF p = new PointF((int)source.x, (int)source.y);
