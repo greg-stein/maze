@@ -22,8 +22,8 @@ import java.util.List;
 
 public abstract class PathFinderBase {
     public static final int GRID_CELL_SIZE = 20; // in meters
-    // NOTE: GRID_CELL_PADDING maybe at its max GRID_CELL_SIZE/2 !!!
-    public static final int GRID_CELL_PADDING = 10; // each cell is padded with this much meters on each side
+    // NOTE: GRID_CELL_OVERLAP maybe at its max GRID_CELL_SIZE/2 !!!
+    public static final int GRID_CELL_OVERLAP = 10; // each cell is padded with this much meters on each side
 
     protected final List<Wall> mObstacles;
     protected Rect mBoundaries = new Rect();
@@ -31,7 +31,7 @@ public abstract class PathFinderBase {
     protected int mGridSizeX;
     protected int mGridSizeY;
     protected WeightedGraph<PointF, DefaultWeightedEdge> mGraph;
-    protected int mCellOverlap = GRID_CELL_PADDING;
+    protected int mCellOverlap = GRID_CELL_OVERLAP;
     protected int mCellSize = GRID_CELL_SIZE;
 
     protected PathFinderBase(FloorPlan floorPlan) {

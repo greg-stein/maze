@@ -144,102 +144,102 @@ public class FingerprintsPathFinderTests {
 
         // Row 1
         assertThat(grid[0][0].boundingBox, is(equalTo(new RectF(
-                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_PADDING, FingerprintsPathFinder.GRID_CELL_PADDING))));
+                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_OVERLAP, FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         assertThat(grid[1][0].boundingBox, is(equalTo(new RectF(
-                -FingerprintsPathFinder.GRID_CELL_PADDING,
-                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_PADDING))));
+                -FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         assertThat(grid[2][0].boundingBox, is(equalTo(new RectF(
-                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_PADDING))));
+                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         assertThat(grid[3][0].boundingBox, is(equalTo(new RectF(
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_PADDING))));
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         // Row 2
         assertThat(grid[0][1].boundingBox, is(equalTo(new RectF(
-                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                -FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                -FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         assertThat(grid[1][1].boundingBox, is(equalTo(new RectF(
-                -FingerprintsPathFinder.GRID_CELL_PADDING,
-                -FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                -FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                -FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         assertThat(grid[2][1].boundingBox, is(equalTo(new RectF(
-                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                -FingerprintsPathFinder.GRID_CELL_PADDING,
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                -FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         assertThat(grid[3][1].boundingBox, is(equalTo(new RectF(
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                -FingerprintsPathFinder.GRID_CELL_PADDING,
-                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                -FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         // Row 3
         assertThat(grid[0][2].boundingBox, is(equalTo(new RectF(
-                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_PADDING,
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         assertThat(grid[1][2].boundingBox, is(equalTo(new RectF(
-                -FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                -FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         assertThat(grid[2][2].boundingBox, is(equalTo(new RectF(
-                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         assertThat(grid[3][2].boundingBox, is(equalTo(new RectF(
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         // Row 4
         assertThat(grid[0][3].boundingBox, is(equalTo(new RectF(
-                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_PADDING,
-                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                -FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         assertThat(grid[1][3].boundingBox, is(equalTo(new RectF(
-                -FingerprintsPathFinder.GRID_CELL_PADDING,
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                -FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         assertThat(grid[2][3].boundingBox, is(equalTo(new RectF(
-                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP))));
 
         assertThat(grid[3][3].boundingBox, is(equalTo(new RectF(
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_PADDING,
-                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING,
-                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_PADDING))));
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                2 * FingerprintsPathFinder.GRID_CELL_SIZE - FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP,
+                3 * FingerprintsPathFinder.GRID_CELL_SIZE + FingerprintsPathFinder.GRID_CELL_OVERLAP))));
     }
 
     @Test
