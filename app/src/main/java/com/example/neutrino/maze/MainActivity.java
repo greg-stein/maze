@@ -65,8 +65,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private View uiRecPanelSpacer;
     private TagsAdapter mAdapter;
     private FloorPlanView uiFloorPlanView;
-    private Toolbar uiToolbar;
-    private ToggleButton uiModeSwitch;
     private FloatingActionButton uiFabDeleteWall;
     private FloatingActionButton uiFabAddWall;
     private FloatingActionButton uiFabSetLocation;
@@ -77,7 +75,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private FloatingActionButton uiFabMapRotateLock;
     private FloatingActionButton uiFabRemoveLastFingerprint;
     private FloatingActionButton uiFabAddTag;
-    private EditText uiWallLengthText;
     // Map north angle
     private float mMapNorth = 0.0f;
 
@@ -93,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     private WiFiLocator mWiFiLocator = WiFiLocator.getInstance();
 
-    private float mCurrentWallLength = 1;
     private boolean mAutoScanEnabled = false;
 
     @Override
@@ -108,7 +104,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiRecPanelSpacer = (View) findViewById(R.id.view_spacer);
 
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
-        uiToolbar = (Toolbar) findViewById(R.id.toolbar);
         uiFabDeleteWall = (FloatingActionButton) findViewById(R.id.fab_delete_wall);
         uiFabAddWall = (FloatingActionButton) findViewById(R.id.fab_add_wall);
         uiFabSetLocation = (FloatingActionButton) findViewById(R.id.fab_set_location);
@@ -119,11 +114,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiFabMapRotateLock = (FloatingActionButton) findViewById(R.id.fab_map_rotate_lock);
         uiFabRemoveLastFingerprint = (FloatingActionButton) findViewById(R.id.fab_remove_last_fingerprint);
         uiFabAddTag = (FloatingActionButton) findViewById(R.id.fab_add_tag);
-        uiModeSwitch = (ToggleButton) findViewById(R.id.tb_edit_mode);
-        uiWallLengthText = (EditText) findViewById(R.id.et_wall_length);
-
-        setSupportActionBar(uiToolbar);
-        getSupportActionBar().setTitle("");
 
         AppSettings.init(this);
         mFabAlpha = getAlphaFromRes();
@@ -147,7 +137,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiRecView.setAdapter(mAdapter);
 
         setUiListeners();
-        getSupportActionBar().hide();
     }
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -293,21 +282,21 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             }
         });
 
-        uiWallLengthText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(uiWallLengthText.getWindowToken(), 0);
-
-                    float realLength = Float.parseFloat(uiWallLengthText.getText().toString());
-                    uiFloorPlanView.rescaleMap(realLength/mCurrentWallLength);
-
-                    return true;
-                }
-                return false;
-            }
-        });
+//        uiWallLengthText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+//            @Override
+//            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+//                if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+//                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//                    imm.hideSoftInputFromWindow(uiWallLengthText.getWindowToken(), 0);
+//
+//                    float realLength = Float.parseFloat(uiWallLengthText.getText().toString());
+//                    uiFloorPlanView.rescaleMap(realLength/mCurrentWallLength);
+//
+//                    return true;
+//                }
+//                return false;
+//            }
+//        });
 
         uiFabAddTag.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -407,13 +396,13 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         uiFloorPlanView.setOnLocationPlacedListener(this);
 
-        uiFloorPlanView.setOnWallLengthChangedListener(new FloorPlanRenderer.IWallLengthChangedListener() {
-            @Override
-            public void onWallLengthChanged(float wallLength) {
-                mCurrentWallLength = wallLength;
-                uiWallLengthText.setText(String.format(Locale.US,"%.2f", wallLength));
-            }
-        });
+//        uiFloorPlanView.setOnWallLengthChangedListener(new FloorPlanRenderer.IWallLengthChangedListener() {
+//            @Override
+//            public void onWallLengthChanged(float wallLength) {
+//                mCurrentWallLength = wallLength;
+//                uiWallLengthText.setText(String.format(Locale.US,"%.2f", wallLength));
+//            }
+//        });
 
         ViewTreeObserver vto = uiFloorPlanView.getViewTreeObserver();
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -460,45 +449,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 //                }
 
                 uiFloorPlanView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
-        });
-
-        uiModeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                uiFloorPlanView.setMode(isChecked);
-                if (isChecked) {
-                    uiToolbar.setBackgroundColor(AppSettings.editModeColor);
-                    uiFabDeleteWall.show(mPreserveAlphaOnShow);
-                    uiFabSetLocation.show(mPreserveAlphaOnShow);
-                    uiFabAddWall.show(mPreserveAlphaOnShow);
-                    uiFabAutoscanMode.show(mPreserveAlphaOnShow);
-                    uiFabAddFloorplanFromPic.show(mPreserveAlphaOnShow);
-                    uiFabAddFloorplanFromGallery.show(mPreserveAlphaOnShow);
-                    uiFabMapRotateLock.show(mPreserveAlphaOnShow);
-                    uiFabRemoveLastFingerprint.show(mPreserveAlphaOnShow);
-                    uiFabAddTag.show(mPreserveAlphaOnShow);
-                } else {
-                    uiToolbar.setBackgroundColor(AppSettings.primaryColor);
-                    uiFabDeleteWall.hide();
-                    uiFabSetLocation.hide();
-                    uiFabAddWall.hide();
-                    uiFabAutoscanMode.hide();
-                    uiFabAddFloorplanFromPic.hide();
-                    uiFabAddFloorplanFromGallery.hide();
-                    uiFabMapRotateLock.hide();
-                    uiFabRemoveLastFingerprint.hide();
-                    uiFabAddTag.hide();
-
-                    String jsonString = FloorPlanSerializer.serializeFloorPlan(mFloorPlan.disassemble());
-                    PersistenceLayer.saveFloorPlan(jsonString);
-//                    if (MazeServer.connectionAvailable(getApplicationContext())) {
-//                        MazeServer server = new MazeServer(getApplicationContext());
-//                        server.uploadFloorPlan(uiFloorPlanView.getFloorPlanAsJSon());
-//                    } else {
-//                        Toast.makeText(getApplicationContext(), "No Internet connection", Toast.LENGTH_SHORT).show();
-//                    }
-                }
             }
         });
 
