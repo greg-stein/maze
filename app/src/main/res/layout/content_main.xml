@@ -7,6 +7,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.example.neutrino.maze.MainActivity"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     tools:showIn="@layout/activity_main">
 
     <com.example.neutrino.maze.rendering.FloorPlanView
