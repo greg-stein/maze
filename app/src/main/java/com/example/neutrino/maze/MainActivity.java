@@ -47,6 +47,7 @@ import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
+import com.github.fafaldo.fabtoolbar.widget.FABToolbarLayout;
 import com.lapism.searchview.SearchView;
 
 import java.io.File;
@@ -64,6 +65,10 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private LinearLayout uiRecPanel;
     private View uiRecPanelSpacer;
     private TagsAdapter mAdapter;
+
+    private FABToolbarLayout uiToolbarLayout;
+    private FloatingActionButton uiFabEditMode;
+
     private FloorPlanView uiFloorPlanView;
     private FloatingActionButton uiFabDeleteWall;
     private FloatingActionButton uiFabAddWall;
@@ -102,6 +107,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiRecView.setLayoutManager(new LinearLayoutManager(this));
         uiRecPanel = (LinearLayout) findViewById(R.id.rec_container);
         uiRecPanelSpacer = (View) findViewById(R.id.view_spacer);
+
+        uiToolbarLayout = (FABToolbarLayout) findViewById(R.id.fabtoolbar_layout);
+        uiFabEditMode = (FloatingActionButton) findViewById(R.id.fabtoolbar_fab);
 
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
         uiFabDeleteWall = (FloatingActionButton) findViewById(R.id.fab_delete_wall);
@@ -232,7 +240,19 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             return uri.getPath();               // FOR OI/ASTRO/Dropbox etc
     }
 
+    @Override
+    public void onBackPressed() {
+        uiToolbarLayout.hide();
+    }
+
     private void setUiListeners() {
+        uiFabEditMode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                uiToolbarLayout.show();
+            }
+        });
+
         mAdapter.setItemClickListener(new TagsAdapter.ItemClickListener() {
             @Override
             public void onItemClick(Tag t) {
