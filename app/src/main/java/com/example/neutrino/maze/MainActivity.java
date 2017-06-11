@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private TagsAdapter mAdapter;
 
     private FABToolbarLayout uiToolbarLayout;
+    private LinearLayout uiToolbar;
     private FloatingActionButton uiFabEditMode;
 
     private FloorPlanView uiFloorPlanView;
@@ -109,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiRecPanelSpacer = (View) findViewById(R.id.view_spacer);
 
         uiToolbarLayout = (FABToolbarLayout) findViewById(R.id.fabtoolbar_layout);
+        uiToolbar = (LinearLayout) findViewById(R.id.fabtoolbar_toolbar);
         uiFabEditMode = (FloatingActionButton) findViewById(R.id.fabtoolbar_fab);
 
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
@@ -243,12 +245,14 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     @Override
     public void onBackPressed() {
         uiToolbarLayout.hide();
+        uiFabFindMeOnMap.animate().translationYBy(uiToolbar.getHeight());
     }
 
     private void setUiListeners() {
         uiFabEditMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                uiFabFindMeOnMap.animate().translationYBy(-uiToolbar.getHeight());
                 uiToolbarLayout.show();
             }
         });
