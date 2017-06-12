@@ -244,8 +244,10 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     @Override
     public void onBackPressed() {
-        uiToolbarLayout.hide();
-        uiFabFindMeOnMap.animate().translationYBy(uiToolbar.getHeight());
+        if (uiToolbarLayout.isToolbar()) {
+            uiToolbarLayout.hide();
+            uiFabFindMeOnMap.animate().translationYBy(uiToolbar.getHeight());
+        }
     }
 
     private void setUiListeners() {
