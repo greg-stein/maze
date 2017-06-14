@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         addSpinnerData.add(new Pair<>("Short wall", R.drawable.ic_camera_alt_white_24dp));
         addSpinnerData.add(new Pair<>("Place boundaries", R.drawable.ic_directions_walk_both_walls_white_24dp));
         addSpinnerData.add(new Pair<>("Location tag", R.drawable.ic_add_location_white_24dp));
+        addSpinnerData.add(new Pair<>("", R.drawable.ic_add_white_24dp));
     }
 
     private FloorPlanView uiFloorPlanView;
@@ -148,6 +149,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 new ImageSpinnerAdapter(this, R.layout.add_spinner_item, R.id.lbl_item_text, addSpinnerData);
 //        adapter.setDropDownViewResource(R.layout.add_spinner_item);
         uiAddSpinner.setAdapter(adapter);
+        uiAddSpinner.setSelection(addSpinnerData.size() - 1);
 
         setUiListeners();
     }

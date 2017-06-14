@@ -32,6 +32,7 @@ public class ImageSpinnerAdapter extends ArrayAdapter<Pair<String, Integer>> {
         mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
+    @Override
     public View getView(int position, View convertView, ViewGroup parent ){
         View itemView = mInflater.inflate(mGroupid, parent, false);
         ImageView imageView = (ImageView)itemView.findViewById(R.id.im_item_icon);
@@ -41,27 +42,13 @@ public class ImageSpinnerAdapter extends ArrayAdapter<Pair<String, Integer>> {
         return itemView;
     }
 
+    @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent){
         return getView(position, convertView, parent);
     }
 
-//    public ImageSpinnerAdapter(Context context, List<? extends Map<String, ?>> data, int resource, String[] from, int[] to) {
-//        super(context, data, resource, from, to);
-//        this.data = data;
-//        mInflater = LayoutInflater.from(context);
-//    }
-//
-//    @SuppressWarnings("unchecked")
-//    public View getView(int position, View convertView, ViewGroup parent) {
-//        if (convertView == null) {
-//            convertView = mInflater.inflate(R.layout.spinner_view,
-//                    null);
-//        }
-//        //  HashMap<String, Object> data = (HashMap<String, Object>) getItem(position);
-//        ((TextView) convertView.findViewById(R.id.imageNameSpinner))
-//                .setText((String) dataRecieved.get(position).get("Name"));
-//        ((ImageView) convertView.findViewById(R.id.imageIconSpinner))
-//                .setBackgroundResource(dataRecieved.get(position).get("Icon")));
-//        return convertView;
-//    }
+    @Override
+    public int getCount() {
+        return mData.size() - 1;
+    }
 }
