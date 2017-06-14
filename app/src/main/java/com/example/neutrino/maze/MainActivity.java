@@ -1,6 +1,5 @@
 package com.example.neutrino.maze;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
@@ -13,37 +12,25 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.Spinner;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import com.example.neutrino.maze.Locator.ILocationUpdatedListener;
 import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Path;
-import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.Tag;
-import com.example.neutrino.maze.navigation.FingerprintsPathFinder;
-import com.example.neutrino.maze.navigation.GridPathFinder;
-import com.example.neutrino.maze.navigation.PathFinderBase;
-import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
@@ -53,8 +40,10 @@ import com.lapism.searchview.SearchView;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
 import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
 
@@ -69,6 +58,14 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private FABToolbarLayout uiToolbarLayout;
     private LinearLayout uiToolbar;
     private FloatingActionButton uiFabEditMode;
+    private Spinner uiAddSpinner;
+    private static final List<Pair<String, Integer>> addSpinnerData = new ArrayList<>();
+    static {
+        addSpinnerData.add(new Pair<>("Wall", R.drawable.ic_gps_fixed_white_24dp));
+        addSpinnerData.add(new Pair<>("Short wall", R.drawable.ic_camera_alt_white_24dp));
+        addSpinnerData.add(new Pair<>("Place boundaries", R.drawable.ic_directions_walk_both_walls_white_24dp));
+        addSpinnerData.add(new Pair<>("Location tag", R.drawable.ic_add_location_white_24dp));
+    }
 
     private FloorPlanView uiFloorPlanView;
     private FloatingActionButton uiFabDeleteWall;
@@ -112,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiToolbarLayout = (FABToolbarLayout) findViewById(R.id.fabtoolbar_layout);
         uiToolbar = (LinearLayout) findViewById(R.id.fabtoolbar_toolbar);
         uiFabEditMode = (FloatingActionButton) findViewById(R.id.fabtoolbar_fab);
+        uiAddSpinner = (Spinner) findViewById(R.id.add_spinner);
 
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
         uiFabDeleteWall = (FloatingActionButton) findViewById(R.id.fab_delete_wall);
@@ -145,6 +143,11 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         mAdapter = new TagsAdapter(AppSettings.appActivity);
         uiRecView.setAdapter(mAdapter);
+
+        ImageSpinnerAdapter adapter =
+                new ImageSpinnerAdapter(this, R.layout.add_spinner_item, R.id.lbl_item_text, addSpinnerData);
+//        adapter.setDropDownViewResource(R.layout.add_spinner_item);
+        uiAddSpinner.setAdapter(adapter);
 
         setUiListeners();
     }
