@@ -6,7 +6,9 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.PointF;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -298,6 +300,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.REMOVE;
                 break;
 
+            case R.id.btn_lock_rotation:
+                mIsMapRotationLocked = !mIsMapRotationLocked;
+                break;
             // Here come the rest of menu items
 
             default:
@@ -700,6 +705,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private void updateActionsUiStates() {
         MenuItem btnMove = uiToolbar.getMenu().getItem(0);
         MenuItem btnRemove = uiToolbar.getMenu().getItem(1);
+        MenuItem btnRotationLock = uiToolbar.getMenu().getItem(6);
         switch (uiFloorPlanView.mapOperation) {
             case MOVE:
                 System.out.println("MODE: move");
@@ -718,6 +724,12 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_delete_forever_black_24dp, null));
                 uiAddSpinner.setSelection(addSpinnerData.size() - 1);
                 break;
+        }
+
+        if (mIsMapRotationLocked) {
+            btnRotationLock.getIcon().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
+        } else {
+            btnRotationLock.getIcon().clearColorFilter();
         }
     }
 
