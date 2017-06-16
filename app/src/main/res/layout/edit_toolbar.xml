@@ -43,7 +43,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/fabtoolbar_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="70dp"
         android:layout_alignParentBottom="true"
         android:minHeight="?attr/actionBarSize"
         app:theme="@style/Base.Theme.AppCompat.CompactMenu">
@@ -51,7 +51,7 @@
         <Spinner
             android:id="@+id/add_spinner"
             android:layout_width="50dp"
-            android:layout_height="match_parent" />
+            android:layout_height="50dp" />
         <!--android:background="@android:drawable/btn_default"-->
 
     </android.support.v7.widget.Toolbar>
