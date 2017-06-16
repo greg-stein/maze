@@ -91,6 +91,15 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.rescaleFloorplan(scaleFactor);
     }
 
+    public enum MapOperation {
+        MOVE, ADD, REMOVE
+    }
+    public MapOperation mapOperation;
+    public enum MapOperand {
+        WALL, SHORT_WALL, BOUNDARIES, LOCATION_TAG
+    }
+    public MapOperand operand;
+
     public enum Operation {
         NONE, ADD_WALL, REMOVE_WALL, ADD_TAG, SET_LOCATION
     }

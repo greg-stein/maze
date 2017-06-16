@@ -39,27 +39,58 @@
 
     </RelativeLayout>
 
-    <LinearLayout
+    <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/fabtoolbar_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal">
+        android:minHeight="?attr/actionBarSize"
+        app:theme="@style/Base.Theme.AppCompat.CompactMenu">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Edit:"
-            android:gravity="center"/>
+        <!--<LinearLayout-->
+            <!--android:id="@+id/fabtoolbar_toolbar2"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="50dp"-->
+            <!--android:layout_alignParentBottom="true"-->
+            <!--android:orientation="horizontal">-->
 
-        <Spinner
-            android:id="@+id/add_spinner"
-            android:layout_width="70dp"
-            android:layout_height="match_parent"
-            />
-        <!--android:background="@android:drawable/btn_default"-->
+            <Spinner
+                android:id="@+id/add_spinner"
+                android:layout_width="50dp"
+                android:layout_height="match_parent" />
+            <!--android:background="@android:drawable/btn_default"-->
 
-    </LinearLayout>
+            <!--<ImageView-->
+                <!--android:id="@+id/btn_delete"-->
+                <!--android:layout_width="70dp"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:scaleType="center"-->
+                <!--android:src="@drawable/ic_delete_forever_white_24dp" />-->
+
+            <!--<ImageView-->
+                <!--android:id="@+id/btn_undo"-->
+                <!--android:layout_width="70dp"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:scaleType="center"-->
+                <!--android:src="@drawable/ic_undo_white_24dp" />-->
+
+            <!--<ImageView-->
+                <!--android:id="@+id/btn_redo"-->
+                <!--android:layout_width="70dp"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:scaleType="center"-->
+                <!--android:src="@drawable/ic_redo_white_24dp" />-->
+
+            <!--<ImageView-->
+                <!--android:id="@+id/btn_more"-->
+                <!--android:layout_width="70dp"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:scaleType="center"-->
+                <!--android:src="@drawable/ic_more_vert_white_24dp" />-->
+
+        <!--</LinearLayout>-->
+    </android.support.v7.widget.Toolbar>
 
 </com.github.fafaldo.fabtoolbar.widget.FABToolbarLayout>
 

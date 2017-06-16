@@ -8,19 +8,24 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.ScrollingTabContainerView;
+import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -56,15 +61,15 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private TagsAdapter mAdapter;
 
     private FABToolbarLayout uiToolbarLayout;
-    private LinearLayout uiToolbar;
+    private Toolbar uiToolbar;
     private FloatingActionButton uiFabEditMode;
     private Spinner uiAddSpinner;
     private static final List<Pair<String, Integer>> addSpinnerData = new ArrayList<>();
     static {
-        addSpinnerData.add(new Pair<>("Wall", R.drawable.ic_gps_fixed_white_24dp));
-        addSpinnerData.add(new Pair<>("Short wall", R.drawable.ic_camera_alt_white_24dp));
-        addSpinnerData.add(new Pair<>("Place boundaries", R.drawable.ic_directions_walk_both_walls_white_24dp));
-        addSpinnerData.add(new Pair<>("Location tag", R.drawable.ic_add_location_white_24dp));
+        addSpinnerData.add(new Pair<>("Wall", R.drawable.ic_view_stream_black_24dp));
+        addSpinnerData.add(new Pair<>("Short wall", R.drawable.ic_remove_black_24dp));
+        addSpinnerData.add(new Pair<>("Place boundaries", R.drawable.ic_format_shapes_black_24dp));
+        addSpinnerData.add(new Pair<>("Location tag", R.drawable.ic_add_location_black_24dp));
         addSpinnerData.add(new Pair<>("", R.drawable.ic_add_white_24dp));
     }
 
@@ -95,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private WiFiLocator mWiFiLocator = WiFiLocator.getInstance();
 
     private boolean mAutoScanEnabled = false;
+    private boolean isFirstTime = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiRecPanelSpacer = (View) findViewById(R.id.view_spacer);
 
         uiToolbarLayout = (FABToolbarLayout) findViewById(R.id.fabtoolbar_layout);
-        uiToolbar = (LinearLayout) findViewById(R.id.fabtoolbar_toolbar);
+        uiToolbar = (Toolbar) findViewById(R.id.fabtoolbar_toolbar);
         uiFabEditMode = (FloatingActionButton) findViewById(R.id.fabtoolbar_fab);
         uiAddSpinner = (Spinner) findViewById(R.id.add_spinner);
 
@@ -149,7 +155,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 new ImageSpinnerAdapter(this, R.layout.add_spinner_item, R.id.lbl_item_text, addSpinnerData);
 //        adapter.setDropDownViewResource(R.layout.add_spinner_item);
         uiAddSpinner.setAdapter(adapter);
+        // Select last hidden item (+)
         uiAddSpinner.setSelection(addSpinnerData.size() - 1);
+        uiToolbar.inflateMenu(R.menu.menu_edit_mode);
 
         setUiListeners();
     }
@@ -255,7 +263,98 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         }
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.action_settings:
+                // User chose the "Settings" item, show the app settings UI...
+                return true;
+
+            case R.id.btn_move:
+                uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.MOVE;
+                break;
+
+            case R.id.btn_delete:
+                uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.REMOVE;
+                break;
+
+            // Here come the rest of menu items
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        updateActionsUiStates();
+                    }
+                }
+            });
+        }
+        return true;
+    }
+
     private void setUiListeners() {
+        uiToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                return onOptionsItemSelected(item);
+            }
+        });
+
+        uiAddSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                // First call to this happens in init.
+//                if (isFirstTime) {
+//                    isFirstTime = false;
+//                    return;
+//                }
+
+                switch (position) {
+                    case 0:
+                        uiFloorPlanView.operand = FloorPlanView.MapOperand.WALL;
+                        break;
+                    case 1:
+                        uiFloorPlanView.operand = FloorPlanView.MapOperand.SHORT_WALL;
+                        break;
+                    case 2:
+                        uiFloorPlanView.operand = FloorPlanView.MapOperand.BOUNDARIES;
+                        break;
+                    case 3:
+                        uiFloorPlanView.operand = FloorPlanView.MapOperand.LOCATION_TAG;
+                        break;
+                }
+                uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.ADD;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                updateActionsUiStates();
+                            }
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+
+            }
+        });
+
         uiFabEditMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -610,19 +709,47 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void updateActionsUiStates() {
+        MenuItem btnMove = uiToolbar.getMenu().getItem(0);
+        MenuItem btnRemove = uiToolbar.getMenu().getItem(1);
+        switch (uiFloorPlanView.mapOperation) {
+            case MOVE:
+                System.out.println("MODE: move");
+                btnMove.setIcon(getResources().getDrawable(R.drawable.ic_cursor_move_black_24dp, null));
+                btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_delete_forever_white_24dp, null));
+                // Select last hidden item (+)
+//                isFirstTime = true;
+                uiAddSpinner.setSelection(addSpinnerData.size() - 1);
+                break;
+            case ADD:
+                System.out.println("MODE: add");
+                btnMove.setIcon(getResources().getDrawable(R.drawable.ic_cursor_move_white_24dp, null));
+                btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_delete_forever_white_24dp, null));
+//                switch (uiFloorPlanView.operand) {
+//                    case WALL:
+//                        uiAddSpinner.setSelection(0);
+//                        break;
+//                    case SHORT_WALL:
+//                        uiAddSpinner.setSelection(1);
+//                        break;
+//                    case BOUNDARIES:
+//                        uiAddSpinner.setSelection(2);
+//                        break;
+//                    case LOCATION_TAG:
+//                        uiAddSpinner.setSelection(3);
+//                        break;
+//                }
+                break;
+            case REMOVE:
+                System.out.println("MODE: remove");
+                btnMove.setIcon(getResources().getDrawable(R.drawable.ic_cursor_move_white_24dp, null));
+                btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_delete_forever_black_24dp, null));
+                // Select last hidden item (+)
+//                isFirstTime = true;
+                uiAddSpinner.setSelection(addSpinnerData.size() - 1);
+                break;
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
