@@ -23,6 +23,8 @@ import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 
 import java.util.List;
 
+import static com.example.neutrino.maze.rendering.FloorPlanView.MapOperation.MOVE;
+
 /**
  * Created by neutrino on 7/2/2016.
  */
@@ -94,7 +96,7 @@ public class FloorPlanView extends GLSurfaceView {
     public enum MapOperation {
         MOVE, ADD, REMOVE
     }
-    public MapOperation mapOperation;
+    public MapOperation mapOperation = MOVE;
     public enum MapOperand {
         WALL, SHORT_WALL, BOUNDARIES, LOCATION_TAG
     }

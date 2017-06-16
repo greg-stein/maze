@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private WiFiLocator mWiFiLocator = WiFiLocator.getInstance();
 
     private boolean mAutoScanEnabled = false;
-    private boolean isFirstTime = true;
+    private Menu mEditMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,11 +153,10 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         ImageSpinnerAdapter adapter =
                 new ImageSpinnerAdapter(this, R.layout.add_spinner_item, R.id.lbl_item_text, addSpinnerData);
-//        adapter.setDropDownViewResource(R.layout.add_spinner_item);
         uiAddSpinner.setAdapter(adapter);
         // Select last hidden item (+)
         uiAddSpinner.setSelection(addSpinnerData.size() - 1);
-        uiToolbar.inflateMenu(R.menu.menu_edit_mode);
+        setSupportActionBar(uiToolbar);
 
         setUiListeners();
     }
@@ -264,6 +263,22 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        mEditMenu = menu;
+        getMenuInflater().inflate(R.menu.menu_edit_mode, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu (Menu menu) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            updateActionsUiStates();
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -292,36 +307,21 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        updateActionsUiStates();
-                    }
-                }
-            });
-        }
+        invalidateOptionsMenu();
         return true;
     }
 
     private void setUiListeners() {
-        uiToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                return onOptionsItemSelected(item);
-            }
-        });
+//        uiToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+//            @Override
+//            public boolean onMenuItemClick(MenuItem item) {
+//                return onOptionsItemSelected(item);
+//            }
+//        });
 
         uiAddSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                // First call to this happens in init.
-//                if (isFirstTime) {
-//                    isFirstTime = false;
-//                    return;
-//                }
-
                 switch (position) {
                     case 0:
                         uiFloorPlanView.operand = FloorPlanView.MapOperand.WALL;
@@ -336,17 +336,11 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                         uiFloorPlanView.operand = FloorPlanView.MapOperand.LOCATION_TAG;
                         break;
                 }
-                uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.ADD;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                updateActionsUiStates();
-                            }
-                        }
-                    });
+                if (position < 4) {
+                    uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.ADD;
                 }
+
+                invalidateOptionsMenu();
             }
 
             @Override
@@ -702,13 +696,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void updateActionsUiStates() {
         MenuItem btnMove = uiToolbar.getMenu().getItem(0);
@@ -718,35 +705,17 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 System.out.println("MODE: move");
                 btnMove.setIcon(getResources().getDrawable(R.drawable.ic_cursor_move_black_24dp, null));
                 btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_delete_forever_white_24dp, null));
-                // Select last hidden item (+)
-//                isFirstTime = true;
                 uiAddSpinner.setSelection(addSpinnerData.size() - 1);
                 break;
             case ADD:
                 System.out.println("MODE: add");
                 btnMove.setIcon(getResources().getDrawable(R.drawable.ic_cursor_move_white_24dp, null));
                 btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_delete_forever_white_24dp, null));
-//                switch (uiFloorPlanView.operand) {
-//                    case WALL:
-//                        uiAddSpinner.setSelection(0);
-//                        break;
-//                    case SHORT_WALL:
-//                        uiAddSpinner.setSelection(1);
-//                        break;
-//                    case BOUNDARIES:
-//                        uiAddSpinner.setSelection(2);
-//                        break;
-//                    case LOCATION_TAG:
-//                        uiAddSpinner.setSelection(3);
-//                        break;
-//                }
                 break;
             case REMOVE:
                 System.out.println("MODE: remove");
                 btnMove.setIcon(getResources().getDrawable(R.drawable.ic_cursor_move_white_24dp, null));
                 btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_delete_forever_black_24dp, null));
-                // Select last hidden item (+)
-//                isFirstTime = true;
                 uiAddSpinner.setSelection(addSpinnerData.size() - 1);
                 break;
         }
