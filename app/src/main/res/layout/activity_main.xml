@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,121 +8,9 @@
     android:clipToPadding="false"
     tools:context="com.example.neutrino.maze.MainActivity">
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_add_tag"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginBottom="295dp"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginStart="@dimen/fab_margin"
-        android:layout_marginTop="@dimen/fab_margin"
-        android:alpha="@dimen/alpha_default"
-        android:elevation="@dimen/fab_elevation"
-        android:src="@drawable/ic_add_location_white_24dp" />
+    <include layout="@layout/content_main" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_map_rotate_lock"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginBottom="225dp"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginStart="@dimen/fab_margin"
-        android:layout_marginTop="@dimen/fab_margin"
-        android:alpha="@dimen/alpha_default"
-        android:elevation="@dimen/fab_elevation"
-        android:src="@drawable/ic_screen_lock_rotation_white_24dp" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_add_floorplan_from_gallery"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginBottom="155dp"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginStart="@dimen/fab_margin"
-        android:layout_marginTop="@dimen/fab_margin"
-        android:alpha="@dimen/alpha_default"
-        android:elevation="@dimen/fab_elevation"
-        android:src="@drawable/ic_photo_library_white_24dp" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_add_floorplan_from_camera"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginBottom="85dp"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginStart="@dimen/fab_margin"
-        android:layout_marginTop="@dimen/fab_margin"
-        android:alpha="@dimen/alpha_default"
-        android:elevation="@dimen/fab_elevation"
-        android:src="@drawable/ic_camera_alt_white_24dp" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_delete_wall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:layout_margin="@dimen/fab_margin"
-        android:alpha="@dimen/alpha_default"
-        android:elevation="@dimen/fab_elevation"
-        android:src="@drawable/ic_clear_white_24dp" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_add_wall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:layout_marginBottom="85dp"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginStart="@dimen/fab_margin"
-        android:layout_marginTop="@dimen/fab_margin"
-        android:alpha="@dimen/alpha_default"
-        android:elevation="@dimen/fab_elevation"
-        android:src="@drawable/ic_add_white_24dp" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_set_location"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:layout_marginBottom="155dp"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginStart="@dimen/fab_margin"
-        android:layout_marginTop="@dimen/fab_margin"
-        android:alpha="@dimen/alpha_default"
-        android:elevation="@dimen/fab_elevation"
-        android:src="@drawable/ic_center_focus_strong_white_24dp" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_autoscan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:layout_marginBottom="225dp"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginStart="@dimen/fab_margin"
-        android:layout_marginTop="@dimen/fab_margin"
-        android:alpha="@dimen/alpha_default"
-        android:elevation="@dimen/fab_elevation"
-        android:src="@drawable/ic_directions_walk_white_24dp" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_remove_last_fingerprint"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:layout_marginBottom="295dp"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginStart="@dimen/fab_margin"
-        android:layout_marginTop="@dimen/fab_margin"
-        android:alpha="@dimen/alpha_default"
-        android:elevation="@dimen/fab_elevation"
-        android:src="@drawable/ic_clear_white_24dp" />
-
-    <include layout="@layout/content_main" /><include layout="@layout/edit_toolbar" />
+    <include layout="@layout/edit_toolbar" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_find_me_on_map"
@@ -134,9 +21,5 @@
         android:alpha="@dimen/alpha_default"
         android:elevation="@dimen/fab_elevation"
         android:src="@drawable/ic_gps_fixed_white_24dp"/>
-        <!--android:layout_marginBottom="85dp"-->
-        <!--android:layout_marginEnd="0dp"-->
-        <!--android:layout_marginStart="0dp"-->
-        <!--android:layout_marginTop="0dp" />-->
 
 </android.support.design.widget.CoordinatorLayout>

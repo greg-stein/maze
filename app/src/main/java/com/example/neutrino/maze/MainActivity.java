@@ -52,6 +52,7 @@ import java.util.List;
 import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
 
 public class MainActivity extends AppCompatActivity implements IDeviceRotationListener, ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener {
+    static final String IMAGE_FILENAME = "floorplan";
     // GUI-related fields
     private SearchView uiSearchView;
     private RecyclerView uiRecView;
@@ -73,16 +74,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     }
 
     private FloorPlanView uiFloorPlanView;
-    private FloatingActionButton uiFabDeleteWall;
-    private FloatingActionButton uiFabAddWall;
-    private FloatingActionButton uiFabSetLocation;
-    private FloatingActionButton uiFabAutoscanMode;
     private FloatingActionButton uiFabFindMeOnMap;
-    private FloatingActionButton uiFabAddFloorplanFromPic;
-    private FloatingActionButton uiFabAddFloorplanFromGallery;
-    private FloatingActionButton uiFabMapRotateLock;
-    private FloatingActionButton uiFabRemoveLastFingerprint;
-    private FloatingActionButton uiFabAddTag;
     // Map north angle
     private float mMapNorth = 0.0f;
 
@@ -118,16 +110,8 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiAddSpinner = (Spinner) findViewById(R.id.add_spinner);
 
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
-        uiFabDeleteWall = (FloatingActionButton) findViewById(R.id.fab_delete_wall);
-        uiFabAddWall = (FloatingActionButton) findViewById(R.id.fab_add_wall);
-        uiFabSetLocation = (FloatingActionButton) findViewById(R.id.fab_set_location);
-        uiFabAutoscanMode = (FloatingActionButton) findViewById(R.id.fab_autoscan);
         uiFabFindMeOnMap = (FloatingActionButton) findViewById(R.id.fab_find_me_on_map);
-        uiFabAddFloorplanFromPic = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_camera);
-        uiFabAddFloorplanFromGallery = (FloatingActionButton) findViewById(R.id.fab_add_floorplan_from_gallery);
-        uiFabMapRotateLock = (FloatingActionButton) findViewById(R.id.fab_map_rotate_lock);
-        uiFabRemoveLastFingerprint = (FloatingActionButton) findViewById(R.id.fab_remove_last_fingerprint);
-        uiFabAddTag = (FloatingActionButton) findViewById(R.id.fab_add_tag);
+//        uiFabRemoveLastFingerprint = (FloatingActionButton) findViewById(R.id.fab_remove_last_fingerprint);
 
         AppSettings.init(this);
         mFabAlpha = getAlphaFromRes();
@@ -300,6 +284,10 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 break;
 
             case R.id.btn_lock_rotation:
+                if (mIsMapRotationLocked) {
+                    mMapNorth = mDegreeOffset;
+                    mLocator.setNorth(mMapNorth);
+                }
                 mIsMapRotationLocked = !mIsMapRotationLocked;
                 break;
 
@@ -307,6 +295,41 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.SET_LOCATION;
                 break;
 
+            case R.id.btn_floorplan_from_gallery:
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"),
+                        REQUEST_IMAGE_SELECT);
+                break;
+
+            case R.id.btn_floorplan_from_cam:
+                // Here comes code for taking floorplan as picture from camera
+                // Dispatch Take Picture Intent
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                    File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                    try {
+                        File imageFile = File.createTempFile(IMAGE_FILENAME, ".jpg", storageDir);
+                        mCurrentImagePath = imageFile.getAbsolutePath();
+                        Uri imageFileUri = Uri.fromFile(imageFile);
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageFileUri);
+                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                    } catch (IOException e) {
+                        Toast.makeText(getApplicationContext(), "Error saving image", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
+                }
+                break;
+
+            case R.id.btn_autoscan:
+                mAutoScanEnabled = !mAutoScanEnabled;
+                if (mAutoScanEnabled) {
+                    mMapper.enable();
+                } else {
+                    mMapper.disable();
+                }
+                break;
                 // Here come the rest of menu items
 
             default:
@@ -432,85 +455,13 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 //            }
 //        });
 
-        uiFabAddTag.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (uiFloorPlanView.operation == FloorPlanView.Operation.ADD_TAG) {
-                    uiFloorPlanView.operation = FloorPlanView.Operation.NONE;
-                }
-                else {
-                    uiFloorPlanView.operation = FloorPlanView.Operation.ADD_TAG;
-                }
-                updateOperationFabsState();
-            }
-        });
-
-        uiFabRemoveLastFingerprint.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mMapper.undoLastFingerprint();
-            }
-        });
-
-        uiFabMapRotateLock.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            if (mIsMapRotationLocked) {
-                calmFab(uiFabMapRotateLock);
-                mMapNorth = mDegreeOffset;
-                mLocator.setNorth(mMapNorth);
-                mIsMapRotationLocked = false;
-            } else {
-                exciteFab(uiFabMapRotateLock);
-                mIsMapRotationLocked = true;
-            }
-//                mDegreeOffset = 0;
-
-                // if (enable) {
-                //     rememberedNorth = currentNorth
-                //     disable map rotation
-                // } else {
-                //     angleDiff = currentNorth - rememberedNorth
-                //     rerotate map
-                //     enable map rotation
-                // }
-            }
-        });
-
-        uiFabAddFloorplanFromGallery.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"),
-                        REQUEST_IMAGE_SELECT);
-            }
-        });
-
-        uiFabAddFloorplanFromPic.setOnClickListener(new View.OnClickListener() {
-            static final String IMAGE_FILENAME = "floorplan";
-
-            // Here comes code for taking floorplan as picture from camera
-            @Override
-            public void onClick(View view) {
-                // Dispatch Take Picture Intent
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                    File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-                    try {
-                        File imageFile = File.createTempFile(IMAGE_FILENAME, ".jpg", storageDir);
-                        mCurrentImagePath = imageFile.getAbsolutePath();
-                        Uri imageFileUri = Uri.fromFile(imageFile);
-                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageFileUri);
-                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                    } catch (IOException e) {
-                        Toast.makeText(getApplicationContext(), "Error saving image", Toast.LENGTH_SHORT).show();
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
+        // TODO: Handle this in menus if needed
+//        uiFabRemoveLastFingerprint.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                mMapper.undoLastFingerprint();
+//            }
+//        });
 
         uiFabFindMeOnMap.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -519,14 +470,15 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             }
         });
 
-        uiFabDeleteWall.setLongClickable(true);
-        uiFabDeleteWall.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                uiFloorPlanView.clearFloorPlan();
-                return false;
-            }
-        });
+        // TODO: Handle this in menu:
+//        uiFabDeleteWall.setLongClickable(true);
+//        uiFabDeleteWall.setOnLongClickListener(new View.OnLongClickListener() {
+//            @Override
+//            public boolean onLongClick(View view) {
+//                uiFloorPlanView.clearFloorPlan();
+//                return false;
+//            }
+//        });
 
         uiFloorPlanView.setOnLocationPlacedListener(this);
 
@@ -586,69 +538,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             }
         });
 
-        uiFabAutoscanMode.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mAutoScanEnabled = !mAutoScanEnabled;
-                if (mAutoScanEnabled) {
-                    mMapper.enable();
-                    exciteFab(uiFabAutoscanMode);
-                } else {
-                    mMapper.disable();
-                    calmFab(uiFabAutoscanMode);
-                }
-            }
-        });
-
-        uiFabDeleteWall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (uiFloorPlanView.operation == FloorPlanView.Operation.REMOVE_WALL) {
-                    uiFloorPlanView.operation = FloorPlanView.Operation.NONE;
-                }
-                else {
-                    uiFloorPlanView.operation = FloorPlanView.Operation.REMOVE_WALL;
-                }
-                updateOperationFabsState();
-            }
-        });
-
-
-        uiFabAddWall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (uiFloorPlanView.operation == FloorPlanView.Operation.ADD_WALL) {
-                    uiFloorPlanView.operation = FloorPlanView.Operation.NONE;
-                }
-                else {
-                    uiFloorPlanView.operation = FloorPlanView.Operation.ADD_WALL;
-                }
-                updateOperationFabsState();
-            }
-        });
-
-        uiFabSetLocation.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (uiFloorPlanView.operation == FloorPlanView.Operation.SET_LOCATION) {
-                    uiFloorPlanView.operation = FloorPlanView.Operation.NONE;
-                }
-                else {
-                    uiFloorPlanView.operation = FloorPlanView.Operation.SET_LOCATION;
-                }
-                updateOperationFabsState();
-            }
-        });
-
-        uiFabDeleteWall.hide();
-        uiFabSetLocation.hide();
-        uiFabAddWall.hide();
-        uiFabAutoscanMode.hide();
-        uiFabAddFloorplanFromPic.hide();
-        uiFabAddFloorplanFromGallery.hide();
-        uiFabMapRotateLock.hide();
-        uiFabRemoveLastFingerprint.hide();
-        uiFabAddTag.hide();
     }
 
     private FloatingActionButton.OnVisibilityChangedListener mPreserveAlphaOnShow = new FloatingActionButton.OnVisibilityChangedListener() {
@@ -669,41 +558,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     }
     private void calmFab(FloatingActionButton fab) {
         fab.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
-    }
-
-    private void updateOperationFabsState() {
-        switch (uiFloorPlanView.operation) {
-            case ADD_TAG:
-                calmFab(uiFabDeleteWall);
-                calmFab(uiFabAddWall);
-                calmFab(uiFabSetLocation);
-                exciteFab(uiFabAddTag);
-                break;
-            case ADD_WALL:
-                calmFab(uiFabDeleteWall);
-                exciteFab(uiFabAddWall);
-                calmFab(uiFabSetLocation);
-                calmFab(uiFabAddTag);
-                break;
-            case REMOVE_WALL:
-                exciteFab(uiFabDeleteWall);
-                calmFab(uiFabAddWall);
-                calmFab(uiFabSetLocation);
-                calmFab(uiFabAddTag);
-                break;
-            case SET_LOCATION:
-                calmFab(uiFabDeleteWall);
-                calmFab(uiFabAddWall);
-                exciteFab(uiFabSetLocation);
-                calmFab(uiFabAddTag);
-                break;
-            case NONE:
-                calmFab(uiFabDeleteWall);
-                calmFab(uiFabAddWall);
-                calmFab(uiFabSetLocation);
-                calmFab(uiFabAddTag);
-                break;
-        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)

@@ -50,4 +50,10 @@
         app:showAsAction="ifRoom"
         android:icon="@drawable/ic_center_focus_strong_white_24dp" />
 
+    <item
+        android:title="Autoscan Mode"
+        android:id="@+id/btn_autoscan"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_directions_walk_white_24dp" />
+
 </menu>
