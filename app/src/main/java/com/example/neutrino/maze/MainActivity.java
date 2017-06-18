@@ -20,7 +20,6 @@ import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.ScrollingTabContainerView;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.Menu;
@@ -48,9 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
 
@@ -159,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         // Select last hidden item (+)
         uiAddSpinner.setSelection(addSpinnerData.size() - 1);
         setSupportActionBar(uiToolbar);
+        uiToolbar.setTitle("");
 
         setUiListeners();
     }
@@ -261,6 +259,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         if (uiToolbarLayout.isToolbar()) {
             uiToolbarLayout.hide();
             uiFabFindMeOnMap.animate().translationYBy(uiToolbar.getHeight());
+            uiFloorPlanView.setFloorplanEditMode(false);
         }
     }
 
@@ -303,7 +302,12 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             case R.id.btn_lock_rotation:
                 mIsMapRotationLocked = !mIsMapRotationLocked;
                 break;
-            // Here come the rest of menu items
+
+            case R.id.btn_set_location:
+                uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.SET_LOCATION;
+                break;
+
+                // Here come the rest of menu items
 
             default:
                 // If we got here, the user's action was not recognized.
@@ -359,6 +363,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             public void onClick(View view) {
                 uiFabFindMeOnMap.animate().translationYBy(-uiToolbar.getHeight());
                 uiToolbarLayout.show();
+                uiFloorPlanView.setFloorplanEditMode(true);
             }
         });
 

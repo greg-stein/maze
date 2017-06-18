@@ -12,7 +12,6 @@ import android.view.ScaleGestureDetector;
 import android.widget.EditText;
 
 import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.CommonHelper;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Path;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IWallLengthChangedListener;
@@ -80,7 +79,7 @@ public class FloorPlanView extends GLSurfaceView {
         return mIsInEditMode;
     }
 
-    public void setMode(boolean isEditMode) {
+    public void setFloorplanEditMode(boolean isEditMode) {
         this.mIsInEditMode = isEditMode;
     }
 
@@ -94,7 +93,7 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     public enum MapOperation {
-        MOVE, ADD, REMOVE
+        MOVE, ADD, REMOVE, SET_LOCATION
     }
     public MapOperation mapOperation = MOVE;
     public enum MapOperand {
@@ -141,28 +140,35 @@ public class FloorPlanView extends GLSurfaceView {
         int yPos = (int) MotionEventCompat.getY(event, index);
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                switch (operation) {
-                    case NONE: // move existing wall if under tap location
-                        mRenderer.handleStartDrag(xPos, yPos, operation);
+                switch (mapOperation) {
+                    case MOVE: // move existing wall if under tap location
+                        mRenderer.handleStartDrag(xPos, yPos, mapOperation, operand);
                         if (mRenderer.startDragHandled()) {
                             mDragStarted = true;
                         } else {
                             handlePanAndZoom(event);
                         }
                         break;
-                    case ADD_WALL:
-                        mDragStarted = true;
-                        mRenderer.handleStartDrag(xPos, yPos, operation);
+                    case ADD: switch (operand) {
+                        case WALL:
+                            mDragStarted = true;
+                            mRenderer.handleStartDrag(xPos, yPos, mapOperation, operand);
+                            break;
+                        case SHORT_WALL:
+                            break;
+                        case BOUNDARIES:
+                            break;
+                        case LOCATION_TAG:
+                            mHandlingTagAddition = true;
+                            askForTagName(xPos, yPos);
+                            break;
+                        }
                         break;
-                    case REMOVE_WALL:
+                    case REMOVE:
                         mRenderer.processWallDeletion(xPos, yPos);
                         break;
                     case SET_LOCATION:
                         setLocation(xPos, yPos);
-                        break;
-                    case ADD_TAG:
-                        mHandlingTagAddition = true;
-                        askForTagName(xPos, yPos);
                         break;
                 }
                 break;

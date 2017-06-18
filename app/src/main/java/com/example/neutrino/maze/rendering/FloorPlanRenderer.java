@@ -329,7 +329,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         return mSelectedWall != null;
     }
 
-    public void handleStartDrag(final int x, final int y, final FloorPlanView.Operation operation) {
+    public void handleStartDrag(final int x, final int y, final FloorPlanView.MapOperation operation, final FloorPlanView.MapOperand operand) {
         // This is needed for FloorPlanView to know if there is any object under tap location
         windowToWorld(x, y, mDragStart);
         mSelectedWall = findWallHavingPoint(mDragStart.x, mDragStart.y);
@@ -339,7 +339,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             public void run() {
                 mAddedWallByDrag = false;
 
-                if (operation == FloorPlanView.Operation.ADD_WALL) {
+                if (operation == FloorPlanView.MapOperation.ADD && operand == FloorPlanView.MapOperand.WALL) {
                     // Add new wall at the point
                     mSelectedWall = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y);
                     addPrimitive(mSelectedWall);
