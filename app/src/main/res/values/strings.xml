@@ -1,5 +1,4 @@
 <resources>
     <string name="app_name">maze</string>
-    <string name="action_settings">Settings</string>
     <string name="maze_server_api_url">http://api.maze.world/api/</string>
 </resources>

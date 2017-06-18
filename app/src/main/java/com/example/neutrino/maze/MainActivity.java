@@ -271,10 +271,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         int id = item.getItemId();
 
         switch (id) {
-            case R.id.action_settings:
-                // User chose the "Settings" item, show the app settings UI...
-                return true;
-
             case R.id.btn_move:
                 uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.MOVE;
                 break;
