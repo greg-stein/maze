@@ -138,4 +138,10 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     public void rewriteToBuffer() {
         mGlBuffer.updateSingleObject(this);
     }
+
+    @Override
+    public void handleChange(float x, float y) {};
+
+    @Override
+    public void setTapLocation(float x, float y) {};
 }

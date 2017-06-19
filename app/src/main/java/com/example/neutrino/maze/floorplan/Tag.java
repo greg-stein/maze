@@ -6,7 +6,7 @@ import android.graphics.RectF;
 /**
  * Created by Greg Stein on 4/3/2017.
  */
-public class Tag {
+public class Tag implements IMoveable {
     private PointF mLocation;
     private String mLabel;
     private boolean mSearchable;
@@ -55,7 +55,17 @@ public class Tag {
     public void setVisible(boolean visible) {
         this.mVisible = visible;
     }
-    
+
+    @Override
+    public void handleChange(float x, float y) {
+
+    }
+
+    @Override
+    public void setTapLocation(float x, float y) {
+
+    }
+
     // In the clockwise order: topLeft, topRight, bottomRight, bottomLeft
     public float[] getBoundaryCorners() {
         return mBoundaryCorners;

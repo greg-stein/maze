@@ -10,7 +10,7 @@ import java.nio.ShortBuffer;
 /**
  * Created by Greg Stein on 9/21/2016.
  */
-public interface IFloorPlanPrimitive {
+public interface IFloorPlanPrimitive extends IMoveable {
     int getVerticesDataSize();
 
     int getIndicesDataSize();

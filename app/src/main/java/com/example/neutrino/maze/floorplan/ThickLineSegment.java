@@ -164,6 +164,7 @@ public class ThickLineSegment extends FloorPlanPrimitiveBase {
         this.mEnd.set(b);
     }
 
+    @Override
     public void handleChange(float x, float y) {
         float dx = x - mTappedLocation.x;
         float dy = y - mTappedLocation.y;
@@ -187,6 +188,7 @@ public class ThickLineSegment extends FloorPlanPrimitiveBase {
         mTappedLocation.set(x, y);
     }
 
+    @Override
     public void setTapLocation(float x, float y) {
         mTappedLocation.set(x, y);
 
