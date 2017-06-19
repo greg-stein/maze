@@ -2,6 +2,7 @@ package com.example.neutrino.maze.rendering;
 
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.graphics.RectF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
@@ -428,6 +429,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public void setTags(List<Tag> tags) {
         this.mTags = tags;
+        for (Tag tag : mTags) {
+            calculateTagBoundaries(tag);
+        }
     }
 
     private void renderTags() {
@@ -438,11 +442,33 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             glText.begin(0.0f, 0.0f, 1.0f, 1.0f, mScratch); // Begin Text Rendering (Set Color BLUE)
 
             for (Tag tag : mTags) {
-                final PointF tagLocation = tag.getLocation();
-                glText.drawC(tag.getLabel(), tagLocation.x, tagLocation.y, -mAngle);
+                drawTag(tag);
             }
-            glText.end();                                    // End Text Rendering
+            glText.end();                                   // End Text Rendering
         }
+    }
+
+    private void calculateTagBoundaries(Tag tag) {
+        PointF tagLocation = tag.getLocation();
+
+        float tagWidth = glText.getLength(tag.getLabel());
+        float tagHeight = glText.getCharHeight();
+        RectF boundaries = new RectF(tagLocation.x - tagWidth/2, tagLocation.y - tagHeight/2,
+                tagLocation.x + tagWidth/2, tagLocation.y + tagHeight/2);
+
+        tag.setBoundaryCorners(boundaries);
+    }
+
+    public void drawTag(Tag tag) {
+        PointF tagLocation = tag.getLocation();
+        float[] boundaries = tag.getBoundaryCorners();
+        float[] boundariesTransformed = tag.getBoundaryCornersTransformed();
+
+        android.graphics.Matrix m = new android.graphics.Matrix();
+        m.setRotate(-mAngle, tagLocation.x, tagLocation.y);
+        m.mapPoints(boundariesTransformed, boundaries);
+
+        glText.draw( tag.getLabel(), boundariesTransformed[0], boundariesTransformed[1], 0, 0, 0, -mAngle );  // Draw Text Centered
     }
 
     public Wall findWallHavingPoint(float x, float y) {
