@@ -2,7 +2,9 @@ package com.example.neutrino.maze.floorplan;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.support.v4.graphics.ColorUtils;
 
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.rendering.GlRenderBuffer;
 import com.example.neutrino.maze.rendering.VectorHelper;
 
@@ -10,6 +12,8 @@ import com.example.neutrino.maze.rendering.VectorHelper;
  * Created by neutrino on 7/7/2016.
  */
 public class ThickLineSegment extends FloorPlanPrimitiveBase {
+    public static final int ALPHA = 128;
+    public static final int OPAQUE = 255;
     private static final int VERTICES_NUM = 4; // it's a rect after all
     protected static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlRenderBuffer.COORDS_PER_VERTEX;
     protected static final int INDICES_DATA_LENGTH = 6;
@@ -109,6 +113,7 @@ public class ThickLineSegment extends FloorPlanPrimitiveBase {
         return boundingBox;
     }
 
+    @Override
     public boolean hasPoint(float x, float y) {
         // First test if the point within bounding box of line
         RectF boundingBox = getBoundingBox();
@@ -165,6 +170,18 @@ public class ThickLineSegment extends FloorPlanPrimitiveBase {
     }
 
     @Override
+    public void handleChangeStart() {
+        setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
+        rewriteToBuffer();
+    }
+
+    @Override
+    public void handleChangeEnd() {
+        setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ThickLineSegment.OPAQUE));
+        rewriteToBuffer();
+    }
+
+    @Override
     public void handleChange(float x, float y) {
         float dx = x - mTappedLocation.x;
         float dy = y - mTappedLocation.y;
@@ -186,19 +203,21 @@ public class ThickLineSegment extends FloorPlanPrimitiveBase {
         }
 
         mTappedLocation.set(x, y);
+        updateVertices();
+        rewriteToBuffer();
     }
 
     @Override
     public void setTapLocation(float x, float y) {
         mTappedLocation.set(x, y);
 
-        // Tapped point closer to A?
-        if (PointF.length(mTappedLocation.x - mStart.x, mTappedLocation.y - mStart.y) <= CHANGE_ONE_END_THRESHOLD) {
-            mChangeType = ChangeType.CHANGE_START;
-        }
-        // Closer to B?
-        else if (PointF.length(mTappedLocation.x - mEnd.x, mTappedLocation.y - mEnd.y) <= CHANGE_ONE_END_THRESHOLD) {
+        // First check if it is closer to End for the case when we create new wall (b/c start is
+        // placed where you tapped and only end is changed on drag)
+        if (PointF.length(mTappedLocation.x - mEnd.x, mTappedLocation.y - mEnd.y) <= CHANGE_ONE_END_THRESHOLD) {
             mChangeType = ChangeType.CHANGE_END;
+        }
+        else if (PointF.length(mTappedLocation.x - mStart.x, mTappedLocation.y - mStart.y) <= CHANGE_ONE_END_THRESHOLD) {
+            mChangeType = ChangeType.CHANGE_START;
         }
         else {
             mChangeType = ChangeType.CHANGE_SEGMENT;

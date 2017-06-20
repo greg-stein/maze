@@ -15,6 +15,7 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     protected transient final short mIndices[];
 
     protected abstract int getVerticesNum();
+
     protected abstract int getIndicesNum();
 
     private transient GlRenderBuffer mGlBuffer;
@@ -44,7 +45,7 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
         mIndexBufferPosition = indexBuffer.position();
 
         for (int i = 0; i < mIndices.length; i++) {
-            mIndices[i] += mVertexBufferPosition/(GlRenderBuffer.COORDS_PER_VERTEX + GlRenderBuffer.COLORS_PER_VERTEX);
+            mIndices[i] += mVertexBufferPosition / (GlRenderBuffer.COORDS_PER_VERTEX + GlRenderBuffer.COLORS_PER_VERTEX);
         }
         indexBuffer.put(mIndices);
     }
@@ -84,22 +85,26 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     }
 
     private transient int mVertexBufferPosition;
+
     @Override
     public int getVertexBufferPosition() {
         return mVertexBufferPosition;
     }
 
     private transient int mIndexBufferPosition;
+
     @Override
     public int getIndexBufferPosition() {
         return mIndexBufferPosition;
     }
 
     private boolean mIsRemoved;
+
     @Override
     public void setRemoved(boolean removed) {
         this.mIsRemoved = removed;
     }
+
     @Override
     public boolean isRemoved() {
         return mIsRemoved;
@@ -140,8 +145,21 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     }
 
     @Override
-    public void handleChange(float x, float y) {};
+    public void handleChange(float x, float y) {
+    }
 
     @Override
-    public void setTapLocation(float x, float y) {};
+    public void setTapLocation(float x, float y) {
+    }
+
+    @Override
+    public void handleChangeStart() {}
+
+    @Override
+    public void handleChangeEnd() {}
+
+    @Override
+    public boolean hasPoint(float x, float y) {
+        return false;
+    }
 }

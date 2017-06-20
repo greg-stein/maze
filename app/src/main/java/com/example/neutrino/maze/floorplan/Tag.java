@@ -3,6 +3,8 @@ package com.example.neutrino.maze.floorplan;
 import android.graphics.PointF;
 import android.graphics.RectF;
 
+import com.example.neutrino.maze.rendering.VectorHelper;
+
 /**
  * Created by Greg Stein on 4/3/2017.
  */
@@ -13,13 +15,22 @@ public class Tag implements IMoveable {
     private boolean mVisible;
     private transient float[] mBoundaryCorners;
     private transient float[] mBoundaryCornersTransformed;
+    private transient final PointF mTapLocation;
+
+    public Tag() {
+        mBoundaryCorners = new float[8];
+        mBoundaryCornersTransformed = new float[8];
+        mTapLocation = new PointF();
+    }
 
     public Tag(PointF location, String label) {
+        this();
         mLocation = location;
         mLabel = label;
     }
 
     public Tag(float x, float y, String label) {
+        this();
         mLocation = new PointF(x, y);
         mLabel = label;
     }
@@ -58,11 +69,31 @@ public class Tag implements IMoveable {
 
     @Override
     public void handleChange(float x, float y) {
+        float dx = x - mTapLocation.x;
+        float dy = y - mTapLocation.y;
 
+        this.mLocation.offset(dx, dy);
+        mTapLocation.set(x, y);
     }
 
     @Override
     public void setTapLocation(float x, float y) {
+        // Remember tap location relatively to topLeft corner
+        mTapLocation.set(x, y);
+    }
+
+    @Override
+    public boolean hasPoint(float x, float y) {
+        return VectorHelper.rectHasPoint(mBoundaryCornersTransformed, x, y);
+    }
+
+    @Override
+    public void handleChangeStart() {
+
+    }
+
+    @Override
+    public void handleChangeEnd() {
 
     }
 
@@ -76,8 +107,6 @@ public class Tag implements IMoveable {
     }
 
     public void setBoundaryCorners(RectF boundaries) {
-        if (this.mBoundaryCorners == null) mBoundaryCorners = new float[8];
-
         mBoundaryCorners[0] = boundaries.left;
         mBoundaryCorners[1] = boundaries.top;
         mBoundaryCorners[2] = boundaries.right;
@@ -89,8 +118,6 @@ public class Tag implements IMoveable {
     }
 
     public float[] getBoundaryCornersTransformed() {
-        if (this.mBoundaryCornersTransformed == null)
-            mBoundaryCornersTransformed = new float[8];
         return mBoundaryCornersTransformed;
     }
 }

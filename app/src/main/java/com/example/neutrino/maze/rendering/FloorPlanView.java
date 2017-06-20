@@ -165,7 +165,7 @@ public class FloorPlanView extends GLSurfaceView {
                         }
                         break;
                     case REMOVE:
-                        mRenderer.processWallDeletion(xPos, yPos);
+                        mRenderer.processObjectDeletion(xPos, yPos);
                         break;
                     case SET_LOCATION:
                         setLocation(xPos, yPos);

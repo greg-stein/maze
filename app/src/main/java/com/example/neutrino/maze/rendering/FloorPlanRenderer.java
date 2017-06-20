@@ -7,15 +7,16 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
-import android.support.v4.graphics.ColorUtils;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
+import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.LocationMark;
 import com.example.neutrino.maze.floorplan.Tag;
+import com.example.neutrino.maze.floorplan.ThickLineSegment;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 
@@ -32,8 +33,6 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
-    public static final int ALPHA = 128;
-    public static final int OPAQUE = 255;
     static final float DEFAULT_SCALE_FACTOR = 0.1f;
     private static final int DEFAULT_BUFFER_VERTICES_NUM = 65536;
 
@@ -59,7 +58,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private int mViewPortWidth;
     private int mViewPortHeight;
     private final PointF mDragStart = new PointF();
-    private Wall mSelectedWall;
+    private IMoveable mMovedObject;
     private boolean mAddedWallByDrag;
     private static final float[] mBgColorF = new float[4];
     private LocationMark mLocationMark = null;
@@ -327,13 +326,13 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     // Only for NONE mode (moving existing wall).
     public boolean startDragHandled() {
-        return mSelectedWall != null;
+        return mMovedObject != null;
     }
 
     public void handleStartDrag(final int x, final int y, final FloorPlanView.MapOperation operation, final FloorPlanView.MapOperand operand) {
         // This is needed for FloorPlanView to know if there is any object under tap location
         windowToWorld(x, y, mDragStart);
-        mSelectedWall = findWallHavingPoint(mDragStart.x, mDragStart.y);
+        mMovedObject = findObjectHavingPoint(mDragStart.x, mDragStart.y);
 
         runOnGlThread(new Runnable() {
             @Override
@@ -342,15 +341,16 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
                 if (operation == FloorPlanView.MapOperation.ADD && operand == FloorPlanView.MapOperand.WALL) {
                     // Add new wall at the point
-                    mSelectedWall = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y);
-                    addPrimitive(mSelectedWall);
+                    mMovedObject = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y);
+                    addPrimitive((IFloorPlanPrimitive) mMovedObject);
                     mAddedWallByDrag = true;
-                    mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
+                    mMovedObject.setTapLocation(mDragStart.x, mDragStart.y);
+                    mMovedObject.handleChangeStart();
                 }
                 else {
-                    if (mSelectedWall != null) {
-                        mSelectedWall.setTapLocation(mDragStart.x, mDragStart.y);
-                        mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
+                    if (mMovedObject != null) {
+                        mMovedObject.setTapLocation(mDragStart.x, mDragStart.y);
+                        mMovedObject.handleChangeStart();
                     }
                 }
             }
@@ -364,16 +364,10 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 final PointF worldPoint = new PointF();
                 windowToWorld(x, y, worldPoint);
 
-                if (mSelectedWall != null) {
-                    if (mAddedWallByDrag) {
-                        mSelectedWall.setEnd(worldPoint.x, worldPoint.y);
-                    }
-                    else {
-                        mSelectedWall.handleChange(worldPoint.x, worldPoint.y);
-                    }
-                    mSelectedWall.updateVertices();
-                    mSelectedWall.rewriteToBuffer();
-                    onWallLengthChanged(mSelectedWall);
+                if (mMovedObject != null) {
+                    mMovedObject.handleChange(worldPoint.x, worldPoint.y);
+                    // TODO: Handle This for non-wall
+                    onMoving(mMovedObject);
                 }
             }
         });
@@ -383,30 +377,35 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
-                if (mSelectedWall != null) {
-                    mSelectedWall.setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, OPAQUE));
-                    mSelectedWall.rewriteToBuffer();
+                if (mMovedObject != null) {
+                    mMovedObject.handleChangeEnd();
                 }
-                mSelectedWall = null;
+                mMovedObject = null;
             }
         });
     }
 
-    public void processWallDeletion(final int x, final int y) {
+    public void processObjectDeletion(final int x, final int y) {
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
                 final PointF worldPoint = new PointF();
                 windowToWorld(x, y, worldPoint);
 
-                Wall candidate = findWallHavingPoint(worldPoint.x, worldPoint.y);
-                if (candidate != null) {
-                    candidate.cloak();
-                    mFloorPlanPrimitives.remove(candidate);
+                IMoveable candidate = findObjectHavingPoint(worldPoint.x, worldPoint.y);
+                if (candidate == null) return;
+
+                if (candidate instanceof IFloorPlanPrimitive) {
+                    IFloorPlanPrimitive candidatePrimitive = (IFloorPlanPrimitive) candidate;
+                    candidatePrimitive.cloak();
+                    mFloorPlanPrimitives.remove(candidatePrimitive);
+                } else if (candidate instanceof Tag) {
+                    mTags.remove(candidate);
                 }
             }
         });
     }
+
     // TODO: remove queued task and use simpler method to run this on start
     private Runnable mQueuedTaskForGlThread = null;
 
@@ -471,13 +470,16 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         glText.draw( tag.getLabel(), boundariesTransformed[0], boundariesTransformed[1], 0, 0, 0, -mAngle );  // Draw Text Centered
     }
 
-    public Wall findWallHavingPoint(float x, float y) {
+    public IMoveable findObjectHavingPoint(float x, float y) {
         for (IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
-            if (primitive instanceof Wall) {
-                Wall wall = (Wall) primitive;
-                if (!wall.isRemoved() && wall.hasPoint(x, y)) {
-                    return wall;
-                }
+            if (primitive.hasPoint(x, y) && !primitive.isRemoved()) {
+                return primitive;
+            }
+        }
+
+        for (Tag tag : mTags) {
+            if (tag.hasPoint(x, y)) {
+                return tag;
             }
         }
 
@@ -650,16 +652,19 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         this.mWallLengthChangedListener = listener;
     }
 
-    private void onWallLengthChanged(final Wall wall) {
+    private void onMoving(final IMoveable moved) {
         if (mWallLengthChangedListener != null) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    PointF wallVector = new PointF();
-                    wallVector.set(wall.getEnd());
-                    wallVector.offset(-wall.getStart().x, -wall.getStart().y);
+                    if (moved instanceof Wall) {
+                        Wall wall =(Wall) moved;
+                        PointF wallVector = new PointF();
+                        wallVector.set(wall.getEnd());
+                        wallVector.offset(-wall.getStart().x, -wall.getStart().y);
 
-                    mWallLengthChangedListener.onWallLengthChanged(wallVector.length());
+                        mWallLengthChangedListener.onWallLengthChanged(wallVector.length());
+                    }
                 }
             });
         }
@@ -672,6 +677,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 PointF location = new PointF();
                 windowToWorld(x, y, location);
                 Tag newTag = new Tag(location, label);
+                calculateTagBoundaries(newTag);
                 synchronized (FloorPlan.mTagsListLocker) {
                     mTags.add(newTag);
                 }
