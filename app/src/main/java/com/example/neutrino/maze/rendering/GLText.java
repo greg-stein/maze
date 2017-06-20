@@ -270,8 +270,8 @@ public class GLText {
 		float chrHeight = cellHeight * scaleY;          // Calculate Scaled Character Height
 		float chrWidth = cellWidth * scaleX;            // Calculate Scaled Character Width
 		int len = text.length();                        // Get String Length
-		x += ( chrWidth / 2.0f ) - ( fontPadX * scaleX );  // Adjust Start X
-		y += ( chrHeight / 2.0f ) - ( fontPadY * scaleY );  // Adjust Start Y
+//		x += ( chrWidth / 2.0f ) - ( fontPadX * scaleX );  // Adjust Start X
+//		y += ( chrHeight / 2.0f ) - ( fontPadY * scaleY );  // Adjust Start Y
 		
 		// create a model matrix based on x, y and angleDeg
 		float[] modelMatrix = new float[16];
