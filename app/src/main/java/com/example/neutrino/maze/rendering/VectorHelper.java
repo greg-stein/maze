@@ -236,4 +236,23 @@ public class VectorHelper {
     public static float manhattanDistance(PointF p1, PointF p2) {
         return Math.abs(p2.x - p1.x) + Math.abs(p2.y - p1.y);
     }
+
+    // rectPoints is an array of pairs of coordinates in clockwise order: top-left, top-right, bottom-right, bottom-left
+    public static boolean rectHasPoint(float[] rectPoints, float x, float y) {
+        float[] ab = new float[] {rectPoints[0] - rectPoints[2], rectPoints[1] - rectPoints[3]};
+        float[] ad = new float[] {rectPoints[4] - rectPoints[2], rectPoints[5] - rectPoints[3]};
+        float[] ap = new float[] {x - rectPoints[2], y - rectPoints[3]};
+
+        float ap_dot_ab = ap[0] * ab[0] + ap[1] * ab[1];
+        float ap_dot_ad = ap[0] * ad[0] + ap[1] * ad[1];
+        float ab_dot_ab = ab[0] * ab[0] + ab[1] * ab[1];
+        float ad_dot_ad = ad[0] * ad[0] + ad[1] * ad[1];
+        if (1 < ap_dot_ab && ap_dot_ab  < ab_dot_ab) {
+            if (1 < ap_dot_ad && ap_dot_ad  < ad_dot_ad) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

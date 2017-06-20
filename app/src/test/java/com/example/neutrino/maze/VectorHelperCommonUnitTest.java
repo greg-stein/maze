@@ -369,4 +369,76 @@ public class VectorHelperCommonUnitTest {
     public void manhattanDistanceTest() {
         assertThat(VectorHelper.manhattanDistance(new PointF(-2, -3), new PointF(7, 13)), is(equalTo(25f)));
     }
+
+    @Test
+    public void rectHasPointPositiveTest() {
+        float[] rectPoints = new float[] {0, 5,    10, 5,    10, 0,     0, 0};
+        PointF p = new PointF(2, 3);
+
+        assertTrue(VectorHelper.rectHasPoint(rectPoints, p.x, p.y));
+    }
+
+    @Test
+    public void rectHasPointNegativeTest() {
+        float[] rectPoints = new float[] {0, 5,    10, 5,    10, 0,     0, 0};
+        PointF p = new PointF(2, 7);
+
+        assertFalse(VectorHelper.rectHasPoint(rectPoints, p.x, p.y));
+    }
+
+    @Test
+    public void rectHasPointNegative2Test() {
+        float[] rectPoints = new float[] {0, 5,    10, 5,    10, 0,     0, 0};
+        PointF p = new PointF(12, 3);
+
+        assertFalse(VectorHelper.rectHasPoint(rectPoints, p.x, p.y));
+    }
+
+    @Test
+    public void rectHasPointNegative3Test() {
+        float[] rectPoints = new float[] {0, 5,    10, 5,    10, 0,     0, 0};
+        PointF p = new PointF(12, 7);
+
+        assertFalse(VectorHelper.rectHasPoint(rectPoints, p.x, p.y));
+    }
+
+    @Test
+    public void rectHasPointNegative4Test() {
+        float[] rectPoints = new float[] {0, 5,    10, 5,    10, 0,     0, 0};
+        PointF p = new PointF(-3, 2);
+
+        assertFalse(VectorHelper.rectHasPoint(rectPoints, p.x, p.y));
+    }
+
+    @Test
+    public void rectHasPointNegative5Test() {
+        float[] rectPoints = new float[] {0, 5,    10, 5,    10, 0,     0, 0};
+        PointF p = new PointF(-3, 7);
+
+        assertFalse(VectorHelper.rectHasPoint(rectPoints, p.x, p.y));
+    }
+
+    @Test
+    public void rectHasPointNegative6Test() {
+        float[] rectPoints = new float[] {0, 5,    10, 5,    10, 0,     0, 0};
+        PointF p = new PointF(-3, -2);
+
+        assertFalse(VectorHelper.rectHasPoint(rectPoints, p.x, p.y));
+    }
+
+    @Test
+    public void rectHasPointNegative7Test() {
+        float[] rectPoints = new float[] {0, 5,    10, 5,    10, 0,     0, 0};
+        PointF p = new PointF(3, -2);
+
+        assertFalse(VectorHelper.rectHasPoint(rectPoints, p.x, p.y));
+    }
+
+    @Test
+    public void rectHasPointNegative8Test() {
+        float[] rectPoints = new float[] {0, 5,    10, 5,    10, 0,     0, 0};
+        PointF p = new PointF(-3, 12);
+
+        assertFalse(VectorHelper.rectHasPoint(rectPoints, p.x, p.y));
+    }
 }
