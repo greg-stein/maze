@@ -145,7 +145,7 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     }
 
     @Override
-    public void handleChange(float x, float y) {
+    public void handleMove(float x, float y) {
     }
 
     @Override
@@ -153,10 +153,10 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     }
 
     @Override
-    public void handleChangeStart() {}
+    public void handleMoveStart() {}
 
     @Override
-    public void handleChangeEnd() {}
+    public void handleMoveEnd() {}
 
     @Override
     public boolean hasPoint(float x, float y) {

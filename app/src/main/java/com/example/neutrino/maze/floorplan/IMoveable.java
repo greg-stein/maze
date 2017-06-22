@@ -5,13 +5,13 @@ package com.example.neutrino.maze.floorplan;
  */
 
 public interface IMoveable {
-    void handleChange(float x, float y);
+    void handleMove(float x, float y);
 
     void setTapLocation(float x, float y);
 
     boolean hasPoint(float x, float y);
 
-    void handleChangeStart();
+    void handleMoveStart();
 
-    void handleChangeEnd();
+    void handleMoveEnd();
 }

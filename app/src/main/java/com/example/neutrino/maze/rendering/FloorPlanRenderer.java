@@ -343,12 +343,12 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     addPrimitive((IFloorPlanPrimitive) mMovedObject);
                     mAddedWallByDrag = true;
                     mMovedObject.setTapLocation(mDragStart.x, mDragStart.y);
-                    mMovedObject.handleChangeStart();
+                    mMovedObject.handleMoveStart();
                 }
                 else {
                     if (mMovedObject != null) {
                         mMovedObject.setTapLocation(mDragStart.x, mDragStart.y);
-                        mMovedObject.handleChangeStart();
+                        mMovedObject.handleMoveStart();
                     }
                 }
             }
@@ -363,7 +363,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 windowToWorld(x, y, worldPoint);
 
                 if (mMovedObject != null) {
-                    mMovedObject.handleChange(worldPoint.x, worldPoint.y);
+                    mMovedObject.handleMove(worldPoint.x, worldPoint.y);
                     // TODO: Handle This for non-wall
                     onMoving(mMovedObject);
                 }
@@ -376,7 +376,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             @Override
             public void run() {
                 if (mMovedObject != null) {
-                    mMovedObject.handleChangeEnd();
+                    mMovedObject.handleMoveEnd();
                 }
                 mMovedObject = null;
             }

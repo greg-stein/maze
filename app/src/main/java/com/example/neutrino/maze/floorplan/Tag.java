@@ -71,7 +71,7 @@ public class Tag implements IMoveable {
     }
 
     @Override
-    public void handleChange(float x, float y) {
+    public void handleMove(float x, float y) {
         float dx = x - mTapLocation.x;
         float dy = y - mTapLocation.y;
 
@@ -92,12 +92,12 @@ public class Tag implements IMoveable {
     }
 
     @Override
-    public void handleChangeStart() {
+    public void handleMoveStart() {
         mIsBeingMoved = true;
     }
 
     @Override
-    public void handleChangeEnd() {
+    public void handleMoveEnd() {
         mIsBeingMoved = false;
     }
 

@@ -170,19 +170,19 @@ public class ThickLineSegment extends FloorPlanPrimitiveBase {
     }
 
     @Override
-    public void handleChangeStart() {
+    public void handleMoveStart() {
         setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
         rewriteToBuffer();
     }
 
     @Override
-    public void handleChangeEnd() {
+    public void handleMoveEnd() {
         setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ThickLineSegment.OPAQUE));
         rewriteToBuffer();
     }
 
     @Override
-    public void handleChange(float x, float y) {
+    public void handleMove(float x, float y) {
         float dx = x - mTappedLocation.x;
         float dy = y - mTappedLocation.y;
 
