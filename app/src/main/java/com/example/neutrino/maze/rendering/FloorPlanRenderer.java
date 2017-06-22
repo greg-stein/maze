@@ -6,6 +6,7 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
+import android.support.annotation.Nullable;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
@@ -445,7 +446,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    private void calculateTagBoundaries(Tag tag) {
+    public void calculateTagBoundaries(Tag tag) {
         tag.setRenderedTextWidth(glText.getLength(tag.getLabel()));
         tag.setRenderedTextHeight(glText.getCharHeight());
         tag.updateBoundariesRect();
@@ -470,12 +471,19 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             }
         }
 
+        IMoveable tag = getTagHavingPoint(x, y);
+        if (tag != null) return tag;
+
+        return null;
+    }
+
+    @Nullable
+    public Tag getTagHavingPoint(float x, float y) {
         for (Tag tag : mTags) {
             if (tag.hasPoint(x, y)) {
                 return tag;
             }
         }
-
         return null;
     }
 

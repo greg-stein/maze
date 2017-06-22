@@ -14,6 +14,7 @@ import android.widget.EditText;
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Path;
+import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IWallLengthChangedListener;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IFloorplanLoadCompleteListener;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
@@ -34,7 +35,7 @@ public class FloorPlanView extends GLSurfaceView {
     private float mScaleFactor = FloorPlanRenderer.DEFAULT_SCALE_FACTOR;
     private boolean mIsInEditMode;
     private final PointF mCurrentLocation = new PointF();
-    private boolean mHandlingTagAddition = false;
+    private boolean mHandlingTagCreation = false;
     private Path mPath;
 
     public FloorPlanView(Context context) {
@@ -159,7 +160,7 @@ public class FloorPlanView extends GLSurfaceView {
                         case BOUNDARIES:
                             break;
                         case LOCATION_TAG:
-                            mHandlingTagAddition = true;
+                            mHandlingTagCreation = true;
                             askForTagName(xPos, yPos);
                             break;
                         }
@@ -177,7 +178,7 @@ public class FloorPlanView extends GLSurfaceView {
                     if (!mScaleDetector.isInProgress()) {
                         mRenderer.handleDrag(xPos, yPos);
                     }
-                } else if (!mHandlingTagAddition) {
+                } else if (!mHandlingTagCreation) {
                     handlePanAndZoom(event);
                 }
                 break;
@@ -185,7 +186,7 @@ public class FloorPlanView extends GLSurfaceView {
                 if (mDragStarted) {
                     mRenderer.handleEndDrag(xPos, yPos);
                     mDragStarted = false;
-                } else if (!mHandlingTagAddition) {
+                } else if (!mHandlingTagCreation) {
                     handlePanAndZoom(event);
                 }
 
@@ -195,19 +196,36 @@ public class FloorPlanView extends GLSurfaceView {
 
     private void askForTagName(final int x, final int y) {
         final EditText input = new EditText(AppSettings.appActivity);
+        String dialogTitle = "New tag";
+        String okButtonCaption = "Add";
+        PointF worldPoint = new PointF();
+        mRenderer.windowToWorld(x, y, worldPoint);
+
+        final Tag tagAtTapLocation = mRenderer.getTagHavingPoint(worldPoint.x, worldPoint.y);
+        if (tagAtTapLocation != null) {
+            input.setText(tagAtTapLocation.getLabel());
+            dialogTitle = "Change tag";
+            okButtonCaption = "Change";
+        }
+
         new AlertDialog.Builder(AppSettings.appActivity)
-                .setTitle("New tag")
+                .setTitle(dialogTitle)
                 .setView(input)
 //                .setMessage("Paste in the link of an image to moustachify!")
-                .setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                .setPositiveButton(okButtonCaption, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        mRenderer.createNewTag(x, y, input.getText().toString());
-                        mHandlingTagAddition = false;
+                        if (tagAtTapLocation == null) {
+                            mRenderer.createNewTag(x, y, input.getText().toString());
+                        } else {
+                            tagAtTapLocation.setLabel(input.getText().toString());
+                            mRenderer.calculateTagBoundaries(tagAtTapLocation);
+                        }
+                        mHandlingTagCreation = false;
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        mHandlingTagAddition = false;
+                        mHandlingTagCreation = false;
                     }
                 })
                 .show();
