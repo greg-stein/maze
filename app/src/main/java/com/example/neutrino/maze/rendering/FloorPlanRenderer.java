@@ -2,7 +2,6 @@ package com.example.neutrino.maze.rendering;
 
 import android.graphics.Color;
 import android.graphics.PointF;
-import android.graphics.RectF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
@@ -17,7 +16,6 @@ import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.LocationMark;
 import com.example.neutrino.maze.floorplan.Tag;
-import com.example.neutrino.maze.floorplan.ThickLineSegment;
 import com.example.neutrino.maze.floorplan.Wall;
 
 import java.io.IOException;
@@ -32,9 +30,6 @@ import javax.microedition.khronos.opengles.GL10;
  * Created by neutrino on 7/2/2016.
  */
 public class FloorPlanRenderer implements GLSurfaceView.Renderer {
-
-    private ThickLineSegment topTagEdge = new ThickLineSegment();
-    private ThickLineSegment rightTagEdge = new ThickLineSegment();
 
     static final float DEFAULT_SCALE_FACTOR = 0.1f;
     private static final int DEFAULT_BUFFER_VERTICES_NUM = 65536;
@@ -158,9 +153,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // NOTE: after a successful call to this the font is ready for rendering!
         glText.setScale(0.03f);
         glText.load( "Roboto-Regular.ttf", 36, 0, 0);  // Create Font (Height: 14 Pixels / X+Y Padding 2 Pixels)
-
-        topTagEdge.setColor(Color.RED);
-        rightTagEdge.setColor(Color.RED);
     }
 
     @Override
@@ -209,18 +201,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         renderTags();
     }
 
-    private void drawTagFrame(Tag tag) {
-        float[] tagBoundaries = tag.getBoundaryCornersTransformed();
-        topTagEdge.setStart(tagBoundaries[0], tagBoundaries[1]);
-        topTagEdge.setEnd(tagBoundaries[2], tagBoundaries[3]);
-        topTagEdge.updateVertices();
-        topTagEdge.rewriteToBuffer();
-        rightTagEdge.setStart(tagBoundaries[2], tagBoundaries[3]);
-        rightTagEdge.setEnd(tagBoundaries[4], tagBoundaries[5]);
-        rightTagEdge.updateVertices();
-        rightTagEdge.rewriteToBuffer();
-    }
-
     public void addPrimitive(IFloorPlanPrimitive primitive) {
         if (!mCurrentBuffer.put(primitive)) {
             mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
@@ -238,8 +218,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     private void addPrimitives(List<IFloorPlanPrimitive> primitives) {
-        primitives.add(topTagEdge);
-        primitives.add(rightTagEdge);
         for (IFloorPlanPrimitive primitive : primitives) {
             primitive.updateVertices();
 
@@ -456,7 +434,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private void renderTags() {
         synchronized (FloorPlan.mTagsListLocker) {
             if (mTags == null || mTags.size() == 0) return;
-            drawTagFrame(mTags.get(0));
 
             GLES20.glUseProgram(AppSettings.oglTextRenderProgram);
             glText.begin(0.0f, 0.0f, 1.0f, 1.0f, mScratch); // Begin Text Rendering (Set Color BLUE)
@@ -469,17 +446,12 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     private void calculateTagBoundaries(Tag tag) {
-        PointF tagLocation = tag.getLocation();
-
-        float tagWidth = glText.getLength(tag.getLabel());
-        float tagHeight = glText.getCharHeight();
-        RectF boundaries = new RectF(tagLocation.x - tagWidth/2, tagLocation.y - tagHeight/2,
-                tagLocation.x + tagWidth/2, tagLocation.y + tagHeight/2);
-
-        tag.setBoundaryCorners(boundaries);
+        tag.setRenderedTextWidth(glText.getLength(tag.getLabel()));
+        tag.setRenderedTextHeight(glText.getCharHeight());
+        tag.updateBoundariesRect();
     }
 
-    public void drawTag(Tag tag) {
+    private void drawTag(Tag tag) {
         PointF tagLocation = tag.getLocation();
         float[] boundaries = tag.getBoundaryCorners();
         float[] boundariesTransformed = tag.getBoundaryCornersTransformed();
@@ -488,7 +460,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         m.setRotate(-mAngle, tagLocation.x, tagLocation.y);
         m.mapPoints(boundariesTransformed, boundaries);
 
-        glText.draw( tag.getLabel(), boundariesTransformed[6], boundariesTransformed[7], 0, 0, 0, -mAngle );  // Draw Text Centered
+        glText.draw(tag.getLabel(), boundariesTransformed[6], boundariesTransformed[7], 0, 0, 0, -mAngle);  // Draw Text Centered
     }
 
     public IMoveable findObjectHavingPoint(float x, float y) {

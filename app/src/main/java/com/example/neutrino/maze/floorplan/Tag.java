@@ -1,7 +1,6 @@
 package com.example.neutrino.maze.floorplan;
 
 import android.graphics.PointF;
-import android.graphics.RectF;
 
 import com.example.neutrino.maze.rendering.VectorHelper;
 
@@ -16,11 +15,15 @@ public class Tag implements IMoveable {
     private transient float[] mBoundaryCorners;
     private transient float[] mBoundaryCornersTransformed;
     private transient final PointF mTapLocation;
+    private transient boolean mIsBeingMoved;
+    private transient float mRenderedTextWidth;
+    private transient float mRenderedTextHeight;
 
     public Tag() {
         mBoundaryCorners = new float[8];
         mBoundaryCornersTransformed = new float[8];
         mTapLocation = new PointF();
+        mIsBeingMoved = false;
     }
 
     public Tag(PointF location, String label) {
@@ -74,6 +77,7 @@ public class Tag implements IMoveable {
 
         this.mLocation.offset(dx, dy);
         mTapLocation.set(x, y);
+        updateBoundariesRect();
     }
 
     @Override
@@ -89,12 +93,12 @@ public class Tag implements IMoveable {
 
     @Override
     public void handleChangeStart() {
-
+        mIsBeingMoved = true;
     }
 
     @Override
     public void handleChangeEnd() {
-
+        mIsBeingMoved = false;
     }
 
     // In the clockwise order: topLeft, topRight, bottomRight, bottomLeft
@@ -106,18 +110,43 @@ public class Tag implements IMoveable {
         this.mBoundaryCorners = boundaries;
     }
 
-    public void setBoundaryCorners(RectF boundaries) {
-        mBoundaryCorners[0] = boundaries.left;
-        mBoundaryCorners[1] = boundaries.top;
-        mBoundaryCorners[2] = boundaries.right;
-        mBoundaryCorners[3] = boundaries.top;
-        mBoundaryCorners[4] = boundaries.right;
-        mBoundaryCorners[5] = boundaries.bottom;
-        mBoundaryCorners[6] = boundaries.left;
-        mBoundaryCorners[7] = boundaries.bottom;
-    }
-
     public float[] getBoundaryCornersTransformed() {
         return mBoundaryCornersTransformed;
+    }
+
+    public boolean isBeingMoved() {
+        return mIsBeingMoved;
+    }
+
+    public float getRenderedTextWidth() {
+        return mRenderedTextWidth;
+    }
+
+    public void setRenderedTextWidth(float mRenderedTextWidth) {
+        this.mRenderedTextWidth = mRenderedTextWidth;
+    }
+
+    public float getRenderedTextHeight() {
+        return mRenderedTextHeight;
+    }
+
+    public void setRenderedTextHeight(float mRenderedTextHeight) {
+        this.mRenderedTextHeight = mRenderedTextHeight;
+    }
+
+    public void updateBoundariesRect() {
+        float left = mLocation.x - mRenderedTextWidth / 2;
+        float top = mLocation.y - mRenderedTextHeight / 2;
+        float right = mLocation.x + mRenderedTextWidth / 2;
+        float bottom = mLocation.y + mRenderedTextHeight / 2;
+
+        mBoundaryCorners[0] = left;
+        mBoundaryCorners[1] = top;
+        mBoundaryCorners[2] = right;
+        mBoundaryCorners[3] = top;
+        mBoundaryCorners[4] = right;
+        mBoundaryCorners[5] = bottom;
+        mBoundaryCorners[6] = left;
+        mBoundaryCorners[7] = bottom;
     }
 }
