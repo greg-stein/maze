@@ -6,5 +6,6 @@
     <dimen name="search_item_label_padding">32dp</dimen>
     <dimen name="search_item_icon_padding">0dp</dimen>
     <dimen name="search_item_icon_margin">32dp</dimen>
+    <dimen name="form_default_margin">18dp</dimen>
     <item name="alpha_default" type="dimen" format="float">0.75</item>
 </resources>

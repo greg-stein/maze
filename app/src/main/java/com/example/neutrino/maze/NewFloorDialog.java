@@ -13,9 +13,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.view.View;
 import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 
 import java.io.IOException;
@@ -31,6 +33,8 @@ public class NewFloorDialog extends Dialog {
     private AutoCompleteTextView txtType;
     private EditText txtAddress;
     private EditText txtFloor;
+    private Button btnGuessAddress;
+
     private static String[] buildingTypes = {"Airport", "Hospital", "Mall", "University"};
     private LocationManager locationManager;
 
@@ -48,13 +52,19 @@ public class NewFloorDialog extends Dialog {
         txtType = (AutoCompleteTextView) findViewById(R.id.txt_building_type);
         txtAddress = (EditText) findViewById(R.id.txt_address);
         txtFloor = (EditText) findViewById(R.id.txt_floor);
+        btnGuessAddress = (Button) findViewById(R.id.btn_guess_address);
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>
                 (this.getContext(), android.R.layout.select_dialog_item, buildingTypes);
         txtType.setThreshold(1);    // will start working from first character
         txtType.setAdapter(adapter);
 
-        getCurrentAddress();
+        btnGuessAddress.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getCurrentAddress();
+            }
+        });
     }
 
     private void getCurrentAddress() {

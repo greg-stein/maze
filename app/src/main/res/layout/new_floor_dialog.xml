@@ -18,13 +18,26 @@
         android:layout_height="wrap_content"
         android:hint="*Type (Mall | Hospital ...)"/>
 
-    <EditText
-        android:id="@+id/txt_address"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="Address"
-        android:inputType="textPostalAddress" />
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/txt_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Address"
+            android:inputType="textPostalAddress" />
+
+        <Button
+            android:id="@+id/btn_guess_address"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginRight="15dp"
+            android:text="guess" />
+    </FrameLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -38,8 +51,8 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="25dp"
-            android:layout_marginStart="25dp"
+            android:layout_marginLeft="@dimen/form_default_margin"
+            android:layout_marginStart="@dimen/form_default_margin"
             android:ems="10"
             android:hint="*Floor (G | -2 ...)"
             android:inputType="textPersonName" />
@@ -49,17 +62,17 @@
             android:layout_width="80dp"
             android:layout_height="match_parent"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="25dp"
-            android:layout_marginStart="25dp"
-            android:layout_marginTop="25dp"
+            android:layout_marginLeft="@dimen/form_default_margin"
+            android:layout_marginStart="@dimen/form_default_margin"
+            android:layout_marginTop="@dimen/form_default_margin"
             android:layout_toRightOf="@+id/txt_floor" />
 
         <ImageButton
             android:id="@+id/btn_up"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="25dp"
-            android:layout_marginStart="25dp"
+            android:layout_marginLeft="@dimen/form_default_margin"
+            android:layout_marginStart="@dimen/form_default_margin"
             app:srcCompat="@drawable/ic_arrow_up_bold_white_24dp"
             android:layout_above="@+id/txt_floor"
             android:layout_toRightOf="@+id/listView"
