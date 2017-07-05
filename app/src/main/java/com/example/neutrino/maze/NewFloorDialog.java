@@ -35,7 +35,7 @@ public class NewFloorDialog extends Dialog {
     private EditText txtFloor;
     private Button btnGuessAddress;
 
-    private static String[] buildingTypes = {"Airport", "Hospital", "Mall", "University"};
+    private static String[] buildingTypes;
     private LocationManager locationManager;
 
     public NewFloorDialog(@NonNull Context context) {
@@ -54,10 +54,12 @@ public class NewFloorDialog extends Dialog {
         txtFloor = (EditText) findViewById(R.id.txt_floor);
         btnGuessAddress = (Button) findViewById(R.id.btn_guess_address);
 
+        buildingTypes = getContext().getResources().getStringArray(R.array.buildings);
         ArrayAdapter<String> adapter = new ArrayAdapter<>
                 (this.getContext(), android.R.layout.select_dialog_item, buildingTypes);
-        txtType.setThreshold(1);    // will start working from first character
+        txtType.setThreshold(0);    // will start working from first character
         txtType.setAdapter(adapter);
+
 
         btnGuessAddress.setOnClickListener(new View.OnClickListener() {
             @Override

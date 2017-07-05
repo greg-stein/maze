@@ -1,4 +1,114 @@
 <resources>
     <string name="app_name">maze</string>
     <string name="maze_server_api_url">http://api.maze.world/api/</string>
+    <string-array name="buildings">
+        <item>Farmhouse</item>
+        <item>Granary</item>
+        <item>Greenhouse</item>
+        <item>Automobile repair shop</item>
+        <item>Car wash</item>
+        <item>Convention center</item>
+        <item>Drugstore</item>
+        <item>Filling station</item>
+        <item>Forum</item>
+        <item>Hotel</item>
+        <item>Internet cafe</item>
+        <item>Market</item>
+        <item>Market house</item>
+        <item>Pharmacy</item>
+        <item>Skyscraper</item>
+        <item>Shop</item>
+        <item>Mall</item>
+        <item>Supermarket</item>
+        <item>Warehouse</item>
+        <item>Restaurant</item>
+        <item>Cafe</item>
+        <item>Office</item>
+        <item>Apartment block</item>
+        <item>Block of flats</item>
+        <item>Bungalow</item>
+        <item>Condominium</item>
+        <item>Dormitory</item>
+        <item>House</item>
+        <item>Townhouse</item>
+        <item>Unit</item>
+        <item>Villa</item>
+        <item>Psychiatric Hospital</item>
+        <item>Hospital</item>
+        <item>Nursing Home</item>
+        <item>Quarantine</item>
+        <item>Asylum</item>
+        <item>Archive</item>
+        <item>College</item>
+        <item>School</item>
+        <item>Library</item>
+        <item>Museum</item>
+        <item>Art gallery</item>
+        <item>Gallery</item>
+        <item>Theater</item>
+        <item>Amphitheater</item>
+        <item>Concert hall</item>
+        <item>Cinema</item>
+        <item>Opera house</item>
+        <item>Boarding school</item>
+        <item>City hall</item>
+        <item>Consulate</item>
+        <item>Courthouse</item>
+        <item>Embassy</item>
+        <item>Fire station</item>
+        <item>Meeting house</item>
+        <item>Parliament</item>
+        <item>Police station</item>
+        <item>Post office</item>
+        <item>Prison</item>
+        <item>Assembly</item>
+        <item>Brewery</item>
+        <item>Factory</item>
+        <item>Foundry</item>
+        <item>Power plant</item>
+        <item>Winery</item>
+        <item>Mill</item>
+        <item>Water Tower</item>
+        <item>Arsenal</item>
+        <item>Barracks</item>
+        <item>Bunker</item>
+        <item>Citadel</item>
+        <item>Missile launch facility</item>
+        <item>Boathouse</item>
+        <item>Garage</item>
+        <item>Hangar</item>
+        <item>Storage silo</item>
+        <item>Church</item>
+        <item>Basilica</item>
+        <item>Cathedral</item>
+        <item>Duomo</item>
+        <item>Chapel</item>
+        <item>Oratory</item>
+        <item>Martyrium</item>
+        <item>Mosque</item>
+        <item>Mihrab</item>
+        <item>Surau</item>
+        <item>Imambargah</item>
+        <item>Monastery</item>
+        <item>Mithraeum</item>
+        <item>Fire temple</item>
+        <item>Shrine</item>
+        <item>Synagogue</item>
+        <item>Temple</item>
+        <item>Pagoda</item>
+        <item>Gurdwara</item>
+        <item>Hindu temples</item>
+        <item>Airport terminal</item>
+        <item>Bus station</item>
+        <item>Metro station</item>
+        <item>Taxi station</item>
+        <item>Railway station</item>
+        <item>Signal box</item>
+        <item>Lighthouse</item>
+        <item>Parking garage</item>
+        <item>Bridge</item>
+        <item>Arena</item>
+        <item>Amusement Parks</item>
+        <item>Park</item>
+    </string-array>
 </resources>
