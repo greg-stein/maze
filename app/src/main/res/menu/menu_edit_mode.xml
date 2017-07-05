@@ -2,58 +2,70 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:title="Move"
-        android:id="@+id/btn_move"
-        app:showAsAction="always|withText"
-        android:icon="@drawable/ic_cursor_move_black_24dp" />
+    <group
+        android:id="@+id/grp_edit"
+        android:checkableBehavior="single"
+        android:layout_alignParentLeft="true">
 
-    <item
-        android:title="Delete"
-        android:id="@+id/btn_delete"
-        app:showAsAction="always|withText"
-        android:icon="@drawable/ic_delete_forever_white_24dp" />
+        <item
+            android:id="@+id/btn_move"
+            android:icon="@drawable/ic_cursor_move_black_24dp"
+            android:title="Move"
+            app:showAsAction="always"/>
 
+        <item
+            android:id="@+id/btn_delete"
+            android:icon="@drawable/ic_delete_forever_white_24dp"
+            android:title="Delete"
+            app:showAsAction="always"/>
+
+    </group>
     <item
-        android:title="Undo"
         android:id="@+id/btn_undo"
-        app:showAsAction="always|withText"
-        android:icon="@drawable/ic_undo_white_24dp" />
+        android:icon="@drawable/ic_undo_white_24dp"
+        android:title="Undo"
+        app:showAsAction="always" />
 
     <item
-        android:title="Redo"
         android:id="@+id/btn_redo"
-        app:showAsAction="always|withText"
-        android:icon="@drawable/ic_redo_white_24dp" />
+        android:icon="@drawable/ic_redo_white_24dp"
+        android:title="Redo"
+        app:showAsAction="always" />
 
     <item
-        android:title="Import From Camera"
         android:id="@+id/btn_floorplan_from_cam"
-        app:showAsAction="ifRoom"
-        android:icon="@drawable/ic_camera_alt_white_24dp" />
+        android:icon="@drawable/ic_camera_alt_white_24dp"
+        android:title="Import From Camera"
+        app:showAsAction="ifRoom" />
 
     <item
-        android:title="Import From Gallery"
         android:id="@+id/btn_floorplan_from_gallery"
-        app:showAsAction="ifRoom"
-        android:icon="@drawable/ic_photo_library_white_24dp" />
+        android:icon="@drawable/ic_photo_library_white_24dp"
+        android:title="Import From Gallery"
+        app:showAsAction="ifRoom" />
 
     <item
-        android:title="Lock Map Rotation"
         android:id="@+id/btn_lock_rotation"
-        app:showAsAction="always|withText"
-        android:icon="@drawable/ic_screen_lock_rotation_white_24dp" />
+        android:icon="@drawable/ic_screen_lock_rotation_white_24dp"
+        android:title="Lock Map Rotation"
+        app:showAsAction="always" />
 
     <item
-        android:title="Set Location"
         android:id="@+id/btn_set_location"
-        app:showAsAction="ifRoom"
-        android:icon="@drawable/ic_center_focus_strong_white_24dp" />
+        android:icon="@drawable/ic_center_focus_strong_white_24dp"
+        android:title="Set Location"
+        app:showAsAction="ifRoom" />
 
     <item
-        android:title="Autoscan Mode"
         android:id="@+id/btn_autoscan"
-        app:showAsAction="ifRoom"
-        android:icon="@drawable/ic_directions_walk_white_24dp" />
+        android:icon="@drawable/ic_directions_walk_white_24dp"
+        android:title="Autoscan Mode"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/btn_new_floorplan"
+        android:icon="@drawable/ic_icons8_floor_plan_24_white"
+        android:title="New Floor"
+        app:showAsAction="ifRoom" />
 
 </menu>

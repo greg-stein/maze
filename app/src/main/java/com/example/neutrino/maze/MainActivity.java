@@ -66,10 +66,10 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private Spinner uiAddSpinner;
     private static final List<Pair<String, Integer>> addSpinnerData = new ArrayList<>();
     static {
-        addSpinnerData.add(new Pair<>("Wall", R.drawable.ic_view_stream_black_24dp));
-        addSpinnerData.add(new Pair<>("Short wall", R.drawable.ic_remove_black_24dp));
+        addSpinnerData.add(new Pair<>("Wall", R.drawable.ic_wall_black_24dp));
+        addSpinnerData.add(new Pair<>("Short wall", R.drawable.ic_view_stream_black_24dp));
         addSpinnerData.add(new Pair<>("Place boundaries", R.drawable.ic_format_shapes_black_24dp));
-        addSpinnerData.add(new Pair<>("Location tag", R.drawable.ic_add_location_black_24dp));
+        addSpinnerData.add(new Pair<>("Location tag", R.drawable.ic_map_marker_plus_black_24dp));
         addSpinnerData.add(new Pair<>("", R.drawable.ic_add_white_24dp));
     }
 
@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         // Select last hidden item (+)
         uiAddSpinner.setSelection(addSpinnerData.size() - 1);
         setSupportActionBar(uiToolbar);
-        uiToolbar.setTitle("");
+        getSupportActionBar().setTitle(null);
 
         setUiListeners();
     }
@@ -327,6 +327,11 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 }
                 break;
                 // Here come the rest of menu items
+
+            case R.id.btn_new_floorplan:
+                NewFloorDialog nfd = new NewFloorDialog(this);
+                nfd.show();
+                break;
 
             default:
                 // If we got here, the user's action was not recognized.
