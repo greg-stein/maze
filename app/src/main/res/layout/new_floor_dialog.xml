@@ -58,7 +58,7 @@
             android:inputType="textPersonName" />
 
         <ListView
-            android:id="@+id/listView"
+            android:id="@+id/lst_floors"
             android:layout_width="80dp"
             android:layout_height="match_parent"
             android:layout_centerVertical="true"
@@ -71,12 +71,12 @@
             android:id="@+id/btn_up"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_above="@+id/txt_floor"
             android:layout_marginLeft="@dimen/form_default_margin"
             android:layout_marginStart="@dimen/form_default_margin"
-            app:srcCompat="@drawable/ic_arrow_up_bold_white_24dp"
-            android:layout_above="@+id/txt_floor"
-            android:layout_toRightOf="@+id/listView"
-            android:layout_toEndOf="@+id/listView" />
+            android:layout_toEndOf="@+id/lst_floors"
+            android:layout_toRightOf="@+id/lst_floors"
+            app:srcCompat="@drawable/ic_arrow_up_bold_white_24dp" />
 
         <ImageButton
             android:id="@+id/btn_down"

@@ -19,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,8 +35,11 @@ public class NewFloorDialog extends Dialog {
     private EditText txtAddress;
     private EditText txtFloor;
     private Button btnGuessAddress;
+    private ListView lstFloors;
 
     private static String[] buildingTypes;
+    private String[] mFloors = {"5", "4", "3", "2", "1", "G", "P", "-2", "-3"};
+
     private LocationManager locationManager;
 
     public NewFloorDialog(@NonNull Context context) {
@@ -53,13 +57,17 @@ public class NewFloorDialog extends Dialog {
         txtAddress = (EditText) findViewById(R.id.txt_address);
         txtFloor = (EditText) findViewById(R.id.txt_floor);
         btnGuessAddress = (Button) findViewById(R.id.btn_guess_address);
+        lstFloors = (ListView) findViewById(R.id.lst_floors);
 
         buildingTypes = getContext().getResources().getStringArray(R.array.buildings);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>
+        ArrayAdapter<String> buildingTypesAdapter = new ArrayAdapter<>
                 (this.getContext(), android.R.layout.select_dialog_item, buildingTypes);
         txtType.setThreshold(0);    // will start working from first character
-        txtType.setAdapter(adapter);
+        txtType.setAdapter(buildingTypesAdapter);
 
+        ArrayAdapter<String> floorsAdapter = new ArrayAdapter<>
+                (this.getContext(), android.R.layout.simple_list_item_1, mFloors);
+        lstFloors.setAdapter(floorsAdapter);
 
         btnGuessAddress.setOnClickListener(new View.OnClickListener() {
             @Override
