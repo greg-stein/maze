@@ -15,10 +15,12 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.view.View;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 
 import java.io.IOException;
@@ -30,13 +32,17 @@ import java.util.Locale;
  */
 
 public class NewFloorDialog extends Dialog {
+    private static final int NOT_SELECTED = Integer.MAX_VALUE;
     private EditText txtBuilding;
     private AutoCompleteTextView txtType;
     private EditText txtAddress;
     private EditText txtFloor;
     private Button btnGuessAddress;
+    private ImageButton btnUp;
+    private ImageButton btnDown;
     private ListView lstFloors;
 
+    private int mSelectedFloorIndex = NOT_SELECTED;
     private static String[] buildingTypes;
     private String[] mFloors = {"5", "4", "3", "2", "1", "G", "P", "-2", "-3"};
 
@@ -58,6 +64,8 @@ public class NewFloorDialog extends Dialog {
         txtFloor = (EditText) findViewById(R.id.txt_floor);
         btnGuessAddress = (Button) findViewById(R.id.btn_guess_address);
         lstFloors = (ListView) findViewById(R.id.lst_floors);
+        btnUp = (ImageButton) findViewById(R.id.btn_up);
+        btnDown = (ImageButton) findViewById(R.id.btn_down);
 
         buildingTypes = getContext().getResources().getStringArray(R.array.buildings);
         ArrayAdapter<String> buildingTypesAdapter = new ArrayAdapter<>
@@ -65,14 +73,52 @@ public class NewFloorDialog extends Dialog {
         txtType.setThreshold(0);    // will start working from first character
         txtType.setAdapter(buildingTypesAdapter);
 
-        ArrayAdapter<String> floorsAdapter = new ArrayAdapter<>
-                (this.getContext(), android.R.layout.simple_list_item_1, mFloors);
+        final ArrayAdapter<String> floorsAdapter = new ArrayAdapter<>
+                (this.getContext(), android.R.layout.simple_selectable_list_item, mFloors);
         lstFloors.setAdapter(floorsAdapter);
 
         btnGuessAddress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 getCurrentAddress();
+            }
+        });
+
+        lstFloors.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                mSelectedFloorIndex = position;
+                view.setSelected(true);
+            }
+        });
+
+        btnUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mSelectedFloorIndex != NOT_SELECTED && mSelectedFloorIndex > 0) {
+                    String above = mFloors[mSelectedFloorIndex - 1];
+                    mFloors[mSelectedFloorIndex - 1] = mFloors[mSelectedFloorIndex];
+                    mFloors[mSelectedFloorIndex] = above;
+                    mSelectedFloorIndex--;
+                    floorsAdapter.notifyDataSetChanged();
+                    lstFloors.setSelection(mSelectedFloorIndex);
+                    lstFloors.setItemChecked(mSelectedFloorIndex, true);
+                }
+            }
+        });
+
+        btnDown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mSelectedFloorIndex != NOT_SELECTED && mSelectedFloorIndex < mFloors.length - 1) {
+                    String below = mFloors[mSelectedFloorIndex + 1];
+                    mFloors[mSelectedFloorIndex + 1] = mFloors[mSelectedFloorIndex];
+                    mFloors[mSelectedFloorIndex] = below;
+                    mSelectedFloorIndex++;
+                    floorsAdapter.notifyDataSetChanged();
+                    lstFloors.setSelection(mSelectedFloorIndex);
+                    lstFloors.setItemChecked(mSelectedFloorIndex, true);
+                }
             }
         });
     }

@@ -65,7 +65,9 @@
             android:layout_marginLeft="@dimen/form_default_margin"
             android:layout_marginStart="@dimen/form_default_margin"
             android:layout_marginTop="@dimen/form_default_margin"
-            android:layout_toRightOf="@+id/txt_floor" />
+            android:layout_toRightOf="@+id/txt_floor"
+            android:choiceMode="singleChoice"
+            android:listSelector="@color/colorPrimaryDark"/>
 
         <ImageButton
             android:id="@+id/btn_up"
