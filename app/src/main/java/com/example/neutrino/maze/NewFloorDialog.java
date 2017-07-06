@@ -13,7 +13,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -22,16 +24,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
+
+import com.example.neutrino.maze.floorplan.Floor;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
 /**
  * Created by Greg Stein on 6/23/2017.
  */
 
-public class NewFloorDialog extends Dialog {
+public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private static final int NOT_SELECTED = Integer.MAX_VALUE;
     private EditText txtBuilding;
     private AutoCompleteTextView txtType;
@@ -45,6 +50,7 @@ public class NewFloorDialog extends Dialog {
     private int mSelectedFloorIndex = NOT_SELECTED;
     private static String[] buildingTypes;
     private String[] mFloors = {"5", "4", "3", "2", "1", "G", "P", "-2", "-3"};
+    private List<Floor> mBuildingFloors = new ArrayList<>();
 
     private LocationManager locationManager;
 
@@ -73,9 +79,11 @@ public class NewFloorDialog extends Dialog {
         txtType.setThreshold(0);    // will start working from first character
         txtType.setAdapter(buildingTypesAdapter);
 
-        final ArrayAdapter<String> floorsAdapter = new ArrayAdapter<>
-                (this.getContext(), android.R.layout.simple_selectable_list_item, mFloors);
-        lstFloors.setAdapter(floorsAdapter);
+        for (String floor : mFloors) {
+            mBuildingFloors.add(new Floor(floor, "lkjwehrkjhewrkljhelrkjhkjerh"));
+        }
+        final FloorsAdapter adapter = new FloorsAdapter(getContext(), mBuildingFloors, this);
+        lstFloors.setAdapter(adapter);
 
         btnGuessAddress.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -88,7 +96,7 @@ public class NewFloorDialog extends Dialog {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 mSelectedFloorIndex = position;
-                view.setSelected(true);
+                adapter.notifyDataSetChanged();
             }
         });
 
@@ -96,13 +104,10 @@ public class NewFloorDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 if (mSelectedFloorIndex != NOT_SELECTED && mSelectedFloorIndex > 0) {
-                    String above = mFloors[mSelectedFloorIndex - 1];
-                    mFloors[mSelectedFloorIndex - 1] = mFloors[mSelectedFloorIndex];
-                    mFloors[mSelectedFloorIndex] = above;
+                    Floor floor = mBuildingFloors.remove(mSelectedFloorIndex);
+                    mBuildingFloors.add(mSelectedFloorIndex - 1, floor);
                     mSelectedFloorIndex--;
-                    floorsAdapter.notifyDataSetChanged();
-                    lstFloors.setSelection(mSelectedFloorIndex);
-                    lstFloors.setItemChecked(mSelectedFloorIndex, true);
+                    adapter.notifyDataSetChanged();
                 }
             }
         });
@@ -111,13 +116,10 @@ public class NewFloorDialog extends Dialog {
             @Override
             public void onClick(View view) {
                 if (mSelectedFloorIndex != NOT_SELECTED && mSelectedFloorIndex < mFloors.length - 1) {
-                    String below = mFloors[mSelectedFloorIndex + 1];
-                    mFloors[mSelectedFloorIndex + 1] = mFloors[mSelectedFloorIndex];
-                    mFloors[mSelectedFloorIndex] = below;
+                    Floor floor = mBuildingFloors.remove(mSelectedFloorIndex);
+                    mBuildingFloors.add(mSelectedFloorIndex + 1, floor);
                     mSelectedFloorIndex++;
-                    floorsAdapter.notifyDataSetChanged();
-                    lstFloors.setSelection(mSelectedFloorIndex);
-                    lstFloors.setItemChecked(mSelectedFloorIndex, true);
+                    adapter.notifyDataSetChanged();
                 }
             }
         });
@@ -180,6 +182,11 @@ public class NewFloorDialog extends Dialog {
 
         }
     };
+
+    @Override
+    public int getSelectedIndex() {
+        return mSelectedFloorIndex;
+    }
 
     private class AddressOtainerTask extends AsyncTask<Location, Void, String> {
         private AsyncResponse onFinishHandler;
@@ -245,5 +252,47 @@ public class NewFloorDialog extends Dialog {
 
     private interface AsyncResponse {
         void onFinish(String address);
+    }
+
+    protected static class FloorsAdapter extends ArrayAdapter<Floor> {
+        private final ISelectionProvider mSelectioProvider;
+
+        private class ViewHolder {
+            TextView txtFloor;
+        }
+
+        public FloorsAdapter(@NonNull Context context, List<Floor> data, ISelectionProvider selectionProvider) {
+            super(context, R.layout.floor_listview_item, data);
+            mSelectioProvider = selectionProvider;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            // Get the data item for this position
+            Floor floor = getItem(position);
+            ViewHolder viewHolder; // view lookup cache stored in tag
+
+            // Check if an existing view is being reused, otherwise inflate the view
+            if (convertView == null) {
+                viewHolder = new ViewHolder();
+                LayoutInflater inflater = LayoutInflater.from(getContext());
+                convertView = inflater.inflate(R.layout.floor_listview_item, parent, false);
+                viewHolder.txtFloor = (TextView) convertView.findViewById(R.id.txt_floor_label);
+                convertView.setTag(viewHolder);
+            } else {
+                viewHolder = (ViewHolder) convertView.getTag();
+            }
+
+            viewHolder.txtFloor.setText(floor.getName());
+            if (position == mSelectioProvider.getSelectedIndex()) {
+                viewHolder.txtFloor.setBackgroundColor(AppSettings.primaryDarkColor);
+            }
+            else {
+                viewHolder.txtFloor.setBackgroundColor(AppSettings.accentColor);
+            }
+            // Return the completed view to render on screen
+            return convertView;
+        }
+
     }
 }
