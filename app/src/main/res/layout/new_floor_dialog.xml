@@ -78,7 +78,7 @@
             android:layout_marginStart="@dimen/form_default_margin"
             android:layout_toEndOf="@+id/lst_floors"
             android:layout_toRightOf="@+id/lst_floors"
-            app:srcCompat="@drawable/ic_arrow_up_bold_white_24dp" />
+            app:srcCompat="@drawable/ic_arrow_up_bold_black_24dp" />
 
         <ImageButton
             android:id="@+id/btn_down"
@@ -87,7 +87,7 @@
             android:layout_alignLeft="@+id/btn_up"
             android:layout_alignStart="@+id/btn_up"
             android:layout_below="@+id/txt_floor"
-            app:srcCompat="@drawable/ic_arrow_down_bold_white_24dp" />
+            app:srcCompat="@drawable/ic_arrow_down_bold_black_24dp" />
 
     </RelativeLayout>
 
