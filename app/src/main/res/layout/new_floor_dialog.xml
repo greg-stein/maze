@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="center_vertical|end"
-            android:layout_marginRight="15dp"
+            android:layout_marginRight="20dp"
             android:text="guess" />
     </FrameLayout>
 
@@ -88,6 +88,18 @@
             android:layout_alignStart="@+id/btn_up"
             android:layout_below="@+id/txt_floor"
             app:srcCompat="@drawable/ic_arrow_down_bold_black_24dp" />
+
+        <ImageButton
+            android:id="@+id/btn_insert_floor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/txt_floor"
+            android:layout_marginEnd="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginTop="0dp"
+            android:layout_toLeftOf="@+id/lst_floors"
+            android:layout_toStartOf="@+id/lst_floors"
+            app:srcCompat="@drawable/ic_inser_row_rev" />
 
     </RelativeLayout>
 

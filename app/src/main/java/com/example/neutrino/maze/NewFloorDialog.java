@@ -28,6 +28,9 @@ import android.widget.TextView;
 
 import com.example.neutrino.maze.floorplan.Floor;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,11 +48,13 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private Button btnGuessAddress;
     private ImageButton btnUp;
     private ImageButton btnDown;
+    private ImageButton btnInsertFloor;
     private ListView lstFloors;
 
     private int mSelectedFloorIndex = NOT_SELECTED;
     private static String[] buildingTypes;
-    private String[] mFloors = {"5", "4", "3", "2", "1", "G", "P", "-2", "-3"};
+    // TODO: These should be recieved from server
+    private String[] mFloorsMock = {"5", "4", "3", "2", "1", "G", "P", "-2", "-3"};
     private List<Floor> mBuildingFloors = new ArrayList<>();
 
     private LocationManager locationManager;
@@ -72,6 +77,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         lstFloors = (ListView) findViewById(R.id.lst_floors);
         btnUp = (ImageButton) findViewById(R.id.btn_up);
         btnDown = (ImageButton) findViewById(R.id.btn_down);
+        btnInsertFloor = (ImageButton) findViewById(R.id.btn_insert_floor);
 
         buildingTypes = getContext().getResources().getStringArray(R.array.buildings);
         ArrayAdapter<String> buildingTypesAdapter = new ArrayAdapter<>
@@ -79,7 +85,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         txtType.setThreshold(0);    // will start working from first character
         txtType.setAdapter(buildingTypesAdapter);
 
-        for (String floor : mFloors) {
+        for (String floor : mFloorsMock) {
             mBuildingFloors.add(new Floor(floor, "lkjwehrkjhewrkljhelrkjhkjerh"));
         }
         final FloorsAdapter adapter = new FloorsAdapter(getContext(), mBuildingFloors, this);
@@ -97,6 +103,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 mSelectedFloorIndex = position;
                 adapter.notifyDataSetChanged();
+                txtFloor.setText(mBuildingFloors.get(position).getName(), TextView.BufferType.EDITABLE);
             }
         });
 
@@ -115,7 +122,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnDown.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mSelectedFloorIndex != NOT_SELECTED && mSelectedFloorIndex < mFloors.length - 1) {
+                if (mSelectedFloorIndex != NOT_SELECTED && mSelectedFloorIndex < mBuildingFloors.size() - 1) {
                     Floor floor = mBuildingFloors.remove(mSelectedFloorIndex);
                     mBuildingFloors.add(mSelectedFloorIndex + 1, floor);
                     mSelectedFloorIndex++;
@@ -123,6 +130,65 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 }
             }
         });
+
+        btnInsertFloor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String floorName = txtFloor.getText().toString();
+                if (floorName.isEmpty()) return;
+
+                int proposedPosition = suggestPosition(floorName);
+
+                // TODO: Here we should request floor creation from server and get real ID (second parameter)
+                Floor newFloor = new Floor(floorName, "JOPAJOPAJOPA");
+                mBuildingFloors.add(proposedPosition, newFloor);
+                adapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    // Finds best position to insert new floor based on its name
+    private int suggestPosition(String floorName) {
+        if (mBuildingFloors.isEmpty()) return 0;
+        int currentPosition;
+
+        // if numeric, place it close to next floor
+        if (NumberUtils.isNumber(floorName)) {
+            int iFloor = Integer.parseInt(floorName);
+            if (iFloor >= 0) {
+                currentPosition = 0;
+                while (NumberUtils.isNumber(mBuildingFloors.get(currentPosition).getName())) {
+                    final int iCurrentFloor = Integer.parseInt(mBuildingFloors.get(currentPosition).getName());
+                    if (iCurrentFloor < iFloor) break;
+                    if (currentPosition == mBuildingFloors.size()-1) break;
+                    currentPosition++;
+                }
+
+            } else {
+                currentPosition = mBuildingFloors.size() - 1;
+                while (NumberUtils.isNumber(mBuildingFloors.get(currentPosition).getName())) {
+                    final int iCurrentFloor = Integer.parseInt(mBuildingFloors.get(currentPosition).getName());
+                    if (iCurrentFloor > iFloor) break;
+                    if (currentPosition == 0) break;
+                    currentPosition--;
+                }
+
+                currentPosition++;
+            }
+
+            return currentPosition;
+        }
+
+        // non-numeric - place near 0
+        currentPosition = 0;
+        while (NumberUtils.isNumber(mBuildingFloors.get(currentPosition).getName())) {
+            final int iCurrentFloor = Integer.parseInt(mBuildingFloors.get(currentPosition).getName());
+            if (iCurrentFloor <= 0) break;
+            if (currentPosition == mBuildingFloors.size()-1) break;
+            currentPosition++;
+        }
+
+        return currentPosition;
     }
 
     private void getCurrentAddress() {
@@ -256,6 +322,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
     protected static class FloorsAdapter extends ArrayAdapter<Floor> {
         private final ISelectionProvider mSelectioProvider;
+        private final List<Floor> data;
 
         private class ViewHolder {
             TextView txtFloor;
@@ -264,6 +331,12 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         public FloorsAdapter(@NonNull Context context, List<Floor> data, ISelectionProvider selectionProvider) {
             super(context, R.layout.floor_listview_item, data);
             mSelectioProvider = selectionProvider;
+            this.data = data;
+        }
+
+        @Override
+        public int getCount() {
+            return data.size();
         }
 
         @Override
