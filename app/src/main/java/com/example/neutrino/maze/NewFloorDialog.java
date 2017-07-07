@@ -3,6 +3,7 @@ package com.example.neutrino.maze;
 import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -13,6 +14,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -29,6 +31,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.neutrino.maze.floorplan.Floor;
 
@@ -52,6 +55,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private ImageButton btnUp;
     private ImageButton btnDown;
     private ImageButton btnInsertFloor;
+    private ImageButton btnDeleteFloor;
     private ListView lstFloors;
 
     private int mSelectedFloorIndex = NOT_SELECTED;
@@ -61,6 +65,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private List<Floor> mBuildingFloors = new ArrayList<>();
     private boolean mUpdateFloorNameInList = false;
     private LocationManager locationManager;
+    private FloorsAdapter mFloorsAdapter;
 
     public NewFloorDialog(@NonNull Context context) {
         super(context);
@@ -81,6 +86,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnUp = (ImageButton) findViewById(R.id.btn_up);
         btnDown = (ImageButton) findViewById(R.id.btn_down);
         btnInsertFloor = (ImageButton) findViewById(R.id.btn_insert_floor);
+        btnDeleteFloor = (ImageButton) findViewById(R.id.btn_remove_floor);
 
         buildingTypes = getContext().getResources().getStringArray(R.array.buildings);
         ArrayAdapter<String> buildingTypesAdapter = new ArrayAdapter<>
@@ -91,9 +97,14 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         for (String floor : mFloorsMock) {
             mBuildingFloors.add(new Floor(floor, "lkjwehrkjhewrkljhelrkjhkjerh"));
         }
-        final FloorsAdapter adapter = new FloorsAdapter(getContext(), mBuildingFloors, this);
-        lstFloors.setAdapter(adapter);
 
+        mFloorsAdapter = new FloorsAdapter(getContext(), mBuildingFloors, this);
+        lstFloors.setAdapter(mFloorsAdapter);
+
+        setUiListeners();
+    }
+
+    private void setUiListeners() {
         btnGuessAddress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -105,7 +116,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 mSelectedFloorIndex = position;
-                adapter.notifyDataSetChanged();
+                mFloorsAdapter.notifyDataSetChanged();
                 if (mUpdateFloorNameInList) {
                     txtFloor.setText(mBuildingFloors.get(position).getName(), TextView.BufferType.EDITABLE);
                 }
@@ -130,7 +141,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 if (mUpdateFloorNameInList && mSelectedFloorIndex != NOT_SELECTED) {
                     mBuildingFloors.get(mSelectedFloorIndex).setName(charSequence.toString());
-                    adapter.notifyDataSetChanged();
+                    mFloorsAdapter.notifyDataSetChanged();
                 }
             }
 
@@ -162,7 +173,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                     Floor floor = mBuildingFloors.remove(mSelectedFloorIndex);
                     mBuildingFloors.add(mSelectedFloorIndex - 1, floor);
                     mSelectedFloorIndex--;
-                    adapter.notifyDataSetChanged();
+                    mFloorsAdapter.notifyDataSetChanged();
                 }
             }
         });
@@ -174,7 +185,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                     Floor floor = mBuildingFloors.remove(mSelectedFloorIndex);
                     mBuildingFloors.add(mSelectedFloorIndex + 1, floor);
                     mSelectedFloorIndex++;
-                    adapter.notifyDataSetChanged();
+                    mFloorsAdapter.notifyDataSetChanged();
                 }
             }
         });
@@ -191,7 +202,34 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 Floor newFloor = new Floor(floorName, "JOPAJOPAJOPA");
                 mBuildingFloors.add(proposedPosition, newFloor);
                 mSelectedFloorIndex = proposedPosition;
-                adapter.notifyDataSetChanged();
+                mFloorsAdapter.notifyDataSetChanged();
+            }
+        });
+
+        btnDeleteFloor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mSelectedFloorIndex == NOT_SELECTED) {
+                    Toast.makeText(getContext(), "To delete a floor, select it first.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                builder.setMessage(String.format("Delete the entire floor %s ???", mBuildingFloors.get(mSelectedFloorIndex).getName()))
+                        .setPositiveButton("Yes", new OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                mBuildingFloors.remove(mSelectedFloorIndex);
+                                mSelectedFloorIndex = NOT_SELECTED;
+                                mFloorsAdapter.notifyDataSetChanged();
+                            }
+                        })
+                        .setNegativeButton("No", new OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                // do nothing
+                            }
+                        }).show();
             }
         });
     }

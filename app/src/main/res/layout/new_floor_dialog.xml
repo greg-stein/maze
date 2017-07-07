@@ -101,6 +101,15 @@
             android:layout_toStartOf="@+id/lst_floors"
             app:srcCompat="@drawable/ic_inser_row_rev" />
 
+        <ImageButton
+            android:id="@+id/btn_remove_floor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/btn_insert_floor"
+            android:layout_alignStart="@+id/btn_insert_floor"
+            android:layout_alignTop="@+id/btn_up"
+            app:srcCompat="@drawable/ic_table_row_remove_black_24dp" />
+
     </RelativeLayout>
 
     <Button
