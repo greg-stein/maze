@@ -13,10 +13,14 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -28,7 +32,6 @@ import android.widget.TextView;
 
 import com.example.neutrino.maze.floorplan.Floor;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.IOException;
@@ -56,7 +59,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     // TODO: These should be recieved from server
     private String[] mFloorsMock = {"5", "4", "3", "2", "1", "G", "P", "-2", "-3"};
     private List<Floor> mBuildingFloors = new ArrayList<>();
-
+    private boolean mUpdateFloorNameInList = false;
     private LocationManager locationManager;
 
     public NewFloorDialog(@NonNull Context context) {
@@ -103,7 +106,52 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 mSelectedFloorIndex = position;
                 adapter.notifyDataSetChanged();
-                txtFloor.setText(mBuildingFloors.get(position).getName(), TextView.BufferType.EDITABLE);
+                if (mUpdateFloorNameInList) {
+                    txtFloor.setText(mBuildingFloors.get(position).getName(), TextView.BufferType.EDITABLE);
+                }
+            }
+        });
+
+        lstFloors.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                mUpdateFloorNameInList = true;
+                return false;
+            }
+        });
+
+        txtFloor.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (mUpdateFloorNameInList && mSelectedFloorIndex != NOT_SELECTED) {
+                    mBuildingFloors.get(mSelectedFloorIndex).setName(charSequence.toString());
+                    adapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+            }
+        });
+
+        txtFloor.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if (!mUpdateFloorNameInList) return false;
+
+                if (keyEvent != null && keyEvent.getAction() != KeyEvent.ACTION_DOWN) {
+                    return false;
+                } else if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE
+                        || keyEvent == null || keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    mUpdateFloorNameInList = false;
+                }
+
+                return false;
             }
         });
 
@@ -142,6 +190,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 // TODO: Here we should request floor creation from server and get real ID (second parameter)
                 Floor newFloor = new Floor(floorName, "JOPAJOPAJOPA");
                 mBuildingFloors.add(proposedPosition, newFloor);
+                mSelectedFloorIndex = proposedPosition;
                 adapter.notifyDataSetChanged();
             }
         });
