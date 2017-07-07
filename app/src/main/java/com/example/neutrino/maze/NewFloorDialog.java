@@ -15,6 +15,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -33,6 +36,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Floor;
 
 import org.apache.commons.lang3.math.NumberUtils;
@@ -41,6 +45,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import static android.R.layout.simple_list_item_2;
+
 /**
  * Created by Greg Stein on 6/23/2017.
  */
@@ -57,6 +64,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private ImageButton btnInsertFloor;
     private ImageButton btnDeleteFloor;
     private ListView lstFloors;
+    private RecyclerView rcvBuildingLookup;
 
     private int mSelectedFloorIndex = NOT_SELECTED;
     private static String[] buildingTypes;
@@ -66,6 +74,8 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private boolean mUpdateFloorNameInList = false;
     private LocationManager locationManager;
     private FloorsAdapter mFloorsAdapter;
+    private List<Building> mBuildings = new ArrayList<>();
+    private BuildingsAdapter mBuildingsAdapter;
 
     public NewFloorDialog(@NonNull Context context) {
         super(context);
@@ -87,6 +97,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnDown = (ImageButton) findViewById(R.id.btn_down);
         btnInsertFloor = (ImageButton) findViewById(R.id.btn_insert_floor);
         btnDeleteFloor = (ImageButton) findViewById(R.id.btn_remove_floor);
+        rcvBuildingLookup = (RecyclerView) findViewById(R.id.rcv_building_lookup);
 
         buildingTypes = getContext().getResources().getStringArray(R.array.buildings);
         ArrayAdapter<String> buildingTypesAdapter = new ArrayAdapter<>
@@ -100,6 +111,13 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
         mFloorsAdapter = new FloorsAdapter(getContext(), mBuildingFloors, this);
         lstFloors.setAdapter(mFloorsAdapter);
+
+
+        mBuildingsAdapter = new BuildingsAdapter(mBuildings);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
+        rcvBuildingLookup.setLayoutManager(mLayoutManager);
+        rcvBuildingLookup.setItemAnimator(new DefaultItemAnimator());
+        rcvBuildingLookup.setAdapter(mBuildingsAdapter);
 
         setUiListeners();
     }
@@ -232,6 +250,28 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                         }).show();
             }
         });
+
+        txtBuilding.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() > 2) {
+                    findSimilarBuildings(s.toString());
+                    mBuildingsAdapter.notifyDataSetChanged();
+                    rcvBuildingLookup.setVisibility(View.VISIBLE);
+                } else {
+                    rcvBuildingLookup.setVisibility(View.GONE);
+                }
+            }
+        });
     }
 
     // Finds best position to insert new floor based on its name
@@ -276,6 +316,21 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         }
 
         return currentPosition;
+    }
+
+    private void findSimilarBuildings(String pattern) {
+        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
+        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
+        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
+        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
+        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
+        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
+        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
+        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
+        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
+        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
+        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
+        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
     }
 
     private void getCurrentAddress() {
@@ -452,6 +507,47 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             }
             // Return the completed view to render on screen
             return convertView;
+        }
+
+    }
+
+    public class BuildingsAdapter extends RecyclerView.Adapter<BuildingsAdapter.BuildingViewHolder> {
+        private List<Building> mBuildings;
+
+        public class BuildingViewHolder extends RecyclerView.ViewHolder {
+            public TextView txtBuildingName;
+            public TextView txtBuildingAddress;
+
+            public BuildingViewHolder(View itemView) {
+                super(itemView);
+                // Works with simple_list_item_2
+                txtBuildingName = (TextView) itemView.findViewById(R.id.text1);
+                txtBuildingAddress = (TextView) itemView.findViewById(R.id.text2);
+            }
+        }
+
+        public BuildingsAdapter(List<Building> buildings) {
+            this.mBuildings = buildings;
+        }
+
+        @Override
+        public BuildingViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View itemView = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.building_recyclerview_item, parent, false);
+//                    .inflate(simple_list_item_2, parent, false);
+            return new BuildingViewHolder(itemView);
+        }
+
+        @Override
+        public void onBindViewHolder(BuildingViewHolder holder, int position) {
+            Building building = mBuildings.get(position);
+            holder.txtBuildingName.setText(building.getName());
+            holder.txtBuildingAddress.setText(building.getAddress());
+        }
+
+        @Override
+        public int getItemCount() {
+            return mBuildings.size();
         }
 
     }
