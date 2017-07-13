@@ -84,7 +84,9 @@ public class VectorizeDialog extends DialogFragment {
         int maxWidth = imgGrayscale.getMaxWidth();
         int maxHeight = this.getDialog().getWindow().getDecorView().getHeight()/2;
         Bitmap resized = FloorplanVectorizer.resize(floorplanBitmap, maxWidth, maxHeight);
-        imgGrayscale.setImageBitmap(resized);
+        Bitmap grayscaled = FloorplanVectorizer.toGrayscale(resized, FloorplanVectorizer.PADDING);
+        resized.recycle();
+        imgGrayscale.setImageBitmap(grayscaled);
 //        List<IFloorPlanPrimitive> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
 //        mFloorPlan.setSketch(walls);
 //        uiFloorPlanView.plot(walls, false); // not in init phase
