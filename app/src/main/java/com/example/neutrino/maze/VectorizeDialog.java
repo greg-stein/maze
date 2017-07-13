@@ -38,6 +38,7 @@ public class VectorizeDialog extends DialogFragment {
     private Button btnCamera;
     private ImageView imgGrayscale;
     private SeekBar sbThreshold;
+    private Button btnOtsu;
 
     protected String mCurrentImagePath;
     private Bitmap mGrayscaled;
@@ -54,6 +55,7 @@ public class VectorizeDialog extends DialogFragment {
         btnGallery = (Button) rootView.findViewById(R.id.btn_image_from_gallery);
         imgGrayscale = (ImageView) rootView.findViewById(R.id.img_grayscale);
         sbThreshold = (SeekBar) rootView.findViewById(R.id.sb_threshold);
+        btnOtsu = (Button) rootView.findViewById(R.id.btn_otsu);
 
         setUiListeners();
         return rootView;
@@ -188,7 +190,7 @@ public class VectorizeDialog extends DialogFragment {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 mThreshold = progress;
-                if (fromUser & mGrayscaled != null) {
+                if (mGrayscaled != null) {
                     // Throw old image
                     if (mBinary != null) {
                         mBinary.recycle();
@@ -208,6 +210,15 @@ public class VectorizeDialog extends DialogFragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        btnOtsu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mThreshold = FloorplanVectorizer.calcOtsuThreshold(mGrayscaled);
+                sbThreshold.setProgress(mThreshold);
+//                mBinary = FloorplanVectorizer.toBinary(mGrayscaled, mThreshold, null);
+            }
         });
     }
 
