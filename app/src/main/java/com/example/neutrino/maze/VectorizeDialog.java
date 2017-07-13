@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -198,9 +199,8 @@ public class VectorizeDialog extends DialogFragment {
                         mBinary.recycle();
                         mBinary = null;
                     }
-                    // Calc new image
-                    mBinary = FloorplanVectorizer.toBinary(mGrayscaled, mThreshold);
-                    imgGrayscale.setImageBitmap(mBinary);
+
+                    new BinarizeImageTask().execute();
                 }
             }
 
@@ -210,6 +210,20 @@ public class VectorizeDialog extends DialogFragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
+    }
+
+    public class BinarizeImageTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            mBinary = FloorplanVectorizer.toBinary(mGrayscaled, mThreshold);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            imgGrayscale.setImageBitmap(mBinary);
+        }
     }
 
 }
