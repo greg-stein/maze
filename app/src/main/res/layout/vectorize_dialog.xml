@@ -35,7 +35,7 @@
         app:srcCompat="@drawable/empty_drawable" />
 
     <SeekBar
-        android:id="@+id/seekBar"
+        android:id="@+id/sb_threshold"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.04"

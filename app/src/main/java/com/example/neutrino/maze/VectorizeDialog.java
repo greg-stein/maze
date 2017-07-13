@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
@@ -38,11 +39,15 @@ public class VectorizeDialog extends DialogFragment {
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private static final int REQUEST_IMAGE_SELECT = 2;
 
-    private ImageView imgGrayscale;
-    private Button btnCamera;
-
     private Button btnGallery;
+    private Button btnCamera;
+    private ImageView imgGrayscale;
+    private SeekBar sbThreshold;
+
     protected String mCurrentImagePath;
+    private Bitmap mGrayscaled;
+    private Bitmap mBinary;
+    private int mThreshold;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -52,6 +57,7 @@ public class VectorizeDialog extends DialogFragment {
         btnCamera = (Button) rootView.findViewById(R.id.btn_image_from_cam);
         btnGallery = (Button) rootView.findViewById(R.id.btn_image_from_gallery);
         imgGrayscale = (ImageView) rootView.findViewById(R.id.img_grayscale);
+        sbThreshold = (SeekBar) rootView.findViewById(R.id.sb_threshold);
 
         setUiListeners();
         return rootView;
@@ -84,9 +90,14 @@ public class VectorizeDialog extends DialogFragment {
         int maxWidth = imgGrayscale.getMaxWidth();
         int maxHeight = this.getDialog().getWindow().getDecorView().getHeight()/2;
         Bitmap resized = FloorplanVectorizer.resize(floorplanBitmap, maxWidth, maxHeight);
-        Bitmap grayscaled = FloorplanVectorizer.toGrayscale(resized, FloorplanVectorizer.PADDING);
+        mGrayscaled = FloorplanVectorizer.toGrayscale(resized, FloorplanVectorizer.PADDING);
         resized.recycle();
-        imgGrayscale.setImageBitmap(grayscaled);
+
+        mThreshold = FloorplanVectorizer.calcOtsuThreshold(mGrayscaled);
+        sbThreshold.setProgress(mThreshold);
+        mBinary = FloorplanVectorizer.toBinary(mGrayscaled, mThreshold);
+
+        imgGrayscale.setImageBitmap(mBinary);
 //        List<IFloorPlanPrimitive> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
 //        mFloorPlan.setSketch(walls);
 //        uiFloorPlanView.plot(walls, false); // not in init phase
@@ -175,6 +186,29 @@ public class VectorizeDialog extends DialogFragment {
                 startActivityForResult(Intent.createChooser(intent, "Select Picture"),
                         REQUEST_IMAGE_SELECT);
             }
+        });
+
+        sbThreshold.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mThreshold = progress;
+                if (fromUser & mGrayscaled != null) {
+                    // Throw old image
+                    if (mBinary != null) {
+                        mBinary.recycle();
+                        mBinary = null;
+                    }
+                    // Calc new image
+                    mBinary = FloorplanVectorizer.toBinary(mGrayscaled, mThreshold);
+                    imgGrayscale.setImageBitmap(mBinary);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
         });
     }
 

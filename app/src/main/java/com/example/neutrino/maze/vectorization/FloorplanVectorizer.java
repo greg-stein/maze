@@ -24,6 +24,8 @@ public class FloorplanVectorizer {
     public static final int PADDING = 1;
     public static final float MIN_CONNECT_DISTANCE = 0.5f;
     private static final float MIN_CONNECT_SQ_DISTANCE = MIN_CONNECT_DISTANCE * MIN_CONNECT_DISTANCE;
+    private static final int GRAY_LEVELS = 256;
+
     public static Bitmap debugBM;
 
     public static List<IFloorPlanPrimitive> vectorize(Bitmap image) {
@@ -107,12 +109,25 @@ public class FloorplanVectorizer {
         return bmpGrayscale;
     }
 
-    public static int calcOtsuThreshold(ImageArray grayScaledImage) {
-        final int GRAY_LEVELS = 256;
-
+    public static int calcOtsuThreshold(Bitmap grayScaledImage) {
         int[] histogram = new int[GRAY_LEVELS];
-        final int width = grayScaledImage.width;
-        final int height = grayScaledImage.height;
+        int height = grayScaledImage.getHeight();
+        int width = grayScaledImage.getWidth();
+
+        for(int x = 0; x < width; ++x) {
+            for (int y = 0; y < height; ++y) {
+                final int h = grayScaledImage.getPixel(x, y) & 0xFF;
+                histogram[h]++;
+            }
+        }
+
+        int threshold = getThreshold(histogram, width * height);
+
+        return threshold;
+    }
+
+    public static int calcOtsuThreshold(ImageArray grayScaledImage) {
+        int[] histogram = new int[GRAY_LEVELS];
 
         // Calculate histogram
         for (int index = 0; index < grayScaledImage.dataLength; index ++) {
@@ -120,8 +135,12 @@ public class FloorplanVectorizer {
             histogram[h]++;
         }
 
-        int total = grayScaledImage.dataLength;
+        int threshold = getThreshold(histogram, grayScaledImage.dataLength);
 
+        return threshold;
+    }
+
+    private static int getThreshold(int[] histogram, int total) {
         float sum = 0;
         for (int t = 0 ; t < GRAY_LEVELS; t++)
             sum += t * histogram[t];
@@ -155,7 +174,6 @@ public class FloorplanVectorizer {
                 threshold = t;
             }
         }
-
         return threshold;
     }
 
@@ -178,6 +196,28 @@ public class FloorplanVectorizer {
         } else {
             return image;
         }
+    }
+
+    public static Bitmap toBinary(Bitmap bitmap, int threshold) {
+        int width, height;
+        height = bitmap.getHeight();
+        width = bitmap.getWidth();
+        Bitmap bmpBinary = Bitmap.createBitmap(bitmap);
+
+        for(int x = 0; x < width; ++x) {
+            for(int y = 0; y < height; ++y) {
+                // get one pixel color
+                int pixel = bitmap.getPixel(x, y);
+
+                //get binary value
+                if((pixel&0x000000FF) < threshold){
+                    bmpBinary.setPixel(x, y, 0xFF000000);
+                } else{
+                    bmpBinary.setPixel(x, y, 0xFFFFFFFF);
+                }
+            }
+        }
+        return bmpBinary;
     }
 
     public static void binarize(ImageArray grayScaledImage, int threshold) {
