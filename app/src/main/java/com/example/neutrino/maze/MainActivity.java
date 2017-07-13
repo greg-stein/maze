@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -52,7 +53,6 @@ import java.util.List;
 import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
 
 public class MainActivity extends AppCompatActivity implements IDeviceRotationListener, ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener {
-    static final String IMAGE_FILENAME = "floorplan";
     // GUI-related fields
     private SearchView uiSearchView;
     private RecyclerView uiRecView;
@@ -145,52 +145,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         setUiListeners();
     }
 
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
-    private static final int REQUEST_IMAGE_SELECT = 2;
-    protected String mCurrentImagePath;
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode != RESULT_OK) return;
-
-        Bitmap floorplanBitmap = null;
-
-        switch (requestCode) {
-            case REQUEST_IMAGE_CAPTURE: {
-                floorplanBitmap = loadBitmapFromFile(mCurrentImagePath);
-                break;
-            }
-            case REQUEST_IMAGE_SELECT: {
-                Uri selectedImageUri = data.getData();
-                mCurrentImagePath = getPath(selectedImageUri);
-
-                if (mCurrentImagePath == null) {
-                    floorplanBitmap = loadPicasaImageFromGallery(selectedImageUri);
-                } else {
-                    floorplanBitmap = loadBitmapFromFile(mCurrentImagePath);
-                }
-                break;
-            }
-        }
-
-        List<IFloorPlanPrimitive> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
-        mFloorPlan.setSketch(walls);
-        uiFloorPlanView.plot(walls, false); // not in init phase
-        uiFloorPlanView.showMap();
-    }
-
-
-    private static Bitmap loadBitmapFromFile(String mCurrentImagePath) {
-        Bitmap bitmap = null;
-        File imageFile = new File(mCurrentImagePath);
-
-        if (imageFile.exists()) {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inMutable = true;
-            bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-        }
-
-        return bitmap;
+        super.onActivityResult(requestCode,resultCode,data);
     }
 
     private void showTheImage(Bitmap b) {
@@ -201,41 +158,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         toast.setView(view);
         toast.setDuration(Toast.LENGTH_LONG);
         toast.show();
-    }
-
-    // NEW METHOD FOR PICASA IMAGE LOAD
-    private Bitmap loadPicasaImageFromGallery(final Uri uri) {
-        Bitmap floorplanBitmap = null;
-        String[] projection = {  MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME };
-        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
-
-        if(cursor != null) {
-            cursor.moveToFirst();
-
-            int columnIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
-            if (columnIndex != -1) {
-                try {
-                    floorplanBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        cursor.close();
-        return floorplanBitmap;
-    }
-
-    public String getPath(Uri uri) {
-        String[] projection = {MediaStore.MediaColumns.DATA};
-        Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
-        if (cursor != null) {
-            cursor.moveToFirst();
-            int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
-            String filePath = cursor.getString(columnIndex);
-            cursor.close();
-            return filePath;
-        } else
-            return uri.getPath();               // FOR OI/ASTRO/Dropbox etc
     }
 
     @Override
@@ -292,30 +214,11 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 break;
 
             case R.id.btn_floorplan_from_gallery:
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"),
-                        REQUEST_IMAGE_SELECT);
+                VectorizeDialog newFragment = new VectorizeDialog();
+                newFragment.show(getFragmentManager(), "vectorize_dialog");
                 break;
 
             case R.id.btn_floorplan_from_cam:
-                // Here comes code for taking floorplan as picture from camera
-                // Dispatch Take Picture Intent
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                    File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-                    try {
-                        File imageFile = File.createTempFile(IMAGE_FILENAME, ".jpg", storageDir);
-                        mCurrentImagePath = imageFile.getAbsolutePath();
-                        Uri imageFileUri = Uri.fromFile(imageFile);
-                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageFileUri);
-                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                    } catch (IOException e) {
-                        Toast.makeText(getApplicationContext(), "Error saving image", Toast.LENGTH_SHORT).show();
-                        e.printStackTrace();
-                    }
-                }
                 break;
 
             case R.id.btn_autoscan:

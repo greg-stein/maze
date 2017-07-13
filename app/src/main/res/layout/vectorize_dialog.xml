@@ -7,6 +7,27 @@
     android:layout_height="match_parent"
     android:weightSum="1">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_image_from_cam"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="camera"/>
+
+        <Button
+            android:id="@+id/btn_image_from_gallery"
+            android:layout_width="0dp"
+            android:layout_weight="2"
+            android:layout_height="wrap_content"
+            android:text="gallery"/>
+
+    </LinearLayout>
+
     <ImageView
         android:id="@+id/img_grayscale"
         android:layout_width="match_parent"
