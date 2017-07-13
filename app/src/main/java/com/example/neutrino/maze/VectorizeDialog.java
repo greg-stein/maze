@@ -1,8 +1,6 @@
 package com.example.neutrino.maze;
 
-import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -12,22 +10,18 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -49,6 +43,7 @@ public class VectorizeDialog extends DialogFragment {
     private Bitmap mGrayscaled;
     private Bitmap mBinary;
     private int mThreshold;
+    private BinarizeImageTask mBinarizingTask;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -96,7 +91,7 @@ public class VectorizeDialog extends DialogFragment {
 
         mThreshold = FloorplanVectorizer.calcOtsuThreshold(mGrayscaled);
         sbThreshold.setProgress(mThreshold);
-        mBinary = FloorplanVectorizer.toBinary(mGrayscaled, mThreshold);
+        mBinary = FloorplanVectorizer.toBinary(mGrayscaled, mThreshold, null);
 
         imgGrayscale.setImageBitmap(mBinary);
 //        List<IFloorPlanPrimitive> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
@@ -199,8 +194,12 @@ public class VectorizeDialog extends DialogFragment {
                         mBinary.recycle();
                         mBinary = null;
                     }
-
-                    new BinarizeImageTask().execute();
+                    if (mBinarizingTask != null && mBinarizingTask.getStatus() == AsyncTask.Status.RUNNING) {
+                        mBinarizingTask.cancel(true);
+                        mBinarizingTask = null;
+                    }
+                    mBinarizingTask = new BinarizeImageTask();
+                    mBinarizingTask.execute();
                 }
             }
 
@@ -216,7 +215,7 @@ public class VectorizeDialog extends DialogFragment {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            mBinary = FloorplanVectorizer.toBinary(mGrayscaled, mThreshold);
+            mBinary = FloorplanVectorizer.toBinary(mGrayscaled, mThreshold, this);
             return null;
         }
 

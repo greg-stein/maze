@@ -7,6 +7,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.os.AsyncTask;
 
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.rendering.VectorHelper;
@@ -198,7 +199,7 @@ public class FloorplanVectorizer {
         }
     }
 
-    public static Bitmap toBinary(Bitmap bitmap, int threshold) {
+    public static Bitmap toBinary(Bitmap bitmap, int threshold, AsyncTask<Void, Void, Void> binarizeTask) {
         int width, height;
         height = bitmap.getHeight();
         width = bitmap.getWidth();
@@ -216,6 +217,7 @@ public class FloorplanVectorizer {
                     bmpBinary.setPixel(x, y, 0xFFFFFFFF);
                 }
             }
+            if (binarizeTask!= null && binarizeTask.isCancelled()) return null;
         }
         return bmpBinary;
     }
