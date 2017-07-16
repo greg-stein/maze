@@ -15,15 +15,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
+import com.example.neutrino.maze.vectorization.ImageArray;
+import com.example.neutrino.maze.vectorization.LineSegmentsRecognizer;
+import com.example.neutrino.maze.vectorization.Thinning;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import static android.app.Activity.RESULT_OK;
+import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 
 /**
  * Created by Greg Stein on 7/11/2017.
@@ -39,8 +45,11 @@ public class VectorizeDialog extends DialogFragment {
     private ImageView imgGrayscale;
     private SeekBar sbThreshold;
     private Button btnOtsu;
+    private Button btnVectorize;
+    private ProgressBar pbVectorization;
 
     protected String mCurrentImagePath;
+    private Bitmap mFloorPlanBitmap;
     private Bitmap mGrayscaled;
     private Bitmap mBinary;
     private int mThreshold;
@@ -56,6 +65,8 @@ public class VectorizeDialog extends DialogFragment {
         imgGrayscale = (ImageView) rootView.findViewById(R.id.img_grayscale);
         sbThreshold = (SeekBar) rootView.findViewById(R.id.sb_threshold);
         btnOtsu = (Button) rootView.findViewById(R.id.btn_otsu);
+        btnVectorize = (Button) rootView.findViewById(R.id.btn_vectorize);
+        pbVectorization = (ProgressBar) rootView.findViewById(R.id.pb_vectorization);
 
         setUiListeners();
         return rootView;
@@ -65,11 +76,12 @@ public class VectorizeDialog extends DialogFragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != RESULT_OK) return;
 
-        Bitmap floorplanBitmap = null;
+        if (mFloorPlanBitmap != null) mFloorPlanBitmap.recycle();
+        mFloorPlanBitmap = null;
 
         switch (requestCode) {
             case REQUEST_IMAGE_CAPTURE: {
-                floorplanBitmap = loadBitmapFromFile(mCurrentImagePath);
+                mFloorPlanBitmap = loadBitmapFromFile(mCurrentImagePath);
                 break;
             }
             case REQUEST_IMAGE_SELECT: {
@@ -77,9 +89,9 @@ public class VectorizeDialog extends DialogFragment {
                 mCurrentImagePath = getPath(selectedImageUri);
 
                 if (mCurrentImagePath == null) {
-                    floorplanBitmap = loadPicasaImageFromGallery(selectedImageUri);
+                    mFloorPlanBitmap = loadPicasaImageFromGallery(selectedImageUri);
                 } else {
-                    floorplanBitmap = loadBitmapFromFile(mCurrentImagePath);
+                    mFloorPlanBitmap = loadBitmapFromFile(mCurrentImagePath);
                 }
                 break;
             }
@@ -87,7 +99,7 @@ public class VectorizeDialog extends DialogFragment {
 
         int maxWidth = imgGrayscale.getMaxWidth();
         int maxHeight = this.getDialog().getWindow().getDecorView().getHeight()/2;
-        Bitmap resized = FloorplanVectorizer.resize(floorplanBitmap, maxWidth, maxHeight);
+        Bitmap resized = FloorplanVectorizer.resize(mFloorPlanBitmap, maxWidth, maxHeight);
         mGrayscaled = FloorplanVectorizer.toGrayscale(resized, FloorplanVectorizer.PADDING);
         resized.recycle();
 
@@ -101,6 +113,14 @@ public class VectorizeDialog extends DialogFragment {
 //        uiFloorPlanView.plot(walls, false); // not in init phase
 //        uiFloorPlanView.showMap();
 
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mBinary.recycle();
+        mGrayscaled.recycle();
+        mFloorPlanBitmap.recycle();
     }
 
     public String getPath(Uri uri) {
@@ -216,8 +236,15 @@ public class VectorizeDialog extends DialogFragment {
             @Override
             public void onClick(View view) {
                 mThreshold = FloorplanVectorizer.calcOtsuThreshold(mGrayscaled);
-                sbThreshold.setProgress(mThreshold);
-//                mBinary = FloorplanVectorizer.toBinary(mGrayscaled, mThreshold, null);
+                sbThreshold.setProgress(mThreshold); // this will trigger binarization
+            }
+        });
+
+        btnVectorize.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // mGrayscaled is wrong image it is resized!!
+                new VectorizeTask().execute(mFloorPlanBitmap);
             }
         });
     }
@@ -236,4 +263,40 @@ public class VectorizeDialog extends DialogFragment {
         }
     }
 
+    public class VectorizeTask extends AsyncTask<Bitmap, Integer, List<LineSegment>> {
+
+        @Override
+        protected List<LineSegment> doInBackground(Bitmap... bitmaps) {
+            Bitmap source = bitmaps[0];
+
+            publishProgress(0);
+            Bitmap grayed = FloorplanVectorizer.toGrayscale(source, FloorplanVectorizer.PADDING);
+            ImageArray imageArray = new ImageArray(grayed);
+            grayed.recycle();
+            publishProgress(10);
+            FloorplanVectorizer.binarize(imageArray, mThreshold);
+            publishProgress(15);
+            imageArray.findBlackPixels(); // this updates internal multiarray with black pixels
+            publishProgress(20);
+            Thinning.doZhangSuenThinning(imageArray);
+            publishProgress(80);
+            LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
+            List<LineSegment> lineSegments = kht.findStraightSegments();
+            publishProgress(100);
+
+            return lineSegments;
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            if (values.length > 0)
+                pbVectorization.setProgress(values[0]);
+        }
+
+        @Override
+        protected void onPostExecute(List<LineSegment> lineSegments) {
+            // Draw lines on imgView
+            super.onPostExecute(lineSegments);
+        }
+    }
 }
