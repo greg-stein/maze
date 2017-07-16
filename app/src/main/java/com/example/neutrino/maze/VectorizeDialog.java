@@ -5,6 +5,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -296,6 +300,20 @@ public class VectorizeDialog extends DialogFragment {
         @Override
         protected void onPostExecute(List<LineSegment> lineSegments) {
             // Draw lines on imgView
+            BitmapDrawable bitmapDrawable = ((BitmapDrawable) imgGrayscale.getDrawable());
+            Bitmap bitmap = bitmapDrawable.getBitmap();
+            Canvas canvas = new Canvas(bitmap);
+            Paint paint = new Paint();
+            paint.setColor(Color.RED);
+            paint.setStrokeWidth(4);
+            imgGrayscale.setImageBitmap(bitmap);
+
+            // Scaling factor (to display on resized image shown in imgGrayscale)
+            float s = (float)bitmap.getWidth() / mFloorPlanBitmap.getWidth();
+
+            for (LineSegment line : lineSegments) {
+                canvas.drawLine(s*line.start.x, s*line.start.y, s*line.end.x, s*line.end.y, paint);
+            }
             super.onPostExecute(lineSegments);
         }
     }
