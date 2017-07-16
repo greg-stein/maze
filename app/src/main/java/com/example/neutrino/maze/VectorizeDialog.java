@@ -108,10 +108,8 @@ public class VectorizeDialog extends DialogFragment {
         resized.recycle();
 
         mThreshold = FloorplanVectorizer.calcOtsuThreshold(mGrayscaled);
-        sbThreshold.setProgress(mThreshold);
-        mBinary = FloorplanVectorizer.toBinary(mGrayscaled, mThreshold, null);
+        sbThreshold.setProgress(mThreshold); // This will trigger asynchronous binarization & setting image to imgGrayscale upon finishing
 
-        imgGrayscale.setImageBitmap(mBinary);
 //        List<IFloorPlanPrimitive> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
 //        mFloorPlan.setSketch(walls);
 //        uiFloorPlanView.plot(walls, false); // not in init phase
