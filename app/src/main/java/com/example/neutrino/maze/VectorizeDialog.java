@@ -1,6 +1,8 @@
 package com.example.neutrino.maze;
 
+import android.app.Activity;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -51,6 +53,7 @@ public class VectorizeDialog extends DialogFragment {
     private Button btnOtsu;
     private Button btnVectorize;
     private ProgressBar pbVectorization;
+    private Button btnApply;
 
     protected String mCurrentImagePath;
     private Bitmap mFloorPlanBitmap;
@@ -58,6 +61,9 @@ public class VectorizeDialog extends DialogFragment {
     private Bitmap mBinary;
     private int mThreshold;
     private BinarizeImageTask mBinarizingTask;
+
+    private ICompleteVectorizationHandler mCompleteVectorizationHandler;
+    private List<LineSegment> mRecognizedLineSegments = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -71,6 +77,7 @@ public class VectorizeDialog extends DialogFragment {
         btnOtsu = (Button) rootView.findViewById(R.id.btn_otsu);
         btnVectorize = (Button) rootView.findViewById(R.id.btn_vectorize);
         pbVectorization = (ProgressBar) rootView.findViewById(R.id.pb_vectorization);
+        btnApply = (Button) rootView.findViewById(R.id.btn_apply);
 
         setUiListeners();
         return rootView;
@@ -117,6 +124,19 @@ public class VectorizeDialog extends DialogFragment {
 
     }
 
+    // make sure the Activity implemented it
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof Activity) {
+            try {
+                this.mCompleteVectorizationHandler = (ICompleteVectorizationHandler) context;
+            } catch (final ClassCastException e) {
+                throw new ClassCastException(context.toString() + " must implement ICompleteVectorizationHandler");
+            }
+        }
+    }
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -124,6 +144,7 @@ public class VectorizeDialog extends DialogFragment {
         mGrayscaled.recycle();
         mFloorPlanBitmap.recycle();
     }
+
 
     public String getPath(Uri uri) {
         String[] projection = {MediaStore.MediaColumns.DATA};
@@ -249,6 +270,20 @@ public class VectorizeDialog extends DialogFragment {
                 new VectorizeTask().execute(mFloorPlanBitmap);
             }
         });
+
+        btnApply.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mCompleteVectorizationHandler != null) {
+                    mCompleteVectorizationHandler.onCompleteVectorization(mRecognizedLineSegments);
+                }
+                getDialog().dismiss();
+            }
+        });
+    }
+
+    public interface ICompleteVectorizationHandler {
+        void onCompleteVectorization(List<LineSegment> segments);
     }
 
     public class BinarizeImageTask extends AsyncTask<Void, Void, Void> {
@@ -312,6 +347,8 @@ public class VectorizeDialog extends DialogFragment {
             for (LineSegment line : lineSegments) {
                 canvas.drawLine(s*line.start.x, s*line.start.y, s*line.end.x, s*line.end.y, paint);
             }
+
+            VectorizeDialog.this.mRecognizedLineSegments = lineSegments;
             super.onPostExecute(lineSegments);
         }
     }
