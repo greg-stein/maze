@@ -10,7 +10,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,7 +32,10 @@ import com.example.neutrino.maze.vectorization.Thinning;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import static android.app.Activity.RESULT_OK;
 import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
@@ -53,6 +56,7 @@ public class VectorizeDialog extends DialogFragment {
     private Button btnOtsu;
     private Button btnVectorize;
     private ProgressBar pbVectorization;
+    private SeekBar sbMinLineLength;
     private Button btnApply;
 
     protected String mCurrentImagePath;
@@ -63,7 +67,8 @@ public class VectorizeDialog extends DialogFragment {
     private BinarizeImageTask mBinarizingTask;
 
     private ICompleteVectorizationHandler mCompleteVectorizationHandler;
-    private List<LineSegment> mRecognizedLineSegments = null;
+    private SortedSet<LineSegment> mRecognizedLineSegments = null;
+    private float mScalingFactor;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -77,6 +82,7 @@ public class VectorizeDialog extends DialogFragment {
         btnOtsu = (Button) rootView.findViewById(R.id.btn_otsu);
         btnVectorize = (Button) rootView.findViewById(R.id.btn_vectorize);
         pbVectorization = (ProgressBar) rootView.findViewById(R.id.pb_vectorization);
+        sbMinLineLength = (SeekBar) rootView.findViewById(R.id.sb_min_line_length);
         btnApply = (Button) rootView.findViewById(R.id.btn_apply);
 
         setUiListeners();
@@ -115,6 +121,7 @@ public class VectorizeDialog extends DialogFragment {
         resized.recycle();
 
         mThreshold = FloorplanVectorizer.calcOtsuThreshold(mGrayscaled);
+        mScalingFactor = (float)mGrayscaled.getWidth() / mFloorPlanBitmap.getWidth();
         sbThreshold.setProgress(mThreshold); // This will trigger asynchronous binarization & setting image to imgGrayscale upon finishing
 
 //        List<IFloorPlanPrimitive> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
@@ -280,10 +287,23 @@ public class VectorizeDialog extends DialogFragment {
                 getDialog().dismiss();
             }
         });
+
+        sbMinLineLength.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                drawLines(mRecognizedLineSegments, progress, mBinary, imgGrayscale, mScalingFactor);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
     }
 
     public interface ICompleteVectorizationHandler {
-        void onCompleteVectorization(List<LineSegment> segments);
+        void onCompleteVectorization(Iterable<LineSegment> segments);
     }
 
     public class BinarizeImageTask extends AsyncTask<Void, Void, Void> {
@@ -333,23 +353,63 @@ public class VectorizeDialog extends DialogFragment {
         @Override
         protected void onPostExecute(List<LineSegment> lineSegments) {
             // Draw lines on imgView
-            BitmapDrawable bitmapDrawable = ((BitmapDrawable) imgGrayscale.getDrawable());
-            Bitmap bitmap = bitmapDrawable.getBitmap();
-            Canvas canvas = new Canvas(bitmap);
-            Paint paint = new Paint();
-            paint.setColor(Color.RED);
-            paint.setStrokeWidth(4);
-            imgGrayscale.setImageBitmap(bitmap);
+//            BitmapDrawable bitmapDrawable = ((BitmapDrawable) imgGrayscale.getDrawable());
 
-            // Scaling factor (to display on resized image shown in imgGrayscale)
-            float s = (float)bitmap.getWidth() / mFloorPlanBitmap.getWidth();
+            VectorizeDialog.this.mRecognizedLineSegments = new TreeSet<>(new LineLengthComparator());
+            VectorizeDialog.this.mRecognizedLineSegments.addAll(lineSegments);
+            sbMinLineLength.setMax((int) VectorizeDialog.this.mRecognizedLineSegments.last().getLength());
 
-            for (LineSegment line : lineSegments) {
-                canvas.drawLine(s*line.start.x, s*line.start.y, s*line.end.x, s*line.end.y, paint);
-            }
-
-            VectorizeDialog.this.mRecognizedLineSegments = lineSegments;
+            drawLines(VectorizeDialog.this.mRecognizedLineSegments, 0, mBinary, imgGrayscale, mScalingFactor);
             super.onPostExecute(lineSegments);
+        }
+    }
+
+    private static void drawLines(SortedSet<LineSegment> lineSegments, float minLength, Bitmap bgBitmap, ImageView imageView, float scalingFactor) {
+        Bitmap bitmap = bgBitmap.copy(bgBitmap.getConfig(), true);
+        Canvas canvas = new Canvas(bitmap);
+        Paint paint = new Paint();
+        paint.setColor(Color.RED);
+        paint.setStrokeWidth(4);
+        imageView.setImageBitmap(bitmap);
+
+        // Scaling factor (to display on resized image shown in imageView)
+        float s = scalingFactor;
+        SortedSet<LineSegment> linesToDraw = lineSegments.tailSet(getSpecificLengthSegment(minLength));
+        for (LineSegment line : linesToDraw) {
+            canvas.drawLine(s*line.start.x, s*line.start.y, s*line.end.x, s*line.end.y, paint);
+        }
+    }
+
+    public static class SpecificLengthLineSegment extends LineSegment {
+
+        private float mDesiredLength;
+
+        public SpecificLengthLineSegment() {
+            super(new Point(), new Point(), null);
+        }
+
+        @Override
+        public float getLength() {
+            return mDesiredLength;
+        }
+
+        public void setDesiredLength(float desiredLength) {
+            this.mDesiredLength = desiredLength;
+        }
+    }
+
+    private static final SpecificLengthLineSegment specificLengthSegment = new SpecificLengthLineSegment();
+
+    public static LineSegment getSpecificLengthSegment(float desiredLength) {
+        specificLengthSegment.setDesiredLength(desiredLength);
+        return specificLengthSegment;
+    }
+
+    public static class LineLengthComparator implements Comparator<LineSegment> {
+
+        @Override
+        public int compare(LineSegment l1, LineSegment l2) {
+            return Float.compare(l1.getLength(), l2.getLength());
         }
     }
 }

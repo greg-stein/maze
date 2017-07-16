@@ -77,6 +77,11 @@
             android:text="vect" />
     </LinearLayout>
 
+    <SeekBar
+        android:id="@+id/sb_min_line_length"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <Button
         android:id="@+id/btn_apply"
         android:layout_width="match_parent"

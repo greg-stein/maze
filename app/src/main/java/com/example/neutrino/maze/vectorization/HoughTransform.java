@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.os.Build;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -110,6 +111,10 @@ public class HoughTransform {
             this.start = start;
             this.end = end;
             this.line = line;
+        }
+
+        public float getLength() {
+            return PointF.length(end.x - start.x, end.y - start.y);
         }
 
         @Override
