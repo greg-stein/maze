@@ -497,18 +497,18 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             case MOVE:
                 System.out.println("MODE: move");
                 btnMove.setIcon(getResources().getDrawable(R.drawable.ic_cursor_move_black_24dp, null));
-                btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_delete_forever_white_24dp, null));
+                btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_eraser_white_24dp, null));
                 uiAddSpinner.setSelection(addSpinnerData.size() - 1);
                 break;
             case ADD:
                 System.out.println("MODE: add");
                 btnMove.setIcon(getResources().getDrawable(R.drawable.ic_cursor_move_white_24dp, null));
-                btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_delete_forever_white_24dp, null));
+                btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_eraser_white_24dp, null));
                 break;
             case REMOVE:
                 System.out.println("MODE: remove");
                 btnMove.setIcon(getResources().getDrawable(R.drawable.ic_cursor_move_white_24dp, null));
-                btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_delete_forever_black_24dp, null));
+                btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_eraser_black_24dp, null));
                 uiAddSpinner.setSelection(addSpinnerData.size() - 1);
                 break;
         }
