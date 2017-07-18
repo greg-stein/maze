@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
@@ -13,6 +14,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -32,6 +34,7 @@ import com.example.neutrino.maze.vectorization.Thinning;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
@@ -86,6 +89,8 @@ public class VectorizeDialog extends DialogFragment {
         btnApply = (Button) rootView.findViewById(R.id.btn_apply);
 
         setUiListeners();
+
+        getDialog().setTitle("Add floor plan");
         return rootView;
     }
 
@@ -123,18 +128,36 @@ public class VectorizeDialog extends DialogFragment {
         mThreshold = FloorplanVectorizer.calcOtsuThreshold(mGrayscaled);
         mScalingFactor = (float)mGrayscaled.getWidth() / mFloorPlanBitmap.getWidth();
         sbThreshold.setProgress(mThreshold); // This will trigger asynchronous binarization & setting image to imgGrayscale upon finishing
-
-//        List<IFloorPlanPrimitive> walls = FloorplanVectorizer.vectorize(floorplanBitmap);
-//        mFloorPlan.setSketch(walls);
-//        uiFloorPlanView.plot(walls, false); // not in init phase
-//        uiFloorPlanView.showMap();
-
     }
 
-    // make sure the Activity implemented it
+    /*
+     * onAttach(Context) is not called on pre API 23 versions of Android and onAttach(Activity) is deprecated
+     * Use onAttachToContext instead
+     */
+    @TargetApi(23)
     @Override
-    public void onAttach(Context context) {
+    public final void onAttach(Context context) {
         super.onAttach(context);
+        onAttachToContext(context);
+    }
+
+    /*
+     * Deprecated on API 23
+     * Use onAttachToContext instead
+     */
+    @SuppressWarnings("deprecation")
+    @Override
+    public final void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            onAttachToContext(activity);
+        }
+    }
+
+    /*
+     * Called when the fragment attaches to the context
+     */
+    protected void onAttachToContext(Context context) {
         if (context instanceof Activity) {
             try {
                 this.mCompleteVectorizationHandler = (ICompleteVectorizationHandler) context;
@@ -303,7 +326,7 @@ public class VectorizeDialog extends DialogFragment {
     }
 
     public interface ICompleteVectorizationHandler {
-        void onCompleteVectorization(Iterable<LineSegment> segments);
+        void onCompleteVectorization(Collection<LineSegment> segments);
     }
 
     public class BinarizeImageTask extends AsyncTask<Void, Void, Void> {

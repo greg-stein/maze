@@ -16,6 +16,7 @@ import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Wall;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -53,7 +54,7 @@ public class FloorplanVectorizer {
         return walls;
     }
 
-    private static List<IFloorPlanPrimitive> translateToWalls(List<HoughTransform.LineSegment> lines) {
+    public static List<IFloorPlanPrimitive> translateToWalls(Collection<LineSegment> lines) {
         List<IFloorPlanPrimitive> walls = new ArrayList<>(lines.size());
         // TODO: ACHTUNG!! This is only for tests! Scale factor should be set by user!!!
         // TODO: And not in this stage, but later when floorplan is added

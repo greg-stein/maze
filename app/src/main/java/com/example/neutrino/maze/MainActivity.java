@@ -1,23 +1,19 @@
 package com.example.neutrino.maze;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.util.Pair;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -38,21 +34,24 @@ import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Path;
 import com.example.neutrino.maze.floorplan.Tag;
+import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 import com.github.fafaldo.fabtoolbar.widget.FABToolbarLayout;
 import com.lapism.searchview.SearchView;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
+import static com.example.neutrino.maze.VectorizeDialog.ICompleteVectorizationHandler;
+import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 
-public class MainActivity extends AppCompatActivity implements IDeviceRotationListener, ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener {
+public class MainActivity extends AppCompatActivity implements IDeviceRotationListener,
+        ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener, ICompleteVectorizationHandler {
     // GUI-related fields
     private SearchView uiSearchView;
     private RecyclerView uiRecView;
@@ -213,12 +212,27 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.SET_LOCATION;
                 break;
 
-            case R.id.btn_floorplan_from_gallery:
+            case R.id.btn_vectorize_floorplan:
                 VectorizeDialog newFragment = new VectorizeDialog();
                 newFragment.show(getFragmentManager(), "vectorize_dialog");
                 break;
 
-            case R.id.btn_floorplan_from_cam:
+            case R.id.btn_erase_floorplan:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage("Erase entire floor plan?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                mFloorPlan.clear();
+                                uiFloorPlanView.clearFloorPlan();
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                // do nothing
+                            }
+                        }).show();
                 break;
 
             case R.id.btn_autoscan:
@@ -550,5 +564,20 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     @Override
     public void onDistributionUpdated(PointF mean, float stdev) {
         uiFloorPlanView.drawDistribution(mean, stdev);
+    }
+
+    @Override
+    public void onCompleteVectorization(Collection<LineSegment> segments) {
+        if (segments == null || segments.isEmpty()) {
+            Toast.makeText(getApplicationContext(), "No data returned from vectorization process.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // TODO: Add possibility to augment existing floor plan with another parts instead of clearing
+        List<IFloorPlanPrimitive> walls = FloorplanVectorizer.translateToWalls(segments);
+        mFloorPlan.setSketch(walls);
+
+        PointF pointToShow = ((Wall)walls.get(0)).getStart(); // we know it is a wall
+        uiFloorPlanView.plot(walls, pointToShow);
     }
 }

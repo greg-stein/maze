@@ -378,7 +378,14 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     public void clearFloorPlan() {
-        mRenderer.clearFloorPlan();
+        Runnable glRunnable = new Runnable() {
+            @Override
+            public void run() {
+                mRenderer.clearFloorPlan();
+                requestRender();
+            }
+        };
+        queueEvent(glRunnable);
     }
 
     public void renderPath(Path path) {

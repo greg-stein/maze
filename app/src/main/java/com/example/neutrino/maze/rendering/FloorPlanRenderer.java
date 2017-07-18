@@ -580,21 +580,18 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void clearFloorPlan() {
-        runOnGlThread(new Runnable() {
-            @Override
-            public void run() {
-                for(IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
-                    if (!primitive.isRemoved()) { // TODO: check if this is always true
-                        primitive.cloak();
-                    }
-                }
-                for (GlRenderBuffer buffer : mGlBuffers) {
-                    buffer.deallocateGpuBuffers();
-                }
-                mGlBuffers.clear();
-                mFloorPlanPrimitives.clear();
+        for(IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
+            if (!primitive.isRemoved()) { // TODO: check if this is always true
+                primitive.cloak();
             }
-        });
+        }
+        for (GlRenderBuffer buffer : mGlBuffers) {
+            buffer.deallocateGpuBuffers();
+        }
+        mGlBuffers.clear();
+        mFloorPlanPrimitives.clear();
+        mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
+        mGlBuffers.add(mCurrentBuffer);
     }
 
     public void highlightCentroidMarks(List<Fingerprint> centroidMarks) {
