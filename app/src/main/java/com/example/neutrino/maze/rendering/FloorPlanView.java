@@ -37,6 +37,7 @@ public class FloorPlanView extends GLSurfaceView {
     private final PointF mCurrentLocation = new PointF();
     private boolean mHandlingTagCreation = false;
     private Path mPath;
+    private PointF mPointToShow;
 
     public FloorPlanView(Context context) {
         this(context, null);
@@ -61,7 +62,9 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.setOnFloorplanLoadCompleteListener(new IFloorplanLoadCompleteListener() {
             @Override
             public void onFloorplanLoadComplete() {
-                showMap();
+                if (mPointToShow != null) {
+                    centerToPoint(mPointToShow);
+                }
             }
         });
     }
@@ -295,15 +298,17 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
-    public void plot(FloorPlan floorPlan) {
+    public void plot(FloorPlan floorPlan, PointF pointToShow) {
+        mPointToShow = pointToShow;
         mRenderer.setFloorPlan(floorPlan.getSketch());
         mRenderer.setTags(floorPlan.getTags());
         mRenderer.performQueuedTask();
     }
 
-    public void plot(List<? extends IFloorPlanPrimitive> floorplan, boolean inInit) {
+    public void plot(List<? extends IFloorPlanPrimitive> floorplan, PointF pointToShow) {
+        mPointToShow = pointToShow;
         mRenderer.setFloorPlan((List<IFloorPlanPrimitive>) floorplan);
-        if (!inInit) mRenderer.performQueuedTask();
+        mRenderer.performQueuedTask();
     }
 
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
@@ -343,11 +348,6 @@ public class FloorPlanView extends GLSurfaceView {
 
     public void centerToPoint(PointF point) {
         mRenderer.setOffset(-point.x, -point.y);
-    }
-
-    public void showMap() {
-        PointF mapVertex = mRenderer.getMapAnyVertex();
-        centerToPoint(mapVertex);
     }
 
     public void centerToLocation() {

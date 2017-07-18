@@ -421,8 +421,18 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
                         mAdapter.updateListData(floorPlan.getTags());
 
+                        // Find point that should be visible after the floorplan is loaded
+                        PointF pointToShow = null;
+
+                        List<IFloorPlanPrimitive> sketch = mFloorPlan.getSketch();
+                        for (IFloorPlanPrimitive primitive : sketch) {
+                            if (primitive instanceof Wall) {
+                                pointToShow = ((Wall)primitive).getStart();
+                                break;
+                            }
+                        }
                         // The main work is done on GL thread!
-                        uiFloorPlanView.plot(floorPlan);
+                        uiFloorPlanView.plot(floorPlan, pointToShow);
                     }
                 }).execute(jsonString);
 

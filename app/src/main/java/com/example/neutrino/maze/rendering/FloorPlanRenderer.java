@@ -640,12 +640,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public float getOffsetY() {
         return mOffsetY;
     }
-    public PointF getMapAnyVertex() {
-        if (mFloorPlanPrimitives != null && mFloorPlanPrimitives.size() > 0) {
-            return mGlBuffers.get(0).getFirstVertex();
-        }
-        return new PointF();
-    }
 
     private IWallLengthChangedListener mWallLengthChangedListener = null;
 
