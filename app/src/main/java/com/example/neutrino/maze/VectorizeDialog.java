@@ -170,9 +170,18 @@ public class VectorizeDialog extends DialogFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mBinary.recycle();
-        mGrayscaled.recycle();
-        mFloorPlanBitmap.recycle();
+        if (mBinary != null) {
+            mBinary.recycle();
+            mBinary = null;
+        }
+        if (mGrayscaled != null) {
+            mGrayscaled.recycle();
+            mGrayscaled = null;
+        }
+        if (mFloorPlanBitmap != null) {
+            mFloorPlanBitmap.recycle();
+            mFloorPlanBitmap = null;
+        }
     }
 
 
