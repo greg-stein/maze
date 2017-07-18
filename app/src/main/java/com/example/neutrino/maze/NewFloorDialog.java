@@ -46,8 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static android.R.layout.simple_list_item_2;
-
 /**
  * Created by Greg Stein on 6/23/2017.
  */
@@ -359,7 +357,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         public void onLocationChanged(Location location) {
             locationManager.removeUpdates(this);
 
-            new AddressOtainerTask().onFinish(new AsyncResponse() {
+            new AddressObtainerTask().onFinish(new AsyncResponse() {
                 @Override
                 public void onFinish(String address) {
                     if (address != null && address.length() > 0) {
@@ -396,7 +394,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         return mSelectedFloorIndex;
     }
 
-    private class AddressOtainerTask extends AsyncTask<Location, Void, String> {
+    private class AddressObtainerTask extends AsyncTask<Location, Void, String> {
         private AsyncResponse onFinishHandler;
 
         @Override
@@ -444,7 +442,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             }
         }
 
-        public AddressOtainerTask onFinish(AsyncResponse asyncResponse) {
+        public AddressObtainerTask onFinish(AsyncResponse asyncResponse) {
             this.onFinishHandler = asyncResponse;
             return this;
         }
