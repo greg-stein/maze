@@ -152,6 +152,15 @@ public class FloorPlan {
         this.mDescriptor = descriptor;
     }
 
+    // Clears any source data
+    public void clear() {
+        this.mSketch.clear();
+        synchronized (FloorPlan.mTagsListLocker) {
+            this.mTags.clear();
+        }
+        this.mFingerprints.clear();
+    }
+
     private static class TagComparator implements Comparator<Tag> {
         private String sample;
 
