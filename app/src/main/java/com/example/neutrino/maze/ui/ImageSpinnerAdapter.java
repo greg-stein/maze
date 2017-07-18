@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.ui;
 
 import android.content.Context;
 import android.support.annotation.IdRes;
@@ -12,6 +12,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+
+import com.example.neutrino.maze.R;
 
 import java.util.List;
 import java.util.Map;

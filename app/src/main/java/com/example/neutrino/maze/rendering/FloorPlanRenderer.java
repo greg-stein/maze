@@ -680,7 +680,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     /**
      * Created by Greg Stein on 9/19/2016.
      */
-    public static interface IWallLengthChangedListener {
+    public interface IWallLengthChangedListener {
         void onWallLengthChanged(float wallLength);
     }
 
@@ -703,7 +703,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     /**
      * Created by Greg Stein on 9/19/2016.
      */
-    public static interface IFloorplanLoadCompleteListener {
+    public interface IFloorplanLoadCompleteListener {
         void onFloorplanLoadComplete();
     }
 }

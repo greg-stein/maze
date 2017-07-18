@@ -3,6 +3,7 @@ package com.example.neutrino.maze;
 import android.net.wifi.ScanResult;
 import android.os.Parcel;
 
+import com.example.neutrino.maze.util.MovingAverageScanResultsQueue;
 import com.google.common.collect.Iterables;
 
 import org.junit.Test;

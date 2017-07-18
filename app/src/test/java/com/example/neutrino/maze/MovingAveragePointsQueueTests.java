@@ -2,6 +2,8 @@ package com.example.neutrino.maze;
 
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.util.MovingAveragePointsQueue;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;

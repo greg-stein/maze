@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.util;
 
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 

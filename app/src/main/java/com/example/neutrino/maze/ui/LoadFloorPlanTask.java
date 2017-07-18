@@ -1,11 +1,11 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.ui;
 
 import android.os.AsyncTask;
-import android.support.v7.widget.RecyclerView;
 
+import com.example.neutrino.maze.Locator;
+import com.example.neutrino.maze.WiFiLocator;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
-import com.example.neutrino.maze.rendering.FloorPlanView;
 
 import java.util.List;
 

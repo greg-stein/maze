@@ -8,6 +8,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 
 import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
+import com.example.neutrino.maze.util.MovingAverageScanResultsQueue;
 
 import java.util.ArrayList;
 import java.util.List;

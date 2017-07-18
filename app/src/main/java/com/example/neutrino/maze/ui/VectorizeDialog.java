@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.ui;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -27,6 +27,7 @@ import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 import com.example.neutrino.maze.vectorization.ImageArray;
 import com.example.neutrino.maze.vectorization.LineSegmentsRecognizer;

@@ -1,4 +1,4 @@
- package com.example.neutrino.maze;
+ package com.example.neutrino.maze.util;
 
 import android.net.wifi.ScanResult;
 

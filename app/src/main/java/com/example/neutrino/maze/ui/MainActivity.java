@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.ui;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -29,7 +29,14 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.Locator;
 import com.example.neutrino.maze.Locator.ILocationUpdatedListener;
+import com.example.neutrino.maze.Mapper;
+import com.example.neutrino.maze.R;
+import com.example.neutrino.maze.SensorListener;
+import com.example.neutrino.maze.WiFiLocator;
+import com.example.neutrino.maze.WifiScanner;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Path;
@@ -47,11 +54,10 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
-import static com.example.neutrino.maze.VectorizeDialog.ICompleteVectorizationHandler;
 import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 
 public class MainActivity extends AppCompatActivity implements IDeviceRotationListener,
-        ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener, ICompleteVectorizationHandler {
+        ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener, VectorizeDialog.ICompleteVectorizationHandler {
     // GUI-related fields
     private SearchView uiSearchView;
     private RecyclerView uiRecView;

@@ -4,7 +4,7 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-import com.example.neutrino.maze.CommonHelper;
+import com.example.neutrino.maze.util.CommonHelper;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.rendering.VectorHelper;

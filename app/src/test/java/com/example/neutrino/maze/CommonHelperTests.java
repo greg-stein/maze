@@ -1,5 +1,7 @@
 package com.example.neutrino.maze;
 
+import com.example.neutrino.maze.util.CommonHelper;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -13,7 +15,6 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.hamcrest.collection.IsArrayContainingInOrder.arrayContaining;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.closeTo;

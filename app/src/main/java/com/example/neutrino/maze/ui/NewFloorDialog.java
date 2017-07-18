@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.ui;
 
 import android.Manifest;
 import android.app.Dialog;
@@ -36,6 +36,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Floor;
 
