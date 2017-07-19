@@ -29,6 +29,7 @@ import android.widget.Toast;
 
 import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
+import com.example.neutrino.maze.vectorization.HoughTransform;
 import com.example.neutrino.maze.vectorization.ImageArray;
 import com.example.neutrino.maze.vectorization.LineSegmentsRecognizer;
 import com.example.neutrino.maze.vectorization.Thinning;
@@ -373,8 +374,9 @@ public class VectorizeDialog extends DialogFragment {
             LineSegmentsRecognizer kht = new LineSegmentsRecognizer(imageArray);
             List<LineSegment> lineSegments = kht.findStraightSegments();
             publishProgress(100);
+            List<LineSegment> mergedSegments = HoughTransform.mergeSegments(lineSegments);
 
-            return lineSegments;
+            return mergedSegments;
         }
 
         @Override
