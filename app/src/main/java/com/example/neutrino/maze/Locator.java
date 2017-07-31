@@ -28,6 +28,7 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     public static Locator getInstance() {return instance;}
 
     private WifiScanner mWifiScanner = WifiScanner.getInstance();
+
     private SensorListener mSensorListener = SensorListener.getInstance();
     private WiFiLocator mWifiLocator = WiFiLocator.getInstance();
     private boolean mUseWifiScanner;
@@ -61,6 +62,10 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
         } else {
             mWifiScanner.removeFingerprintAvailableListener(this);
         }
+    }
+
+    public FloorPlan getFloorPlan() {
+        return mFloorPlan;
     }
 
     public interface IDistributionUpdatedListener {
@@ -211,10 +216,11 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
 
     public void resetLocationTo(PointF location) {
         mCurrentLocation.set(location.x, location.y);
-        emitLocationUpdatedEvent(location);
+        emitLocationUpdatedEvent(mCurrentLocation);
     }
 
     public PointF getLocation() {
         return mCurrentLocation;
     }
+
 }

@@ -4,27 +4,19 @@ import android.annotation.TargetApi;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Build;
-import android.support.design.widget.FloatingActionButton;
 
 import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.CommonHelper;
-import com.example.neutrino.maze.navigation.FingerprintsPathFinder;
-import com.example.neutrino.maze.navigation.GridPathFinder;
+import com.example.neutrino.maze.floorplan.transitions.ITeleport;
+import com.example.neutrino.maze.util.CommonHelper;
 import com.example.neutrino.maze.navigation.PathFinderBase;
-import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 
 import org.simmetrics.StringMetric;
-import org.simmetrics.metrics.CosineSimilarity;
 import org.simmetrics.metrics.StringMetrics;
-import org.simmetrics.simplifiers.Simplifiers;
-import org.simmetrics.tokenizers.Tokenizers;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
 
 import static org.simmetrics.builders.StringMetricBuilder.with;
 
@@ -38,10 +30,13 @@ public class FloorPlan {
     private List<Tag> mTags;
     private FloorPlanDescriptor mDescriptor;
     private PathFinderBase mPathFinder;
+    private List<ITeleport> mTeleports;
+    private Floor mCurrentFloor;
 
     public static FloorPlan build(List<Object> entities) {
         FloorPlan floorPlan = new FloorPlan();
         floorPlan.mFingerprints = CommonHelper.extractObjects(Fingerprint.class, entities);
+        floorPlan.mTeleports = CommonHelper.extractObjects(ITeleport.class, entities);
         floorPlan.mTags = CommonHelper.extractObjects(Tag.class, entities);
 //        List<Wall> walls = FloorplanVectorizer.connect(CommonHelper.extractObjects(Wall.class, entities));
 
@@ -159,6 +154,18 @@ public class FloorPlan {
             this.mTags.clear();
         }
         this.mFingerprints.clear();
+    }
+
+    public List<ITeleport> getTeleportsOnFloor() {
+        return mTeleports;
+    }
+
+    public Floor getCurrentFloor() {
+        return mCurrentFloor;
+    }
+
+    public List<ITeleport> getTeleportsById(String id) {
+        return null;
     }
 
     private static class TagComparator implements Comparator<Tag> {
