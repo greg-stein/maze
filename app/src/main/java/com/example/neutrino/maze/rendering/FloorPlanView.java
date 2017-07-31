@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
+import android.os.AsyncTask;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.AttributeSet;
@@ -15,6 +16,7 @@ import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Path;
 import com.example.neutrino.maze.floorplan.Tag;
+import com.example.neutrino.maze.floorplan.transitions.Elevator;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IWallLengthChangedListener;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IFloorplanLoadCompleteListener;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
@@ -101,7 +103,7 @@ public class FloorPlanView extends GLSurfaceView {
     }
     public MapOperation mapOperation = MOVE;
     public enum MapOperand {
-        WALL, SHORT_WALL, BOUNDARIES, LOCATION_TAG
+        WALL, SHORT_WALL, BOUNDARIES, ELEVATOR, LOCATION_TAG
     }
     public MapOperand operand;
 
@@ -161,6 +163,10 @@ public class FloorPlanView extends GLSurfaceView {
                         case SHORT_WALL:
                             break;
                         case BOUNDARIES:
+                            break;
+                        case ELEVATOR:
+                            mHandlingTagCreation = true;
+                            askForElevatorNumber(xPos, yPos);
                             break;
                         case LOCATION_TAG:
                             mHandlingTagCreation = true;
@@ -222,6 +228,49 @@ public class FloorPlanView extends GLSurfaceView {
                         } else {
                             tagAtTapLocation.setLabel(input.getText().toString());
                             mRenderer.calculateTagBoundaries(tagAtTapLocation);
+                        }
+                        mHandlingTagCreation = false;
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        mHandlingTagCreation = false;
+                    }
+                })
+                .show();
+    }
+
+    private void askForElevatorNumber(final int x, final int y) {
+        final EditText input = new EditText(AppSettings.appActivity);
+        String dialogTitle = "New elevator";
+        String okButtonCaption = "Add";
+        final PointF worldPoint = new PointF();
+        mRenderer.windowToWorld(x, y, worldPoint);
+
+        Tag tagAtLocation = mRenderer.getTagHavingPoint(worldPoint.x, worldPoint.y);
+        if (!(tagAtLocation instanceof Elevator)) {
+            tagAtLocation = null;
+        }
+        if (tagAtLocation != null) {
+            input.setText(tagAtLocation.getLabel());
+            dialogTitle = "Change elevator id";
+            okButtonCaption = "Change";
+        }
+        final Tag elevatorAtTapLocation = tagAtLocation;
+
+        new AlertDialog.Builder(AppSettings.appActivity)
+                .setTitle(dialogTitle)
+                .setView(input)
+//                .setMessage("Paste in the link of an image to moustachify!")
+                .setPositiveButton(okButtonCaption, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        if (elevatorAtTapLocation == null) {
+                            Elevator elevator = new Elevator(worldPoint, input.getText().toString());
+                            mRenderer.addNewTag(elevator);
+                            mRenderer.addPrimitive(elevator);
+                        } else {
+                            elevatorAtTapLocation.setLabel(input.getText().toString());
+                            mRenderer.calculateTagBoundaries(elevatorAtTapLocation);
                         }
                         mHandlingTagCreation = false;
                     }

@@ -677,6 +677,18 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
+    public void addNewTag(final Tag tag) {
+        runOnGlThread(new Runnable() {
+            @Override
+            public void run() {
+                calculateTagBoundaries(tag);
+                synchronized (FloorPlan.mTagsListLocker) {
+                    mTags.add(tag);
+                }
+            }
+        });
+    }
+
     /**
      * Created by Greg Stein on 9/19/2016.
      */
