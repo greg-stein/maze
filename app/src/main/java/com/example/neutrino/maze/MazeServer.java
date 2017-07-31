@@ -7,6 +7,10 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -14,17 +18,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.util.List;
-
-//import cz.msebera.android.httpclient.NameValuePair;
-
-//import cz.msebera.android.httpclient.client.methods.HttpGet;
 
 /**
  * Created by Greg Stein on 9/9/2016.
@@ -32,7 +29,12 @@ import java.util.List;
 public class MazeServer {
     private static final String POST_METHOD = "POST";
     private static URL mUrl;
-    private final Context mContext;
+    private static final MazeServer instance = new MazeServer();
+    private MazeServer() {}
+
+    public static MazeServer getServer() {
+        return instance;
+    }
 
     public static boolean connectionAvailable(Context context) {
         ConnectivityManager connMgr = (ConnectivityManager)
@@ -41,16 +43,14 @@ public class MazeServer {
         return (networkInfo != null && networkInfo.isConnected());
     }
 
-    public MazeServer(Context context) {
-        this.mContext = context;
+    public void downloadFloorPlan(Context context, AsyncResponse response) {
+        // TODO: Use async http client library instead
+        new DownloadFloorPlanTask(context, response).execute();
     }
 
-    public void downloadFloorPlan(AsyncResponse response) {
-        new DownloadFloorPlanTask(response).execute();
-    }
-
-    public void uploadFloorPlan(String jsonString) {
-        new UploadFloorPlanTask().execute(jsonString);
+    public void uploadFloorPlan(Context context, String jsonString) {
+        // TODO: Use async http client library instead
+        new UploadFloorPlanTask(context).execute(jsonString);
     }
 
     private String extractLines(InputStream iStream) throws IOException {
@@ -72,10 +72,12 @@ public class MazeServer {
     private class DownloadFloorPlanTask extends AsyncTask<Void, Void, String> {
         private static final String FUNC = "get_data";
         private static final String GET_METHOD = "GET";
+        private Context mContext;
 
         public AsyncResponse delegate = null;
 
-        public DownloadFloorPlanTask(AsyncResponse delegate){
+        public DownloadFloorPlanTask(Context context, AsyncResponse delegate){
+            this.mContext = context;
             this.delegate = delegate;
         }
 
@@ -131,6 +133,11 @@ public class MazeServer {
     private class UploadFloorPlanTask extends AsyncTask<String, Void, String> {
         private static final String FUNC = "insert_data";
         private static final String POST_METHOD = "POST";
+        private final Context mContext;
+
+        public UploadFloorPlanTask(Context context) {
+            this.mContext = context;
+        }
 
         @Override
         protected void onPostExecute(String result) {
@@ -182,5 +189,14 @@ public class MazeServer {
 
             return response;
         }
+    }
+
+    void gettestAndroidAsyncHttpClientLib(JsonHttpResponseHandler handler) {
+        String url = "https://ajax.googleapis.com/ajax/services/search/images";
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+        params.put("q", "android");
+        params.put("rsz", "8");
+        client.get(url, params, handler);
     }
 }
