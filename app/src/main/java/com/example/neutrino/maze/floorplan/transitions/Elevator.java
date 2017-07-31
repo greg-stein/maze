@@ -4,7 +4,7 @@ import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.RectF;
 
-import com.example.neutrino.maze.floorplan.FloorPlanPrimitiveBase;
+import com.example.neutrino.maze.WiFiLocator;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Tag;
@@ -49,6 +49,26 @@ public class Elevator extends Tag implements ITeleport, IFloorPlanPrimitive {
     @Override
     public void setLocation(PointF location) {
         super.setLocation(location);
+    }
+
+    @Override
+    public WiFiLocator.WiFiFingerprint getFingerprint() {
+        return null;
+    }
+
+    @Override
+    public void setFingerprint(WiFiLocator.WiFiFingerprint fingerprint) {
+
+    }
+
+    @Override
+    public String getFloor() {
+        return null;
+    }
+
+    @Override
+    public void setFloor(String floorId) {
+
     }
 
     ///////////////////////////////////////////////////////////////////////////////////
