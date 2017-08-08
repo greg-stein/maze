@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         addSpinnerData.add(new Pair<>("Short wall", R.drawable.ic_view_stream_black_24dp));
         addSpinnerData.add(new Pair<>("Place boundaries", R.drawable.ic_format_shapes_black_24dp));
         addSpinnerData.add(new Pair<>("Location tag", R.drawable.ic_map_marker_plus_black_24dp));
-        addSpinnerData.add(new Pair<>("Elevator", R.drawable.ic_elevator_black_24dp));
+        addSpinnerData.add(new Pair<>("Teleport", R.drawable.ic_elevator_black_24dp));
         addSpinnerData.add(new Pair<>("", R.drawable.ic_add_white_24dp));
     }
 
@@ -293,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                         uiFloorPlanView.operand = FloorPlanView.MapOperand.LOCATION_TAG;
                         break;
                     case 4:
-                        uiFloorPlanView.operand = FloorPlanView.MapOperand.ELEVATOR;
+                        uiFloorPlanView.operand = FloorPlanView.MapOperand.TELEPORT;
                         break;
                 }
                 if (position < 5) {

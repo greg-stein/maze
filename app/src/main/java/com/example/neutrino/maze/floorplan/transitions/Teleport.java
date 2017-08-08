@@ -17,18 +17,37 @@ import java.nio.ShortBuffer;
  * Created by Greg Stein on 7/20/2017.
  */
 
-public class Elevator extends Tag implements ITeleport, IFloorPlanPrimitive {
+public class Teleport extends Tag implements ITeleport, IFloorPlanPrimitive {
     private static final float ELEVATOR_MARK_RADIUS = 1.5f;
     private Footprint mElevatorMark;
 
-    public Elevator() {
+    public enum Type {
+        ELEVATOR, ESCALATOR, STAIRS, RAMP
+    }
+
+    private Type mType;
+
+    public Teleport() {
         super();
     }
 
-    public Elevator(PointF location, String id) {
+    public Teleport(PointF location, String id) {
+        this(location, id, Type.ELEVATOR);
+    }
+
+    public Teleport(PointF location, String id, Type type) {
         super(location, id);
         mElevatorMark = new Footprint(location.x, location.y, ELEVATOR_MARK_RADIUS);
         mElevatorMark.setColor(Color.DKGRAY);
+        mType = type;
+    }
+
+    public Type getType() {
+        return mType;
+    }
+
+    public void setType(Type type) {
+        this.mType = type;
     }
 
     @Override
