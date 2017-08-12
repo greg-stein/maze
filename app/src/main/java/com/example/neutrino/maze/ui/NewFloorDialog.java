@@ -72,7 +72,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private String[] mFloorsMock = {"5", "4", "3", "2", "1", "G", "P", "-2", "-3"};
     private List<Floor> mBuildingFloors = new ArrayList<>();
     private boolean mUpdateFloorNameInList = false;
-    private LocationManager locationManager;
+    private LocationManager mLocationManager;
     private FloorsAdapter mFloorsAdapter;
     private List<Building> mBuildings = new ArrayList<>();
     private BuildingsAdapter mBuildingsAdapter;
@@ -334,9 +334,9 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     }
 
     private void getCurrentAddress() {
-        locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+        mLocationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
         if (checkPermission()) {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListener);
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, mLocationListener);
         }
     }
 
@@ -355,9 +355,9 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         return true;
     }
 
-    private final LocationListener locationListener = new LocationListener() {
+    private final LocationListener mLocationListener = new LocationListener() {
         public void onLocationChanged(Location location) {
-            locationManager.removeUpdates(this);
+            mLocationManager.removeUpdates(this);
 
             new AddressObtainerTask().onFinish(new AsyncResponse() {
                 @Override
