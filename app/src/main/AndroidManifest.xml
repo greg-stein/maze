@@ -36,7 +36,7 @@
             android:enabled="true" >
         </service>
         <receiver
-            android:name=".RestartSensor"
+            android:name=".SensorRestarterBroadcastReceiver"
             android:enabled="true"
             android:exported="true"
             android:label="RestartServiceWhenStopped">

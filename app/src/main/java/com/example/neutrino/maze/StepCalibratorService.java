@@ -32,7 +32,7 @@ public class StepCalibratorService extends Service {
     public void onDestroy() {
         super.onDestroy();
         Log.i("EXIT", "ondestroy!");
-        Intent broadcastIntent = new Intent("uk.ac.shef.oak.ActivityRecognition.RestartSensor");
+        Intent broadcastIntent = new Intent("com.example.neutrino.maze.RestartSensor");
         sendBroadcast(broadcastIntent);
         stoptimertask();
     }
