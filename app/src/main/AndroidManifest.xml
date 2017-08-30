@@ -31,6 +31,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".StepCalibratorService"
+            android:enabled="true" >
+        </service>
+        <receiver
+            android:name=".RestartSensor"
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartServiceWhenStopped">
+            <intent-filter>
+                <action android:name="com.example.neutrino.maze.RestartSensor"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>
