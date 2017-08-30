@@ -4,29 +4,21 @@ import android.annotation.TargetApi;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Build;
-import android.support.design.widget.FloatingActionButton;
 
 import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.CommonHelper;
 import com.example.neutrino.maze.navigation.FingerprintsPathFinder;
 import com.example.neutrino.maze.navigation.GridPathFinder;
 import com.example.neutrino.maze.navigation.PathFinderBase;
-import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 
 import org.simmetrics.StringMetric;
-import org.simmetrics.metrics.CosineSimilarity;
 import org.simmetrics.metrics.StringMetrics;
-import org.simmetrics.simplifiers.Simplifiers;
-import org.simmetrics.tokenizers.Tokenizers;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
 
-import static org.simmetrics.builders.StringMetricBuilder.with;
+import com.example.neutrino.maze.util.CommonHelper;
 
 /**
  * Created by Greg Stein on 4/3/2017.
