@@ -20,15 +20,11 @@ public class AppSettings {
     public static int primaryDarkColor;
     public static int editModeColor;
     public static int accentColor;
-    public static Activity appActivity = null;
+    public static Activity appActivity = null; // TODO: this is memory leak! remove this field and pass context where in use
     public static int oglProgram;
     public static int oglTextRenderProgram;
     public static boolean inDebug;
     public static int pathColor;
-    public static float calibratorWalkedDistance;
-    public static int calibratorStepsDetected;
-    public static boolean calibrationCompleted;
-    public static float calibratorUserStepLength;
 
     public static void init(Context context) {
         if (context instanceof Activity) {
@@ -44,25 +40,5 @@ public class AppSettings {
         editModeColor = ContextCompat.getColor(context, R.color.colorEditMode);
         accentColor = ContextCompat.getColor(context, R.color.colorAccent);
         inDebug = true;
-    }
-
-    public static void loadFromConfig(Context context) {
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-        calibratorWalkedDistance = settings.getFloat("calibratorWalkedDistance", 0f);
-        calibratorStepsDetected = settings.getInt("calibratorStepsDetected", 0);
-        calibrationCompleted = settings.getBoolean("calibrationCompleted", false);
-        calibratorUserStepLength = settings.getFloat("calibratorUserStepLength", 0f);
-    }
-
-    public static void saveToConfig(Context context) {
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor editor = settings.edit();
-
-        editor.
-                putFloat("calibratorWalkedDistance", calibratorWalkedDistance).
-                putInt("calibratorStepsDetected", calibratorStepsDetected).
-                putBoolean("calibrationCompleted", calibrationCompleted).
-                putFloat("calibratorUserStepLength", calibratorUserStepLength).
-                apply();
     }
 }

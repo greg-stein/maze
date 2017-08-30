@@ -3,7 +3,9 @@ package com.example.neutrino.maze;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -14,6 +16,31 @@ import java.util.TimerTask;
  * Created by Greg Stein on 8/30/2017.
  */
 public class StepCalibratorService extends Service {
+    private static float calibratorWalkedDistance;
+    private static int calibratorStepsDetected;
+    private static boolean calibrationCompleted;
+    private static float calibratorUserStepLength;
+
+    public static void loadFromConfig(Context context) {
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        calibratorWalkedDistance = settings.getFloat("calibratorWalkedDistance", 0f);
+        calibratorStepsDetected = settings.getInt("calibratorStepsDetected", 0);
+        calibrationCompleted = settings.getBoolean("calibrationCompleted", false);
+        calibratorUserStepLength = settings.getFloat("calibratorUserStepLength", 0f);
+    }
+
+    public static void saveToConfig(Context context) {
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = settings.edit();
+
+        editor.
+                putFloat("calibratorWalkedDistance", calibratorWalkedDistance).
+                putInt("calibratorStepsDetected", calibratorStepsDetected).
+                putBoolean("calibrationCompleted", calibrationCompleted).
+                putFloat("calibratorUserStepLength", calibratorUserStepLength).
+                apply();
+    }
+
     public int counter=0;
     public StepCalibratorService(Context applicationContext) {
         super();
@@ -22,12 +49,15 @@ public class StepCalibratorService extends Service {
 
     public StepCalibratorService() {
     }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         startTimer();
+        loadFromConfig(this);
         return START_STICKY;
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -35,6 +65,7 @@ public class StepCalibratorService extends Service {
         Intent broadcastIntent = new Intent("com.example.neutrino.maze.RestartSensor");
         sendBroadcast(broadcastIntent);
         stoptimertask();
+        saveToConfig(this);
     }
 
     private Timer timer;
