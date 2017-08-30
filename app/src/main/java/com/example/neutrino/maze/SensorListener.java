@@ -145,6 +145,10 @@ public class SensorListener implements SensorEventListener {
         mStepDetectedEventListeners.add(listener);
     }
 
+    public void removeStepDetectedListener(IStepDetectedListener listener) {
+        mStepDetectedEventListeners.remove(listener);
+    }
+
     private void emitStepDetectedEvent() {
         for (IStepDetectedListener listener : mStepDetectedEventListeners) {
             listener.onStepDetected();
