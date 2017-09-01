@@ -87,15 +87,15 @@ public class SensorListener implements SensorEventListener {
 
         switch (event.sensor.getType()) {
             case Sensor.TYPE_GRAVITY: {
-                mGravitySensorRawData = lowPass(event.values.clone(), mGravitySensorRawData);
+                mGravitySensorRawData = lowPass(event.values, mGravitySensorRawData);
                 break;
             }
             case Sensor.TYPE_ACCELEROMETER: {
-                mGravitySensorRawData = lowPass(event.values.clone(), mGravitySensorRawData);
+                mGravitySensorRawData = lowPass(event.values, mGravitySensorRawData);
                 break;
             }
             case Sensor.TYPE_MAGNETIC_FIELD: {
-                mGeomagneticSensorRawData = lowPass(event.values.clone(), mGeomagneticSensorRawData);
+                mGeomagneticSensorRawData = lowPass(event.values, mGeomagneticSensorRawData);
                 break;
             }
             case Sensor.TYPE_ROTATION_VECTOR: {
@@ -152,7 +152,7 @@ public class SensorListener implements SensorEventListener {
     }
 
     private static float[] lowPass( float[] newSensorData, float[] oldSensorData ) {
-        if ( oldSensorData == null ) return newSensorData;
+        if ( oldSensorData == null ) return newSensorData.clone();
 
         for ( int i=0; i < newSensorData.length; i++ ) {
             oldSensorData[i] = newSensorData[i] + LOW_PASS_ALPHA * (oldSensorData[i] - newSensorData[i]);
