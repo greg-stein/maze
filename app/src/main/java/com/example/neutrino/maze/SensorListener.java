@@ -23,6 +23,7 @@ public class SensorListener implements SensorEventListener {
     private static final float LOW_PASS_ALPHA = 0.5f;
 
     private static SensorListener instance = null;
+
     public static SensorListener getInstance() {
         if (instance == null) {
             instance = new SensorListener();
@@ -32,6 +33,7 @@ public class SensorListener implements SensorEventListener {
 
     private List<IDeviceRotationListener> mDeviceRotationEventListeners = new ArrayList<>();
     private List<IStepDetectedListener> mStepDetectedEventListeners = new ArrayList<>();
+    private List<IGravityChangedListener> mGravityChangedEventListeners = new ArrayList<>();
 
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
@@ -120,6 +122,7 @@ public class SensorListener implements SensorEventListener {
             SensorManager.getOrientation(mRotationMatrix, mOrientation);
             double degree = Math.toDegrees(mOrientation[0]);
             emitDeviceRotationEvent(degree);
+            //TODO: add code here to compute orientation-corrected acceleration data
         }
     }
 
@@ -148,6 +151,20 @@ public class SensorListener implements SensorEventListener {
     private void emitStepDetectedEvent() {
         for (IStepDetectedListener listener : mStepDetectedEventListeners) {
             listener.onStepDetected();
+        }
+    }
+
+    public interface IGravityChangedListener {
+        void onGravityChanged(float newGravity);
+    }
+
+    public void addGravityChangedListener(IGravityChangedListener listener) {
+        mGravityChangedEventListeners.add(listener);
+    }
+
+    private void emitGravityChangedEvent(float newGravity) {
+        for (IGravityChangedListener listener : mGravityChangedEventListeners) {
+            listener.onGravityChanged(newGravity);
         }
     }
 
