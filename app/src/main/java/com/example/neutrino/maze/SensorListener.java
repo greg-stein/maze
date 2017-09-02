@@ -4,6 +4,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.opengl.Matrix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,9 @@ public class SensorListener implements SensorEventListener {
 
     private float[] mGravitySensorRawData;
     private float[] mGeomagneticSensorRawData;
-    private static final float[] mRotationMatrix = new float[9];
+    private static final float[] mGravitySensorRawDataAugmented = new float[4];
+    private static final float[] mGravitySensorAdjustedData = new float[4];
+    private static final float[] mRotationMatrix = new float[16];   // 4x4 for compatibility with OpenGL
     private static final float[] mInclinationMatrix = new float[9];
     private static final float[] mOrientation = new float[3];
 
@@ -122,7 +125,15 @@ public class SensorListener implements SensorEventListener {
             SensorManager.getOrientation(mRotationMatrix, mOrientation);
             double degree = Math.toDegrees(mOrientation[0]);
             emitDeviceRotationEvent(degree);
-            //TODO: add code here to compute orientation-corrected acceleration data
+            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER || event.sensor.getType() == Sensor.TYPE_GRAVITY) {
+                mGravitySensorRawDataAugmented[0] = mGravitySensorRawData[0];
+                mGravitySensorRawDataAugmented[1] = mGravitySensorRawData[1];
+                mGravitySensorRawDataAugmented[2] = mGravitySensorRawData[2];
+                // according to getRotationMatrix documentation: [0 0 g] = R * gravity (g = magnitude of gravity)
+                // the third element (Z coordinate) of the resultant vector is the current magnitude of acceleration in the earth Z axis)
+                Matrix.multiplyMV(mGravitySensorAdjustedData, 0, mRotationMatrix, 0, mGravitySensorRawDataAugmented, 0);
+                emitGravityChangedEvent(mGravitySensorAdjustedData[2]);
+            }
         }
     }
 
