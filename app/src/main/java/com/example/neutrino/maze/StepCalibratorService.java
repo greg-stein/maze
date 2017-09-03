@@ -26,7 +26,7 @@ import java.util.TimerTask;
 /**
  * Created by Greg Stein on 8/30/2017.
  */
-public class StepCalibratorService extends Service implements LocationListener {
+public class StepCalibratorService extends Service implements LocationListener, SensorListener.IStepDetectedListener {
     private static final int GPS_UPDATE_INTERVAL = 1000; // 1 sec
     public static final int MIN_DISTANCE = 5;
     private static float calibratorWalkedDistance;
@@ -75,7 +75,7 @@ public class StepCalibratorService extends Service implements LocationListener {
 
     @Override
     public void onCreate() {
-        super.onCreate();
+        SensorListener.getInstance(this).addStepDetectedListener(this);
 
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
@@ -195,6 +195,7 @@ public class StepCalibratorService extends Service implements LocationListener {
         stopTimerTask();
         mLocationManager.removeUpdates(this);
         saveToConfig(this);
+        SensorListener.getInstance(this).removeStepDetectedListener(this);
     }
 
     private Timer timer;
@@ -238,5 +239,12 @@ public class StepCalibratorService extends Service implements LocationListener {
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    @Override
+    public void onStepDetected() {
+        if (isGPSFix) {
+            mCurrentSessionSteps++;
+        }
     }
 }
