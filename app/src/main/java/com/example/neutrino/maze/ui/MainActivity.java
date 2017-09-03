@@ -128,15 +128,15 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         mFabAlpha = getAlphaFromRes();
 
         // initialize your android device sensor capabilities
-        mWifiScanner = WifiScanner.getInstance();
-        mSensorListener = SensorListener.getInstance();
+        mWifiScanner = WifiScanner.getInstance(this);
+        mSensorListener = SensorListener.getInstance(this);
         mSensorListener.addDeviceRotationListener(this);
-        mLocator = Locator.getInstance();
+        mLocator = Locator.getInstance(this);
         mLocator.addLocationUpdatedListener(this);
         if (AppSettings.inDebug) {
 //            mLocator.addDistributionUpdatedListener(this);
         }
-        mMapper = Mapper.getInstance();
+        mMapper = Mapper.getInstance(this);
 
         if (AppSettings.inDebug) {
             mMapper.setFloorPlanView(uiFloorPlanView);
@@ -464,7 +464,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                      e.printStackTrace();
                 }
 
-                new LoadFloorPlanTask().onFinish(new LoadFloorPlanTask.AsyncResponse() {
+                new LoadFloorPlanTask(MainActivity.this).onFinish(new LoadFloorPlanTask.AsyncResponse() {
                     @Override
                     public void onFinish(FloorPlan floorPlan) {
                         mFloorPlan = floorPlan;

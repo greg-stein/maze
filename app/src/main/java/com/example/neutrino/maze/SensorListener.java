@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -23,9 +24,13 @@ public class SensorListener implements SensorEventListener {
     private static final float LOW_PASS_ALPHA = 0.5f;
 
     private static SensorListener instance = null;
-    public static SensorListener getInstance() {
+    private static final Object mutex = new Object();
+    public static SensorListener getInstance(Context context) {
         if (instance == null) {
-            instance = new SensorListener();
+            synchronized (mutex) {
+                if (instance == null)
+                    instance = new SensorListener(context);
+            }
         }
         return instance;
     }
@@ -52,8 +57,8 @@ public class SensorListener implements SensorEventListener {
     private static final float[] mInclinationMatrix = new float[9];
     private static final float[] mOrientation = new float[3];
 
-    private SensorListener() {
-        mSensorManager = (SensorManager) AppSettings.appActivity.getSystemService(SENSOR_SERVICE);
+    private SensorListener(Context context) {
+        mSensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);

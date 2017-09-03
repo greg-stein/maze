@@ -1,5 +1,6 @@
 package com.example.neutrino.maze.ui;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
 import com.example.neutrino.maze.Locator;
@@ -14,7 +15,12 @@ import java.util.List;
  */
 
 public class LoadFloorPlanTask extends AsyncTask<String, Void, FloorPlan> {
+    private final Context mContext;
     private AsyncResponse onFinishHandler;
+
+    public LoadFloorPlanTask(Context context) {
+        this.mContext = context;
+    }
 
     @Override
     protected FloorPlan doInBackground(String... strings) {
@@ -25,7 +31,7 @@ public class LoadFloorPlanTask extends AsyncTask<String, Void, FloorPlan> {
             List<Object> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
             floorPlan = FloorPlan.build(floorplan);
             WiFiLocator.getInstance().setFingerprintsMap(floorPlan.getFingerprints());
-            Locator.getInstance().setFloorPlan(floorPlan);
+            Locator.getInstance(mContext).setFloorPlan(floorPlan);
         }
         return floorPlan;
     }

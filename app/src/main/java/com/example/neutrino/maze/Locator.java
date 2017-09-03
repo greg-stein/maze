@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.content.Context;
 import android.graphics.PointF;
 
 import com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
@@ -24,12 +25,22 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     private static final int WINDOW_SIZE = 3;
     private static final int MAX_VARIANCES_NUM = 4;
 
-    private static Locator instance = new Locator();
-    public static Locator getInstance() {return instance;}
+    private static Locator instance = null;
+    private static final Object mutex = new Object();
+    public static Locator getInstance(Context context) {
+        if (instance == null) {
+            synchronized (mutex) {
+                if (instance == null) {
+                    instance = new Locator(context);
+                }
+            }
+        }
+        return instance;
+    }
 
-    private WifiScanner mWifiScanner = WifiScanner.getInstance();
-    private SensorListener mSensorListener = SensorListener.getInstance();
-    private WiFiLocator mWifiLocator = WiFiLocator.getInstance();
+    private WifiScanner mWifiScanner;
+    private SensorListener mSensorListener;
+    private WiFiLocator mWifiLocator;
     private boolean mUseWifiScanner;
     private MovingAveragePointsQueue mLastLocations = new MovingAveragePointsQueue(WINDOW_SIZE);
     private PointF mCurrentLocation = new PointF(Float.MAX_VALUE, Float.MAX_VALUE);
@@ -41,7 +52,11 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     // For debug mode only
     private List<IDistributionUpdatedListener> mDistributionUpdatedListeners = new ArrayList<>();
 
-    private Locator() {
+    private Locator(Context context) {
+        mWifiScanner = WifiScanner.getInstance(context);
+        mSensorListener = SensorListener.getInstance(context);
+        mWifiLocator = WiFiLocator.getInstance();
+
         mWifiScanner.addFingerprintAvailableListener(this);
         mSensorListener.addStepDetectedListener(this);
         mSensorListener.addDeviceRotationListener(this);
