@@ -1,11 +1,9 @@
 package com.example.neutrino.maze;
 
-import android.Manifest;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.location.GnssStatus;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -17,9 +15,12 @@ import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
+import com.example.neutrino.maze.ui.MainActivity;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -37,6 +38,8 @@ public class StepCalibratorService extends Service implements LocationListener, 
     private long mLastLocationMillis;
     private Location mLastLocation;
     private boolean isGPSFix;
+
+    private boolean mLocationPermissionsGranted;
 
     public static void loadFromConfig(Context context) {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
@@ -60,9 +63,9 @@ public class StepCalibratorService extends Service implements LocationListener, 
                 apply();
     }
 
-    GnssStatus.Callback mGnssStatusCallback;
+    private GnssStatus.Callback mGnssStatusCallback;
     @Deprecated private GpsStatus.Listener mStatusListener;
-    LocationManager mLocationManager;
+    private LocationManager mLocationManager;
 
     public int counter=0;
     public StepCalibratorService(Context applicationContext) {
@@ -76,17 +79,18 @@ public class StepCalibratorService extends Service implements LocationListener, 
     @Override
     public void onCreate() {
         SensorListener.getInstance(this).addStepDetectedListener(this);
-
+        loadFromConfig(this);
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        loadFromConfig(this);
-
-        mLocationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        if (checkPermission()) {
-            // TODO: Check whether it does make sense to acquire location each second
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, GPS_UPDATE_INTERVAL, MIN_DISTANCE, this);
+        mLocationPermissionsGranted = MainActivity.locationPermissionsGranted(this);
+        if (!mLocationPermissionsGranted) {
+            // Kill this service as without GPS it is impossible to calibrate user's step length
+            stopSelf();
+            return;
         }
 
+        // TODO: Check whether it does make sense to acquire location each second
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, GPS_UPDATE_INTERVAL, MIN_DISTANCE, this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             mGnssStatusCallback = new GnssStatus.Callback() {
                 @Override
@@ -163,21 +167,6 @@ public class StepCalibratorService extends Service implements LocationListener, 
 
     }
 
-    private boolean checkPermission() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return true;
-        }
-        return true;
-    }
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
@@ -190,12 +179,16 @@ public class StepCalibratorService extends Service implements LocationListener, 
     public void onDestroy() {
         super.onDestroy();
         Log.i("EXIT", "ondestroy!");
-        Intent broadcastIntent = new Intent("com.example.neutrino.maze.RestartSensor");
-        sendBroadcast(broadcastIntent);
-        stopTimerTask();
         mLocationManager.removeUpdates(this);
         saveToConfig(this);
         SensorListener.getInstance(this).removeStepDetectedListener(this);
+        stopTimerTask();
+
+        // Schedule resurrection of this service if we have permissions
+        if (mLocationPermissionsGranted) {
+            Intent broadcastIntent = new Intent("com.example.neutrino.maze.RestartSensor");
+            sendBroadcast(broadcastIntent);
+        }
     }
 
     private Timer timer;

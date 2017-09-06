@@ -1,5 +1,7 @@
 package com.example.neutrino.maze.ui;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,8 +14,10 @@ import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -57,11 +61,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
 import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 
 public class MainActivity extends AppCompatActivity implements IDeviceRotationListener,
         ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener, VectorizeDialog.ICompleteVectorizationHandler {
+    public static final int PERMISSION_LOCATION_REQUEST_CODE = 613;
+
     // GUI-related fields
     private SearchView uiSearchView;
     private RecyclerView uiRecView;
@@ -104,6 +111,72 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private StepCalibratorService mStepCalibratorService;
     private Intent mStepCalibratorServiceIntent;
 
+    private static boolean letDieSilently = false;
+    public static boolean locationPermissionsGranted = false;
+
+    public static boolean requestPermissions(Context context) {
+        if (!locationPermissionsGranted(context)) {
+            letDieSilently = true;
+            // Request permissions
+            if (context instanceof Activity) {
+                final Activity activity = (Activity) context;
+
+                if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_COARSE_LOCATION) ||
+                        ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                    // Show user justification why these permissions are needed
+                    new android.app.AlertDialog.Builder(context).
+                        setCancelable(true).
+                        setTitle("Permissions necessary").
+                        setMessage("We need your permission to get LOCATION for using in open areas " +
+                                "and for calibrating positioning methods").
+                        setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                ActivityCompat.requestPermissions(
+                                      activity,
+                                      new String[] { Manifest.permission.ACCESS_COARSE_LOCATION,
+                                                     Manifest.permission.ACCESS_FINE_LOCATION},
+                                      PERMISSION_LOCATION_REQUEST_CODE);
+                            }
+                        }).
+                        show();
+                } else {
+                    ActivityCompat.requestPermissions(
+                            activity,
+                            new String[] { Manifest.permission.ACCESS_COARSE_LOCATION,
+                                           Manifest.permission.ACCESS_FINE_LOCATION},
+                            PERMISSION_LOCATION_REQUEST_CODE);
+                }
+            }
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean locationPermissionsGranted(Context context) {
+        return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_LOCATION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED) {
+                locationPermissionsGranted = true;
+                // reload activity
+            } else {
+                Toast.makeText(this, "Maze was not allowed to use location. Hence it couldn't " +
+                                "function properly and will be closed. Please consider " +
+                                "granting it needed permissions.",
+                        Toast.LENGTH_LONG).show();
+                locationPermissionsGranted = false;
+            }
+            finish();
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -126,6 +199,11 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         AppSettings.init(this);
         mFabAlpha = getAlphaFromRes();
+
+        locationPermissionsGranted = requestPermissions(this);
+
+        // TODO: instead of just killing the app, consider reloading activity when the permission is granted.
+        if (!locationPermissionsGranted) return;
 
         // initialize your android device sensor capabilities
         mWifiScanner = WifiScanner.getInstance(this);
@@ -157,6 +235,8 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         mStepCalibratorService = new StepCalibratorService(this);
         mStepCalibratorServiceIntent = new Intent(this, mStepCalibratorService.getClass());
+
+
         if (!isMyServiceRunning(mStepCalibratorService.getClass())) {
             startService(mStepCalibratorServiceIntent);
         }
@@ -177,7 +257,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     @Override
     protected void onDestroy() {
-        stopService(mStepCalibratorServiceIntent);
+        if (!letDieSilently) {
+            stopService(mStepCalibratorServiceIntent);
+        }
         Log.i("MAINACT", "onDestroy!");
         super.onDestroy();
     }
@@ -561,8 +643,11 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     @Override
     protected void onResume() {
         super.onResume();
-        mSensorListener.onActivityResume();
-        mWifiScanner.onActivityResume();
+
+        if (locationPermissionsGranted(this)) {
+            mSensorListener.onActivityResume();
+            mWifiScanner.onActivityResume();
+        }
     }
 
     @Override
@@ -570,8 +655,10 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         super.onPause();
 
         // to stop the listener and save battery
-        mSensorListener.onActivityPause();
-        mWifiScanner.onActivityPause();
+        if (locationPermissionsGranted(this)) {
+            mSensorListener.onActivityPause();
+            mWifiScanner.onActivityPause();
+        }
     }
 
     @Override
