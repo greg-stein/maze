@@ -1,7 +1,5 @@
 package com.example.neutrino.maze.util;
 
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
