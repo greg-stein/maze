@@ -25,6 +25,8 @@ public class SensorListener implements SensorEventListener {
 
     private static SensorListener instance = null;
     private static final Object mutex = new Object();
+    private boolean mActive;
+
     public static SensorListener getInstance(Context context) {
         if (instance == null) {
             synchronized (mutex) {
@@ -66,7 +68,13 @@ public class SensorListener implements SensorEventListener {
         mStepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
     }
 
-    public void onActivityResume() {
+    private boolean subscribersExist() {
+        if (mStepDetectedEventListeners.size() > 0) return true;
+        if (mDeviceRotationEventListeners.size() > 0) return true;
+        return false;
+    }
+
+    public void resume() {
         // for the system's orientation sensor registered listeners
         mHaveRotation = mSensorManager.registerListener(this, mRotation, SensorManager.SENSOR_DELAY_GAME);
         if (!mHaveRotation) {
@@ -80,10 +88,12 @@ public class SensorListener implements SensorEventListener {
         }
 
         mHaveStepDetector = mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_UI);
+        mActive = true;
     }
 
-    public void onActivityPause() {
+    public void pause() {
         mSensorManager.unregisterListener(this);
+        mActive = false;
     }
 
     @Override
@@ -128,12 +138,24 @@ public class SensorListener implements SensorEventListener {
         }
     }
 
+    public boolean isActive() {
+        return mActive;
+    }
+
     public interface IDeviceRotationListener {
         void onDeviceRotated(double degree);
     }
 
     public void addDeviceRotationListener(IDeviceRotationListener listener) {
-        mDeviceRotationEventListeners.add(listener);
+        if (!mDeviceRotationEventListeners.contains(listener)) {
+            mDeviceRotationEventListeners.add(listener);
+        }
+        if (!isActive()) resume();
+    }
+
+    public void removeDeviceRotationListener(IDeviceRotationListener listener) {
+        mDeviceRotationEventListeners.remove(listener);
+        if (!subscribersExist()) pause();
     }
 
     private void emitDeviceRotationEvent(double degree) {
@@ -147,11 +169,15 @@ public class SensorListener implements SensorEventListener {
     }
 
     public void addStepDetectedListener(IStepDetectedListener listener) {
-        mStepDetectedEventListeners.add(listener);
+        if (!mStepDetectedEventListeners.contains(listener)) {
+            mStepDetectedEventListeners.add(listener);
+        }
+        if (!isActive()) resume();
     }
 
     public void removeStepDetectedListener(IStepDetectedListener listener) {
         mStepDetectedEventListeners.remove(listener);
+        if (!subscribersExist()) pause();
     }
 
     private void emitStepDetectedEvent() {

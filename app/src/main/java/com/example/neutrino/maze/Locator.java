@@ -63,6 +63,12 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
         mUseWifiScanner = true;
     }
 
+    public void onDestroy() {
+        mWifiScanner.removeFingerprintAvailableListener(this);
+        mSensorListener.removeStepDetectedListener(this);
+        mSensorListener.removeDeviceRotationListener(this);
+    }
+
     public boolean isWifiScannerUsed() {
         return mUseWifiScanner;
     }

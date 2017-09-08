@@ -40,6 +40,7 @@ public class StepCalibratorService extends Service implements LocationListener, 
     private boolean isGPSFix;
 
     private boolean mLocationPermissionsGranted;
+    private SensorListener mSensorListener;
 
     public static void loadFromConfig(Context context) {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
@@ -78,7 +79,8 @@ public class StepCalibratorService extends Service implements LocationListener, 
 
     @Override
     public void onCreate() {
-        SensorListener.getInstance(this).addStepDetectedListener(this);
+        mSensorListener = SensorListener.getInstance(this);
+        mSensorListener.addStepDetectedListener(this);
         loadFromConfig(this);
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
@@ -181,7 +183,7 @@ public class StepCalibratorService extends Service implements LocationListener, 
         Log.i("EXIT", "ondestroy!");
         mLocationManager.removeUpdates(this);
         saveToConfig(this);
-        SensorListener.getInstance(this).removeStepDetectedListener(this);
+        mSensorListener.removeStepDetectedListener(this);
         stopTimerTask();
 
         // Schedule resurrection of this service if we have permissions

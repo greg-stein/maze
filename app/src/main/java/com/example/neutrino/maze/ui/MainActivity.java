@@ -645,7 +645,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         super.onResume();
 
         if (locationPermissionsGranted(this)) {
-            mSensorListener.onActivityResume();
+            mSensorListener.addDeviceRotationListener(this);
             mWifiScanner.onActivityResume();
         }
     }
@@ -656,7 +656,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         // to stop the listener and save battery
         if (locationPermissionsGranted(this)) {
-            mSensorListener.onActivityPause();
+            mSensorListener.removeDeviceRotationListener(this);
             mWifiScanner.onActivityPause();
         }
     }
