@@ -28,8 +28,11 @@ import java.util.TimerTask;
  * Created by Greg Stein on 8/30/2017.
  */
 public class StepCalibratorService extends Service implements LocationListener, SensorListener.IStepDetectedListener {
-    private static final int GPS_UPDATE_INTERVAL = 1000; // 1 sec
-    public static final int MIN_DISTANCE = 5;
+    private static final int GPS_MIN_TIME = 1000; // 1 sec
+    public static final int GPS_MIN_DISTANCE = 5;
+    public static final int MIN_SESSION_DISTANCE = 100; // in m
+    public static final float MAX_WALKING_SPEED = 2.0f; // in m/s
+
     private static float calibratorWalkedDistance;
     private static int calibratorStepsDetected;
     private static boolean calibrationCompleted;
@@ -38,6 +41,8 @@ public class StepCalibratorService extends Service implements LocationListener, 
     private long mLastLocationMillis;
     private Location mLastLocation;
     private boolean isGPSFix;
+    private int mCurrentSessionSteps = 0;
+    private float mCurrentSessionDistance = 0f;
 
     private boolean mLocationPermissionsGranted;
     private SensorListener mSensorListener;
@@ -92,7 +97,8 @@ public class StepCalibratorService extends Service implements LocationListener, 
         }
 
         // TODO: Check whether it does make sense to acquire location each second
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, GPS_UPDATE_INTERVAL, MIN_DISTANCE, this);
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                GPS_MIN_TIME, GPS_MIN_DISTANCE, this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             mGnssStatusCallback = new GnssStatus.Callback() {
                 @Override
@@ -134,7 +140,7 @@ public class StepCalibratorService extends Service implements LocationListener, 
 
     private void satelliteStatusChanged() {
         if (mLastLocation != null)
-            isGPSFix = (SystemClock.elapsedRealtime() - mLastLocationMillis) < (GPS_UPDATE_INTERVAL * 2);
+            isGPSFix = (SystemClock.elapsedRealtime() - mLastLocationMillis) < (GPS_MIN_TIME * 2);
 
         if (isGPSFix) { // A fix has been acquired.
             // Do something.
@@ -147,9 +153,34 @@ public class StepCalibratorService extends Service implements LocationListener, 
     public void onLocationChanged(Location location) {
         if (location == null) return;
 
-        mLastLocationMillis = SystemClock.elapsedRealtime();
+        long currentMillis = SystemClock.elapsedRealtime();
+        float distanceFromLastLocation;
 
-        // Do something.
+        if (mLastLocation != null) {
+            distanceFromLastLocation = location.distanceTo(mLastLocation);
+
+            boolean locationTooFar = distanceFromLastLocation > GPS_MIN_DISTANCE * 1.5;
+            boolean speedTooHigh = distanceFromLastLocation / (currentMillis - mLastLocationMillis) > MAX_WALKING_SPEED;
+
+            if (locationTooFar || speedTooHigh) {
+                // Split sessions. If current session is long enough to be accumulated, save it.
+                if (mCurrentSessionDistance > MIN_SESSION_DISTANCE) {
+                    calibratorWalkedDistance += mCurrentSessionDistance;
+                    calibratorStepsDetected += mCurrentSessionSteps;
+                }
+                mCurrentSessionDistance = 0;
+                mCurrentSessionSteps = 0;
+            } else {
+                // Increment current session
+                mCurrentSessionDistance += distanceFromLastLocation;
+            }
+        }
+
+        mLastLocationMillis = currentMillis;
+
+        latitudes.add((float) location.getLatitude());
+        longitudes.add((float) location.getLongitude());
+        wasFix.add(isGPSFix);
 
         mLastLocation = location;
     }
@@ -238,8 +269,6 @@ public class StepCalibratorService extends Service implements LocationListener, 
 
     @Override
     public void onStepDetected() {
-        if (isGPSFix) {
-            mCurrentSessionSteps++;
-        }
+        mCurrentSessionSteps++;
     }
 }
