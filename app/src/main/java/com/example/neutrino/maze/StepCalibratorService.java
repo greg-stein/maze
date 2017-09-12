@@ -13,14 +13,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.neutrino.maze.ui.MainActivity;
+import com.example.neutrino.maze.util.Log4jHelper;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -32,12 +31,19 @@ public class StepCalibratorService extends Service implements LocationListener, 
     public static final int GPS_MIN_DISTANCE = 5;
     public static final int MIN_SESSION_DISTANCE = 100; // in m
     public static final float MAX_WALKING_SPEED = 2.0f; // in m/s
+    public static final int CALIBRATION_DISTANCE = 1000; // m
+    private static final double SHORTEST_POSSIBLE_STEP = 0.3d; // 30cm
+    private static final double LONGEST_POSSIBLE_STEP = 1.0d;  // 100cm
+    public static final String STR_CALIBRATOR_WALKED_DISTANCE = "calibratorWalkedDistance";
+    public static final String STR_CALIBRATOR_STEPS_DETECTED = "calibratorStepsDetected";
+    public static final String STR_CALIBRATION_COMPLETED = "calibrationCompleted";
+    public static final String STR_CALIBRATOR_USER_STEP_LENGTH = "calibratorUserStepLength";
+    public static final String STEP_CALIBRATOR_PREFERENCES = "StepCalibratorServicePreferences";
 
     private static float calibratorWalkedDistance;
     private static int calibratorStepsDetected;
     private static boolean calibrationCompleted;
     private static float calibratorUserStepLength;
-    private static boolean isCalibrationActive;
     private long mLastLocationMillis;
     private Location mLastLocation;
     private boolean isGPSFix;
@@ -46,26 +52,33 @@ public class StepCalibratorService extends Service implements LocationListener, 
 
     private boolean mLocationPermissionsGranted;
     private SensorListener mSensorListener;
+    private static org.apache.log4j.Logger log = Log4jHelper.getLogger("StepCalibratorService");
+    private int mStepsFromLastLocation = 0;
 
-    public static void loadFromConfig(Context context) {
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-        calibratorWalkedDistance = settings.getFloat("calibratorWalkedDistance", 0f);
-        calibratorStepsDetected = settings.getInt("calibratorStepsDetected", 0);
-        calibrationCompleted = settings.getBoolean("calibrationCompleted", false);
-        calibratorUserStepLength = settings.getFloat("calibratorUserStepLength", 0f);
-        isCalibrationActive = settings.getBoolean("isCalibrationActive", false);
+    public static void loadFromConfig(Service service) {
+        SharedPreferences settings = service.getApplicationContext().
+                getSharedPreferences(STEP_CALIBRATOR_PREFERENCES, MODE_PRIVATE);
+        calibratorWalkedDistance = settings.getFloat(STR_CALIBRATOR_WALKED_DISTANCE, 0f);
+        calibratorStepsDetected = settings.getInt(STR_CALIBRATOR_STEPS_DETECTED, 0);
+        calibrationCompleted = settings.getBoolean(STR_CALIBRATION_COMPLETED, false);
+        calibratorUserStepLength = settings.getFloat(STR_CALIBRATOR_USER_STEP_LENGTH, 0f);
+
+        log.info("loadConfig: calibratorWalkedDistance = " + calibratorWalkedDistance);
+        log.info("loadConfig: calibratorStepsDetected = " + calibratorStepsDetected);
     }
 
-    public static void saveToConfig(Context context) {
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+    public static void saveToConfig(Service service) {
+        SharedPreferences settings = service.getApplicationContext().
+                getSharedPreferences(STEP_CALIBRATOR_PREFERENCES, MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
 
+        // TODO: remove after debug
+//        calibratorWalkedDistance = calibratorStepsDetected = 0;
         editor.
-                putFloat("calibratorWalkedDistance", calibratorWalkedDistance).
-                putInt("calibratorStepsDetected", calibratorStepsDetected).
-                putBoolean("calibrationCompleted", calibrationCompleted).
-                putFloat("calibratorUserStepLength", calibratorUserStepLength).
-                putBoolean("isCalibrationActive", isCalibrationActive).
+                putFloat(STR_CALIBRATOR_WALKED_DISTANCE, calibratorWalkedDistance).
+                putInt(STR_CALIBRATOR_STEPS_DETECTED, calibratorStepsDetected).
+                putBoolean(STR_CALIBRATION_COMPLETED, calibrationCompleted).
+                putFloat(STR_CALIBRATOR_USER_STEP_LENGTH, calibratorUserStepLength).
                 apply();
     }
 
@@ -82,6 +95,10 @@ public class StepCalibratorService extends Service implements LocationListener, 
     public StepCalibratorService() {
     }
 
+    private boolean calibrationCriteriaSatisfied() {
+        return calibratorWalkedDistance > CALIBRATION_DISTANCE;
+    }
+
     @Override
     public void onCreate() {
         mSensorListener = SensorListener.getInstance(this);
@@ -90,7 +107,7 @@ public class StepCalibratorService extends Service implements LocationListener, 
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         mLocationPermissionsGranted = MainActivity.locationPermissionsGranted(this);
-        if (!mLocationPermissionsGranted) {
+        if (!mLocationPermissionsGranted || calibrationCriteriaSatisfied()) {
             // Kill this service as without GPS it is impossible to calibrate user's step length
             stopSelf();
             return;
@@ -157,19 +174,35 @@ public class StepCalibratorService extends Service implements LocationListener, 
         float distanceFromLastLocation;
 
         if (mLastLocation != null) {
-            distanceFromLastLocation = location.distanceTo(mLastLocation);
+            distanceFromLastLocation = location.distanceTo(mLastLocation); // in meters
+            log.info("onLocationChanged: distanceFromLastLocation = " + distanceFromLastLocation);
 
             boolean locationTooFar = distanceFromLastLocation > GPS_MIN_DISTANCE * 1.5;
-            boolean speedTooHigh = distanceFromLastLocation / (currentMillis - mLastLocationMillis) > MAX_WALKING_SPEED;
 
-            if (locationTooFar || speedTooHigh) {
-                // Split sessions. If current session is long enough to be accumulated, save it.
-                if (mCurrentSessionDistance > MIN_SESSION_DISTANCE) {
-                    calibratorWalkedDistance += mCurrentSessionDistance;
-                    calibratorStepsDetected += mCurrentSessionSteps;
+            float speed = location.getSpeed();
+            if (speed == 0.0f) {
+                float elapsedSeconds = (currentMillis - mLastLocationMillis) / 1000.0f;
+                speed = distanceFromLastLocation / elapsedSeconds;
+            }
+            boolean speedTooHigh = speed > MAX_WALKING_SPEED;
+
+            // This indicates if user is not moving (or indoors where GPS is inaccurate)
+            boolean sloshingUser = (mStepsFromLastLocation > (distanceFromLastLocation / SHORTEST_POSSIBLE_STEP));
+
+
+            log.info("onLocationChanged: locationTooFar = " + locationTooFar);
+            log.info("onLocationChanged: speedTooHigh = " + speedTooHigh);
+            log.info("onLocationChanged: sloshingUser = " + sloshingUser);
+
+            if (locationTooFar || speedTooHigh || sloshingUser) {
+
+                storeAndResetSession();
+
+                if (calibrationCriteriaSatisfied()) {
+                    // Job done (c) Orc from Warcraft
+                    jobDone();
+                    stopSelf();
                 }
-                mCurrentSessionDistance = 0;
-                mCurrentSessionSteps = 0;
             } else {
                 // Increment current session
                 mCurrentSessionDistance += distanceFromLastLocation;
@@ -177,12 +210,45 @@ public class StepCalibratorService extends Service implements LocationListener, 
         }
 
         mLastLocationMillis = currentMillis;
-
-        latitudes.add((float) location.getLatitude());
-        longitudes.add((float) location.getLongitude());
-        wasFix.add(isGPSFix);
-
+        mStepsFromLastLocation = 0;
         mLastLocation = location;
+    }
+
+    public void storeAndResetSession() {
+        log.info("onLocationChanged: mCurrentSessionDistance: " + mCurrentSessionDistance);
+        log.info("onLocationChanged: mCurrentSessionSteps: " + mCurrentSessionSteps);
+        // Split sessions. If current session is long enough to be accumulated, save it.
+        // Also ensure that average step length is at max 1 meter
+
+        final float sessionAverageStepLength = mCurrentSessionDistance / mCurrentSessionSteps;
+        log.info("storeAndResetSession: sessionAverageStepLength: " + sessionAverageStepLength);
+        if ((mCurrentSessionDistance > MIN_SESSION_DISTANCE) &&
+                (sessionAverageStepLength >= SHORTEST_POSSIBLE_STEP) &&
+                (sessionAverageStepLength <= LONGEST_POSSIBLE_STEP)) {
+
+            // This could be called from onDestroy or onLocationChanged
+            synchronized (this) {
+                calibratorWalkedDistance += mCurrentSessionDistance;
+                calibratorStepsDetected += mCurrentSessionSteps;
+            }
+        }
+        mCurrentSessionDistance = 0;
+        mCurrentSessionSteps = 0;
+
+        log.info("storeAndResetSession: calibratorWalkedDistance: " + calibratorWalkedDistance);
+        log.info("storeAndResetSession: calibratorStepsDetected: " + calibratorStepsDetected);
+
+        log.info("------------------------------------------------------------");
+
+//        Toast.makeText(this, String.format("Session ended. Steps: %d, distance: %.2f",
+//                calibratorStepsDetected, calibratorWalkedDistance), Toast.LENGTH_SHORT).show();
+    }
+
+    public void jobDone() {
+        final float averageStepLength = calibratorWalkedDistance / calibratorStepsDetected;
+
+        calibrationCompleted = true;
+        calibratorUserStepLength = averageStepLength;
     }
 
     @Override
@@ -213,15 +279,19 @@ public class StepCalibratorService extends Service implements LocationListener, 
         super.onDestroy();
         Log.i("EXIT", "ondestroy!");
         mLocationManager.removeUpdates(this);
-        saveToConfig(this);
         mSensorListener.removeStepDetectedListener(this);
         stopTimerTask();
 
-        // Schedule resurrection of this service if we have permissions
-        if (mLocationPermissionsGranted) {
+        storeAndResetSession();
+
+        if (calibrationCriteriaSatisfied()) {
+            jobDone();
+        } else if (mLocationPermissionsGranted ) {
+            // Schedule resurrection of this service if we have permissions and job is not done
             Intent broadcastIntent = new Intent("com.example.neutrino.maze.RestartSensor");
             sendBroadcast(broadcastIntent);
         }
+        saveToConfig(this);
     }
 
     private Timer timer;
@@ -270,5 +340,6 @@ public class StepCalibratorService extends Service implements LocationListener, 
     @Override
     public void onStepDetected() {
         mCurrentSessionSteps++;
+        mStepsFromLastLocation++;
     }
 }
