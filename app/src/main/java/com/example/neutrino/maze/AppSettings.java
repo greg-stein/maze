@@ -2,8 +2,6 @@ package com.example.neutrino.maze;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 
 /**
