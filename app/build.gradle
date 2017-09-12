@@ -45,4 +45,7 @@ dependencies {
     compile "com.github.fafaldo:fab-toolbar:1.2.0"
     compile "com.android.support:recyclerview-v7:25.3.1"
     compile "org.jgrapht:jgrapht-core:0.9.1"
+
+    compile group: 'de.mindpipe.android', name: 'android-logging-log4j', version: '1.0.3'
+    compile group: 'log4j', name: 'log4j', version: '1.2.17'
 }
