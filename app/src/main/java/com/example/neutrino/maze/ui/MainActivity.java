@@ -260,6 +260,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         if (!letDieSilently) {
             stopService(mStepCalibratorServiceIntent);
         }
+        mLocator.onDestroy();
         Log.i("MAINACT", "onDestroy!");
         super.onDestroy();
     }
