@@ -78,6 +78,7 @@ public class StepCalibratorService extends Service implements LocationListener, 
                 apply();
     }
 
+    public StepCalibratorService() {}
     public StepCalibratorService(Context applicationContext) {
         super();
     }
