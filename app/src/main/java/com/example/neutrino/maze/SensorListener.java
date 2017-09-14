@@ -176,8 +176,9 @@ public class SensorListener implements SensorEventListener {
     }
 
     public void removeStepDetectedListener(IStepDetectedListener listener) {
-        mStepDetectedEventListeners.remove(listener);
-        if (!subscribersExist()) pause();
+        if (mStepDetectedEventListeners.remove(listener)) {
+            if (!subscribersExist()) pause();
+        }
     }
 
     private void emitStepDetectedEvent() {
