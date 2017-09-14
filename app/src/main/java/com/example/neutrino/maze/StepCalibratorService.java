@@ -34,6 +34,7 @@ public class StepCalibratorService extends Service implements LocationListener, 
     public static final int CALIBRATION_DISTANCE = 1000; // m
     private static final double SHORTEST_POSSIBLE_STEP = 0.3d; // 30cm
     private static final double LONGEST_POSSIBLE_STEP = 1.0d;  // 100cm
+    public static final double GPS_ACCURACY = 5.0; // meters. Minimum acceptable accuracy
     public static final String STR_CALIBRATOR_WALKED_DISTANCE = "calibratorWalkedDistance";
     public static final String STR_CALIBRATOR_STEPS_DETECTED = "calibratorStepsDetected";
     public static final String STR_CALIBRATION_COMPLETED = "calibrationCompleted";
@@ -189,12 +190,14 @@ public class StepCalibratorService extends Service implements LocationListener, 
             // This indicates if user is not moving (or indoors where GPS is inaccurate)
             boolean sloshingUser = (mStepsFromLastLocation > (distanceFromLastLocation / SHORTEST_POSSIBLE_STEP));
 
+            boolean poorAccuracy = !location.hasAccuracy() || location.getAccuracy() >= GPS_ACCURACY;
 
             log.info("onLocationChanged: locationTooFar = " + locationTooFar);
             log.info("onLocationChanged: speedTooHigh = " + speedTooHigh);
             log.info("onLocationChanged: sloshingUser = " + sloshingUser);
+            log.info("onLocationChanged: poorAccuracy = " + poorAccuracy);
 
-            if (locationTooFar || speedTooHigh || sloshingUser) {
+            if (locationTooFar || speedTooHigh || sloshingUser) {// || poorAccuracy) {
 
                 storeAndResetSession();
 
