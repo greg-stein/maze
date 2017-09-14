@@ -4,12 +4,9 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.location.GnssStatus;
-import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
@@ -45,7 +42,6 @@ public class StepCalibratorService extends Service implements LocationListener, 
     private static float calibratorUserStepLength;
     private long mLastLocationMillis;
     private Location mLastLocation;
-    private boolean isGPSFix;
     private int mCurrentSessionSteps = 0;
     private float mCurrentSessionDistance = 0f;
 
@@ -53,6 +49,7 @@ public class StepCalibratorService extends Service implements LocationListener, 
     private SensorListener mSensorListener;
     private static org.apache.log4j.Logger log = Log4jHelper.getLogger("StepCalibratorService");
     private int mStepsFromLastLocation = 0;
+    private LocationManager mLocationManager;
 
     public static void loadFromConfig(Service service) {
         SharedPreferences settings = service.getApplicationContext().
@@ -81,10 +78,6 @@ public class StepCalibratorService extends Service implements LocationListener, 
                 apply();
     }
 
-    private GnssStatus.Callback mGnssStatusCallback;
-    @Deprecated private GpsStatus.Listener mStatusListener;
-    private LocationManager mLocationManager;
-
     public StepCalibratorService(Context applicationContext) {
         super();
     }
@@ -107,57 +100,8 @@ public class StepCalibratorService extends Service implements LocationListener, 
             return;
         }
 
-        // TODO: Check whether it does make sense to acquire location each second
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                 GPS_MIN_TIME, GPS_MIN_DISTANCE, this);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            mGnssStatusCallback = new GnssStatus.Callback() {
-                @Override
-                public void onSatelliteStatusChanged(GnssStatus status) {
-                    satelliteStatusChanged();
-                }
-
-                @Override
-                public void onFirstFix(int ttffMillis) {
-                    gpsFixAcquired();
-
-                }
-            };
-            mLocationManager.registerGnssStatusCallback(mGnssStatusCallback);
-        } else {
-            mStatusListener = new GpsStatus.Listener() {
-                @Override
-                public void onGpsStatusChanged(int event) {
-                    switch (event) {
-                        case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
-                            satelliteStatusChanged();
-
-                            break;
-                        case GpsStatus.GPS_EVENT_FIRST_FIX:
-                            // Do something.
-                            gpsFixAcquired();
-                            break;
-                    }
-                }
-            };
-            mLocationManager.addGpsStatusListener(mStatusListener);
-        }
-    }
-
-    private void gpsFixAcquired() {
-        // Do something.
-        isGPSFix = true;
-    }
-
-    private void satelliteStatusChanged() {
-        if (mLastLocation != null)
-            isGPSFix = (SystemClock.elapsedRealtime() - mLastLocationMillis) < (GPS_MIN_TIME * 2);
-
-        if (isGPSFix) { // A fix has been acquired.
-            // Do something.
-        } else { // The fix has been lost.
-            // Do something.
-        }
     }
 
     @Override
@@ -303,7 +247,6 @@ public class StepCalibratorService extends Service implements LocationListener, 
         synchronized (stepsCounterMutex) {
             mCurrentSessionSteps++;
         }
-
 
         log.info("onStepDetected: mCurrentSessionSteps: " + mCurrentSessionSteps);
         Log.i("StepCalibratorService", "onStepDetected: mCurrentSessionSteps: " + mCurrentSessionSteps);
