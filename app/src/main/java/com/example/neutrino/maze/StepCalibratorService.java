@@ -41,6 +41,8 @@ public class StepCalibratorService extends Service implements LocationListener, 
     public static final String STR_CALIBRATOR_USER_STEP_LENGTH = "calibratorUserStepLength";
     public static final String STEP_CALIBRATOR_PREFERENCES = "StepCalibratorServicePreferences";
 
+    private static final Object stepsCounterMutex = new Object();
+    private static final Object distanceMutex = new Object();
     private static float calibratorWalkedDistance;
     private static int calibratorStepsDetected;
     private static boolean calibrationCompleted;
@@ -208,7 +210,9 @@ public class StepCalibratorService extends Service implements LocationListener, 
                 }
             } else {
                 // Increment current session
-                mCurrentSessionDistance += distanceFromLastLocation;
+                synchronized (distanceMutex) {
+                    mCurrentSessionDistance += distanceFromLastLocation;
+                }
             }
         }
 
@@ -235,8 +239,12 @@ public class StepCalibratorService extends Service implements LocationListener, 
                 calibratorStepsDetected += mCurrentSessionSteps;
             }
         }
-        mCurrentSessionDistance = 0;
-        mCurrentSessionSteps = 0;
+        synchronized (distanceMutex) {
+            mCurrentSessionDistance = 0;
+        }
+        synchronized (stepsCounterMutex) {
+            mCurrentSessionSteps = 0;
+        }
 
         log.info("storeAndResetSession: calibratorWalkedDistance: " + calibratorWalkedDistance);
         log.info("storeAndResetSession: calibratorStepsDetected: " + calibratorStepsDetected);
@@ -280,13 +288,13 @@ public class StepCalibratorService extends Service implements LocationListener, 
     @Override
     public void onDestroy() {
         super.onDestroy();
+
         Log.i("EXIT", "ondestroy!");
         mLocationManager.removeUpdates(this);
         mSensorListener.removeStepDetectedListener(this);
         stopTimerTask();
 
         storeAndResetSession();
-
         if (calibrationCriteriaSatisfied()) {
             jobDone();
         } else if (mLocationPermissionsGranted ) {
@@ -342,7 +350,13 @@ public class StepCalibratorService extends Service implements LocationListener, 
 
     @Override
     public void onStepDetected() {
-        mCurrentSessionSteps++;
+        synchronized (stepsCounterMutex) {
+            mCurrentSessionSteps++;
+        }
+
+
+        log.info("onStepDetected: mCurrentSessionSteps: " + mCurrentSessionSteps);
+        Log.i("StepCalibratorService", "onStepDetected: mCurrentSessionSteps: " + mCurrentSessionSteps);
         mStepsFromLastLocation++;
     }
 }
