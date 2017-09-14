@@ -28,7 +28,7 @@ import java.util.TimerTask;
  */
 public class StepCalibratorService extends Service implements LocationListener, SensorListener.IStepDetectedListener {
     private static final int GPS_MIN_TIME = 1000; // 1 sec
-    public static final int GPS_MIN_DISTANCE = 5;
+    public static final int GPS_MIN_DISTANCE = 10; // 10 meters
     public static final int MIN_SESSION_DISTANCE = 100; // in m
     public static final float MAX_WALKING_SPEED = 2.0f; // in m/s
     public static final int CALIBRATION_DISTANCE = 1000; // m
