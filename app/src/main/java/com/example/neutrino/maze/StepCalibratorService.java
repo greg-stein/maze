@@ -15,13 +15,9 @@ import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.example.neutrino.maze.ui.MainActivity;
 import com.example.neutrino.maze.util.Log4jHelper;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by Greg Stein on 8/30/2017.
@@ -66,8 +62,8 @@ public class StepCalibratorService extends Service implements LocationListener, 
         calibrationCompleted = settings.getBoolean(STR_CALIBRATION_COMPLETED, false);
         calibratorUserStepLength = settings.getFloat(STR_CALIBRATOR_USER_STEP_LENGTH, 0f);
 
-        log.info("loadConfig: calibratorWalkedDistance = " + calibratorWalkedDistance);
-        log.info("loadConfig: calibratorStepsDetected = " + calibratorStepsDetected);
+        log.info("loadFromConfig: calibratorWalkedDistance = " + calibratorWalkedDistance);
+        log.info("loadFromConfig: calibratorStepsDetected = " + calibratorStepsDetected);
     }
 
     public static void saveToConfig(Service service) {
@@ -89,13 +85,8 @@ public class StepCalibratorService extends Service implements LocationListener, 
     @Deprecated private GpsStatus.Listener mStatusListener;
     private LocationManager mLocationManager;
 
-    public int counter=0;
     public StepCalibratorService(Context applicationContext) {
         super();
-        Log.i("HERE", "here I am!");
-    }
-
-    public StepCalibratorService() {
     }
 
     private boolean calibrationCriteriaSatisfied() {
@@ -280,8 +271,6 @@ public class StepCalibratorService extends Service implements LocationListener, 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-        startTimer();
-
         return START_STICKY;
     }
 
@@ -289,10 +278,8 @@ public class StepCalibratorService extends Service implements LocationListener, 
     public void onDestroy() {
         super.onDestroy();
 
-        Log.i("EXIT", "ondestroy!");
         mLocationManager.removeUpdates(this);
         mSensorListener.removeStepDetectedListener(this);
-        stopTimerTask();
 
         storeAndResetSession();
         if (calibrationCriteriaSatisfied()) {
@@ -303,43 +290,6 @@ public class StepCalibratorService extends Service implements LocationListener, 
             sendBroadcast(broadcastIntent);
         }
         saveToConfig(this);
-    }
-
-    private Timer timer;
-    private TimerTask timerTask;
-    long oldTime=0;
-
-    public void startTimer() {
-        //set a new Timer
-        timer = new Timer();
-
-        //initialize the TimerTask's job
-        initializeTimerTask();
-
-        //schedule the timer, to wake up every 1 second
-        timer.schedule(timerTask, 1000, 1000); //
-    }
-
-    /**
-     * it sets the timer to print the counter every x seconds
-     */
-    public void initializeTimerTask() {
-        timerTask = new TimerTask() {
-            public void run() {
-                Log.i("in timer", "in timer ++++  "+ (counter++));
-            }
-        };
-    }
-
-    /**
-     * not needed
-     */
-    public void stopTimerTask() {
-        //stop the timer, if it's not already null
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-        }
     }
 
     @Nullable
