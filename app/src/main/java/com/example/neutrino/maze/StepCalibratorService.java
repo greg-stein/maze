@@ -130,12 +130,16 @@ public class StepCalibratorService extends Service implements LocationListener, 
 
             boolean poorAccuracy = !location.hasAccuracy() || location.getAccuracy() >= GPS_ACCURACY;
 
+            // Maybe it is better to complete longer distance and not cut it off?
+            boolean calibrationDistanceReached = (calibratorWalkedDistance + mCurrentSessionDistance) >= CALIBRATION_DISTANCE;
+
             log.info("onLocationChanged: locationTooFar = " + locationTooFar);
             log.info("onLocationChanged: speedTooHigh = " + speedTooHigh);
             log.info("onLocationChanged: sloshingUser = " + sloshingUser);
             log.info("onLocationChanged: poorAccuracy = " + poorAccuracy);
+            log.info("onLocationChanged: calibrationDistanceReached = " + calibrationDistanceReached);
 
-            if (locationTooFar || speedTooHigh || sloshingUser) {// || poorAccuracy) {
+            if (locationTooFar || speedTooHigh || sloshingUser || calibrationDistanceReached) {// || poorAccuracy) {
 
                 storeAndResetSession();
 
