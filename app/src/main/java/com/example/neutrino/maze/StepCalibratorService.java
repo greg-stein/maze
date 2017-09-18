@@ -25,8 +25,10 @@ public class StepCalibratorService extends Service implements LocationListener, 
     public static final int MIN_SESSION_DISTANCE = 50; // in m
     public static final float MAX_WALKING_SPEED = 2.0f; // in m/s
     public static final int CALIBRATION_DISTANCE = 1000; // m
-    private static final double SHORTEST_POSSIBLE_STEP = 0.3d; // 30cm
-    private static final double LONGEST_POSSIBLE_STEP = 1.0d;  // 100cm
+    private static final float SHORTEST_POSSIBLE_STEP = 0.58f; // 58cm - 2% of population has shorter stride
+    private static final float LONGEST_POSSIBLE_STEP = 0.94f;  // 94cm - 2% of population has longer stride
+//    http://n.saunier.free.fr/saunier/stock/saunier11pedestrian-stride.pdf
+//    http://homepage.stat.uiowa.edu/~mbognar/applets/normal.html
     public static final double GPS_ACCURACY = 5.0; // meters. Minimum acceptable accuracy
     public static final String STR_CALIBRATOR_WALKED_DISTANCE = "calibratorWalkedDistance";
     public static final String STR_CALIBRATOR_STEPS_DETECTED = "calibratorStepsDetected";
