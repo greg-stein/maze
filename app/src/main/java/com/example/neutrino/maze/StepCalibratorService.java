@@ -91,9 +91,9 @@ public class StepCalibratorService extends Service implements LocationListener, 
 
     @Override
     public void onCreate() {
+        loadFromConfig(this);
         mSensorListener = SensorListener.getInstance(this);
         mSensorListener.addStepDetectedListener(this);
-        loadFromConfig(this);
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
         mLocationPermissionsGranted = MainActivity.locationPermissionsGranted(this);
