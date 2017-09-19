@@ -1,6 +1,8 @@
 package com.example.neutrino.maze;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Dima Ruinskiy on 02/09/17.
@@ -45,6 +47,8 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
 
     private int k;              // Sliding window index
     private float runningSum;   // Running sum for lowpass filter
+
+    private List<IElevatorListener> mElevatorListeners = new ArrayList<>();
 
     private LiftDetector() {
         signalData = new float[WINDOW_SIZE];
@@ -118,11 +122,9 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
         // the last meaningful streak will be reset already earlier.
         if (currentNegLength > MIN_EVENT_LENGTH && lastPosLength > MIN_EVENT_LENGTH) {
             if (currentState == LiftState.NOT_IN_MOVING_LIFT) {
-                currentState = LiftState.IN_LIFT_GOING_UP;
-                stateChanged = true;
+                ChangeStateAndNotify(LiftState.IN_LIFT_GOING_UP);
             } else if (currentState == LiftState.IN_LIFT_GOING_DOWN) {
-                currentState = LiftState.NOT_IN_MOVING_LIFT;
-                stateChanged = true;
+                ChangeStateAndNotify(LiftState.NOT_IN_MOVING_LIFT);
             }
         }
 
@@ -133,11 +135,9 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
         // the last meaningful streak will be reset already earlier.
         if (currentPosLength > MIN_EVENT_LENGTH && lastNegLength > MIN_EVENT_LENGTH) {
             if (currentState == LiftState.NOT_IN_MOVING_LIFT) {
-                currentState = LiftState.IN_LIFT_GOING_DOWN;
-                stateChanged = true;
+                ChangeStateAndNotify(LiftState.IN_LIFT_GOING_DOWN);
             } else if (currentState == LiftState.IN_LIFT_GOING_UP) {
-                currentState = LiftState.NOT_IN_MOVING_LIFT;
-                stateChanged = true;
+                ChangeStateAndNotify(LiftState.NOT_IN_MOVING_LIFT);
             }
         }
     }
@@ -151,4 +151,25 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
         Arrays.sort(medFiltArray);
         return medFiltArray[MEDFILT_LENGTH / 2];
     }
+
+    private void ChangeStateAndNotify(LiftState newState) {
+        currentState = newState;
+        stateChanged = true;
+        emitLiftStateChangedEvent(newState);
+    }
+
+    public interface IElevatorListener {
+        void onLiftStateChanged(LiftState newState);
+    }
+
+    public void addElevatorListener(IElevatorListener listener) {
+        mElevatorListeners.add(listener);
+    }
+
+    private void emitLiftStateChangedEvent(LiftState newState) {
+        for (IElevatorListener listener : mElevatorListeners) {
+            listener.onLiftStateChanged(newState);
+        }
+    }
+
 }
