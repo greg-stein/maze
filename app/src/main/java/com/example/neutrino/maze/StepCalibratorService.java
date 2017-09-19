@@ -155,6 +155,9 @@ public class StepCalibratorService extends Service implements LocationListener, 
                 synchronized (distanceMutex) {
                     mCurrentSessionDistance += distanceFromLastLocation;
                 }
+                synchronized (stepsCounterMutex) {
+                    mCurrentSessionSteps += mStepsFromLastLocation;
+                }
             }
         }
 
@@ -251,12 +254,12 @@ public class StepCalibratorService extends Service implements LocationListener, 
 
     @Override
     public void onStepDetected() {
-        synchronized (stepsCounterMutex) {
-            mCurrentSessionSteps++;
-        }
+//        synchronized (stepsCounterMutex) {
+//            mCurrentSessionSteps++;
+//        }
 
-        log.info("onStepDetected: mCurrentSessionSteps: " + mCurrentSessionSteps);
-        Log.i("StepCalibratorService", "onStepDetected: mCurrentSessionSteps: " + mCurrentSessionSteps);
         mStepsFromLastLocation++;
+        log.info("onStepDetected: mStepsFromLastLocation: " + mStepsFromLastLocation);
+//        Log.i("StepCalibratorService", "onStepDetected: mCurrentSessionSteps: " + mCurrentSessionSteps);
     }
 }
