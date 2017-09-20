@@ -39,15 +39,15 @@ public class StepCalibratorService extends Service implements LocationListener, 
 
     private static final Object stepsCounterMutex = new Object();
     private static final Object distanceMutex = new Object();
-    private static float calibratorWalkedDistance;
-    private static int calibratorStepsDetected;
-    private static boolean calibrationCompleted;
-    private static float calibratorUserStepLength;
+    private volatile static float calibratorWalkedDistance;
+    private volatile static int calibratorStepsDetected;
+    private volatile static boolean calibrationCompleted;
+    private volatile static float calibratorUserStepLength;
+
     private long mLastLocationMillis;
     private Location mLastLocation;
-    private int mCurrentSessionSteps = 0;
-    private float mCurrentSessionDistance = 0f;
-
+    private volatile int mCurrentSessionSteps = 0;
+    private volatile float mCurrentSessionDistance = 0f;
     private boolean mLocationPermissionsGranted;
     private SensorListener mSensorListener;
     private static org.apache.log4j.Logger log = Log4jHelper.getLogger("StepCalibratorService");
