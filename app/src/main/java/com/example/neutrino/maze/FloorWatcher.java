@@ -2,7 +2,6 @@ package com.example.neutrino.maze;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.transitions.ITeleport;
 import com.example.neutrino.maze.rendering.VectorHelper;
 
@@ -28,7 +27,7 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
 
     private Locator locator;
     private final Set<ITeleport> mProximityTeleports = new HashSet<>();
-    private Map<ITeleport, List<ITeleport>> destinationTeleports = new HashMap<>();
+    private Map<ITeleport, List<ITeleport>> mDestinationTeleports = new HashMap<>();
     private ITeleport mTargetTeleport;
     private boolean mUnsibscribed = false;
     private WiFiLocator.WiFiFingerprint mLastFingerprint;
@@ -59,7 +58,7 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
             ITeleport teleport = iter.next();
 
             if (VectorHelper.squareDistance(teleport.getLocation(), location) > TELEPORT_RANGE_EXIT_SQ) {
-                destinationTeleports.remove(teleport);
+                mDestinationTeleports.remove(teleport);
                 iter.remove();
             }
         }
@@ -73,7 +72,7 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
         }
 
         for (ITeleport teleport : mProximityTeleports) {
-            destinationTeleports.put(teleport, locator.getFloorPlan().getTeleportsById(teleport.getId()));
+            mDestinationTeleports.put(teleport, locator.getFloorPlan().getTeleportsById(teleport.getId()));
         }
 
         return !mProximityTeleports.isEmpty();
@@ -85,7 +84,7 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
         SortedMap<Float, ITeleport> candidates = new TreeMap<>(Collections.<Float>reverseOrder());
 
         for (ITeleport teleport : mProximityTeleports) {
-            List<ITeleport> teleports = destinationTeleports.get(teleport);
+            List<ITeleport> teleports = mDestinationTeleports.get(teleport);
 
             float minDissimilarity = WiFiLocator.dissimilarity(fingerprint, teleport.getFingerprint());
             ITeleport mostProbableTeleport = teleport;
