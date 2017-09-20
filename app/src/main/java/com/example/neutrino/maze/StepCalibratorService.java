@@ -20,11 +20,12 @@ import com.example.neutrino.maze.util.Log4jHelper;
  * Created by Greg Stein on 8/30/2017.
  */
 public class StepCalibratorService extends Service implements LocationListener, SensorListener.IStepDetectedListener {
-    private static final int GPS_MIN_TIME = 1000; // 1 sec
-    public static final int GPS_MIN_DISTANCE = 10; // 10 meters
+    private static final int GPS_MIN_TIME = 0; // 0 sec - no time restriction
+    public static final int GPS_MIN_DISTANCE = 20; // meters
     public static final int MIN_SESSION_DISTANCE = 50; // in m
     public static final float MIN_WALKING_SPEED = 0.9f; // in m/s
     public static final float MAX_WALKING_SPEED = 1.9f; // in m/s
+    // http://ac.els-cdn.com/S1877042813045515/1-s2.0-S1877042813045515-main.pdf?_tid=8fa735fa-9d62-11e7-8126-00000aab0f01&acdnat=1505843410_51f6ef0fc62581f5f17fcda53092754f
     public static final int CALIBRATION_DISTANCE = 1000; // m
     private static final float SHORTEST_POSSIBLE_STEP = 0.58f; // 58cm - 2% of population has shorter stride
     private static final float LONGEST_POSSIBLE_STEP = 0.94f;  // 94cm - 2% of population has longer stride
