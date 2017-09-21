@@ -35,7 +35,7 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
     private static final int LOWPASS_LENGTH = 100;
     private static final int MEDFILT_LENGTH = 15;
     private static final int MIN_EVENT_LENGTH = 80;
-    private static final int MAX_EVENT_GAP = 100;
+    private static final int MAX_EVENT_GAP = 70;
 
     private static final int WINDOW_SIZE = LOWPASS_LENGTH + MEDFILT_LENGTH;
     private static final float alpha = (1.0f / LOWPASS_LENGTH);
