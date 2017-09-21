@@ -54,6 +54,7 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
 
     private LiftState currentState;                 // Current state (in moving lift or not)
     private boolean stateChanged;                   // Flag to indicate recent state changed
+    private boolean checkStatePN, checkStateNP;     // Indicates that state changes may occur now
 
     private int k;              // Sliding window index
     private int m;              // Median filter center index (lags behind window index)
@@ -80,6 +81,8 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
         currentState = LiftState.NOT_IN_MOVING_LIFT;
         thisSign = 0;
         currentNegLength = currentPosLength = lastNegLength = lastPosLength = 0;
+
+        stateChanged = checkStatePN = checkStateNP = false;
 
         verboseSystemOutput = false;
         stateChangedSystemOutput = false;
@@ -113,19 +116,20 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
             System.out.print("\n");
         }
 
-        thisSign = (int) signalDataSignFiltered[k];
+        thisSign = (int) signalDataSignFiltered[m];
         k = (k + 1) % WINDOW_SIZE;
         m = (m + 1) % WINDOW_SIZE;
         ++n;
 
-        ++currentGap;
-        // Once gap exceeds maximum allowed, last long streaks are considered irrelevant
+        // Once gap exceeds maximum allowed, previous streaks and state changes are irrelevant
         if (currentGap > MAX_EVENT_GAP) {
             lastNegLength = lastPosLength = 0;
+            stateChanged = false;
         }
 
         if (thisSign < 0) {
             ++currentNegLength;
+            currentGap += currentPosLength;
             // When changing from positive to negative - check current running positive length
             // If it exceeds the minimum meaningful length, store it and reset the event gap counter
             // However, skip this if state was recently changed:
@@ -134,6 +138,7 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
                 if (!stateChanged) {
                     lastPosLength = currentPosLength;
                     currentGap = 0;
+                    checkStateNP = true;    // Long negative streak followed by long positive streak - consider state change
                 } else {
                     stateChanged = false;
                 }
@@ -141,6 +146,7 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
             currentPosLength = 0;
         } else if (thisSign > 0) {
             ++currentPosLength;
+            currentGap += currentNegLength;
             // When changing from negative to positive - check current running negative length
             // If it exceeds the minimum meaningful length, store it and reset the event gap counter
             // However, skip this if state was recently changed:
@@ -149,6 +155,7 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
                 if (!stateChanged) {
                     lastNegLength = currentNegLength;
                     currentGap = 0;
+                    checkStatePN = true;    // Long positive streak followed by long negative streak - consider state change
                 } else {
                     stateChanged = false;
                 }
@@ -161,11 +168,14 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
         // Change the state here depending on the current state.
         // Note that we do not check the gap here; if gap exceeds maximum allowed,
         // the last meaningful streak will be reset already earlier.
-        if (currentNegLength > MIN_EVENT_LENGTH && lastPosLength > MIN_EVENT_LENGTH) {
-            if (currentState == LiftState.NOT_IN_MOVING_LIFT) {
-                ChangeStateAndNotify(LiftState.IN_LIFT_GOING_UP);
-            } else if (currentState == LiftState.IN_LIFT_GOING_DOWN) {
-                ChangeStateAndNotify(LiftState.NOT_IN_MOVING_LIFT);
+        if (checkStatePN) {
+            checkStatePN = false;
+            if (lastNegLength > MIN_EVENT_LENGTH && lastPosLength > MIN_EVENT_LENGTH) {
+                if (currentState == LiftState.NOT_IN_MOVING_LIFT) {
+                    ChangeStateAndNotify(LiftState.IN_LIFT_GOING_UP);
+                } else if (currentState == LiftState.IN_LIFT_GOING_DOWN) {
+                    ChangeStateAndNotify(LiftState.NOT_IN_MOVING_LIFT);
+                }
             }
         }
 
@@ -174,11 +184,14 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
         // Change the state here depending on the current state.
         // Note that we do not check the gap here; if gap exceeds maximum allowed,
         // the last meaningful streak will be reset already earlier.
-        if (currentPosLength > MIN_EVENT_LENGTH && lastNegLength > MIN_EVENT_LENGTH) {
-            if (currentState == LiftState.NOT_IN_MOVING_LIFT) {
-                ChangeStateAndNotify(LiftState.IN_LIFT_GOING_DOWN);
-            } else if (currentState == LiftState.IN_LIFT_GOING_UP) {
-                ChangeStateAndNotify(LiftState.NOT_IN_MOVING_LIFT);
+        if (checkStateNP) {
+            checkStateNP = false;
+            if (lastPosLength > MIN_EVENT_LENGTH && lastNegLength > MIN_EVENT_LENGTH) {
+                if (currentState == LiftState.NOT_IN_MOVING_LIFT) {
+                    ChangeStateAndNotify(LiftState.IN_LIFT_GOING_DOWN);
+                } else if (currentState == LiftState.IN_LIFT_GOING_UP) {
+                    ChangeStateAndNotify(LiftState.NOT_IN_MOVING_LIFT);
+                }
             }
         }
     }
