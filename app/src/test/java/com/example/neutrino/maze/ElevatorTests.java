@@ -37,6 +37,18 @@ public class ElevatorTests {
         }
     }
 
+    @Test
+    public void stateChangeTest() {
+        List<Float> ZGrav11 = loadZGravFromAccelerometerDataFile("D:\\Programming\\maze\\app\\src\\test\\resources\\liftg-slow-up.txt");
+        System.out.println(ZGrav11.size());
+        LiftDetector detector = LiftDetector.getInstance();
+        detector.setStateChangedSystemOutput(true);
+
+        for (float grav: ZGrav11) {
+            detector.onGravityChanged(grav);
+        }
+    }
+
     private List<Float> loadZGravFromAccelerometerDataFile(String resFileName) {
         List<Float> ZGrav = new ArrayList<>();
         try {

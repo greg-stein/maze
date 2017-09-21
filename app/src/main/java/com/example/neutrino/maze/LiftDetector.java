@@ -10,6 +10,16 @@ import java.util.List;
 
 public class LiftDetector implements SensorListener.IGravityChangedListener {
 
+    private final IElevatorListener selfListener = new IElevatorListener() {
+        @Override
+        public void onLiftStateChanged(LiftState newState) {
+            if (stateChangedSystemOutput) {
+                System.out.println ("Lift state changed. N = " + n + " ; STATE = " + newState);
+            }
+
+        }
+    };
+
     enum LiftState {
         NOT_IN_MOVING_LIFT,
         IN_LIFT_GOING_UP,
@@ -52,7 +62,8 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
 
     private List<IElevatorListener> mElevatorListeners = new ArrayList<>();
 
-    private boolean verboseSystemOutput;    // Whether to print detailed data to System.out
+    private boolean verboseSystemOutput;        // Whether to print detailed data to System.out
+    private boolean stateChangedSystemOutput;    // Whether to print state changes
 
     private LiftDetector() {
         signalData = new float[WINDOW_SIZE];
@@ -71,10 +82,17 @@ public class LiftDetector implements SensorListener.IGravityChangedListener {
         currentNegLength = currentPosLength = lastNegLength = lastPosLength = 0;
 
         verboseSystemOutput = false;
+        stateChangedSystemOutput = false;
+
+        addElevatorListener(selfListener);
     }
 
     public void setVerboseSystemOutput(boolean v) {
         verboseSystemOutput = v;
+    }
+
+    public void setStateChangedSystemOutput(boolean v) {
+        stateChangedSystemOutput = v;
     }
 
     @Override
