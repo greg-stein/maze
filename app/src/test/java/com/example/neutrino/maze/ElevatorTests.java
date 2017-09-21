@@ -10,6 +10,7 @@ import org.robolectric.annotation.Config;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -27,7 +28,7 @@ import static org.junit.Assert.assertThat;
 public class ElevatorTests {
     @Test
     public void dataAcquisitionTest() {
-        List<Float> ZGrav11 = loadZGravFromAccelerometerDataFile("D:\\Programming\\maze\\app\\src\\test\\resources\\liftg-slow-up.txt");
+        List<Float> ZGrav11 = loadZGravFromAccelerometerDataFile("liftg-slow-up.txt");
         System.out.println(ZGrav11.size());
         LiftDetector detector = LiftDetector.getInstance();
         detector.setVerboseSystemOutput(true);
@@ -39,20 +40,30 @@ public class ElevatorTests {
 
     @Test
     public void stateChangeTest() {
-        List<Float> ZGrav11 = loadZGravFromAccelerometerDataFile("D:\\Programming\\maze\\app\\src\\test\\resources\\liftg-slow-up.txt");
-        System.out.println(ZGrav11.size());
-        LiftDetector detector = LiftDetector.getInstance();
-        detector.setStateChangedSystemOutput(true);
+        List<String> filenames = new ArrayList<>();
+        filenames.add("liftg-slow-up.txt");
+        filenames.add("liftg-slow-dn.txt");
+        filenames.add("liftg-norm-up.txt");
+        filenames.add("liftg-norm-dn.txt");
+        filenames.add("liftg-fast-up.txt");
+        filenames.add("liftg-fast-dn.txt");
+        for (String filename: filenames) {
+            List<Float> ZGrav = loadZGravFromAccelerometerDataFile(filename);
+            System.out.println(filename + ": " + ZGrav.size());
+            LiftDetector detector = LiftDetector.getInstance();
+            detector.setStateChangedSystemOutput(true);
 
-        for (float grav: ZGrav11) {
-            detector.onGravityChanged(grav);
+            for (float grav : ZGrav) {
+                detector.onGravityChanged(grav);
+            }
         }
     }
 
     private List<Float> loadZGravFromAccelerometerDataFile(String resFileName) {
         List<Float> ZGrav = new ArrayList<>();
         try {
-            FileReader resFile = new FileReader(resFileName);
+            String fullpath = getClass().getClassLoader().getResource(resFileName).getPath();
+            FileReader resFile = new FileReader(fullpath);
             BufferedReader reader = new BufferedReader(resFile);
             String line;
             Scanner scanner;
