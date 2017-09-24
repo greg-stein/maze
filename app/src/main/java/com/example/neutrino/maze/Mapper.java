@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.content.Context;
 import android.graphics.PointF;
 
 import com.example.neutrino.maze.Locator.ILocationUpdatedListener;
@@ -16,16 +17,29 @@ import static com.example.neutrino.maze.WifiScanner.IFingerprintAvailableListene
  */
 
 public class Mapper implements ILocationUpdatedListener, IFingerprintAvailableListener {
-    private static Mapper instance = new Mapper();
     private boolean mOldWifiScannerState;
     private boolean mFingerprintPlacedAtCurrentLocation = true;
     private PointF mCurrentLocation;
 
-    private Mapper() {}
-    public static Mapper getInstance() {return instance;}
+    private static Mapper instance = null;
+    private static final Object mutex = new Object();
+    public static Mapper getInstance(Context context) {
+        if (instance == null) {
+            synchronized (mutex) {
+                if (instance == null)
+                    instance = new Mapper(context);
+            }
+        }
+        return instance;
+    }
 
-    private Locator mLocator = Locator.getInstance();
-    private WifiScanner mWifiScanner = WifiScanner.getInstance();
+    private Mapper(Context context) {
+        mLocator = Locator.getInstance(context);
+        mWifiScanner = WifiScanner.getInstance(context);
+    }
+
+    private Locator mLocator;
+    private WifiScanner mWifiScanner;
     private FloorPlan mFloorPlan;
 
     private boolean mIsEnabled = false;

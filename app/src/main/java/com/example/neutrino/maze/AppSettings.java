@@ -8,6 +8,8 @@ import android.support.v4.content.ContextCompat;
  * Created by Greg Stein on 8/21/2016.
  */
 public class AppSettings {
+    public static final String CONFIG_FILE = "maze.conf";
+
     public static int locationMarkColor;
     public static int footprintColor;
     public static int wallColor;
@@ -16,7 +18,7 @@ public class AppSettings {
     public static int primaryDarkColor;
     public static int editModeColor;
     public static int accentColor;
-    public static Activity appActivity = null;
+    public static Activity appActivity = null; // TODO: this is memory leak! remove this field and pass context where in use
     public static int oglProgram;
     public static int oglTextRenderProgram;
     public static boolean inDebug;

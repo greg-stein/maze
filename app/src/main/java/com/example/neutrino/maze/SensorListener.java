@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -23,9 +24,15 @@ public class SensorListener implements SensorEventListener {
     private static final float LOW_PASS_ALPHA = 0.5f;
 
     private static SensorListener instance = null;
-    public static SensorListener getInstance() {
+    private static final Object mutex = new Object();
+    private boolean mActive;
+
+    public static SensorListener getInstance(Context context) {
         if (instance == null) {
-            instance = new SensorListener();
+            synchronized (mutex) {
+                if (instance == null)
+                    instance = new SensorListener(context);
+            }
         }
         return instance;
     }
@@ -52,8 +59,8 @@ public class SensorListener implements SensorEventListener {
     private static final float[] mInclinationMatrix = new float[9];
     private static final float[] mOrientation = new float[3];
 
-    private SensorListener() {
-        mSensorManager = (SensorManager) AppSettings.appActivity.getSystemService(SENSOR_SERVICE);
+    private SensorListener(Context context) {
+        mSensorManager = (SensorManager) context.getSystemService(SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
@@ -61,7 +68,13 @@ public class SensorListener implements SensorEventListener {
         mStepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
     }
 
-    public void onActivityResume() {
+    private boolean subscribersExist() {
+        if (mStepDetectedEventListeners.size() > 0) return true;
+        if (mDeviceRotationEventListeners.size() > 0) return true;
+        return false;
+    }
+
+    public void resume() {
         // for the system's orientation sensor registered listeners
         mHaveRotation = mSensorManager.registerListener(this, mRotation, SensorManager.SENSOR_DELAY_GAME);
         if (!mHaveRotation) {
@@ -75,10 +88,12 @@ public class SensorListener implements SensorEventListener {
         }
 
         mHaveStepDetector = mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_UI);
+        mActive = true;
     }
 
-    public void onActivityPause() {
+    public void pause() {
         mSensorManager.unregisterListener(this);
+        mActive = false;
     }
 
     @Override
@@ -123,12 +138,24 @@ public class SensorListener implements SensorEventListener {
         }
     }
 
+    public boolean isActive() {
+        return mActive;
+    }
+
     public interface IDeviceRotationListener {
         void onDeviceRotated(double degree);
     }
 
     public void addDeviceRotationListener(IDeviceRotationListener listener) {
-        mDeviceRotationEventListeners.add(listener);
+        if (!mDeviceRotationEventListeners.contains(listener)) {
+            mDeviceRotationEventListeners.add(listener);
+        }
+        if (!isActive()) resume();
+    }
+
+    public void removeDeviceRotationListener(IDeviceRotationListener listener) {
+        mDeviceRotationEventListeners.remove(listener);
+        if (!subscribersExist()) pause();
     }
 
     private void emitDeviceRotationEvent(double degree) {
@@ -142,7 +169,16 @@ public class SensorListener implements SensorEventListener {
     }
 
     public void addStepDetectedListener(IStepDetectedListener listener) {
-        mStepDetectedEventListeners.add(listener);
+        if (!mStepDetectedEventListeners.contains(listener)) {
+            mStepDetectedEventListeners.add(listener);
+        }
+        if (!isActive()) resume();
+    }
+
+    public void removeStepDetectedListener(IStepDetectedListener listener) {
+        if (mStepDetectedEventListeners.remove(listener)) {
+            if (!subscribersExist()) pause();
+        }
     }
 
     private void emitStepDetectedEvent() {

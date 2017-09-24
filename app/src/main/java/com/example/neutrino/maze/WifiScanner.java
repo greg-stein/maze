@@ -22,9 +22,14 @@ public class WifiScanner extends BroadcastReceiver {
     public static final int MOVING_AVERAGE_WINDOW_SIZE = 1;
 
     private static WifiScanner instance = null;
-    public static WifiScanner getInstance() {
+    private static final Object mutex = new Object();
+    public static WifiScanner getInstance(Context context) {
         if (instance == null) {
-            instance = new WifiScanner();
+            synchronized (mutex) {
+                if (instance == null) {
+                    instance = new WifiScanner(context);
+                }
+            }
         }
         return instance;
     }
@@ -35,8 +40,8 @@ public class WifiScanner extends BroadcastReceiver {
     private WifiManager mWifiManager;
     private boolean mIsEnabled = true;
 
-    protected WifiScanner() {
-        mWifiManager = (WifiManager) AppSettings.appActivity.getSystemService(Context.WIFI_SERVICE);
+    protected WifiScanner(Context context) {
+        mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
     }
 
     public void onActivityResume() {

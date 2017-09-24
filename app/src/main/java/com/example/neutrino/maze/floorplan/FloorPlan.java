@@ -7,8 +7,10 @@ import android.os.Build;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.transitions.ITeleport;
-import com.example.neutrino.maze.util.CommonHelper;
+import com.example.neutrino.maze.navigation.FingerprintsPathFinder;
+import com.example.neutrino.maze.navigation.GridPathFinder;
 import com.example.neutrino.maze.navigation.PathFinderBase;
+import com.example.neutrino.maze.util.CommonHelper;
 
 import org.simmetrics.StringMetric;
 import org.simmetrics.metrics.StringMetrics;
@@ -17,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import static org.simmetrics.builders.StringMetricBuilder.with;
 
 /**
  * Created by Greg Stein on 4/3/2017.

@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.content.Context;
 import android.graphics.PointF;
 
 import com.example.neutrino.maze.floorplan.transitions.ITeleport;
@@ -32,21 +33,23 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
     private boolean mUnsibscribed = false;
     private WiFiLocator.WiFiFingerprint mLastFingerprint;
     private List<OnFloorChangedHandler> mOnFloorChangedHandlers = new ArrayList<>();
+    private Context mContext;
 
     private boolean inRangeOfATeleport() {
         return mProximityTeleports.size() > 0;
     }
 
-    public FloorWatcher(Locator locator) {
+    public FloorWatcher(Context context, Locator locator) {
         this.locator = locator;
-        WifiScanner.getInstance().addFingerprintAvailableListener(this);
-        Locator.getInstance().addLocationUpdatedListener(this);
+        mContext = context;
+        WifiScanner.getInstance(mContext).addFingerprintAvailableListener(this);
+        Locator.getInstance(mContext).addLocationUpdatedListener(this);
     }
 
     public void unsubscribe() {
         if (!mUnsibscribed) {
-            WifiScanner.getInstance().removeFingerprintAvailableListener(this);
-            Locator.getInstance().removeLocationUpdatedListener(this);
+            WifiScanner.getInstance(mContext).removeFingerprintAvailableListener(this);
+            Locator.getInstance(mContext).removeLocationUpdatedListener(this);
             mUnsibscribed = true;
         }
     }
