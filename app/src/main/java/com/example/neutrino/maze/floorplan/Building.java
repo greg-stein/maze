@@ -13,13 +13,18 @@ import java.util.Map;
  */
 
 public class Building {
+    public static Building current;
+
     private String mName;
     private String mAddress;
     private String mType;
     private String mID;
     private List<Floor> mFloors;
+    private String mCurrentFloorId;
 
     private transient Map<String, List<ITeleport>> mTeleportsById = new HashMap<>();
+
+    public Building() {}
 
     public Building(String mName, String mAddress, String mType, String mID) {
         this.mName = mName;
@@ -89,5 +94,13 @@ public class Building {
 
     public void setFloors(List<Floor> floors) {
         mFloors = floors;
+    }
+
+    public String getCurrentFloorId() {
+        return mCurrentFloorId;
+    }
+
+    public void setCurrentFloorId(String currentFloorId) {
+        mCurrentFloorId = currentFloorId;
     }
 }

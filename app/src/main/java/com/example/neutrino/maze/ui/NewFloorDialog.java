@@ -68,7 +68,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private static String[] buildingTypes;
     // TODO: These should be recieved from server
     private String[] mFloorsMock = {"5", "4", "3", "2", "1", "G", "P", "-2", "-3"};
-    private List<Floor> mBuildingFloors = new ArrayList<>();
+    private List<Floor> mBuildingFloors;
     private boolean mUpdateFloorNameInList = false;
     private LocationManager mLocationManager;
     private FloorsAdapter mFloorsAdapter;
@@ -104,6 +104,8 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         txtType.setThreshold(0);    // will start working from first character
         txtType.setAdapter(buildingTypesAdapter);
 
+        mBuildingFloors = Building.current.getFloors();
+        // Mock
         for (String floor : mFloorsMock) {
             mBuildingFloors.add(new Floor(floor, "lkjwehrkjhewrkljhelrkjhkjerh"));
         }

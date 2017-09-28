@@ -9,9 +9,14 @@ import java.util.List;
  * Entity to serialize/deserialize for the webservice
  */
 public class Floor {
+    public static Floor current;
+
     private String mName;
     private String mId; // TODO: this should be changed to ObjectId later
     private List<Teleport> mTeleports;
+    private List<Tag> mTags;
+
+    public Floor() {}
 
     public Floor(String mName, String mId) {
         this.mName = mName;
@@ -42,5 +47,13 @@ public class Floor {
 
     public void setTeleports(List<Teleport> teleports) {
         mTeleports = teleports;
+    }
+
+    public List<Tag> getTags() {
+        return mTags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        mTags = tags;
     }
 }
