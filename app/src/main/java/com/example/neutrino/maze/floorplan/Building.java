@@ -24,7 +24,8 @@ public class Building {
 
     private transient Map<String, List<ITeleport>> mTeleportsById = new HashMap<>();
 
-    public Building() {}
+    public Building() {
+    }
 
     public Building(String mName, String mAddress, String mType, String mID) {
         this.mName = mName;
@@ -102,5 +103,13 @@ public class Building {
 
     public void setCurrentFloorId(String currentFloorId) {
         mCurrentFloorId = currentFloorId;
+    }
+
+    public Floor getCurrentFloor() {
+        for (Floor floor : mFloors) {
+            if (floor.getId().equals(mCurrentFloorId)) return floor;
+        }
+//        mFloors.stream().filter(o -> o.getId().equals(mCurrentFloorId));
+        return null;
     }
 }

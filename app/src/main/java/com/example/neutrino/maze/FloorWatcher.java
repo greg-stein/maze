@@ -3,6 +3,7 @@ package com.example.neutrino.maze;
 import android.content.Context;
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.transitions.ITeleport;
 import com.example.neutrino.maze.rendering.VectorHelper;
 
@@ -75,7 +76,7 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
         }
 
         for (ITeleport teleport : mProximityTeleports) {
-            mDestinationTeleports.put(teleport, locator.getFloorPlan().getTeleportsById(teleport.getId()));
+            mDestinationTeleports.put(teleport, Building.current.getTeleportsById(teleport.getId()));
         }
 
         return !mProximityTeleports.isEmpty();

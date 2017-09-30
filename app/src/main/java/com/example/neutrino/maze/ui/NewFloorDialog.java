@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.MazeServerBase;
 import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Floor;
@@ -224,8 +225,8 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
                 int proposedPosition = suggestPosition(floorName);
 
-                // TODO: Here we should request floor creation from server and get real ID (second parameter)
-                Floor newFloor = new Floor(floorName, "JOPAJOPAJOPA");
+                String floorId = MazeServerBase.getServer().createFloor();
+                Floor newFloor = new Floor(floorName, floorId);
                 mBuildingFloors.add(proposedPosition, newFloor);
                 mSelectedFloorIndex = proposedPosition;
                 mFloorsAdapter.notifyDataSetChanged();
