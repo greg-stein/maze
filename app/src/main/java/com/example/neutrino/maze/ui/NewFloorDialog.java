@@ -115,7 +115,12 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         lstFloors.setAdapter(mFloorsAdapter);
 
 
-        mBuildingsAdapter = new BuildingsAdapter(mBuildings);
+        mBuildingsAdapter = new BuildingsAdapter(mBuildings, new BuildingsAdapter.OnBuildingClickListener() {
+            @Override
+            public void onBuildingClick(Building building) {
+                Toast.makeText(getContext(),  building.getName(), Toast.LENGTH_SHORT).show();
+            }
+        });
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
         rcvBuildingLookup.setLayoutManager(mLayoutManager);
         rcvBuildingLookup.setItemAnimator(new DefaultItemAnimator());
@@ -505,23 +510,46 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
     }
 
-    public class BuildingsAdapter extends RecyclerView.Adapter<BuildingsAdapter.BuildingViewHolder> {
+    public static class BuildingsAdapter extends RecyclerView.Adapter<BuildingsAdapter.BuildingViewHolder> {
         private List<Building> mBuildings;
+        private OnBuildingClickListener mBuildingClickListener;
 
         public class BuildingViewHolder extends RecyclerView.ViewHolder {
+
             public TextView txtBuildingName;
             public TextView txtBuildingAddress;
-
             public BuildingViewHolder(View itemView) {
                 super(itemView);
                 // Works with simple_list_item_2
                 txtBuildingName = (TextView) itemView.findViewById(R.id.text1);
                 txtBuildingAddress = (TextView) itemView.findViewById(R.id.text2);
             }
+
+            public void bind(final Building building, final OnBuildingClickListener listener) {
+                itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        listener.onBuildingClick(building);
+                    }
+                });
+            }
+        }
+
+        public interface OnBuildingClickListener {
+            void onBuildingClick(Building building);
         }
 
         public BuildingsAdapter(List<Building> buildings) {
             this.mBuildings = buildings;
+        }
+
+        public BuildingsAdapter(List<Building> buildings, OnBuildingClickListener listener) {
+            this(buildings);
+            setBuildingClickListener(listener);
+        }
+
+        public void setBuildingClickListener(OnBuildingClickListener listener) {
+            mBuildingClickListener = listener;
         }
 
         @Override
@@ -537,6 +565,9 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             Building building = mBuildings.get(position);
             holder.txtBuildingName.setText(building.getName());
             holder.txtBuildingAddress.setText(building.getAddress());
+            if (mBuildingClickListener != null) {
+                holder.bind(building, mBuildingClickListener);
+            }
         }
 
         @Override
