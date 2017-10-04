@@ -1,0 +1,43 @@
+package com.example.neutrino.maze;
+
+import com.example.neutrino.maze.floorplan.Building;
+import com.example.neutrino.maze.floorplan.Fingerprint;
+import com.example.neutrino.maze.floorplan.Floor;
+import com.example.neutrino.maze.floorplan.FloorPlan;
+
+import java.util.List;
+
+import static com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
+
+/**
+ * Created by Greg Stein on 9/25/2017.
+ */
+
+public interface IMazeServer {
+    // Searches for best matching building based on fingerprint. The returned structure
+    // contains also list of floors and updated current floor id
+    Building findCurrentBuilding(WiFiFingerprint fingerprint);
+
+    // Returns floor id
+    String createFloor();
+
+    // Returns building id
+    String createBuilding(Building building);
+
+    FloorPlan downloadFloorPlan(String floorId); // doesn't include tags & teleports
+
+    // gets estimated map tile containing given fingerprint
+    List<Fingerprint> downloadRadioMapTile(String floorId, WiFiFingerprint fingerprint);
+
+    void uploadFloorPlan(String floorId, FloorPlan floorPlan);
+
+    // This method is used to update radio map on server. Server decides whether given data
+    // qualifies as good update and then alters its maps
+    void uploadFingerprints(List<Fingerprint> fingerprints);
+
+    void updateBuilding(Building building);
+
+    List<Building> findSimilarBuildings(String pattern);
+
+    Building createBuilding(String buildingName, String address, String type);
+}
