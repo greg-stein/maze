@@ -13,14 +13,14 @@ import java.util.Map;
  */
 
 public class Building {
-    public static Building current;
+    public static Building current = null;
 
     private String mName;
     private String mAddress;
     private String mType;
     private String mID;
     private List<Floor> mFloors;
-    private String mCurrentFloorId;
+    private transient Floor mCurrentFloor;
 
     private transient Map<String, List<ITeleport>> mTeleportsById = new HashMap<>();
 
@@ -35,7 +35,13 @@ public class Building {
         initTeleportsMap();
     }
 
+    public static boolean isFloorDefined() {
+        return Building.current != null && Building.current.mCurrentFloor != null;
+    }
+
     private void initTeleportsMap() {
+        if (null == mFloors) return;
+
         for (Floor floor : mFloors) {
             final List<Teleport> floorTeleports = floor.getTeleports();
             for (Teleport teleport : floorTeleports) {
@@ -97,19 +103,11 @@ public class Building {
         mFloors = floors;
     }
 
-    public String getCurrentFloorId() {
-        return mCurrentFloorId;
-    }
-
-    public void setCurrentFloorId(String currentFloorId) {
-        mCurrentFloorId = currentFloorId;
-    }
-
     public Floor getCurrentFloor() {
-        for (Floor floor : mFloors) {
-            if (floor.getId().equals(mCurrentFloorId)) return floor;
-        }
-//        mFloors.stream().filter(o -> o.getId().equals(mCurrentFloorId));
-        return null;
+        return mCurrentFloor;
+    }
+
+    public void setCurrentFloor(Floor currentFloor) {
+        mCurrentFloor = currentFloor;
     }
 }

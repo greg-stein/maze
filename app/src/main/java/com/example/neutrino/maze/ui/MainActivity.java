@@ -45,6 +45,7 @@ import com.example.neutrino.maze.SensorListener;
 import com.example.neutrino.maze.StepCalibratorService;
 import com.example.neutrino.maze.WiFiLocator;
 import com.example.neutrino.maze.WifiScanner;
+import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Path;
@@ -335,8 +336,13 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 break;
 
             case R.id.btn_vectorize_floorplan:
-                VectorizeDialog newFragment = new VectorizeDialog();
-                newFragment.show(getFragmentManager(), "vectorize_dialog");
+                if (Building.isFloorDefined()) {
+                    VectorizeDialog newFragment = new VectorizeDialog();
+                    newFragment.show(getFragmentManager(), "vectorize_dialog");
+                } else {
+                    Toast.makeText(this, "Before creating floor plan you should create " +
+                            "building with at least single floor", Toast.LENGTH_LONG).show();
+                }
                 break;
 
             case R.id.btn_erase_floorplan:

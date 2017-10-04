@@ -31,7 +31,6 @@ public class FloorPlan {
     private FloorPlanDescriptor mDescriptor;
     private PathFinderBase mPathFinder;
     private List<ITeleport> mTeleports;
-    private Floor mCurrentFloor;
 
     public static FloorPlan build(List<Object> entities) {
         FloorPlan floorPlan = new FloorPlan();
@@ -158,10 +157,6 @@ public class FloorPlan {
 
     public List<ITeleport> getTeleportsOnFloor() {
         return mTeleports;
-    }
-
-    public Floor getCurrentFloor() {
-        return mCurrentFloor;
     }
 
     public List<ITeleport> getTeleportsById(String id) {

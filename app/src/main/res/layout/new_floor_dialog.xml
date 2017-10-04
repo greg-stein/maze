@@ -11,8 +11,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="*Building (Empire State)"
+        android:maxLines="1"
         android:minLines="1"
-        android:maxLines="1"/>
+        android:singleLine="true"/>
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -41,7 +42,8 @@
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:hint="Address"
-                    android:inputType="textPostalAddress" />
+                    android:inputType="textPostalAddress"
+                    android:singleLine="true"/>
 
                 <Button
                     android:id="@+id/btn_guess_address"
@@ -50,6 +52,7 @@
                     android:layout_gravity="center_vertical|end"
                     android:layout_marginRight="20dp"
                     android:text="guess" />
+
             </FrameLayout>
 
             <RelativeLayout
@@ -125,11 +128,25 @@
 
             </RelativeLayout>
 
-            <Button
-                android:id="@+id/btn_submit"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="CREATE" />
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_submit"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="CREATE"/>
+
+                <Button
+                    android:id="@+id/btn_close"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="CLOSE"/>
+            </LinearLayout>
 
         </LinearLayout>
 
