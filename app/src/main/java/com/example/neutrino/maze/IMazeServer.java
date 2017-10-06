@@ -21,10 +21,12 @@ public interface IMazeServer {
     // Returns floor id
     String createFloor();
 
+    Building createBuilding(String buildingName, String address, String type);
+
     // Returns building id
     String createBuilding(Building building);
 
-    FloorPlan downloadFloorPlan(String floorId); // doesn't include tags & teleports
+    String downloadFloorPlanJson(String floorId); // doesn't include tags & teleports
 
     // gets estimated map tile containing given fingerprint
     List<Fingerprint> downloadRadioMapTile(String floorId, WiFiFingerprint fingerprint);
@@ -38,6 +40,4 @@ public interface IMazeServer {
     void updateBuilding(Building building);
 
     List<Building> findSimilarBuildings(String pattern);
-
-    Building createBuilding(String buildingName, String address, String type);
 }
