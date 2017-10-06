@@ -36,6 +36,9 @@ public class MazeServerBase implements IMazeServer {
         this.mContext = context;
     }
 
+    private static volatile int buildingSequence = 0;
+    private static volatile int floorSequence = 0;
+
     @Override
     public Building findCurrentBuilding(WiFiLocator.WiFiFingerprint fingerprint) {
         return null;
@@ -43,12 +46,12 @@ public class MazeServerBase implements IMazeServer {
 
     @Override
     public String createFloor() {
-        return null;
+        return Integer.toString(floorSequence++);
     }
 
     @Override
     public String createBuilding(Building building) {
-        return null;
+        return Integer.toString(buildingSequence++);
     }
 
     @Override
