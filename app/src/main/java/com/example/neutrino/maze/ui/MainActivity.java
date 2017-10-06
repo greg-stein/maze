@@ -15,6 +15,7 @@ import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -40,6 +41,7 @@ import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.Locator;
 import com.example.neutrino.maze.Locator.ILocationUpdatedListener;
 import com.example.neutrino.maze.Mapper;
+import com.example.neutrino.maze.MazeServerBase;
 import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.SensorListener;
 import com.example.neutrino.maze.StepCalibratorService;
@@ -543,19 +545,8 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-//                String jsonString = PersistenceLayer.loadFloorPlan();
-
-                String jsonString = null;
-                try {
-                    Resources res = getResources();
-                    InputStream in_s = res.openRawResource(R.raw.haifa_mall_detailed_tags);
-
-                    byte[] b = new byte[in_s.available()];
-                    in_s.read(b);
-                    jsonString = new String(b);
-                } catch (Exception e) {
-                     e.printStackTrace();
-                }
+                // TODO: Floor Id should be recieved from NewFloorPlanDialog or from server
+                String jsonString = MazeServerBase.getInstance(MainActivity.this).downloadFloorPlanJson("mock");
 
                 new LoadFloorPlanTask(MainActivity.this).onFinish(new LoadFloorPlanTask.AsyncResponse() {
                     @Override
@@ -581,22 +572,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                     }
                 }).execute(jsonString);
 
-//                if (MazeServer.connectionAvailable(getApplicationContext())) {
-//                    MazeServer server = new MazeServer(getApplicationContext());
-//                    server.downloadFloorPlan(new MazeServer.AsyncResponse() {
-//                        @Override
-//                        public void processFinish(String jsonString) {
-//                            uiFloorPlanView.setFloorPlanAsJSon(jsonString);
-//                        }
-//                    });
-//                } else {
-//                    Toast.makeText(getApplicationContext(), "No Internet connection", Toast.LENGTH_SHORT).show();
-//                }
-
                 uiFloorPlanView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         });
-
     }
 
     private FloatingActionButton.OnVisibilityChangedListener mPreserveAlphaOnShow = new FloatingActionButton.OnVisibilityChangedListener() {

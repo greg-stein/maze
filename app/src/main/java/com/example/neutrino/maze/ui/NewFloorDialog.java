@@ -152,7 +152,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Building.current = MazeServerBase.getServer().createBuilding(
+                Building.current = MazeServerBase.getInstance(getContext()).createBuilding(
                         txtBuilding.getText().toString(),
                         txtAddress.getText().toString(),
                         txtType.getText().toString());
@@ -257,7 +257,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
                 int proposedPosition = suggestPosition(floorName);
 
-                String floorId = MazeServerBase.getServer().createFloor();
+                String floorId = MazeServerBase.getInstance(getContext()).createFloor();
                 Floor newFloor = new Floor(floorName, floorId);
                 mBuildingFloors.add(proposedPosition, newFloor);
                 mSelectedFloorIndex = proposedPosition;
@@ -306,7 +306,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             public void afterTextChanged(Editable s) {
                 if (s.length() > 2) {
                     mBuildings.clear();
-                    mBuildings.addAll(MazeServerBase.getServer().findSimilarBuildings(s.toString()));
+                    mBuildings.addAll(MazeServerBase.getInstance(getContext()).findSimilarBuildings(s.toString()));
                     mBuildingsAdapter.notifyDataSetChanged();
                     rcvBuildingLookup.setVisibility(View.VISIBLE);
                 } else {
@@ -467,7 +467,6 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 onFinishHandler.onFinish(address);
             }
         }
-
     }
 
     private interface AsyncResponse {
