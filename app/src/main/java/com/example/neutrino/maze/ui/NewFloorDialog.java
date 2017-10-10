@@ -35,6 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.IFloorChangedHandler;
 import com.example.neutrino.maze.MazeServerBase;
 import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.floorplan.Building;
@@ -75,6 +76,8 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private FloorsAdapter mFloorsAdapter;
     private List<Building> mBuildings = new ArrayList<>();
     private BuildingsAdapter mBuildingsAdapter;
+
+    private IFloorChangedHandler mFloorChangedHandler;
 
     public NewFloorDialog(@NonNull Context context) {
         super(context);
@@ -373,6 +376,16 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         mLocationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
         if (MainActivity.locationPermissionsGranted(getContext())) {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, mLocationListener);
+        }
+    }
+
+    public void setFloorChangedHandler(IFloorChangedHandler floorChangedHandler) {
+        mFloorChangedHandler = floorChangedHandler;
+    }
+
+    private void emitFloorChangedEvent(Floor floor) {
+        if (mFloorChangedHandler != null) {
+            mFloorChangedHandler.onFloorChanged(floor);
         }
     }
 

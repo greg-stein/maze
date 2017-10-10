@@ -38,6 +38,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.IFloorChangedHandler;
 import com.example.neutrino.maze.Locator;
 import com.example.neutrino.maze.Locator.ILocationUpdatedListener;
 import com.example.neutrino.maze.Mapper;
@@ -48,6 +49,7 @@ import com.example.neutrino.maze.StepCalibratorService;
 import com.example.neutrino.maze.WiFiLocator;
 import com.example.neutrino.maze.WifiScanner;
 import com.example.neutrino.maze.floorplan.Building;
+import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Path;
@@ -377,6 +379,15 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
             case R.id.btn_new_floorplan:
                 NewFloorDialog nfd = new NewFloorDialog(this);
+                nfd.setFloorChangedHandler(new IFloorChangedHandler() {
+                    @Override
+                    public void onFloorChanged(Floor floor) {
+                        if (Building.current.getCurrentFloor().getId() != floor.getId()) {
+                            String jsonString = MazeServerBase.getInstance(MainActivity.this).downloadFloorPlanJson(floor.getId());
+                            // TODO: load new floor plan, tags, teleports, ...
+                        }
+                    }
+                });
                 nfd.show();
                 break;
 
