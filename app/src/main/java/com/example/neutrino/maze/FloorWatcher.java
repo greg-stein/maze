@@ -27,31 +27,48 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
     private static final float TELEPORT_RANGE_ENTER = 10; // in meters
     private static final float TELEPORT_RANGE_ENTER_SQ = TELEPORT_RANGE_ENTER * TELEPORT_RANGE_ENTER;
 
-    private Locator locator;
     private final Set<ITeleport> mProximityTeleports = new HashSet<>();
     private Map<ITeleport, List<ITeleport>> mDestinationTeleports = new HashMap<>();
-    private ITeleport mTargetTeleport;
-    private boolean mUnsibscribed = false;
+    private boolean mSubscribed = false;
     private WiFiLocator.WiFiFingerprint mLastFingerprint;
-    private List<OnFloorChangedHandler> mOnFloorChangedHandlers = new ArrayList<>();
-    private Context mContext;
+    private List<IFloorChangedHandler> mOnFloorChangedHandlers = new ArrayList<>();
+    private Locator mLocator;
+
+    private static volatile FloorWatcher instance = null;
+    private static final Object mutex = new Object();
+    public static FloorWatcher getInstance(Context context) {
+        if (instance == null) {
+            synchronized (mutex) {
+                if (instance == null) {
+                    instance = new FloorWatcher(context);
+                }
+            }
+        }
+        return instance;
+    }
 
     private boolean inRangeOfATeleport() {
         return mProximityTeleports.size() > 0;
     }
 
-    public FloorWatcher(Context context, Locator locator) {
-        this.locator = locator;
-        mContext = context;
-        WifiScanner.getInstance(mContext).addFingerprintAvailableListener(this);
-        Locator.getInstance(mContext).addLocationUpdatedListener(this);
+    private FloorWatcher(Context context) {
+        subscribe(context);
+        mLocator = Locator.getInstance(context);
     }
 
-    public void unsubscribe() {
-        if (!mUnsibscribed) {
-            WifiScanner.getInstance(mContext).removeFingerprintAvailableListener(this);
-            Locator.getInstance(mContext).removeLocationUpdatedListener(this);
-            mUnsibscribed = true;
+    private void subscribe(Context context) {
+        if (!mSubscribed) {
+            WifiScanner.getInstance(context).addFingerprintAvailableListener(this);
+            Locator.getInstance(context).addLocationUpdatedListener(this);
+            mSubscribed = true;
+        }
+    }
+
+    public void unsubscribe(Context context) {
+        if (mSubscribed) {
+            WifiScanner.getInstance(context).removeFingerprintAvailableListener(this);
+            Locator.getInstance(context).removeLocationUpdatedListener(this);
+            mSubscribed = false;
         }
     }
 
@@ -68,7 +85,7 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
         }
 
         // Check if user enter range of new teleport
-        List<ITeleport> teleports = locator.getFloorPlan().getTeleportsOnFloor();
+        List<ITeleport> teleports = mLocator.getFloorPlan().getTeleportsOnFloor();
         for (ITeleport teleport : teleports) {
             if (VectorHelper.squareDistance(teleport.getLocation(), location) <= TELEPORT_RANGE_ENTER_SQ) {
                 mProximityTeleports.add(teleport);
@@ -134,20 +151,16 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
     }
 
     private void emitFloorChangedEvent(ITeleport destinationTeleport) {
-        for (OnFloorChangedHandler handler : mOnFloorChangedHandlers) {
-            handler.onFloorChanged(destinationTeleport);
+        for (IFloorChangedHandler handler : mOnFloorChangedHandlers) {
+            handler.onFloorChanged(destinationTeleport.getFloor());
         }
     }
 
-    public void addOnFloorChangedListenerHandler(OnFloorChangedHandler handler) {
+    public void addOnFloorChangedListenerHandler(IFloorChangedHandler handler) {
         mOnFloorChangedHandlers.add(handler);
     }
 
-    public void removeOnFloorChangedListenerHandler(OnFloorChangedHandler handler) {
+    public void removeOnFloorChangedListenerHandler(IFloorChangedHandler handler) {
         mOnFloorChangedHandlers.remove(handler);
-    }
-
-    public interface OnFloorChangedHandler {
-        void onFloorChanged(ITeleport destinationTeleport);
     }
 }

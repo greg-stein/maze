@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 
 import com.example.neutrino.maze.WiFiLocator;
+import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Tag;
@@ -81,12 +82,12 @@ public class Teleport extends Tag implements ITeleport, IFloorPlanPrimitive {
     }
 
     @Override
-    public String getFloor() {
+    public Floor getFloor() {
         return null;
     }
 
     @Override
-    public void setFloor(String floorId) {
+    public void setFloor(Floor floor) {
 
     }
 

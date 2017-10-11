@@ -3,6 +3,7 @@ package com.example.neutrino.maze.floorplan.transitions;
 import android.graphics.PointF;
 
 import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
+import com.example.neutrino.maze.floorplan.Floor;
 
 /**
  * Created by Greg Stein on 7/19/2017.
@@ -21,7 +22,7 @@ public interface ITeleport {
 
     void setFingerprint(WiFiFingerprint fingerprint);
 
-    String getFloor();
+    Floor getFloor();
 
-    void setFloor(String floorId);
+    void setFloor(Floor floor);
 }
