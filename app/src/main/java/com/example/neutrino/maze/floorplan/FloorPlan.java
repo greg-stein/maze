@@ -53,12 +53,12 @@ public class FloorPlan {
             floorPlan.mSketch.addAll(floorPlan.mFingerprints);
         }
 
-        if (floorPlan.mSketch.size() > 0) {
-            floorPlan.mPathFinder = new GridPathFinder(floorPlan);
-        } else {
-            floorPlan.mPathFinder = new FingerprintsPathFinder(floorPlan);
-        }
-        floorPlan.mPathFinder.init();
+//        if (floorPlan.mSketch.size() > 0) {
+//            floorPlan.mPathFinder = new GridPathFinder(floorPlan);
+//        } else {
+//            floorPlan.mPathFinder = new FingerprintsPathFinder(floorPlan);
+//        }
+//        floorPlan.mPathFinder.init();
 
         return floorPlan;
     }
