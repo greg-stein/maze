@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
@@ -15,7 +14,6 @@ import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -38,7 +36,9 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.FloorWatcher;
 import com.example.neutrino.maze.IFloorChangedHandler;
+import com.example.neutrino.maze.IMazeServer;
 import com.example.neutrino.maze.Locator;
 import com.example.neutrino.maze.Locator.ILocationUpdatedListener;
 import com.example.neutrino.maze.Mapper;
@@ -61,7 +61,6 @@ import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 import com.github.fafaldo.fabtoolbar.widget.FABToolbarLayout;
 import com.lapism.searchview.SearchView;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -109,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private WifiScanner mWifiScanner;
     private Locator mLocator;
     private Mapper mMapper;
-
+    private FloorWatcher mFloorWatcher;
     private WiFiLocator mWiFiLocator = WiFiLocator.getInstance();
 
     private boolean mAutoScanEnabled = false;
@@ -119,6 +118,8 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     private static boolean letDieSilently = false;
     public static boolean locationPermissionsGranted = false;
+
+    private IFloorChangedHandler mFloorChangedHandler;
 
     public static boolean requestPermissions(Context context) {
         if (!locationPermissionsGranted(context)) {
@@ -242,10 +243,47 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         mStepCalibratorService = new StepCalibratorService(this);
         mStepCalibratorServiceIntent = new Intent(this, mStepCalibratorService.getClass());
 
-
         if (!isMyServiceRunning(mStepCalibratorService.getClass())) {
             startService(mStepCalibratorServiceIntent);
         }
+
+        mFloorChangedHandler = new IFloorChangedHandler() {
+            @Override
+            public void onFloorChanged(Floor floor) {
+                if (Building.current.getCurrentFloor().getId() != floor.getId()) {
+                    final IMazeServer mazeServer = MazeServerBase.getInstance(MainActivity.this);
+                    String jsonString = mazeServer.downloadFloorPlanJson(floor.getId());
+                    // TODO: load new floor plan, tags, teleports, ...
+
+                    new LoadFloorPlanTask(MainActivity.this).onFinish(new LoadFloorPlanTask.AsyncResponse() {
+                        @Override
+                        public void onFinish(FloorPlan floorPlan) {
+                            mFloorPlan = floorPlan;
+                            mLocator.setFloorPlan(mFloorPlan);
+                            mMapper.setFloorPlan(mFloorPlan);
+
+                            mAdapter.updateListData(floorPlan.getTags());
+
+                            // Find point that should be visible after the floorplan is loaded
+                            PointF pointToShow = null;
+
+                            List<IFloorPlanPrimitive> sketch = mFloorPlan.getSketch();
+                            for (IFloorPlanPrimitive primitive : sketch) {
+                                if (primitive instanceof Wall) {
+                                    pointToShow = ((Wall)primitive).getStart();
+                                    break;
+                                }
+                            }
+                            // The main work is done on GL thread!
+                            uiFloorPlanView.plot(floorPlan, pointToShow);
+                        }
+                    }).execute(jsonString);
+                }
+            }
+        };
+
+        mFloorWatcher = FloorWatcher.getInstance(this);
+        mFloorWatcher.addOnFloorChangedListenerHandler(mFloorChangedHandler);
     }
 
     // TODO: Move this to StepCalibratorService as static method
@@ -379,15 +417,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
             case R.id.btn_new_floorplan:
                 NewFloorDialog nfd = new NewFloorDialog(this);
-                nfd.setFloorChangedHandler(new IFloorChangedHandler() {
-                    @Override
-                    public void onFloorChanged(Floor floor) {
-                        if (Building.current.getCurrentFloor().getId() != floor.getId()) {
-                            String jsonString = MazeServerBase.getInstance(MainActivity.this).downloadFloorPlanJson(floor.getId());
-                            // TODO: load new floor plan, tags, teleports, ...
-                        }
-                    }
-                });
+                nfd.setFloorChangedHandler(mFloorChangedHandler);
                 nfd.show();
                 break;
 
@@ -559,6 +589,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 // TODO: Floor Id should be recieved from NewFloorPlanDialog or from server
                 String jsonString = MazeServerBase.getInstance(MainActivity.this).downloadFloorPlanJson("mock");
 
+                // TODO: This code shgould be removed as it appears in onFloorChanged event handler
                 new LoadFloorPlanTask(MainActivity.this).onFinish(new LoadFloorPlanTask.AsyncResponse() {
                     @Override
                     public void onFinish(FloorPlan floorPlan) {
