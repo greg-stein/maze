@@ -25,14 +25,19 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
@@ -55,8 +60,10 @@ import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Path;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.floorplan.Wall;
+import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
+import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 import com.github.fafaldo.fabtoolbar.widget.FABToolbarLayout;
 import com.lapism.searchview.SearchView;
@@ -64,6 +71,7 @@ import com.lapism.searchview.SearchView;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
@@ -79,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private LinearLayout uiRecPanel;
     private View uiRecPanelSpacer;
     private TagsAdapter mAdapter;
+    private EditText txtWallLength;
 
     private FABToolbarLayout uiToolbarLayout;
     private Toolbar uiToolbar;
@@ -120,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     public static boolean locationPermissionsGranted = false;
 
     private IFloorChangedHandler mFloorChangedHandler;
+    private float mCurrentWallLength;
 
     public static boolean requestPermissions(Context context) {
         if (!locationPermissionsGranted(context)) {
@@ -202,6 +212,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
         uiFabFindMeOnMap = (FloatingActionButton) findViewById(R.id.fab_find_me_on_map);
+        txtWallLength = (EditText) findViewById(R.id.txt_wall_length);
 //        uiFabRemoveLastFingerprint = (FloatingActionButton) findViewById(R.id.fab_remove_last_fingerprint);
 
         AppSettings.init(this);
@@ -282,8 +293,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             }
         };
 
-        mFloorWatcher = FloorWatcher.getInstance(this);
-        mFloorWatcher.addOnFloorChangedListenerHandler(mFloorChangedHandler);
+        // TODO: commented-out temporarily
+//        mFloorWatcher = FloorWatcher.getInstance(this);
+//        mFloorWatcher.addOnFloorChangedListenerHandler(mFloorChangedHandler);
     }
 
     // TODO: Move this to StepCalibratorService as static method
@@ -304,8 +316,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         if (!letDieSilently) {
             stopService(mStepCalibratorServiceIntent);
         }
-        mLocator.onDestroy();
-        Log.i("MAINACT", "onDestroy!");
+        if (mLocator != null) {
+            mLocator.onDestroy();
+        }
         super.onDestroy();
     }
 
@@ -531,21 +544,21 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             }
         });
 
-//        uiWallLengthText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-//            @Override
-//            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-//                if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
-//                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-//                    imm.hideSoftInputFromWindow(uiWallLengthText.getWindowToken(), 0);
-//
-//                    float realLength = Float.parseFloat(uiWallLengthText.getText().toString());
-//                    uiFloorPlanView.rescaleMap(realLength/mCurrentWallLength);
-//
-//                    return true;
-//                }
-//                return false;
-//            }
-//        });
+        txtWallLength.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(txtWallLength.getWindowToken(), 0);
+
+                    float realLength = Float.parseFloat(txtWallLength.getText().toString());
+                    uiFloorPlanView.rescaleMap(realLength/mCurrentWallLength);
+
+                    return true;
+                }
+                return false;
+            }
+        });
 
         // TODO: Handle this in menus if needed
 //        uiFabRemoveLastFingerprint.setOnClickListener(new View.OnClickListener() {
@@ -574,13 +587,29 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         uiFloorPlanView.setOnLocationPlacedListener(this);
 
-//        uiFloorPlanView.setOnWallLengthChangedListener(new FloorPlanRenderer.IWallLengthChangedListener() {
-//            @Override
-//            public void onWallLengthChanged(float wallLength) {
-//                mCurrentWallLength = wallLength;
-//                uiWallLengthText.setText(String.format(Locale.US,"%.2f", wallLength));
-//            }
-//        });
+        uiFloorPlanView.setOnWallLengthChangedListener(new FloorPlanRenderer.IWallLengthChangedListener() {
+            @Override
+            public void onWallLengthChanged(float wallLength) {
+                mCurrentWallLength = wallLength;
+                txtWallLength.setText(String.format(Locale.US,"%.2f", wallLength));
+            }
+        });
+
+        uiFloorPlanView.setOnWallLengthDisplay(new IFuckingSimpleCallback() {
+            @Override
+            public void onNotified() {
+                txtWallLength.setVisibility(View.VISIBLE);
+                uiAddSpinner.setVisibility(View.GONE);
+            }
+        });
+
+        uiFloorPlanView.setOnWallLengthHide(new IFuckingSimpleCallback() {
+            @Override
+            public void onNotified() {
+                txtWallLength.setVisibility(View.GONE);
+                uiAddSpinner.setVisibility(View.VISIBLE);
+            }
+        });
 
         ViewTreeObserver vto = uiFloorPlanView.getViewTreeObserver();
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {

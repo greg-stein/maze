@@ -18,6 +18,7 @@ import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.LocationMark;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.floorplan.Wall;
+import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -345,14 +346,16 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     mAddedWallByDrag = true;
                     mMovedObject.setTapLocation(mDragStart.x, mDragStart.y);
                     mMovedObject.handleMoveStart();
+                    onStartMove(mMovedObject);
                 }
                 else {
                     if (mMovedObject != null) {
                         mMovedObject.setTapLocation(mDragStart.x, mDragStart.y);
                         mMovedObject.handleMoveStart();
+                        onStartMove(mMovedObject);
                     }
                 }
-            }
+             }
         });
     }
 
@@ -378,6 +381,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             public void run() {
                 if (mMovedObject != null) {
                     mMovedObject.handleMoveEnd();
+                    onEndMove(mMovedObject);
                 }
                 mMovedObject = null;
             }
@@ -639,24 +643,54 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     private IWallLengthChangedListener mWallLengthChangedListener = null;
+    private IFuckingSimpleCallback mWallLengthStartChangingListener = null;
+    private IFuckingSimpleCallback mWallLengthEndChangingListener = null;
 
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
         this.mWallLengthChangedListener = listener;
     }
 
-    private void onMoving(final IMoveable moved) {
-        if (mWallLengthChangedListener != null) {
+    public void setOnWallLengthStartChangingListener(IFuckingSimpleCallback callback) {
+        mWallLengthStartChangingListener = callback;
+    }
+
+    public void setOnWallLengthEndChangingListener(IFuckingSimpleCallback callback) {
+        mWallLengthEndChangingListener = callback;
+    }
+
+    private void onStartMove(final IMoveable moved) {
+        if ((mWallLengthStartChangingListener != null) && (moved instanceof Wall)) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (moved instanceof Wall) {
-                        Wall wall =(Wall) moved;
+                    mWallLengthStartChangingListener.onNotified();
+                }
+            });
+        }
+    }
+
+    private void onMoving(final IMoveable moved) {
+        if ((mWallLengthChangedListener != null) && (moved instanceof Wall)) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Wall wall = (Wall) moved;
                         PointF wallVector = new PointF();
                         wallVector.set(wall.getEnd());
                         wallVector.offset(-wall.getStart().x, -wall.getStart().y);
 
                         mWallLengthChangedListener.onWallLengthChanged(wallVector.length());
                     }
+                });
+        }
+    }
+
+    private void onEndMove(final IMoveable moved) {
+        if ((mWallLengthEndChangingListener != null) && (moved instanceof Wall)) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mWallLengthEndChangingListener.onNotified();
                 }
             });
         }

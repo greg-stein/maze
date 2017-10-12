@@ -21,6 +21,7 @@ import com.example.neutrino.maze.rendering.FloorPlanRenderer.IFloorplanLoadCompl
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
+import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 
 import java.util.List;
 
@@ -362,6 +363,14 @@ public class FloorPlanView extends GLSurfaceView {
 
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
         mRenderer.setOnWallLengthChangedListener(listener);
+    }
+
+    public void setOnWallLengthDisplay(IFuckingSimpleCallback callback) {
+        mRenderer.setOnWallLengthStartChangingListener(callback);
+    }
+
+    public void setOnWallLengthHide(IFuckingSimpleCallback callback) {
+        mRenderer.setOnWallLengthEndChangingListener(callback);
     }
 
     public void putStep(float x, float y) {
