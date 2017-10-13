@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private LinearLayout uiRecPanel;
     private View uiRecPanelSpacer;
     private TagsAdapter mAdapter;
-    private EditText txtWallLength;
+    private TextView txtWallLength;
 
     private FABToolbarLayout uiToolbarLayout;
     private Toolbar uiToolbar;
@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
         uiFabFindMeOnMap = (FloatingActionButton) findViewById(R.id.fab_find_me_on_map);
-        txtWallLength = (EditText) findViewById(R.id.txt_wall_length);
+        txtWallLength = (TextView) findViewById(R.id.txt_wall_length);
 //        uiFabRemoveLastFingerprint = (FloatingActionButton) findViewById(R.id.fab_remove_last_fingerprint);
 
         AppSettings.init(this);
@@ -438,14 +438,16 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             case R.id.btn_set_scale:
                 AlertDialog.Builder scaleDialogBuilder = new AlertDialog.Builder(this);
                 final EditText input = new EditText(this);
-                input.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                input.setInputType(InputType.TYPE_CLASS_NUMBER);
+                input.setText(txtWallLength.getText());
+
                 scaleDialogBuilder
                         .setTitle("Set real length to scale floor plan")
                         .setView(input)
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                float realLength = Float.parseFloat(input.getText().toString());
+                                final float realLength = Float.parseFloat(input.getText().toString());
                                 uiFloorPlanView.rescaleMap(realLength/mCurrentWallLength);
                             }
                         })
@@ -568,21 +570,21 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             }
         });
 
-        txtWallLength.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(txtWallLength.getWindowToken(), 0);
-
-                    float realLength = Float.parseFloat(txtWallLength.getText().toString());
-                    uiFloorPlanView.rescaleMap(realLength/mCurrentWallLength);
-
-                    return true;
-                }
-                return false;
-            }
-        });
+//        txtWallLength.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+//            @Override
+//            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+//                if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+//                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//                    imm.hideSoftInputFromWindow(txtWallLength.getWindowToken(), 0);
+//
+//                    float realLength = Float.parseFloat(txtWallLength.getText().toString());
+//                    uiFloorPlanView.rescaleMap(realLength/mCurrentWallLength);
+//
+//                    return true;
+//                }
+//                return false;
+//            }
+//        });
 
         // TODO: Handle this in menus if needed
 //        uiFabRemoveLastFingerprint.setOnClickListener(new View.OnClickListener() {
