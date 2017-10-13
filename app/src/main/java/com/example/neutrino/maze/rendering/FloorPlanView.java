@@ -204,7 +204,7 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     private void askForTagName(final int x, final int y) {
-        final EditText input = new EditText(AppSettings.appActivity);
+        final EditText input = new EditText(getContext());
         String dialogTitle = "New tag";
         String okButtonCaption = "Add";
         PointF worldPoint = new PointF();
@@ -217,7 +217,7 @@ public class FloorPlanView extends GLSurfaceView {
             okButtonCaption = "Change";
         }
 
-        new AlertDialog.Builder(AppSettings.appActivity)
+        new AlertDialog.Builder(getContext())
                 .setTitle(dialogTitle)
                 .setView(input)
 //                .setMessage("Paste in the link of an image to moustachify!")
