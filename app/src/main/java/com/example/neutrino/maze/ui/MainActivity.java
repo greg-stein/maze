@@ -23,6 +23,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -432,6 +433,29 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 NewFloorDialog nfd = new NewFloorDialog(this);
                 nfd.setFloorChangedHandler(mFloorChangedHandler);
                 nfd.show();
+                break;
+
+            case R.id.btn_set_scale:
+                AlertDialog.Builder scaleDialogBuilder = new AlertDialog.Builder(this);
+                final EditText input = new EditText(this);
+                input.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                scaleDialogBuilder
+                        .setTitle("Set real length to scale floor plan")
+                        .setView(input)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                float realLength = Float.parseFloat(input.getText().toString());
+                                uiFloorPlanView.rescaleMap(realLength/mCurrentWallLength);
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.cancel();
+                            }
+                        })
+                        .show();
                 break;
 
             default:

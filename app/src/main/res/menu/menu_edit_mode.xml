@@ -68,4 +68,10 @@
         android:title="New Floor"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/btn_set_scale"
+        android:icon="@drawable/ic_icons8_floor_plan_24_white"
+        android:title="Set scale"
+        app:showAsAction="ifRoom" />
+
 </menu>
