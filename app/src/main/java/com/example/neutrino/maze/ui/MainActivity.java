@@ -617,15 +617,17 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             @Override
             public void onWallLengthChanged(float wallLength) {
                 mCurrentWallLength = wallLength;
-                txtWallLength.setText(String.format(Locale.US,"%.2f", wallLength));
+                txtWallLength.setText(String.format(Locale.US,"%.2fm", wallLength));
             }
         });
 
-        uiFloorPlanView.setOnWallLengthDisplay(new IFuckingSimpleCallback() {
+        uiFloorPlanView.setOnWallLengthDisplay(new FloorPlanRenderer.IWallLengthChangedListener() {
             @Override
-            public void onNotified() {
+            public void onWallLengthChanged(float wallLength) {
                 txtWallLength.setVisibility(View.VISIBLE);
                 uiAddSpinner.setVisibility(View.GONE);
+                mCurrentWallLength = wallLength;
+                txtWallLength.setText(String.format(Locale.US,"%.2fm", wallLength));
             }
         });
 

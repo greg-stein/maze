@@ -365,8 +365,8 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.setOnWallLengthChangedListener(listener);
     }
 
-    public void setOnWallLengthDisplay(IFuckingSimpleCallback callback) {
-        mRenderer.setOnWallLengthStartChangingListener(callback);
+    public void setOnWallLengthDisplay(IWallLengthChangedListener listener) {
+        mRenderer.setOnWallLengthStartChangingListener(listener);
     }
 
     public void setOnWallLengthHide(IFuckingSimpleCallback callback) {

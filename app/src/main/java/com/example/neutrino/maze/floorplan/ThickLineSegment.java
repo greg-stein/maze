@@ -24,6 +24,14 @@ public class ThickLineSegment extends FloorPlanPrimitiveBase {
         return mChangeType;
     }
 
+    public float length() {
+        PointF wallVector = new PointF();
+        wallVector.set(getEnd());
+        wallVector.offset(-getStart().x, -getStart().y);
+
+        return wallVector.length();
+    }
+
     // Different change types
     public enum ChangeType {
         CHANGE_START,

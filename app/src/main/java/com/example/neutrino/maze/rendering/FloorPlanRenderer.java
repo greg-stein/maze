@@ -643,14 +643,14 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     private IWallLengthChangedListener mWallLengthChangedListener = null;
-    private IFuckingSimpleCallback mWallLengthStartChangingListener = null;
+    private IWallLengthChangedListener mWallLengthStartChangingListener = null;
     private IFuckingSimpleCallback mWallLengthEndChangingListener = null;
 
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
         this.mWallLengthChangedListener = listener;
     }
 
-    public void setOnWallLengthStartChangingListener(IFuckingSimpleCallback callback) {
+    public void setOnWallLengthStartChangingListener(IWallLengthChangedListener callback) {
         mWallLengthStartChangingListener = callback;
     }
 
@@ -663,7 +663,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mWallLengthStartChangingListener.onNotified();
+                    Wall wall = (Wall) moved;
+                    float wallLength = wall.length();
+                    mWallLengthStartChangingListener.onWallLengthChanged(wallLength);
                 }
             });
         }
@@ -675,11 +677,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     @Override
                     public void run() {
                         Wall wall = (Wall) moved;
-                        PointF wallVector = new PointF();
-                        wallVector.set(wall.getEnd());
-                        wallVector.offset(-wall.getStart().x, -wall.getStart().y);
-
-                        mWallLengthChangedListener.onWallLengthChanged(wallVector.length());
+                        float wallLength = wall.length();
+                        mWallLengthChangedListener.onWallLengthChanged(wallLength);
                     }
                 });
         }
