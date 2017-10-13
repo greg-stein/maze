@@ -15,7 +15,7 @@ import java.util.List;
  * Created by Greg Stein on 9/30/2017.
  */
 
-public class MazeServerBase implements IMazeServer {
+public class MazeServerMock implements IMazeServer {
 
     private static IMazeServer instance = null;
     private static final Object mutex = new Object();
@@ -23,7 +23,7 @@ public class MazeServerBase implements IMazeServer {
         if (instance == null) {
             synchronized (mutex) {
                 if (instance == null) {
-                    instance = new MazeServerBase(context);
+                    instance = new MazeServerMock(context);
                 }
             }
         }
@@ -32,7 +32,7 @@ public class MazeServerBase implements IMazeServer {
 
     private final Context mContext;
 
-    private MazeServerBase(Context context) {
+    private MazeServerMock(Context context) {
         this.mContext = context;
     }
 

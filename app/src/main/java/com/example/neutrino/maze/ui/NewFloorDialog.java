@@ -36,7 +36,7 @@ import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.IFloorChangedHandler;
-import com.example.neutrino.maze.MazeServerBase;
+import com.example.neutrino.maze.MazeServerMock;
 import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Floor;
@@ -164,7 +164,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Building.current = MazeServerBase.getInstance(getContext()).createBuilding(
+                Building.current = MazeServerMock.getInstance(getContext()).createBuilding(
                         txtBuilding.getText().toString(),
                         txtAddress.getText().toString(),
                         txtType.getText().toString());
@@ -269,7 +269,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
                 int proposedPosition = suggestPosition(floorName);
 
-                String floorId = MazeServerBase.getInstance(getContext()).createFloor();
+                String floorId = MazeServerMock.getInstance(getContext()).createFloor();
                 Floor newFloor = new Floor(floorName, floorId);
                 mBuildingFloors.add(proposedPosition, newFloor);
                 mSelectedFloorIndex = proposedPosition;
@@ -318,7 +318,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             public void afterTextChanged(Editable s) {
                 if (s.length() > 2) {
                     mBuildings.clear();
-                    mBuildings.addAll(MazeServerBase.getInstance(getContext()).findSimilarBuildings(s.toString()));
+                    mBuildings.addAll(MazeServerMock.getInstance(getContext()).findSimilarBuildings(s.toString()));
                     mBuildingsAdapter.notifyDataSetChanged();
                     rcvBuildingLookup.setVisibility(View.VISIBLE);
                 } else {

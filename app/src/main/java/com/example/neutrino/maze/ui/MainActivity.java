@@ -26,13 +26,10 @@ import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -48,7 +45,7 @@ import com.example.neutrino.maze.IMazeServer;
 import com.example.neutrino.maze.Locator;
 import com.example.neutrino.maze.Locator.ILocationUpdatedListener;
 import com.example.neutrino.maze.Mapper;
-import com.example.neutrino.maze.MazeServerBase;
+import com.example.neutrino.maze.MazeServerMock;
 import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.SensorListener;
 import com.example.neutrino.maze.StepCalibratorService;
@@ -263,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             @Override
             public void onFloorChanged(Floor floor) {
                 if (Building.current.getCurrentFloor().getId() != floor.getId()) {
-                    final IMazeServer mazeServer = MazeServerBase.getInstance(MainActivity.this);
+                    final IMazeServer mazeServer = MazeServerMock.getInstance(MainActivity.this);
                     String jsonString = mazeServer.downloadFloorPlanJson(floor.getId());
                     // TODO: load new floor plan, tags, teleports, ...
 
@@ -644,7 +641,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             @Override
             public void onGlobalLayout() {
                 // TODO: Floor Id should be recieved from NewFloorPlanDialog or from server
-                String jsonString = MazeServerBase.getInstance(MainActivity.this).downloadFloorPlanJson("mock");
+                String jsonString = MazeServerMock.getInstance(MainActivity.this).downloadFloorPlanJson("mock");
 
                 // TODO: This code shgould be removed as it appears in onFloorChanged event handler
                 new LoadFloorPlanTask(MainActivity.this).onFinish(new LoadFloorPlanTask.AsyncResponse() {
