@@ -6,7 +6,6 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
-import android.support.annotation.Nullable;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
@@ -62,7 +61,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private boolean mAddedWallByDrag;
     private static final float[] mBgColorF = new float[4];
     private LocationMark mLocationMark = null;
-    private List<IFloorPlanPrimitive> mFloorPlanPrimitives;
     private List<Tag> mTags;
 
     private GLText glText;
@@ -81,6 +79,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     // Used for debug only to show distribution of active fingerprints
     private LocationMark mDistributionIndicator;
+    private FloorPlan mFloorPlan;
 
     private static String readResourceAsString(String path) {
         Exception innerException;
@@ -216,7 +215,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 mCurrentBuffer.allocateGpuBuffers();
             }
         });
-        mFloorPlanPrimitives.add(primitive);
+        mFloorPlan.addElement(primitive);
     }
 
     private void addPrimitives(List<IFloorPlanPrimitive> primitives) {
@@ -231,8 +230,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             }
         }
         mCurrentBuffer.allocateGpuBuffers();
-
-        mFloorPlanPrimitives = primitives;
     }
 
     private void updateModelMatrix() {
@@ -259,7 +256,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public boolean isFloorPlanSet() {return mFloorPlanPrimitives != null;}
+    public boolean isFloorPlanEmpty() {return mFloorPlan == null || mFloorPlan.getSketch().isEmpty();}
 
     public float getAngle() {
         return mAngle;
@@ -332,13 +329,14 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public void handleStartDrag(final int x, final int y, final FloorPlanView.MapOperation operation, final FloorPlanView.MapOperand operand) {
         // This is needed for FloorPlanView to know if there is any object under tap location
         windowToWorld(x, y, mDragStart);
-        mMovedObject = findObjectHavingPoint(mDragStart.x, mDragStart.y);
+        mMovedObject = mFloorPlan.findObjectHavingPoint(mDragStart.x, mDragStart.y);
 
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
                 mAddedWallByDrag = false;
 
+                // TODO: This code smells bad. Obviously refactor is needed. Look at where it is called from!
                 if (operation == FloorPlanView.MapOperation.ADD && operand == FloorPlanView.MapOperand.WALL) {
                     // Add new wall at the point
                     mMovedObject = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y);
@@ -395,13 +393,13 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 final PointF worldPoint = new PointF();
                 windowToWorld(x, y, worldPoint);
 
-                IMoveable candidate = findObjectHavingPoint(worldPoint.x, worldPoint.y);
+                IMoveable candidate = mFloorPlan.findObjectHavingPoint(worldPoint.x, worldPoint.y);
                 if (candidate == null) return;
 
                 if (candidate instanceof IFloorPlanPrimitive) {
                     IFloorPlanPrimitive candidatePrimitive = (IFloorPlanPrimitive) candidate;
                     candidatePrimitive.cloak();
-                    mFloorPlanPrimitives.remove(candidatePrimitive);
+                    mFloorPlan.removeElement(candidatePrimitive);
                 } else if (candidate instanceof Tag) {
                     mTags.remove(candidate);
                 }
@@ -412,14 +410,19 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     // TODO: remove queued task and use simpler method to run this on start
     private Runnable mQueuedTaskForGlThread = null;
 
-    public void setFloorPlan(final List<IFloorPlanPrimitive> primitives) {
+    public void setFloorPlan(final FloorPlan floorPlan) {
+        mFloorPlan = floorPlan;
         mQueuedTaskForGlThread = new Runnable() {
             @Override
             public void run() {
-                addPrimitives(primitives);
+                addPrimitives(floorPlan.getSketch());
                 onFloorplanLoadComplete();
             }
         };
+    }
+
+    public FloorPlan getFloorPlan() {
+        return mFloorPlan;
     }
 
     public void performQueuedTask() {
@@ -468,29 +471,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         glText.draw(tag.getLabel(), boundariesTransformed[6], boundariesTransformed[7], 0, 0, 0, -mAngle);  // Draw Text Centered
     }
 
-    public IMoveable findObjectHavingPoint(float x, float y) {
-        for (IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
-            if (primitive.hasPoint(x, y) && !primitive.isRemoved()) {
-                return primitive;
-            }
-        }
-
-        IMoveable tag = getTagHavingPoint(x, y);
-        if (tag != null) return tag;
-
-        return null;
-    }
-
-    @Nullable
-    public Tag getTagHavingPoint(float x, float y) {
-        for (Tag tag : mTags) {
-            if (tag.hasPoint(x, y)) {
-                return tag;
-            }
-        }
-        return null;
-    }
-
     private static final PointF mPanStart = new PointF();
 
     public void handleStartPan(final int x, final int y) {
@@ -515,10 +495,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 updateModelMatrix();
             }
         });
-    }
-
-    public List<IFloorPlanPrimitive> getFloorPlan() {
-        return mFloorPlanPrimitives;
     }
 
     public void putStep(final float x, final float y) {
@@ -584,7 +560,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void clearFloorPlan() {
-        for(IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
+        List<IFloorPlanPrimitive> floorPlanElements = mFloorPlan.getSketch();
+        for(IFloorPlanPrimitive primitive : floorPlanElements) {
             if (!primitive.isRemoved()) { // TODO: check if this is always true
                 primitive.cloak();
             }
@@ -593,13 +570,13 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             buffer.deallocateGpuBuffers();
         }
         mGlBuffers.clear();
-        mFloorPlanPrimitives.clear();
+        mFloorPlan.clear();
         mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
         mGlBuffers.add(mCurrentBuffer);
     }
 
     public void highlightCentroidMarks(List<Fingerprint> centroidMarks) {
-        List<? extends IFloorPlanPrimitive> primitives = mFloorPlanPrimitives;
+        List<? extends IFloorPlanPrimitive> primitives = mFloorPlan.getSketch();
         for (IFloorPlanPrimitive primitive : primitives) {
             if (primitive instanceof Fingerprint) {
                 final Fingerprint mark = (Fingerprint) primitive;
@@ -619,7 +596,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public void rescaleFloorplan(float scaleFactor) {
         if (mGlBuffers == null) return; // TODO: this should be fixed somehow
-        List<? extends IFloorPlanPrimitive> primitives = mFloorPlanPrimitives;
+        List<? extends IFloorPlanPrimitive> primitives = mFloorPlan.getSketch();
 
         for (final IFloorPlanPrimitive primitive : primitives) {
             if (primitive.isRemoved()) continue; // Do not alter removed primitives

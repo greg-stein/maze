@@ -4,11 +4,10 @@ import android.annotation.TargetApi;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Build;
+import android.support.annotation.Nullable;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.transitions.ITeleport;
-import com.example.neutrino.maze.navigation.FingerprintsPathFinder;
-import com.example.neutrino.maze.navigation.GridPathFinder;
 import com.example.neutrino.maze.navigation.PathFinderBase;
 import com.example.neutrino.maze.util.CommonHelper;
 
@@ -31,6 +30,7 @@ public class FloorPlan {
     private FloorPlanDescriptor mDescriptor;
     private PathFinderBase mPathFinder;
     private List<ITeleport> mTeleports;
+    private boolean mIsSketchDirty = false;
 
     public static FloorPlan build(List<Object> entities) {
         FloorPlan floorPlan = new FloorPlan();
@@ -114,8 +114,17 @@ public class FloorPlan {
         return boundaries;
     }
 
+    // Returns unmodifiable list. To change it use [add/remove]Element()
     public List<IFloorPlanPrimitive> getSketch() {
-        return mSketch;
+        return Collections.unmodifiableList(mSketch);
+    }
+
+    public void addElement(IFloorPlanPrimitive primitive) {
+        mSketch.add(primitive);
+    }
+
+    public void removeElement(IFloorPlanPrimitive primitive) {
+        mSketch.remove(primitive);
     }
 
     public void setSketch(List<IFloorPlanPrimitive> sketch) {
@@ -164,8 +173,8 @@ public class FloorPlan {
     }
 
     private static class TagComparator implements Comparator<Tag> {
-        private String sample;
 
+        private String sample;
         public TagComparator(String sample) {
             this.sample = sample;
         }
@@ -191,8 +200,8 @@ public class FloorPlan {
             }
             return compare;
         }
-    }
 
+    }
     public List<Tag> searchMostSimilarTags(String sample, int maxResults) {
         TagComparator comparator = new TagComparator(sample);
         synchronized (mTagsListLocker) {
@@ -202,5 +211,36 @@ public class FloorPlan {
             Collections.reverse(tail);
             return tail;
         }
+    }
+
+    public boolean isSketchDirty() {
+        return mIsSketchDirty;
+    }
+
+    public void setSketchDirty(boolean sketchDirty) {
+        mIsSketchDirty = sketchDirty;
+    }
+
+    public IMoveable findObjectHavingPoint(float x, float y) {
+        for (IFloorPlanPrimitive primitive : mSketch) {
+            if (primitive.hasPoint(x, y) && !primitive.isRemoved()) {
+                return primitive;
+            }
+        }
+
+        IMoveable tag = getTagHavingPoint(x, y);
+        if (tag != null) return tag;
+
+        return null;
+    }
+
+    @Nullable
+    public Tag getTagHavingPoint(float x, float y) {
+        for (Tag tag : mTags) {
+            if (tag.hasPoint(x, y)) {
+                return tag;
+            }
+        }
+        return null;
     }
 }

@@ -788,6 +788,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         mFloorPlan.setSketch(walls);
 
         PointF pointToShow = ((Wall)walls.get(0)).getStart(); // we know it is a wall
-        uiFloorPlanView.plot(walls, pointToShow);
+        uiFloorPlanView.plot(mFloorPlan, pointToShow);
     }
 }

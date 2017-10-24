@@ -159,6 +159,7 @@ public class FloorPlanView extends GLSurfaceView {
                         case WALL:
                             mDragStarted = true;
                             mRenderer.handleStartDrag(xPos, yPos, mapOperation, operand);
+                            mRenderer.getFloorPlan().setSketchDirty(true); // Need to flush it
                             break;
                         case SHORT_WALL:
                             break;
@@ -210,7 +211,8 @@ public class FloorPlanView extends GLSurfaceView {
         PointF worldPoint = new PointF();
         mRenderer.windowToWorld(x, y, worldPoint);
 
-        final Tag tagAtTapLocation = mRenderer.getTagHavingPoint(worldPoint.x, worldPoint.y);
+        // TODO: Tags should migrate to Floor
+        final Tag tagAtTapLocation = mRenderer.getFloorPlan().getTagHavingPoint(worldPoint.x, worldPoint.y);
         if (tagAtTapLocation != null) {
             input.setText(tagAtTapLocation.getLabel());
             dialogTitle = "Change tag";
@@ -247,7 +249,8 @@ public class FloorPlanView extends GLSurfaceView {
         final PointF worldPoint = new PointF();
         mRenderer.windowToWorld(x, y, worldPoint);
 
-        Tag tagAtLocation = mRenderer.getTagHavingPoint(worldPoint.x, worldPoint.y);
+        // TODO: Tags should migrate to Floor
+        Tag tagAtLocation = mRenderer.getFloorPlan().getTagHavingPoint(worldPoint.x, worldPoint.y);
         if (!(tagAtLocation instanceof Teleport)) {
             tagAtLocation = null;
         }
@@ -350,14 +353,8 @@ public class FloorPlanView extends GLSurfaceView {
 
     public void plot(FloorPlan floorPlan, PointF pointToShow) {
         mPointToShow = pointToShow;
-        mRenderer.setFloorPlan(floorPlan.getSketch());
+        mRenderer.setFloorPlan(floorPlan);
         mRenderer.setTags(floorPlan.getTags());
-        mRenderer.performQueuedTask();
-    }
-
-    public void plot(List<? extends IFloorPlanPrimitive> floorplan, PointF pointToShow) {
-        mPointToShow = pointToShow;
-        mRenderer.setFloorPlan((List<IFloorPlanPrimitive>) floorplan);
         mRenderer.performQueuedTask();
     }
 
@@ -390,7 +387,7 @@ public class FloorPlanView extends GLSurfaceView {
 
     // This method is used when you want to set location programmatically
     public void setLocation(float x, float y) {
-        if (mRenderer.isFloorPlanSet()) { // otherwise no need to show current location
+        if (!mRenderer.isFloorPlanEmpty()) { // otherwise no need to show current location
             mCurrentLocation.set(x, y);
             mRenderer.drawLocationMarkAt(mCurrentLocation);
         }
