@@ -111,7 +111,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
         if (Building.current == null) {
             // TODO: Current building comes from two sources: depending on fingerprint from server or the one we are working on now
-            Toast.makeText(getContext(), "No building is defined. Either create a new one or try find existing one", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "No building is defined. Either create a new one or try finding existing one", Toast.LENGTH_LONG).show();
 
             mBuildingFloors = new ArrayList<>();
         } else {
@@ -170,6 +170,9 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                         txtType.getText().toString());
 
                 Building.current.setFloors(mBuildingFloors);
+                if (mSelectedFloorIndex != NOT_SELECTED && mBuildingFloors.size() > 0) {
+                    Building.current.setCurrentFloor(mBuildingFloors.get(mSelectedFloorIndex));
+                }
             }
         });
 
