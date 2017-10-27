@@ -6,6 +6,8 @@ import android.content.res.Resources;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
+import com.example.neutrino.maze.floorplan.PersistenceLayer;
+import com.example.neutrino.maze.util.JsonSerializer;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -16,6 +18,13 @@ import java.util.List;
  */
 
 public class MazeServerMock implements IMazeServer {
+    public static final String BUILDING_STORE = "building.wad";
+    // TODO:
+        // 1. Serializer for single objects - DONE
+        // 2. In debug serialize into JSON: Building, radio map, floor plan for two floors
+        // 3. Create raw resources and store there all the data
+        // 4. write in this class static initializer that reads all the data from resources
+        // writing/saving data - ?? - next stage is working with internal storage
 
     private static IMazeServer instance = null;
     private static final Object mutex = new Object();
@@ -41,11 +50,13 @@ public class MazeServerMock implements IMazeServer {
 
     @Override
     public Building findCurrentBuilding(WiFiLocator.WiFiFingerprint fingerprint) {
-        return null;
+        String json = PersistenceLayer.load(mContext, BUILDING_STORE);
+        return JsonSerializer.deserialize(json, Building.class);
     }
 
     @Override
     public String createFloor() {
+        // TODO: under Building.current?
         return Integer.toString(floorSequence++);
     }
 
@@ -110,7 +121,8 @@ public class MazeServerMock implements IMazeServer {
 
     @Override
     public void updateBuilding(Building building) {
-
+        String json = JsonSerializer.serialize(building);
+        PersistenceLayer.save(mContext, json, BUILDING_STORE);
     }
 
     @Override
