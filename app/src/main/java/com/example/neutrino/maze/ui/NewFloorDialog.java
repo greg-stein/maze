@@ -132,6 +132,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 }
                 Building.current = building;
                 Toast.makeText(getContext(),  building.getName(), Toast.LENGTH_SHORT).show();
+                setCreatingFloorsAllowed(true);
             }
         });
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
@@ -140,6 +141,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         rcvBuildingLookup.setAdapter(mBuildingsAdapter);
 
         setUiListeners();
+        setCreatingFloorsAllowed(false);
     }
 
     private void setUiListeners() {
@@ -176,6 +178,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 if (mSelectedFloorIndex != NOT_SELECTED && mBuildingFloors.size() > 0) {
                     Building.current.setCurrentFloor(mBuildingFloors.get(mSelectedFloorIndex));
                 }
+                setCreatingFloorsAllowed(true);
             }
         });
 
@@ -332,6 +335,15 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 }
             }
         });
+    }
+
+    private void setCreatingFloorsAllowed(boolean allowed) {
+        txtFloor.setEnabled(allowed);
+        btnUp.setEnabled(allowed);
+        btnDown.setEnabled(allowed);
+        btnInsertFloor.setEnabled(allowed);
+        btnDeleteFloor.setEnabled(allowed);
+        lstFloors.setEnabled(allowed);
     }
 
     // Finds best position to insert new floor based on its name
