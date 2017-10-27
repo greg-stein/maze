@@ -9,6 +9,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -75,7 +76,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private FloorsAdapter mFloorsAdapter;
     private List<Building> mBuildings = new ArrayList<>();
     private BuildingsAdapter mBuildingsAdapter;
-
+    private boolean mIsBuildingDirty = false;
     private IFloorChangedHandler mFloorChangedHandler;
 
     public NewFloorDialog(@NonNull Context context) {
@@ -142,7 +143,46 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         setCreatingFloorsAllowed(false);
     }
 
+    @Override
+    protected void onStop() {
+        if (mIsBuildingDirty) {
+            Building.current.setName(txtBuilding.getText().toString());
+            Building.current.setType(txtType.getText().toString());
+            Building.current.setAddress(txtAddress.getText().toString());
+            Building.current.setFloors(mBuildingFloors);
+            Building.current.setDirty(true);
+        }
+        Building.current.setCurrentFloor(mBuildingFloors.get(mSelectedFloorIndex));
+        super.onStop();
+    }
+
     private void setUiListeners() {
+        txtType.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+               mIsBuildingDirty = true; // indicate to save building upon exit
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        txtAddress.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mIsBuildingDirty = true; // indicate to save building upon exit
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
         txtBuilding.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
@@ -194,6 +234,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 mUpdateFloorNameInList = true;
+                mIsBuildingDirty = true; // indicate to save building upon exit
                 return false;
             }
         });
@@ -270,6 +311,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 mBuildingFloors.add(proposedPosition, newFloor);
                 mSelectedFloorIndex = proposedPosition;
                 mFloorsAdapter.notifyDataSetChanged();
+                mIsBuildingDirty = true; // indicate to save building upon exit
             }
         });
 
@@ -308,6 +350,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mIsBuildingDirty = true; // indicate to save building upon exit
             }
 
             @Override

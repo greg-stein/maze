@@ -5,6 +5,7 @@ import android.content.res.Resources;
 
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
+import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.util.JsonSerializer;
@@ -70,6 +71,7 @@ public class MazeServerMock implements IMazeServer {
         Building building = new Building(buildingName, address, type, "unique ID :)");
         final String newId = createBuilding(building);
         building.setID(newId);
+        building.setFloors(new ArrayList<Floor>());
 
         return building;
     }
