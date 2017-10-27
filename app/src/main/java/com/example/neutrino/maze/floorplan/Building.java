@@ -23,6 +23,7 @@ public class Building {
     private transient Floor mCurrentFloor;
 
     private transient Map<String, List<ITeleport>> mTeleportsById = new HashMap<>();
+    private boolean mDirty;
 
     public Building() {
     }
@@ -109,5 +110,13 @@ public class Building {
 
     public void setCurrentFloor(Floor currentFloor) {
         mCurrentFloor = currentFloor;
+    }
+
+    public boolean isDirty() {
+        return mDirty;
+    }
+
+    public void setDirty(boolean dirty) {
+        mDirty = dirty;
     }
 }

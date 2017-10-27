@@ -57,8 +57,8 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private EditText txtBuilding;
     private AutoCompleteTextView txtType;
     private EditText txtAddress;
-    private EditText txtFloor;
     private Button btnGuessAddress;
+    private EditText txtFloor;
     private ImageButton btnUp;
     private ImageButton btnDown;
     private ImageButton btnInsertFloor;
@@ -127,7 +127,10 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         mBuildingsAdapter = new BuildingsAdapter(mBuildings, new BuildingsAdapter.OnBuildingClickListener() {
             @Override
             public void onBuildingClick(Building building) {
-                // TODO: Instead of this set Building.current to point to building
+                if (Building.current.isDirty()) {
+                    // Save changes to current building
+                }
+                Building.current = building;
                 Toast.makeText(getContext(),  building.getName(), Toast.LENGTH_SHORT).show();
             }
         });
