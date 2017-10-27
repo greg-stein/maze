@@ -65,7 +65,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private ImageButton btnDeleteFloor;
     private ListView lstFloors;
     private RecyclerView rcvBuildingLookup;
-    private Button btnSubmit;
+    private Button btnCreateBuilding;
 
     private int mSelectedFloorIndex = NOT_SELECTED;
     private static String[] buildingTypes;
@@ -99,7 +99,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnInsertFloor = (ImageButton) findViewById(R.id.btn_insert_floor);
         btnDeleteFloor = (ImageButton) findViewById(R.id.btn_remove_floor);
         rcvBuildingLookup = (RecyclerView) findViewById(R.id.rcv_building_lookup);
-        btnSubmit = (Button) findViewById(R.id.btn_submit);
+        btnCreateBuilding = (Button) findViewById(R.id.btn_create_building);
 
         buildingTypes = getContext().getResources().getStringArray(R.array.buildings);
         ArrayAdapter<String> buildingTypesAdapter = new ArrayAdapter<>
@@ -115,7 +115,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         } else {
             txtBuilding.setText(Building.current.getName());
             txtType.setText(Building.current.getType());
-            txtAddress.setText(Building.current.getAddress());
+
             mBuildingFloors = Building.current.getFloors();
         }
 
@@ -157,7 +157,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             }
         });
 
-        btnSubmit.setOnClickListener(new View.OnClickListener() {
+        btnCreateBuilding.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Building.current = MazeServerMock.getInstance(getContext()).createBuilding(
