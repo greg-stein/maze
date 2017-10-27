@@ -66,7 +66,6 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private ListView lstFloors;
     private RecyclerView rcvBuildingLookup;
     private Button btnSubmit;
-    private Button btnClose;
 
     private int mSelectedFloorIndex = NOT_SELECTED;
     private static String[] buildingTypes;
@@ -101,7 +100,6 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnDeleteFloor = (ImageButton) findViewById(R.id.btn_remove_floor);
         rcvBuildingLookup = (RecyclerView) findViewById(R.id.rcv_building_lookup);
         btnSubmit = (Button) findViewById(R.id.btn_submit);
-        btnClose = (Button) findViewById(R.id.btn_close);
 
         buildingTypes = getContext().getResources().getStringArray(R.array.buildings);
         ArrayAdapter<String> buildingTypesAdapter = new ArrayAdapter<>
@@ -145,13 +143,6 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     }
 
     private void setUiListeners() {
-        btnClose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dismiss();
-            }
-        });
-
         txtBuilding.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
