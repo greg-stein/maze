@@ -174,10 +174,6 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                         txtAddress.getText().toString(),
                         txtType.getText().toString());
 
-                Building.current.setFloors(mBuildingFloors);
-                if (mSelectedFloorIndex != NOT_SELECTED && mBuildingFloors.size() > 0) {
-                    Building.current.setCurrentFloor(mBuildingFloors.get(mSelectedFloorIndex));
-                }
                 setCreatingFloorsAllowed(true);
             }
         });
