@@ -152,7 +152,12 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             Building.current.setFloors(mBuildingFloors);
             Building.current.setDirty(true);
         }
-        Building.current.setCurrentFloor(mBuildingFloors.get(mSelectedFloorIndex));
+
+        final Floor selectedFloor = mBuildingFloors.get(mSelectedFloorIndex);
+        if (Building.current.getCurrentFloor() != selectedFloor) {
+            Building.current.setCurrentFloor(selectedFloor);
+            emitFloorChangedEvent(selectedFloor);
+        }
         super.onStop();
     }
 
@@ -344,9 +349,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
         txtBuilding.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
