@@ -52,6 +52,7 @@ public class WiFiLocator {
     }
 
     // Yeah, fake class is so antipattern...
+    // TODO: MAC address could be stored into 64-bit integer instead of String!!!
     public static class WiFiFingerprint extends HashMap<String, Integer> {
         // ACHTUNG! This is not supposed to be stored in DB, hence transient. For DB use currentTimeMillis()
         public final transient long timestamp = System.nanoTime();

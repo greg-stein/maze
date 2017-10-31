@@ -5,8 +5,10 @@ import com.example.neutrino.maze.floorplan.transitions.Teleport;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Greg Stein on 7/7/2017.
@@ -20,19 +22,21 @@ public class Building {
     private String mType;
     private String mID;
     private List<Floor> mFloors;
-    private transient Floor mCurrentFloor;
+    private Set<String> mAccessPoints; // TODO: HashSet<Long>
 
+    private transient Floor mCurrentFloor;
     private transient Map<String, List<ITeleport>> mTeleportsById = new HashMap<>();
-    private boolean mDirty;
+    private transient boolean mDirty;
 
     public Building() {
     }
 
-    public Building(String mName, String mAddress, String mType, String mID) {
-        this.mName = mName;
-        this.mAddress = mAddress;
-        this.mType = mType;
-        this.mID = mID;
+    public Building(String name, String address, String type, String id) {
+        this.mName = name;
+        this.mAddress = address;
+        this.mType = type;
+        this.mID = id;
+        mAccessPoints = new HashSet<>();
         initTeleportsMap();
     }
 

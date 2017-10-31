@@ -51,8 +51,16 @@ public class MazeServerMock implements IMazeServer {
 
     @Override
     public Building findCurrentBuilding(WiFiLocator.WiFiFingerprint fingerprint) {
-        String json = PersistenceLayer.load(mContext, BUILDING_STORE);
-        return JsonSerializer.deserialize(json, Building.class);
+        // Mock the mock :)
+        Building haifaMall = new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "охуенно уникальный стринг суканахуй");
+        Floor floor1 = new Floor("1", "1234");
+        List<Floor> floors = new ArrayList<>();
+        floors.add(floor1);
+        haifaMall.setFloors(floors);
+        return haifaMall;
+
+//        String json = PersistenceLayer.load(mContext, BUILDING_STORE);
+//        return JsonSerializer.deserialize(json, Building.class);
     }
 
     @Override
