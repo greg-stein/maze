@@ -8,7 +8,7 @@ import android.opengl.GLU;
 import android.opengl.Matrix;
 
 import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
+import com.example.neutrino.maze.core.WiFiLocator.WiFiFingerprint;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Footprint;

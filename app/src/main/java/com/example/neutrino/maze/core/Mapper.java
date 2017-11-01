@@ -1,22 +1,20 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.core;
 
 import android.content.Context;
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.Locator.ILocationUpdatedListener;
-import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 
 import java.util.Stack;
-import static com.example.neutrino.maze.WifiScanner.IFingerprintAvailableListener;
 
 /**
  * Created by Greg Stein on 4/13/2017.
  */
 
-public class Mapper implements ILocationUpdatedListener, IFingerprintAvailableListener {
+public class Mapper implements Locator.ILocationUpdatedListener, WifiScanner.IFingerprintAvailableListener {
     private boolean mOldWifiScannerState;
     private boolean mFingerprintPlacedAtCurrentLocation = true;
     private PointF mCurrentLocation;
@@ -74,7 +72,7 @@ public class Mapper implements ILocationUpdatedListener, IFingerprintAvailableLi
     }
 
     @Override
-    public void onFingerprintAvailable(WiFiFingerprint fingerprint) {
+    public void onFingerprintAvailable(WiFiLocator.WiFiFingerprint fingerprint) {
         if (!mFingerprintPlacedAtCurrentLocation) {
             // To display the fingerprint in debug mode
             if (AppSettings.inDebug) {

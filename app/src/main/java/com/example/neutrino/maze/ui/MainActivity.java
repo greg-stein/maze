@@ -39,18 +39,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.FloorWatcher;
-import com.example.neutrino.maze.IFloorChangedHandler;
-import com.example.neutrino.maze.IMazeServer;
-import com.example.neutrino.maze.Locator;
-import com.example.neutrino.maze.Locator.ILocationUpdatedListener;
-import com.example.neutrino.maze.Mapper;
-import com.example.neutrino.maze.MazeServerMock;
+import com.example.neutrino.maze.core.FloorWatcher;
+import com.example.neutrino.maze.core.IFloorChangedHandler;
+import com.example.neutrino.maze.core.IMazeServer;
+import com.example.neutrino.maze.core.Locator;
+import com.example.neutrino.maze.core.Locator.ILocationUpdatedListener;
+import com.example.neutrino.maze.core.Mapper;
+import com.example.neutrino.maze.core.MazeServerMock;
 import com.example.neutrino.maze.R;
-import com.example.neutrino.maze.SensorListener;
-import com.example.neutrino.maze.StepCalibratorService;
-import com.example.neutrino.maze.WiFiLocator;
-import com.example.neutrino.maze.WifiScanner;
+import com.example.neutrino.maze.core.SensorListener;
+import com.example.neutrino.maze.core.StepCalibratorService;
+import com.example.neutrino.maze.core.WiFiLocator;
+import com.example.neutrino.maze.core.WifiScanner;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.FloorPlan;
@@ -72,7 +72,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
+import static com.example.neutrino.maze.core.SensorListener.IDeviceRotationListener;
 import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 
 public class MainActivity extends AppCompatActivity implements IDeviceRotationListener,

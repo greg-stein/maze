@@ -1,13 +1,10 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.core;
 
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 
 import java.util.List;
-
-import static com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 
 /**
  * Created by Greg Stein on 9/25/2017.
@@ -16,7 +13,7 @@ import static com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
 public interface IMazeServer {
     // Searches for best matching building based on fingerprint. The returned structure
     // contains also list of floors and updated current floor id
-    Building findCurrentBuilding(WiFiFingerprint fingerprint);
+    Building findCurrentBuilding(WiFiLocator.WiFiFingerprint fingerprint);
 
     // Returns floor id
     String createFloor();
@@ -29,7 +26,7 @@ public interface IMazeServer {
     String downloadFloorPlanJson(String floorId); // doesn't include tags & teleports
 
     // gets estimated map tile containing given fingerprint
-    List<Fingerprint> downloadRadioMapTile(String floorId, WiFiFingerprint fingerprint);
+    List<Fingerprint> downloadRadioMapTile(String floorId, WiFiLocator.WiFiFingerprint fingerprint);
 
     void uploadFloorPlan(String floorId, FloorPlan floorPlan);
 

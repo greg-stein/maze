@@ -2,7 +2,7 @@ package com.example.neutrino.maze.floorplan.transitions;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
+import com.example.neutrino.maze.core.WiFiLocator.WiFiFingerprint;
 import com.example.neutrino.maze.floorplan.Floor;
 
 /**

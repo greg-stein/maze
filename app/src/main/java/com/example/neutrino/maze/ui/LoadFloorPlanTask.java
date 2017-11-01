@@ -3,8 +3,8 @@ package com.example.neutrino.maze.ui;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import com.example.neutrino.maze.Locator;
-import com.example.neutrino.maze.WiFiLocator;
+import com.example.neutrino.maze.core.Locator;
+import com.example.neutrino.maze.core.WiFiLocator;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 

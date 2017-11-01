@@ -4,7 +4,7 @@ import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.RectF;
 
-import com.example.neutrino.maze.WiFiLocator;
+import com.example.neutrino.maze.core.WiFiLocator;
 import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;

@@ -2,6 +2,7 @@ package com.example.neutrino.maze;
 
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.core.WiFiLocator;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.Wall;

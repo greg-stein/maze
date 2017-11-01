@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.core;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
+import com.example.neutrino.maze.R;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;

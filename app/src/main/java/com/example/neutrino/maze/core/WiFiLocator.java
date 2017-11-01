@@ -1,8 +1,9 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.core;
 
 import android.net.wifi.ScanResult;
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Footprint;
 
@@ -72,7 +73,7 @@ public class WiFiLocator {
         private Queue<WiFiFingerprint> mQueue;
         private int mLength;
 
-        FingerprintHistory(int historyLength) {
+        public FingerprintHistory(int historyLength) {
             mQueue = new ArrayDeque<>(this.mLength = historyLength);
         }
 
@@ -104,7 +105,7 @@ public class WiFiLocator {
     private WiFiFingerprint currentWiFiFingerprint = null;
     public FingerprintHistory currentHistory = null; //TODO: no encapsulation!
 
-    void addToFingerprintHistory(WiFiFingerprint fingerprint) {
+    public void addToFingerprintHistory(WiFiFingerprint fingerprint) {
         currentHistory.add(fingerprint);
     }
 

@@ -1,13 +1,10 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.core;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
-import com.example.neutrino.maze.SensorListener.IStepDetectedListener;
-import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
-import com.example.neutrino.maze.WifiScanner.IFingerprintAvailableListener;
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;
@@ -21,7 +18,7 @@ import java.util.List;
  * Created by Greg Stein on 4/11/2017.
  */
 
-public class Locator implements IFingerprintAvailableListener, IStepDetectedListener, IDeviceRotationListener {
+public class Locator implements WifiScanner.IFingerprintAvailableListener, SensorListener.IStepDetectedListener, SensorListener.IDeviceRotationListener {
     private static final float DEFAULT_STEP_LENGTH = 0.68f; // human average step: 78cm
     private static final int WINDOW_SIZE = 3;
     private static final int MAX_VARIANCES_NUM = 4;
@@ -156,7 +153,7 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     }
 
     @Override
-    public void onFingerprintAvailable(WiFiFingerprint fingerprint) {
+    public void onFingerprintAvailable(WiFiLocator.WiFiFingerprint fingerprint) {
         if (fingerprint.size() == 0) return; // cannot estimate location based on nothing
 
         // For debugging while not in HaifaMall

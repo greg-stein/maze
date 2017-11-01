@@ -1,8 +1,9 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.core;
 
 import android.content.Context;
 import android.content.res.Resources;
 
+import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Floor;

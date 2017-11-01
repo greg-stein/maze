@@ -32,11 +32,11 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".StepCalibratorService"
+            android:name=".core.StepCalibratorService"
             android:enabled="true" >
         </service>
         <receiver
-            android:name=".SensorRestarterBroadcastReceiver"
+            android:name=".core.SensorRestarterBroadcastReceiver"
             android:enabled="true"
             android:exported="true"
             android:label="RestartServiceWhenStopped">

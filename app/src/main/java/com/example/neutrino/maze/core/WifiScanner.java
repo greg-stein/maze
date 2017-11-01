@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.core;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,7 +7,7 @@ import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 
-import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.util.MovingAverageScanResultsQueue;
 
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ public class WifiScanner extends BroadcastReceiver {
         return mIsEnabled;
     }
 
-    public WiFiFingerprint getLastFingerprint() { return WiFiFingerprint.build(mQueue.getLastItem());}
+    public WiFiLocator.WiFiFingerprint getLastFingerprint() { return WiFiLocator.WiFiFingerprint.build(mQueue.getLastItem());}
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -76,7 +76,7 @@ public class WifiScanner extends BroadcastReceiver {
     }
 
     public interface IFingerprintAvailableListener {
-        void onFingerprintAvailable(WiFiFingerprint fingerprint);
+        void onFingerprintAvailable(WiFiLocator.WiFiFingerprint fingerprint);
     }
 
     public void removeFingerprintAvailableListener(IFingerprintAvailableListener listener) {
@@ -87,9 +87,9 @@ public class WifiScanner extends BroadcastReceiver {
         this.mFingerprintAvailableListeners.add(listener);
     }
 
-    private void emitWiFiFingerprintAvailableEvent(WiFiFingerprint scanResultsSums, Map<String, Integer> numScans) {
+    private void emitWiFiFingerprintAvailableEvent(WiFiLocator.WiFiFingerprint scanResultsSums, Map<String, Integer> numScans) {
         if (mIsEnabled && mFingerprintAvailableListeners.size() > 0) {
-            WiFiFingerprint fingerprint = new WiFiFingerprint();
+            WiFiLocator.WiFiFingerprint fingerprint = new WiFiLocator.WiFiFingerprint();
 
             for (Map.Entry<String, Integer> entry : scanResultsSums.entrySet()) {
                 final Integer scansCounter = numScans.get(entry.getKey());

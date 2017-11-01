@@ -9,7 +9,6 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -36,8 +35,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.IFloorChangedHandler;
-import com.example.neutrino.maze.MazeServerMock;
+import com.example.neutrino.maze.core.IFloorChangedHandler;
+import com.example.neutrino.maze.core.MazeServerMock;
 import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Floor;
