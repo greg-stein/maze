@@ -2,6 +2,7 @@ package com.example.neutrino.maze.core;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.v4.util.Pair;
 
 import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.floorplan.Building;
@@ -9,6 +10,7 @@ import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
+import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.JsonSerializer;
 
 import java.io.InputStream;
@@ -62,6 +64,11 @@ public class MazeServerMock implements IMazeServer {
 
 //        String json = PersistenceLayer.load(mContext, BUILDING_STORE);
 //        return JsonSerializer.deserialize(json, Building.class);
+    }
+
+    @Override
+    public void findCurrentBuildingAsync(WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<Building> onDone) {
+
     }
 
     @Override
@@ -154,6 +161,26 @@ public class MazeServerMock implements IMazeServer {
         buildings.add(new Building("Haifa Mall 12", "Flieman st. Haifa", "Mall", "1"));
 
         return buildings;
+    }
+
+    @Override
+    public void getBuildingAsync(String buildingId, IFuckingSimpleGenericCallback<Building> onBuildingReceived) {
+
+    }
+
+    @Override
+    public void findCurrentBuildingAndFloorAsync(WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<Pair<String, String>> callback) {
+
+    }
+
+    @Override
+    public void downloadFloorPlanAsync(String floorId, IFuckingSimpleGenericCallback<FloorPlan> onFloorPlanReceived) {
+
+    }
+
+    @Override
+    public void downloadRadioMapTileAsync(String floorId, WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<List<WiFiLocator.WiFiFingerprint>> onRadioTileReceived) {
+
     }
 
 }

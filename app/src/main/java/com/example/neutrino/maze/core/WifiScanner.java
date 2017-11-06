@@ -44,12 +44,12 @@ public class WifiScanner extends BroadcastReceiver {
         mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
     }
 
-    public void onActivityResume() {
+    public void onResume() {
         AppSettings.appActivity.registerReceiver(this, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         mWifiManager.startScan();
     }
 
-    public void onActivityPause() {
+    public void onPause() {
         AppSettings.appActivity.unregisterReceiver(this);
     }
 
