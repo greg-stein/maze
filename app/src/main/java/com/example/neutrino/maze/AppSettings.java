@@ -1,6 +1,5 @@
 package com.example.neutrino.maze;
 
-import android.app.Activity;
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
 
@@ -18,16 +17,12 @@ public class AppSettings {
     public static int primaryDarkColor;
     public static int editModeColor;
     public static int accentColor;
-    public static Activity appActivity = null; // TODO: this is memory leak! remove this field and pass context where in use
     public static int oglProgram;
     public static int oglTextRenderProgram;
     public static boolean inDebug;
     public static int pathColor;
 
     public static void init(Context context) {
-        if (context instanceof Activity) {
-            appActivity = (Activity) context;
-        }
         pathColor = ContextCompat.getColor(context, R.color.colorPath);
         locationMarkColor = ContextCompat.getColor(context, R.color.colorLocationMark);
         footprintColor = ContextCompat.getColor(context, R.color.colorFootprint);

@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             mMapper.setFloorPlanView(uiFloorPlanView);
         }
 
-        mAdapter = new TagsAdapter(AppSettings.appActivity);
+        mAdapter = new TagsAdapter(this);
         uiRecView.setAdapter(mAdapter);
 
         ImageSpinnerAdapter adapter =
@@ -731,7 +731,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         if (locationPermissionsGranted(this)) {
             mSensorListener.addDeviceRotationListener(this);
-            mWifiScanner.onResume();
+            mWifiScanner.onResume(this);
         }
     }
 
@@ -742,7 +742,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         // to stop the listener and save battery
         if (locationPermissionsGranted(this)) {
             mSensorListener.removeDeviceRotationListener(this);
-            mWifiScanner.onPause();
+            mWifiScanner.onPause(this);
         }
     }
 

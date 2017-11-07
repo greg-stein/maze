@@ -53,8 +53,7 @@ public class PersistenceLayer {
         return data;
     }
 
-    public static void saveFloorPlan(String serializedFloorPlan) {
-        Context context = AppSettings.appActivity;
+    public static void saveFloorPlan(Context context, String serializedFloorPlan) {
         FileOutputStream fos;
 
         try {
@@ -70,8 +69,7 @@ public class PersistenceLayer {
     }
 
     @Nullable
-    public static String loadFloorPlan() {
-        Context context = AppSettings.appActivity;
+    public static String loadFloorPlan(Context context) {
         String floorplan = null;
         FileInputStream fis;
 

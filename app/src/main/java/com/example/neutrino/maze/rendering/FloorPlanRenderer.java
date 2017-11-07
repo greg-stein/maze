@@ -1,5 +1,7 @@
 package com.example.neutrino.maze.rendering;
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.opengl.GLES20;
@@ -62,6 +64,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private static final float[] mBgColorF = new float[4];
     private LocationMark mLocationMark = null;
     private List<Tag> mTags;
+    private Context mContext;
 
     private GLText glText;
 
@@ -96,6 +99,10 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             innerException = e;
         }
         throw new RuntimeException("Cannot load shader code from resources.", innerException);
+    }
+
+    public FloorPlanRenderer(Context context) {
+        mContext = context;
     }
 
     @Override
@@ -148,7 +155,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
 
         // Create the GLText
-        glText = new GLText(AppSettings.oglTextRenderProgram, AppSettings.appActivity.getAssets());
+        glText = new GLText(AppSettings.oglTextRenderProgram, mContext.getAssets());
 
         // Load the font from file (set size + padding), creates the texture
         // NOTE: after a successful call to this the font is ready for rendering!
@@ -251,8 +258,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     protected void runOnUiThread(Runnable runnable) {
-        if (AppSettings.appActivity != null) {
-            AppSettings.appActivity.runOnUiThread(runnable);
+        if (mContext instanceof Activity) {
+            ((Activity)mContext).runOnUiThread(runnable);
         }
     }
 

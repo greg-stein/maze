@@ -1,8 +1,6 @@
 package com.example.neutrino.maze.core;
 
 import android.content.Context;
-import android.os.Build;
-import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 
 import com.example.neutrino.maze.floorplan.Building;
@@ -106,11 +104,11 @@ public class MazeClient {
     }
 
     public void onResume() {
-        mWifiScanner.onResume();
+        mWifiScanner.onResume(mContext);
     }
 
     public void onPause() {
-        mWifiScanner.onPause();
+        mWifiScanner.onPause(mContext);
     }
 
     public void onDestroy() {

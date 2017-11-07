@@ -23,6 +23,7 @@ import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.core.WiFiLocator.WiFiFingerprint;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 
+import java.lang.reflect.Array;
 import java.util.List;
 
 import static com.example.neutrino.maze.rendering.FloorPlanView.MapOperation.MOVE;
@@ -48,7 +49,7 @@ public class FloorPlanView extends GLSurfaceView {
     public FloorPlanView(Context context, AttributeSet attrs) {
         super(context,attrs);
         if (!isInEditMode()) {
-            mRenderer = new FloorPlanRenderer();
+            mRenderer = new FloorPlanRenderer(getContext());
             init(context, attrs);
         }
     }
@@ -243,7 +244,7 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     private void askForTeleportNumber(final int x, final int y) {
-        final EditText input = new EditText(AppSettings.appActivity);
+        final EditText input = new EditText(getContext());
         String dialogTitle = "New teleport";
         String okButtonCaption = "Add";
         final PointF worldPoint = new PointF();
@@ -261,7 +262,7 @@ public class FloorPlanView extends GLSurfaceView {
         }
         final Tag teleportAtTapLocation = tagAtLocation;
 
-        new AlertDialog.Builder(AppSettings.appActivity)
+        new AlertDialog.Builder(getContext())
                 .setTitle(dialogTitle)
                 .setView(input)
 //                .setMessage("Paste in the link of an image to moustachify!")
