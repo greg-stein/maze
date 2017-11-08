@@ -13,6 +13,7 @@ import android.os.SystemClock;
 import android.support.annotation.Nullable;
 
 import com.example.neutrino.maze.ui.MainActivity;
+import com.example.neutrino.maze.util.PermissionsHelper;
 
 /**
  * Created by Greg Stein on 8/30/2017.
@@ -90,7 +91,7 @@ public class StepCalibratorService extends Service implements LocationListener, 
         mSensorListener.addStepDetectedListener(this);
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        mLocationPermissionsGranted = MainActivity.locationPermissionsGranted(this);
+        mLocationPermissionsGranted = PermissionsHelper.locationPermissionsGranted(this);
         if (!mLocationPermissionsGranted || calibrationCriteriaSatisfied()) {
             // Kill this service as without GPS it is impossible to calibrate user's step length
             stopSelf();

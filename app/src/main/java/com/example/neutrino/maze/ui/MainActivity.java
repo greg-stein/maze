@@ -1,7 +1,5 @@
 package com.example.neutrino.maze.ui;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,7 +14,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -39,6 +36,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.core.FloorWatcher;
 import com.example.neutrino.maze.core.IFloorChangedHandler;
 import com.example.neutrino.maze.core.IMazeServer;
@@ -46,7 +44,6 @@ import com.example.neutrino.maze.core.Locator;
 import com.example.neutrino.maze.core.Locator.ILocationUpdatedListener;
 import com.example.neutrino.maze.core.Mapper;
 import com.example.neutrino.maze.core.MazeServerMock;
-import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.core.SensorListener;
 import com.example.neutrino.maze.core.StepCalibratorService;
 import com.example.neutrino.maze.core.WiFiLocator;
@@ -71,14 +68,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.example.neutrino.maze.core.SensorListener.IDeviceRotationListener;
+import com.example.neutrino.maze.util.PermissionsHelper;
 import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 
 public class MainActivity extends AppCompatActivity implements IDeviceRotationListener,
         ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener, VectorizeDialog.ICompleteVectorizationHandler {
-    public static final int PERMISSION_LOCATION_REQUEST_CODE = 613;
-
     // GUI-related fields
     private SearchView uiSearchView;
     private RecyclerView uiRecView;
@@ -123,72 +118,15 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private StepCalibratorService mStepCalibratorService;
     private Intent mStepCalibratorServiceIntent;
 
-    private static boolean letDieSilently = false;
-    public static boolean locationPermissionsGranted = false;
-
     private IFloorChangedHandler mFloorChangedHandler;
     private float mCurrentWallLength;
 
-    public static boolean requestPermissions(Context context) {
-        if (!locationPermissionsGranted(context)) {
-            letDieSilently = true;
-            // Request permissions
-            if (context instanceof Activity) {
-                final Activity activity = (Activity) context;
-
-                if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_COARSE_LOCATION) ||
-                        ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-                    // Show user justification why these permissions are needed
-                    new android.app.AlertDialog.Builder(context).
-                        setCancelable(true).
-                        setTitle("Permissions necessary").
-                        setMessage("We need your permission to get LOCATION for using in open areas " +
-                                "and for calibrating positioning methods").
-                        setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                ActivityCompat.requestPermissions(
-                                      activity,
-                                      new String[] { Manifest.permission.ACCESS_COARSE_LOCATION,
-                                                     Manifest.permission.ACCESS_FINE_LOCATION},
-                                      PERMISSION_LOCATION_REQUEST_CODE);
-                            }
-                        }).
-                        show();
-                } else {
-                    ActivityCompat.requestPermissions(
-                            activity,
-                            new String[] { Manifest.permission.ACCESS_COARSE_LOCATION,
-                                           Manifest.permission.ACCESS_FINE_LOCATION},
-                            PERMISSION_LOCATION_REQUEST_CODE);
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public static boolean locationPermissionsGranted(Context context) {
-        return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED;
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_LOCATION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED) {
-                locationPermissionsGranted = true;
-                // reload activity
-            } else {
-                Toast.makeText(this, "Maze was not allowed to use location. Hence it couldn't " +
-                                "function properly and will be closed. Please consider " +
-                                "granting it needed permissions.",
-                        Toast.LENGTH_LONG).show();
-                locationPermissionsGranted = false;
-            }
-            finish();
+        if (PermissionsHelper.handleLocationPermissions(this, requestCode, grantResults)) {
+            this.finish();
         }
     }
 
@@ -215,11 +153,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         AppSettings.init(this);
         mFabAlpha = getAlphaFromRes();
-
-        locationPermissionsGranted = requestPermissions(this);
-
-        // TODO: instead of just killing the app, consider reloading activity when the permission is granted.
-        if (!locationPermissionsGranted) return;
 
         // initialize your android device sensor capabilities
         mWifiScanner = WifiScanner.getInstance(this);
@@ -311,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     @Override
     protected void onDestroy() {
-        if (!letDieSilently) {
+        if (!PermissionsHelper.letDieSilently) {
             stopService(mStepCalibratorServiceIntent);
         }
         if (mLocator != null) {
@@ -729,7 +662,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     protected void onResume() {
         super.onResume();
 
-        if (locationPermissionsGranted(this)) {
+        if (PermissionsHelper.locationPermissionsGranted(this)) {
             mSensorListener.addDeviceRotationListener(this);
             mWifiScanner.onResume(this);
         }
@@ -740,7 +673,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         super.onPause();
 
         // to stop the listener and save battery
-        if (locationPermissionsGranted(this)) {
+        if (PermissionsHelper.locationPermissionsGranted(this)) {
             mSensorListener.removeDeviceRotationListener(this);
             mWifiScanner.onPause(this);
         }

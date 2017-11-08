@@ -6,6 +6,7 @@ import android.support.v4.util.Pair;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
+import com.example.neutrino.maze.util.PermissionsHelper;
 
 import java.util.List;
 
@@ -95,6 +96,9 @@ public class MazeClient {
     }
 
     public void onCreate() {
+        // TODO: instead of just killing the app, consider reloading activity when the permission is granted.
+        if (!PermissionsHelper.requestPermissions(mContext)) return;
+
         mMazeServer = MazeServerMock.getInstance(mContext);
 
         if (mWifiScanner == null) {

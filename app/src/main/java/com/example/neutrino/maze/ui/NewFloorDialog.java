@@ -40,6 +40,7 @@ import com.example.neutrino.maze.core.MazeServerMock;
 import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Floor;
+import com.example.neutrino.maze.util.PermissionsHelper;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -424,7 +425,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
     private void getCurrentAddress() {
         mLocationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-        if (MainActivity.locationPermissionsGranted(getContext())) {
+        if (PermissionsHelper.locationPermissionsGranted(getContext())) {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, mLocationListener);
         }
     }
