@@ -39,10 +39,13 @@ import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.R;
 import com.example.neutrino.maze.core.FloorWatcher;
 import com.example.neutrino.maze.core.IFloorChangedHandler;
+import com.example.neutrino.maze.core.IMainView;
+import com.example.neutrino.maze.core.IMazePresenter;
 import com.example.neutrino.maze.core.IMazeServer;
 import com.example.neutrino.maze.core.Locator;
 import com.example.neutrino.maze.core.Locator.ILocationUpdatedListener;
 import com.example.neutrino.maze.core.Mapper;
+import com.example.neutrino.maze.core.MazeClient;
 import com.example.neutrino.maze.core.MazeServerMock;
 import com.example.neutrino.maze.core.SensorListener;
 import com.example.neutrino.maze.core.StepCalibratorService;
@@ -73,7 +76,7 @@ import com.example.neutrino.maze.util.PermissionsHelper;
 import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 
 public class MainActivity extends AppCompatActivity implements IDeviceRotationListener,
-        ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener, VectorizeDialog.ICompleteVectorizationHandler {
+        ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener, VectorizeDialog.ICompleteVectorizationHandler, IMainView {
     // GUI-related fields
     private SearchView uiSearchView;
     private RecyclerView uiRecView;
@@ -121,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private IFloorChangedHandler mFloorChangedHandler;
     private float mCurrentWallLength;
 
+    private IMazePresenter mPresenter;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -132,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mPresenter = new MazeClient(this, this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -151,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         txtWallLength = (TextView) findViewById(R.id.txt_wall_length);
 //        uiFabRemoveLastFingerprint = (FloatingActionButton) findViewById(R.id.fab_remove_last_fingerprint);
 
-        AppSettings.init(this);
         mFabAlpha = getAlphaFromRes();
 
         // initialize your android device sensor capabilities
@@ -227,6 +231,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         // TODO: commented-out temporarily
 //        mFloorWatcher = FloorWatcher.getInstance(this);
 //        mFloorWatcher.addOnFloorChangedListenerHandler(mFloorChangedHandler);
+        mPresenter.onCreate();
     }
 
     // TODO: Move this to StepCalibratorService as static method
@@ -722,5 +727,15 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         PointF pointToShow = ((Wall)walls.get(0)).getStart(); // we know it is a wall
         uiFloorPlanView.plot(mFloorPlan, pointToShow);
+    }
+
+    @Override
+    public void init() {
+
+    }
+
+    @Override
+    public void render(FloorPlan floorPlan) {
+
     }
 }

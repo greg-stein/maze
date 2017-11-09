@@ -3,6 +3,7 @@ package com.example.neutrino.maze.core;
 import android.content.Context;
 import android.support.v4.util.Pair;
 
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
@@ -14,7 +15,7 @@ import java.util.List;
  * Created by Greg Stein on 10/31/2017.
  */
 
-public class MazeClient {
+public class MazeClient implements IMazePresenter {
     private Context mContext;
     private final IMainView mMainView;
     private WifiScanner mWifiScanner = null;
@@ -95,7 +96,10 @@ public class MazeClient {
         mMainView = mainView; // UI
     }
 
+    @Override
     public void onCreate() {
+        AppSettings.init(mContext);
+
         // TODO: instead of just killing the app, consider reloading activity when the permission is granted.
         if (!PermissionsHelper.requestPermissions(mContext)) return;
 
@@ -107,14 +111,17 @@ public class MazeClient {
         }
     }
 
+    @Override
     public void onResume() {
         mWifiScanner.onResume(mContext);
     }
 
+    @Override
     public void onPause() {
         mWifiScanner.onPause(mContext);
     }
 
+    @Override
     public void onDestroy() {
         mWifiScanner.removeFingerprintAvailableListener(mFirstFingerprintAvailableListener);
     }
