@@ -1,7 +1,5 @@
 package com.example.neutrino.maze.ui;
 
-import android.app.ActivityManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -21,7 +19,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,7 +45,6 @@ import com.example.neutrino.maze.core.Mapper;
 import com.example.neutrino.maze.core.MazeClient;
 import com.example.neutrino.maze.core.MazeServerMock;
 import com.example.neutrino.maze.core.SensorListener;
-import com.example.neutrino.maze.core.StepCalibratorService;
 import com.example.neutrino.maze.core.WiFiLocator;
 import com.example.neutrino.maze.core.WifiScanner;
 import com.example.neutrino.maze.floorplan.Building;
@@ -62,6 +58,7 @@ import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
+import com.example.neutrino.maze.util.PermissionsHelper;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 import com.github.fafaldo.fabtoolbar.widget.FABToolbarLayout;
 import com.lapism.searchview.SearchView;
@@ -72,7 +69,6 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.example.neutrino.maze.core.SensorListener.IDeviceRotationListener;
-import com.example.neutrino.maze.util.PermissionsHelper;
 import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 
 public class MainActivity extends AppCompatActivity implements IDeviceRotationListener,
@@ -118,8 +114,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     private boolean mAutoScanEnabled = false;
     private Menu mEditMenu;
-    private StepCalibratorService mStepCalibratorService;
-    private Intent mStepCalibratorServiceIntent;
 
     private IFloorChangedHandler mFloorChangedHandler;
     private float mCurrentWallLength;
@@ -186,13 +180,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         setUiListeners();
 
-        mStepCalibratorService = new StepCalibratorService(this);
-        mStepCalibratorServiceIntent = new Intent(this, mStepCalibratorService.getClass());
-
-        if (!isMyServiceRunning(mStepCalibratorService.getClass())) {
-            startService(mStepCalibratorServiceIntent);
-        }
-
         mFloorChangedHandler = new IFloorChangedHandler() {
             @Override
             public void onFloorChanged(Floor floor) {
@@ -234,27 +221,12 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         mPresenter.onCreate();
     }
 
-    // TODO: Move this to StepCalibratorService as static method
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                Log.i ("isMyServiceRunning?", true+"");
-                return true;
-            }
-        }
-        Log.i ("isMyServiceRunning?", false+"");
-        return false;
-    }
-
     @Override
     protected void onDestroy() {
-        if (!PermissionsHelper.letDieSilently) {
-            stopService(mStepCalibratorServiceIntent);
-        }
         if (mLocator != null) {
             mLocator.onDestroy();
         }
+        mPresenter.onDestroy();
         super.onDestroy();
     }
 

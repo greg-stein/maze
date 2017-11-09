@@ -1,6 +1,7 @@
 package com.example.neutrino.maze.core;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v4.util.Pair;
 
 import com.example.neutrino.maze.AppSettings;
@@ -21,6 +22,10 @@ public class MazeClient implements IMazePresenter {
     private WifiScanner mWifiScanner = null;
     private IMazeServer mMazeServer;
     private FloorPlan mFloorPlan;
+
+    private StepCalibratorService mStepCalibratorService;
+    private Intent mStepCalibratorServiceIntent;
+
     private List<WiFiLocator.WiFiFingerprint> mRadioMapTile;
 
     private WifiScanner.IFingerprintAvailableListener mFirstFingerprintAvailableListener
@@ -103,6 +108,13 @@ public class MazeClient implements IMazePresenter {
         // TODO: instead of just killing the app, consider reloading activity when the permission is granted.
         if (!PermissionsHelper.requestPermissions(mContext)) return;
 
+        mStepCalibratorService = new StepCalibratorService(mContext);
+        mStepCalibratorServiceIntent = new Intent(mContext, mStepCalibratorService.getClass());
+
+        if (!StepCalibratorService.isRunning(mContext)) {
+            mContext.startService(mStepCalibratorServiceIntent);
+        }
+
         mMazeServer = MazeServerMock.getInstance(mContext);
 
         if (mWifiScanner == null) {
@@ -123,6 +135,11 @@ public class MazeClient implements IMazePresenter {
 
     @Override
     public void onDestroy() {
+        // In case the permissions were granted previous time the app was running, we can
+        // start the service. The service will start by stopping it :) Because this forces restart.
+        if (PermissionsHelper.permissionsWereAlreadyGranted) {
+            mContext.stopService(mStepCalibratorServiceIntent); // This will resurrect the service
+        }
         mWifiScanner.removeFingerprintAvailableListener(mFirstFingerprintAvailableListener);
     }
 

@@ -17,12 +17,12 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 public class PermissionsHelper {
     public static final int PERMISSION_LOCATION_REQUEST_CODE = 613;
 
-    public static boolean letDieSilently = false;
+    public static boolean permissionsWereAlreadyGranted = true;
     public static boolean locationPermissionsGranted = false;
 
     public static boolean requestPermissions(Context context) {
         if (!locationPermissionsGranted(context)) {
-            letDieSilently = true;
+            permissionsWereAlreadyGranted = false;
             // Request permissions
             if (context instanceof Activity) {
                 final Activity activity = (Activity) context;

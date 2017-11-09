@@ -1,5 +1,6 @@
 package com.example.neutrino.maze.core;
 
+import android.app.ActivityManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -73,6 +74,17 @@ public class StepCalibratorService extends Service implements LocationListener, 
                 putBoolean(STR_CALIBRATION_COMPLETED, calibrationCompleted).
                 putFloat(STR_CALIBRATOR_USER_STEP_LENGTH, calibratorUserStepLength).
                 apply();
+    }
+
+    public static boolean isRunning(Context context) {
+        Class<?> serviceClass = StepCalibratorService.class;
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public StepCalibratorService() {}
