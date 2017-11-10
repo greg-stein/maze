@@ -47,6 +47,7 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.TagsHolder> {
 
     public void updateListData(List<Tag> newData) {
         listData.clear();
+        // TODO: Either move the lock to Building or use another method to solve synchronization
         synchronized (FloorPlan.mTagsListLocker) {
             listData.addAll(newData);
         }

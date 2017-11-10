@@ -2,6 +2,7 @@ package com.example.neutrino.maze.core;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.PointF;
 import android.support.v4.util.Pair;
 
 import com.example.neutrino.maze.AppSettings;
@@ -16,11 +17,12 @@ import java.util.List;
  * Created by Greg Stein on 10/31/2017.
  */
 
-public class MazeClient implements IMazePresenter {
+public class MazeClient implements IMazePresenter, Locator.ILocationUpdatedListener {
     private Context mContext;
     private final IMainView mMainView;
     private WifiScanner mWifiScanner = null;
     private IMazeServer mMazeServer;
+    private Locator mLocator;
     private FloorPlan mFloorPlan;
 
     private StepCalibratorService mStepCalibratorService;
@@ -96,6 +98,43 @@ public class MazeClient implements IMazePresenter {
         }
     };
 
+// THIS IS HERE FOR REFERENCE ONLY! After successful construction of floor plan remove it
+//        mFloorChangedHandler = new IFloorChangedHandler() {
+//            @Override
+//            public void onFloorChanged(Floor floor) {
+//                if (Building.current.getCurrentFloor().getId() != floor.getId()) {
+//                    final IMazeServer mazeServer = MazeServerMock.getInstance(MainActivity.this);
+//                    String jsonString = mazeServer.downloadFloorPlanJson(floor.getId());
+//                    // TODO: load new floor plan, tags, teleports, ...
+//
+//                    new LoadFloorPlanTask(MainActivity.this).onFinish(new LoadFloorPlanTask.AsyncResponse() {
+//                        @Override
+//                        public void onFinish(FloorPlan floorPlan) {
+//                            mFloorPlan = floorPlan;
+//// TODO:  mvp_refactor: Fix this!!!
+////                            mLocator.setFloorPlan(mFloorPlan);
+//                            mMapper.setFloorPlan(mFloorPlan);
+//
+//                            mAdapter.updateListData(floorPlan.getTags());
+//
+//                            // Find point that should be visible after the floorplan is loaded
+//                            PointF pointToShow = null;
+//
+//                            List<IFloorPlanPrimitive> sketch = mFloorPlan.getSketch();
+//                            for (IFloorPlanPrimitive primitive : sketch) {
+//                                if (primitive instanceof Wall) {
+//                                    pointToShow = ((Wall)primitive).getStart();
+//                                    break;
+//                                }
+//                            }
+//                            // The main work is done on GL thread!
+//                            uiFloorPlanView.plot(floorPlan, pointToShow);
+//                        }
+//                    }).execute(jsonString);
+//                }
+//            }
+//        };
+
     public MazeClient(Context context, IMainView mainView) {
         mContext = context;
         mMainView = mainView; // UI
@@ -121,6 +160,9 @@ public class MazeClient implements IMazePresenter {
             mWifiScanner = WifiScanner.getInstance(mContext);
             mWifiScanner.addFingerprintAvailableListener(mFirstFingerprintAvailableListener);
         }
+
+        mLocator = Locator.getInstance(mContext);
+        mLocator.addLocationUpdatedListener(this);
     }
 
     @Override
@@ -141,6 +183,27 @@ public class MazeClient implements IMazePresenter {
             mContext.stopService(mStepCalibratorServiceIntent); // This will resurrect the service
         }
         mWifiScanner.removeFingerprintAvailableListener(mFirstFingerprintAvailableListener);
+        if (mLocator != null) {
+            mLocator.onDestroy();
+        }
+    }
+
+    // TODO: These methods should probably be implemented with Observer pattern rather than direct
+    // TODO: call from MainActivity
+
+    @Override
+    public void setMapNorth(float mapNorth) {
+        mLocator.setNorth(mapNorth);
+    }
+
+    @Override
+    public void setLocationByUser(PointF location) {
+        mLocator.resetLocationTo(location);
+    }
+
+    @Override
+    public void onLocationUpdated(PointF location) {
+        mMainView.updateLocation(location); // draw new location on map
     }
 
 }

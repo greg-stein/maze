@@ -23,7 +23,6 @@ import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.core.WiFiLocator.WiFiFingerprint;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 
-import java.lang.reflect.Array;
 import java.util.List;
 
 import static com.example.neutrino.maze.rendering.FloorPlanView.MapOperation.MOVE;
@@ -382,7 +381,7 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.windowToWorld(x, y, worldLocation);
 
         if (mNewLocationListener != null) {
-            mNewLocationListener.onLocationPlaced(worldLocation);
+            mNewLocationListener.onLocationSetByUser(worldLocation);
         }
     }
 
@@ -422,7 +421,7 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     public interface IOnLocationPlacedListener {
-        void onLocationPlaced(PointF location);
+        void onLocationSetByUser(PointF location);
     }
     private IOnLocationPlacedListener mNewLocationListener = null;
     public void setOnLocationPlacedListener(IOnLocationPlacedListener listener) {

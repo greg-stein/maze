@@ -39,8 +39,6 @@ import com.example.neutrino.maze.core.IFloorChangedHandler;
 import com.example.neutrino.maze.core.IMainView;
 import com.example.neutrino.maze.core.IMazePresenter;
 import com.example.neutrino.maze.core.IMazeServer;
-import com.example.neutrino.maze.core.Locator;
-import com.example.neutrino.maze.core.Locator.ILocationUpdatedListener;
 import com.example.neutrino.maze.core.Mapper;
 import com.example.neutrino.maze.core.MazeClient;
 import com.example.neutrino.maze.core.MazeServerMock;
@@ -72,7 +70,7 @@ import static com.example.neutrino.maze.core.SensorListener.IDeviceRotationListe
 import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 
 public class MainActivity extends AppCompatActivity implements IDeviceRotationListener,
-        ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener, VectorizeDialog.ICompleteVectorizationHandler, IMainView {
+        IOnLocationPlacedListener, VectorizeDialog.ICompleteVectorizationHandler, IMainView {
     // GUI-related fields
     private SearchView uiSearchView;
     private RecyclerView uiRecView;
@@ -107,7 +105,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private FloorPlan mFloorPlan = FloorPlan.build();
     private SensorListener mSensorListener;
     private WifiScanner mWifiScanner;
-    private Locator mLocator;
     private Mapper mMapper;
     private FloorWatcher mFloorWatcher;
     private WiFiLocator mWiFiLocator = WiFiLocator.getInstance();
@@ -156,8 +153,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         mWifiScanner = WifiScanner.getInstance(this);
         mSensorListener = SensorListener.getInstance(this);
         mSensorListener.addDeviceRotationListener(this);
-        mLocator = Locator.getInstance(this);
-        mLocator.addLocationUpdatedListener(this);
         if (AppSettings.inDebug) {
 //            mLocator.addDistributionUpdatedListener(this);
         }
@@ -180,41 +175,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         setUiListeners();
 
-        mFloorChangedHandler = new IFloorChangedHandler() {
-            @Override
-            public void onFloorChanged(Floor floor) {
-                if (Building.current.getCurrentFloor().getId() != floor.getId()) {
-                    final IMazeServer mazeServer = MazeServerMock.getInstance(MainActivity.this);
-                    String jsonString = mazeServer.downloadFloorPlanJson(floor.getId());
-                    // TODO: load new floor plan, tags, teleports, ...
-
-                    new LoadFloorPlanTask(MainActivity.this).onFinish(new LoadFloorPlanTask.AsyncResponse() {
-                        @Override
-                        public void onFinish(FloorPlan floorPlan) {
-                            mFloorPlan = floorPlan;
-                            mLocator.setFloorPlan(mFloorPlan);
-                            mMapper.setFloorPlan(mFloorPlan);
-
-                            mAdapter.updateListData(floorPlan.getTags());
-
-                            // Find point that should be visible after the floorplan is loaded
-                            PointF pointToShow = null;
-
-                            List<IFloorPlanPrimitive> sketch = mFloorPlan.getSketch();
-                            for (IFloorPlanPrimitive primitive : sketch) {
-                                if (primitive instanceof Wall) {
-                                    pointToShow = ((Wall)primitive).getStart();
-                                    break;
-                                }
-                            }
-                            // The main work is done on GL thread!
-                            uiFloorPlanView.plot(floorPlan, pointToShow);
-                        }
-                    }).execute(jsonString);
-                }
-            }
-        };
-
         // TODO: commented-out temporarily
 //        mFloorWatcher = FloorWatcher.getInstance(this);
 //        mFloorWatcher.addOnFloorChangedListenerHandler(mFloorChangedHandler);
@@ -223,9 +183,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     @Override
     protected void onDestroy() {
-        if (mLocator != null) {
-            mLocator.onDestroy();
-        }
         mPresenter.onDestroy();
         super.onDestroy();
     }
@@ -289,7 +246,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             case R.id.btn_lock_rotation:
                 if (mIsMapRotationLocked) {
                     mMapNorth = mDegreeOffset;
-                    mLocator.setNorth(mMapNorth);
+                    mPresenter.setMapNorth(mMapNorth);
                 }
                 mIsMapRotationLocked = !mIsMapRotationLocked;
                 break;
@@ -546,41 +503,41 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             }
         });
 
-        ViewTreeObserver vto = uiFloorPlanView.getViewTreeObserver();
-        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                // TODO: Floor Id should be recieved from NewFloorPlanDialog or from server
-                String jsonString = MazeServerMock.getInstance(MainActivity.this).downloadFloorPlanJson("mock");
-
-                // TODO: This code shgould be removed as it appears in onFloorChanged event handler
-                new LoadFloorPlanTask(MainActivity.this).onFinish(new LoadFloorPlanTask.AsyncResponse() {
-                    @Override
-                    public void onFinish(FloorPlan floorPlan) {
-                        mFloorPlan = floorPlan;
-                        mLocator.setFloorPlan(mFloorPlan);
-                        mMapper.setFloorPlan(mFloorPlan);
-
-                        mAdapter.updateListData(floorPlan.getTags());
-
-                        // Find point that should be visible after the floorplan is loaded
-                        PointF pointToShow = null;
-
-                        List<IFloorPlanPrimitive> sketch = mFloorPlan.getSketch();
-                        for (IFloorPlanPrimitive primitive : sketch) {
-                            if (primitive instanceof Wall) {
-                                pointToShow = ((Wall)primitive).getStart();
-                                break;
-                            }
-                        }
-                        // The main work is done on GL thread!
-                        uiFloorPlanView.plot(floorPlan, pointToShow);
-                    }
-                }).execute(jsonString);
-
-                uiFloorPlanView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
-        });
+//        ViewTreeObserver vto = uiFloorPlanView.getViewTreeObserver();
+//        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+//            @Override
+//            public void onGlobalLayout() {
+//                // TODO: Floor Id should be recieved from NewFloorPlanDialog or from server
+//                String jsonString = MazeServerMock.getInstance(MainActivity.this).downloadFloorPlanJson("mock");
+//
+//                // TODO: This code shgould be removed as it appears in onFloorChanged event handler
+//                new LoadFloorPlanTask(MainActivity.this).onFinish(new LoadFloorPlanTask.AsyncResponse() {
+//                    @Override
+//                    public void onFinish(FloorPlan floorPlan) {
+//                        mFloorPlan = floorPlan;
+//                        mLocator.setFloorPlan(mFloorPlan);
+//                        mMapper.setFloorPlan(mFloorPlan);
+//
+//                        mAdapter.updateListData(floorPlan.getTags());
+//
+//                        // Find point that should be visible after the floorplan is loaded
+//                        PointF pointToShow = null;
+//
+//                        List<IFloorPlanPrimitive> sketch = mFloorPlan.getSketch();
+//                        for (IFloorPlanPrimitive primitive : sketch) {
+//                            if (primitive instanceof Wall) {
+//                                pointToShow = ((Wall)primitive).getStart();
+//                                break;
+//                            }
+//                        }
+//                        // The main work is done on GL thread!
+//                        uiFloorPlanView.plot(floorPlan, pointToShow);
+//                    }
+//                }).execute(jsonString);
+//
+//                uiFloorPlanView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+//            }
+//        });
     }
 
     private FloatingActionButton.OnVisibilityChangedListener mPreserveAlphaOnShow = new FloatingActionButton.OnVisibilityChangedListener() {
@@ -667,8 +624,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         }
     }
 
-    @Override
-    public void onLocationUpdated(PointF location) {
+    public void updateLocation(PointF location) {
         uiFloorPlanView.setLocation(location);
 
         if (AppSettings.inDebug) {
@@ -677,12 +633,11 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     }
 
     @Override
-    public void onLocationPlaced(PointF location) {
-        mLocator.resetLocationTo(location);
+    public void onLocationSetByUser(PointF location) {
+        mPresenter.setLocationByUser(location);
     }
 
-    @Override
-    public void onDistributionUpdated(PointF mean, float stdev) {
+    public void drawDistribution(PointF mean, float stdev) {
         uiFloorPlanView.drawDistribution(mean, stdev);
     }
 
@@ -709,5 +664,10 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     @Override
     public void render(FloorPlan floorPlan) {
 
+    }
+
+    @Override
+    public void setTags(List<Tag> tags) {
+        mAdapter.updateListData(tags);
     }
 }
