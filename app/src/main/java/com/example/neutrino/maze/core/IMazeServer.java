@@ -6,6 +6,7 @@ import android.support.v4.util.Pair;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
+import com.example.neutrino.maze.floorplan.RadioMapFragment;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.core.WiFiLocator.WiFiFingerprint;
 
@@ -47,6 +48,6 @@ public interface IMazeServer {
     void getBuildingAsync(String buildingId, IFuckingSimpleGenericCallback<Building> onBuildingReceived);
     void findCurrentBuildingAndFloorAsync(WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<Pair<String,String>> callback);
     void downloadFloorPlanAsync(String floorId, IFuckingSimpleGenericCallback<FloorPlan> onFloorPlanReceived);
-    void downloadRadioMapTileAsync(String floorId, WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<List<WiFiFingerprint>> onRadioTileReceived);
+    void downloadRadioMapTileAsync(String floorId, WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<RadioMapFragment> onRadioTileReceived);
 }
 

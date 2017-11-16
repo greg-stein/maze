@@ -9,7 +9,9 @@ import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.FloorPlan;
+import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
+import com.example.neutrino.maze.floorplan.RadioMapFragment;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.JsonSerializer;
 
@@ -23,6 +25,16 @@ import java.util.List;
 
 public class MazeServerMock implements IMazeServer {
     public static final String BUILDING_STORE = "building.wad";
+
+    // These objects mimic objects came from DB
+    private Building dbBuilding = null;
+    private final Floor dbFloor1;
+    private final Floor dbFloor2;
+    private FloorPlan dbFloor1Plan = null; // floor plan for fl1
+    private RadioMapFragment dbRadioMap1 = null;
+    private FloorPlan dbFloor2Plan = null; // floor plan for fl2
+    private RadioMapFragment dbRadioMap2 = null;
+
     // TODO:
         // 1. Serializer for single objects - DONE
         // 2. In debug serialize into JSON: Building, radio map, floor plan for two floors
@@ -47,6 +59,33 @@ public class MazeServerMock implements IMazeServer {
 
     private MazeServerMock(Context context) {
         this.mContext = context;
+        dbBuilding = new Building("Haifa Mall", "Flieman str. Haifa", "Mall", "building_id");
+        List<Floor> floors = new ArrayList<>();
+        floors.add(dbFloor1 = new Floor("1", "floor_id_1"));
+        floors.add(dbFloor2 = new Floor("2", "floor_id_2"));
+        dbBuilding.setFloors(floors);
+
+        dbFloor1Plan = getFloorPlanFromRes();
+        dbRadioMap1 = new RadioMapFragment(dbFloor1Plan.getFingerprints(), dbFloor1.getId());
+        dbFloor1.setTags(dbFloor1Plan.getTags());
+        dbFloor1.setTeleports(dbFloor1Plan.getTeleportsOnFloor());
+    }
+
+    private FloorPlan getFloorPlanFromRes() {
+        String jsonString = null;
+        try {
+            Resources res = mContext.getResources();
+            InputStream in_s = res.openRawResource(R.raw.haifa_mall_detailed_tags);
+
+            byte[] b = new byte[in_s.available()];
+            in_s.read(b);
+            jsonString = new String(b);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        List<Object> floorPlan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
+        return FloorPlan.build(floorPlan);
     }
 
     private static volatile int buildingSequence = 0;
@@ -165,22 +204,36 @@ public class MazeServerMock implements IMazeServer {
 
     @Override
     public void getBuildingAsync(String buildingId, IFuckingSimpleGenericCallback<Building> onBuildingReceived) {
-
+        if (buildingId.equals(dbBuilding.getId())) {
+            onBuildingReceived.onNotify(dbBuilding);
+        }
+        // else JOPA
     }
 
     @Override
     public void findCurrentBuildingAndFloorAsync(WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<Pair<String, String>> callback) {
-
+        if (fingerprint != null && !fingerprint.isEmpty()) {
+            callback.onNotify(new Pair<>(dbBuilding.getId(), dbFloor1.getId()));
+        }
+        // else JOPA
     }
 
     @Override
     public void downloadFloorPlanAsync(String floorId, IFuckingSimpleGenericCallback<FloorPlan> onFloorPlanReceived) {
-
+        if (floorId.equals(dbFloor1.getId())) {
+            onFloorPlanReceived.onNotify(dbFloor1Plan);
+        }
+        if (floorId.equals(dbFloor2.getId())) {
+            onFloorPlanReceived.onNotify(dbFloor2Plan);
+        }
+        // else JOPA
     }
 
     @Override
-    public void downloadRadioMapTileAsync(String floorId, WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<List<WiFiLocator.WiFiFingerprint>> onRadioTileReceived) {
-
+    public void downloadRadioMapTileAsync(String floorId, WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<RadioMapFragment> onRadioTileReceived) {
+        if (floorId.equals(dbFloor1.getId())) {
+            onRadioTileReceived.onNotify(dbRadioMap1);
+        }
     }
 
 }

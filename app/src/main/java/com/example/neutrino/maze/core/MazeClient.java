@@ -8,6 +8,7 @@ import android.support.v4.util.Pair;
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.FloorPlan;
+import com.example.neutrino.maze.floorplan.RadioMapFragment;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
 
@@ -28,7 +29,7 @@ public class MazeClient implements IMazePresenter, Locator.ILocationUpdatedListe
     private StepCalibratorService mStepCalibratorService;
     private Intent mStepCalibratorServiceIntent;
 
-    private List<WiFiLocator.WiFiFingerprint> mRadioMapTile;
+    private RadioMapFragment mRadioMapFragment;
 
     private WifiScanner.IFingerprintAvailableListener mFirstFingerprintAvailableListener
             = new WifiScanner.IFingerprintAvailableListener() {
@@ -37,11 +38,11 @@ public class MazeClient implements IMazePresenter, Locator.ILocationUpdatedListe
         public boolean mFloorPlanReceived = false;
         public boolean mRadioTileReceived = false;
 
-        private IFuckingSimpleGenericCallback<List<WiFiLocator.WiFiFingerprint>> mOnRadioTileReceived =
-                new IFuckingSimpleGenericCallback<List<WiFiLocator.WiFiFingerprint>>() {
+        private IFuckingSimpleGenericCallback<RadioMapFragment> mOnRadioTileReceived =
+                new IFuckingSimpleGenericCallback<RadioMapFragment>() {
             @Override
-            public void onNotify(List<WiFiLocator.WiFiFingerprint> wiFiFingerprints) {
-                MazeClient.this.mRadioMapTile = wiFiFingerprints;
+            public void onNotify(RadioMapFragment wiFiFingerprints) {
+                MazeClient.this.mRadioMapFragment = wiFiFingerprints;
                 mRadioTileReceived = true;
                 renderOnComplete();
             }
@@ -66,6 +67,7 @@ public class MazeClient implements IMazePresenter, Locator.ILocationUpdatedListe
         private void renderOnComplete() {
             if (mRadioTileReceived && mFloorPlanReceived && mBuildingReceived) {
                 // Render the floor plan
+                mMainView.render(MazeClient.this.mFloorPlan);
             }
         }
 
@@ -84,7 +86,7 @@ public class MazeClient implements IMazePresenter, Locator.ILocationUpdatedListe
                     String floorId = buildingAndFloorIds.second;
 
                     // Do we need to update building struct?
-                    if (Building.current == null || !Building.current.getID().equals(buildingId)) {
+                    if (Building.current == null || !Building.current.getId().equals(buildingId)) {
                         mMazeServer.getBuildingAsync(buildingId, mOnBuildingReceived);
                         mFloorToBeUpdated = true;
                     }

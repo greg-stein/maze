@@ -48,8 +48,8 @@ public class Building {
         if (null == mFloors) return;
 
         for (Floor floor : mFloors) {
-            final List<Teleport> floorTeleports = floor.getTeleports();
-            for (Teleport teleport : floorTeleports) {
+            final List<ITeleport> floorTeleports = floor.getTeleports();
+            for (ITeleport teleport : floorTeleports) {
                 List<ITeleport> sameIdTeleports;
                 final String teleportId = teleport.getId();
 
@@ -92,7 +92,7 @@ public class Building {
         this.mType = type;
     }
 
-    public String getID() {
+    public String getId() {
         return mID;
     }
 

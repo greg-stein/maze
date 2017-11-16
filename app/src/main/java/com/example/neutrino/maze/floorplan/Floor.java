@@ -1,5 +1,6 @@
 package com.example.neutrino.maze.floorplan;
 
+import com.example.neutrino.maze.floorplan.transitions.ITeleport;
 import com.example.neutrino.maze.floorplan.transitions.Teleport;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public class Floor {
 
     private String mName;
     private String mId; // TODO: this should be changed to ObjectId later
-    private List<Teleport> mTeleports;
+    private List<ITeleport> mTeleports;
     private List<Tag> mTags;
 
     public Floor() {}
@@ -41,11 +42,11 @@ public class Floor {
         this.mId = mId;
     }
 
-    public List<Teleport> getTeleports() {
+    public List<ITeleport> getTeleports() {
         return mTeleports;
     }
 
-    public void setTeleports(List<Teleport> teleports) {
+    public void setTeleports(List<ITeleport> teleports) {
         mTeleports = teleports;
     }
 

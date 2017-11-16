@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
+import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -663,7 +664,9 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
     @Override
     public void render(FloorPlan floorPlan) {
-
+        final RectF boundaries = floorPlan.getBoundaries();
+        PointF floorPlanCenter = new PointF(boundaries.centerX(), boundaries.centerY());
+        uiFloorPlanView.plot(floorPlan, floorPlanCenter);
     }
 
     @Override
