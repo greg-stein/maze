@@ -19,4 +19,6 @@ public interface IMainView {
     void setTags(List<Tag> tags);
 
     void updateLocation(PointF location);
+
+    void setMapRotation(double degree);
 }

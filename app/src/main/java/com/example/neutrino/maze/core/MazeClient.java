@@ -6,31 +6,33 @@ import android.graphics.PointF;
 import android.support.v4.util.Pair;
 
 import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.core.SensorListener.IDeviceRotationListener;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.RadioMapFragment;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
 
-import java.util.List;
+import static com.example.neutrino.maze.core.Locator.*;
 
 /**
  * Created by Greg Stein on 10/31/2017.
  */
 
-public class MazeClient implements IMazePresenter, Locator.ILocationUpdatedListener {
+public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDeviceRotationListener {
     private Context mContext;
     private final IMainView mMainView;
     private WifiScanner mWifiScanner = null;
     private IMazeServer mMazeServer;
     private Locator mLocator;
+    private SensorListener mSensorListener;
     private FloorPlan mFloorPlan;
 
     private StepCalibratorService mStepCalibratorService;
+
     private Intent mStepCalibratorServiceIntent;
 
     private RadioMapFragment mRadioMapFragment;
-
     private WifiScanner.IFingerprintAvailableListener mFirstFingerprintAvailableListener
             = new WifiScanner.IFingerprintAvailableListener() {
 
@@ -44,7 +46,7 @@ public class MazeClient implements IMazePresenter, Locator.ILocationUpdatedListe
             public void onNotify(RadioMapFragment wiFiFingerprints) {
                 MazeClient.this.mRadioMapFragment = wiFiFingerprints;
                 mRadioTileReceived = true;
-                renderOnComplete();
+                onCompleteDataReceive();
             }
         };
         private IFuckingSimpleGenericCallback<FloorPlan> mOnFloorPlanReceived = new IFuckingSimpleGenericCallback<FloorPlan>() {
@@ -52,7 +54,7 @@ public class MazeClient implements IMazePresenter, Locator.ILocationUpdatedListe
             public void onNotify(FloorPlan floorPlan) {
                 MazeClient.this.mFloorPlan = floorPlan;
                 mFloorPlanReceived = true;
-                renderOnComplete();
+                onCompleteDataReceive();
             }
         };
         private IFuckingSimpleGenericCallback<Building> mOnBuildingReceived = new IFuckingSimpleGenericCallback<Building>() {
@@ -60,14 +62,16 @@ public class MazeClient implements IMazePresenter, Locator.ILocationUpdatedListe
             public void onNotify(Building building) {
                 Building.current = building;
                 mBuildingReceived = true;
-                renderOnComplete();
+                onCompleteDataReceive();
             }
         };
 
-        private void renderOnComplete() {
+        private void onCompleteDataReceive() {
             if (mRadioTileReceived && mFloorPlanReceived && mBuildingReceived) {
                 // Render the floor plan
                 mMainView.render(MazeClient.this.mFloorPlan);
+                // Locator uses floor plan for collision recognition
+                mLocator.setFloorPlan(MazeClient.this.mFloorPlan);
             }
         }
 
@@ -163,18 +167,28 @@ public class MazeClient implements IMazePresenter, Locator.ILocationUpdatedListe
             mWifiScanner.addFingerprintAvailableListener(mFirstFingerprintAvailableListener);
         }
 
-        mLocator = Locator.getInstance(mContext);
-        mLocator.addLocationUpdatedListener(this);
+        mLocator = getInstance(mContext);
+        mSensorListener = SensorListener.getInstance(mContext);
     }
 
     @Override
     public void onResume() {
-        mWifiScanner.onResume(mContext);
+        if (PermissionsHelper.locationPermissionsGranted(mContext)) {
+            mWifiScanner.onResume(mContext);
+        }
+        mLocator.addLocationUpdatedListener(this);
+        mSensorListener.addDeviceRotationListener(this);
     }
 
     @Override
     public void onPause() {
-        mWifiScanner.onPause(mContext);
+        // to stop the listener and save battery
+        if (PermissionsHelper.locationPermissionsGranted(mContext)) {
+            mWifiScanner.onPause(mContext);
+        }
+
+        mLocator.removeLocationUpdatedListener(this);
+        mSensorListener.removeDeviceRotationListener(this);
     }
 
     @Override
@@ -188,6 +202,11 @@ public class MazeClient implements IMazePresenter, Locator.ILocationUpdatedListe
         if (mLocator != null) {
             mLocator.onDestroy();
         }
+    }
+
+    @Override
+    public void onDeviceRotated(double degree) {
+        mMainView.setMapRotation(degree);
     }
 
     // TODO: These methods should probably be implemented with Observer pattern rather than direct
@@ -207,5 +226,4 @@ public class MazeClient implements IMazePresenter, Locator.ILocationUpdatedListe
     public void onLocationUpdated(PointF location) {
         mMainView.updateLocation(location); // draw new location on map
     }
-
 }

@@ -24,7 +24,6 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -39,15 +38,11 @@ import com.example.neutrino.maze.core.FloorWatcher;
 import com.example.neutrino.maze.core.IFloorChangedHandler;
 import com.example.neutrino.maze.core.IMainView;
 import com.example.neutrino.maze.core.IMazePresenter;
-import com.example.neutrino.maze.core.IMazeServer;
 import com.example.neutrino.maze.core.Mapper;
 import com.example.neutrino.maze.core.MazeClient;
-import com.example.neutrino.maze.core.MazeServerMock;
-import com.example.neutrino.maze.core.SensorListener;
 import com.example.neutrino.maze.core.WiFiLocator;
 import com.example.neutrino.maze.core.WifiScanner;
 import com.example.neutrino.maze.floorplan.Building;
-import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Path;
@@ -67,11 +62,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-import static com.example.neutrino.maze.core.SensorListener.IDeviceRotationListener;
 import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 
-public class MainActivity extends AppCompatActivity implements IDeviceRotationListener,
-        IOnLocationPlacedListener, VectorizeDialog.ICompleteVectorizationHandler, IMainView {
+public class MainActivity extends AppCompatActivity implements IOnLocationPlacedListener, VectorizeDialog.ICompleteVectorizationHandler, IMainView {
     // GUI-related fields
     private SearchView uiSearchView;
     private RecyclerView uiRecView;
@@ -104,7 +97,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private float mDegreeOffset;
     private float mCurrentDegree = 0f;
     private FloorPlan mFloorPlan = FloorPlan.build();
-    private SensorListener mSensorListener;
     private WifiScanner mWifiScanner;
     private Mapper mMapper;
     private FloorWatcher mFloorWatcher;
@@ -152,8 +144,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         // initialize your android device sensor capabilities
         mWifiScanner = WifiScanner.getInstance(this);
-        mSensorListener = SensorListener.getInstance(this);
-        mSensorListener.addDeviceRotationListener(this);
         if (AppSettings.inDebug) {
 //            mLocator.addDistributionUpdatedListener(this);
         }
@@ -596,26 +586,16 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (PermissionsHelper.locationPermissionsGranted(this)) {
-            mSensorListener.addDeviceRotationListener(this);
-            mWifiScanner.onResume(this);
-        }
+        mPresenter.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
-        // to stop the listener and save battery
-        if (PermissionsHelper.locationPermissionsGranted(this)) {
-            mSensorListener.removeDeviceRotationListener(this);
-            mWifiScanner.onPause(this);
-        }
+        mPresenter.onPause();
     }
 
-    @Override
-    public void onDeviceRotated(double orientation) {
+    public void setMapRotation(double orientation) {
         float degree = (float) (orientation - mMapNorth);
 
         mDegreeOffset = degree - mCurrentDegree;
