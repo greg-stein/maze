@@ -21,4 +21,14 @@ public interface IMainView {
     void updateLocation(PointF location);
 
     void setMapRotation(double degree);
+
+    enum UiMode { MAP_VIEW_MODE, MAP_EDIT_MODE}
+
+    UiMode getUiMode();
+
+    interface IUiModeChangedListener {
+        void onUiModeChanged(UiMode newMode);
+    }
+
+    void setUiModeChangedListener(IUiModeChangedListener listener);
 }

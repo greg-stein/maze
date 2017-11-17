@@ -1,7 +1,6 @@
 package com.example.neutrino.maze.ui;
 
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -41,7 +40,6 @@ import com.example.neutrino.maze.core.IMazePresenter;
 import com.example.neutrino.maze.core.Mapper;
 import com.example.neutrino.maze.core.MazeClient;
 import com.example.neutrino.maze.core.WiFiLocator;
-import com.example.neutrino.maze.core.WifiScanner;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
@@ -71,13 +69,16 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private LinearLayout uiRecPanel;
     private View uiRecPanelSpacer;
     private TagsAdapter mAdapter;
-    private TextView txtWallLength;
+    private FloorPlanView uiFloorPlanView;
+    private FloatingActionButton uiFabFindMeOnMap;
 
+    private TextView txtWallLength;
     private FABToolbarLayout uiToolbarLayout;
     private Toolbar uiToolbar;
     private FloatingActionButton uiFabEditMode;
     private Spinner uiAddSpinner;
     private static final List<Pair<String, Integer>> addSpinnerData = new ArrayList<>();
+
     static {
         addSpinnerData.add(new Pair<>("Wall", R.drawable.ic_wall_black_24dp));
         addSpinnerData.add(new Pair<>("Short wall", R.drawable.ic_view_stream_black_24dp));
@@ -87,21 +88,16 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         addSpinnerData.add(new Pair<>("", R.drawable.ic_add_white_24dp));
     }
 
-    private FloorPlanView uiFloorPlanView;
-    private FloatingActionButton uiFabFindMeOnMap;
     // Map north angle
     private float mMapNorth = 0.0f;
-
     private boolean mIsMapRotationLocked = false;
-
     private float mDegreeOffset;
     private float mCurrentDegree = 0f;
     private FloorPlan mFloorPlan = FloorPlan.build();
-    private WifiScanner mWifiScanner;
     private Mapper mMapper;
     private FloorWatcher mFloorWatcher;
-    private WiFiLocator mWiFiLocator = WiFiLocator.getInstance();
 
+    private UiMode mUiMode = UiMode.MAP_VIEW_MODE;
     private boolean mAutoScanEnabled = false;
     private Menu mEditMenu;
 
@@ -109,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private float mCurrentWallLength;
 
     private IMazePresenter mPresenter;
+    private IUiModeChangedListener mUiModeChangedListener;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -143,7 +140,6 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         mFabAlpha = getAlphaFromRes();
 
         // initialize your android device sensor capabilities
-        mWifiScanner = WifiScanner.getInstance(this);
         if (AppSettings.inDebug) {
 //            mLocator.addDistributionUpdatedListener(this);
         }
@@ -178,11 +174,6 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         super.onDestroy();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode,resultCode,data);
-    }
-
     private void showTheImage(Bitmap b) {
         Toast toast = new Toast(this.getApplicationContext());
         ImageView view = new ImageView(this.getApplicationContext());
@@ -199,6 +190,8 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
             uiToolbarLayout.hide();
             uiFabFindMeOnMap.animate().translationYBy(uiToolbar.getHeight());
             uiFloorPlanView.setFloorplanEditMode(false);
+            mUiMode = UiMode.MAP_VIEW_MODE;
+            emitUiModeChangedEvent(mUiMode);
         }
     }
 
@@ -373,6 +366,8 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
                 uiFabFindMeOnMap.animate().translationYBy(-uiToolbar.getHeight());
                 uiToolbarLayout.show();
                 uiFloorPlanView.setFloorplanEditMode(true);
+                mUiMode = UiMode.MAP_EDIT_MODE;
+                emitUiModeChangedEvent(mUiMode);
             }
         });
 
@@ -602,6 +597,22 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         if (!mIsMapRotationLocked) {
             uiFloorPlanView.updateAngle(mDegreeOffset);
             mCurrentDegree = degree;
+        }
+    }
+
+    @Override
+    public UiMode getUiMode() {
+        return mUiMode;
+    }
+
+    @Override
+    public void setUiModeChangedListener(IUiModeChangedListener listener) {
+        mUiModeChangedListener = listener;
+    }
+
+    public void emitUiModeChangedEvent(UiMode newMode) {
+        if (mUiModeChangedListener != null) {
+            mUiModeChangedListener.onUiModeChanged(newMode);
         }
     }
 
