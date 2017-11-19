@@ -7,6 +7,7 @@ import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.rendering.FloorPlanView;
+import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 
 import java.util.Stack;
 
@@ -21,6 +22,8 @@ public class Mapper implements Locator.ILocationUpdatedListener, WifiScanner.IFi
 
     private static Mapper instance = null;
     private static final Object mutex = new Object();
+    private IFuckingSimpleGenericCallback<Fingerprint> mOnNewFingerprintListener;
+
     public static Mapper getInstance(Context context) {
         if (instance == null) {
             synchronized (mutex) {
@@ -46,7 +49,7 @@ public class Mapper implements Locator.ILocationUpdatedListener, WifiScanner.IFi
 
     private FloorPlanView mFloorPlanView;
 
-    public void enable() {
+    private void enable() {
         if (!mIsEnabled) {
             mIsEnabled = true;
             mOldWifiScannerState = mLocator.isWifiScannerUsed();
@@ -65,6 +68,19 @@ public class Mapper implements Locator.ILocationUpdatedListener, WifiScanner.IFi
         }
     }
 
+    public boolean isEnabled() {
+        return mIsEnabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        if (enabled) {
+            enable();
+        } else {
+            disable();
+        }
+    }
+
+
     @Override
     public void onLocationUpdated(PointF location) {
         mCurrentLocation = location;
@@ -74,17 +90,21 @@ public class Mapper implements Locator.ILocationUpdatedListener, WifiScanner.IFi
     @Override
     public void onFingerprintAvailable(WiFiLocator.WiFiFingerprint fingerprint) {
         if (!mFingerprintPlacedAtCurrentLocation) {
-            // To display the fingerprint in debug mode
-            if (AppSettings.inDebug) {
-                // This call will also add the fingerprint to FloorPlan
-                final Fingerprint newFp = mFloorPlanView.placeWiFiMarkAt(mCurrentLocation, fingerprint);
-                mRecentlyAddedFingerprints.push(newFp); // to undo addition
-            } else {
-                Fingerprint newFp = new Fingerprint(mCurrentLocation, fingerprint);
-                mFloorPlan.getFingerprints().add(newFp);
-            }
+            Fingerprint newFp = new Fingerprint(mCurrentLocation, fingerprint);
+            mRecentlyAddedFingerprints.push(newFp); // to undo addition
+            emitOnNewFingerprintEvent(newFp);
 
             mFingerprintPlacedAtCurrentLocation = true;
+        }
+    }
+
+    public void setOnNewFingerprintListener(IFuckingSimpleGenericCallback<Fingerprint> listener) {
+        mOnNewFingerprintListener = listener;
+    }
+
+    private void emitOnNewFingerprintEvent(Fingerprint fingerprint) {
+        if (mOnNewFingerprintListener != null) {
+            mOnNewFingerprintListener.onNotify(fingerprint);
         }
     }
 

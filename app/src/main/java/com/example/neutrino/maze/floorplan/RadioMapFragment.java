@@ -15,6 +15,7 @@ public class RadioMapFragment {
         mFloorId = floorId;
     }
 
+    // TODO: return read only view
     public List<Fingerprint> getFingerprints() {
         return mFingerprints;
     }
@@ -25,5 +26,9 @@ public class RadioMapFragment {
 
     public String getFloorId() {
         return mFloorId;
+    }
+
+    public void addFingerprint(Fingerprint fingerprint) {
+        mFingerprints.add(fingerprint);
     }
 }

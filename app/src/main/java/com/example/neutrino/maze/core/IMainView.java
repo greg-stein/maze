@@ -2,8 +2,10 @@ package com.example.neutrino.maze.core;
 
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Tag;
+import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 
 import java.util.List;
 
@@ -26,9 +28,9 @@ public interface IMainView {
 
     UiMode getUiMode();
 
-    interface IUiModeChangedListener {
-        void onUiModeChanged(UiMode newMode);
-    }
+    void setUiModeChangedListener(IFuckingSimpleGenericCallback<UiMode> listener);
 
-    void setUiModeChangedListener(IUiModeChangedListener listener);
+    void setMapperEnabledChangedListener(IFuckingSimpleGenericCallback<Boolean> listener);
+
+    void renderFingeprint(Fingerprint fingerprint);
 }

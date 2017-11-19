@@ -13,6 +13,7 @@ import com.example.neutrino.maze.util.MovingAverageScanResultsQueue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Created by Greg Stein on 8/10/2016.
@@ -34,7 +35,7 @@ public class WifiScanner extends BroadcastReceiver {
         return instance;
     }
 
-    private List<IFingerprintAvailableListener> mFingerprintAvailableListeners = new ArrayList<>();
+    private List<IFingerprintAvailableListener> mFingerprintAvailableListeners = new CopyOnWriteArrayList<>();
     private MovingAverageScanResultsQueue mQueue = new MovingAverageScanResultsQueue(MOVING_AVERAGE_WINDOW_SIZE);
     private List<ScanResult> mLastScan;
     private WifiManager mWifiManager;

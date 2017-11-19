@@ -16,6 +16,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -77,7 +78,7 @@ public class FloorPlanSerializer {
         @Override
         public List<Object> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             final String packageName = IFloorPlanPrimitive.class.getPackage().getName();
-            List<Object> result = new ArrayList<>();
+            List<Object> result = Collections.synchronizedList(new ArrayList<>()); // Synchronized!!
             JsonArray jsonArray = json.getAsJsonArray();
 
             for (JsonElement element : jsonArray) {

@@ -8,6 +8,7 @@ import android.support.v4.util.Pair;
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.core.SensorListener.IDeviceRotationListener;
 import com.example.neutrino.maze.floorplan.Building;
+import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.RadioMapFragment;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
@@ -19,19 +20,20 @@ import static com.example.neutrino.maze.core.Locator.*;
  * Created by Greg Stein on 10/31/2017.
  */
 
-public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDeviceRotationListener {
+public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDeviceRotationListener, IFuckingSimpleGenericCallback<Fingerprint> {
     private Context mContext;
     private final IMainView mMainView;
     private WifiScanner mWifiScanner = null;
     private IMazeServer mMazeServer;
     private Locator mLocator;
+    private Mapper mMapper;
+    private boolean mMapperLastState;
     private SensorListener mSensorListener;
     private FloorPlan mFloorPlan;
 
     private StepCalibratorService mStepCalibratorService;
 
     private Intent mStepCalibratorServiceIntent;
-
     private RadioMapFragment mRadioMapFragment;
     private WifiScanner.IFingerprintAvailableListener mFirstFingerprintAvailableListener
             = new WifiScanner.IFingerprintAvailableListener() {
@@ -168,7 +170,20 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         }
 
         mLocator = getInstance(mContext);
+        mMapper = Mapper.getInstance(mContext);
+        mMapperLastState = mMapper.isEnabled();
         mSensorListener = SensorListener.getInstance(mContext);
+
+        setUiHandlers();
+    }
+
+    private void setUiHandlers() {
+        mMainView.setMapperEnabledChangedListener(new IFuckingSimpleGenericCallback<Boolean>() {
+            @Override
+            public void onNotify(Boolean enabled) {
+                mMapper.setEnabled(enabled);
+            }
+        });
     }
 
     @Override
@@ -178,6 +193,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         }
         mLocator.addLocationUpdatedListener(this);
         mSensorListener.addDeviceRotationListener(this);
+        mMapper.setOnNewFingerprintListener(this);
+        mMapper.setEnabled(mMapperLastState);
     }
 
     @Override
@@ -189,6 +206,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         mLocator.removeLocationUpdatedListener(this);
         mSensorListener.removeDeviceRotationListener(this);
+        mMapperLastState = mMapper.isEnabled();
+        mMapper.setEnabled(false);
     }
 
     @Override
@@ -225,5 +244,14 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     @Override
     public void onLocationUpdated(PointF location) {
         mMainView.updateLocation(location); // draw new location on map
+    }
+
+    @Override
+    public void onNotify(Fingerprint fingerprint) {
+        mMainView.renderFingeprint(fingerprint);
+        // TODO: It should not be the case that any newly created fingerprint is added to the radiomap
+        // TODO: Instead, we should examine fingerprint's quality and only after that add it to SEPARATE
+        // TODO: collection which later will be upoaded to server.
+        mRadioMapFragment.addFingerprint(fingerprint);
     }
 }

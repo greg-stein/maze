@@ -10,7 +10,6 @@ import android.opengl.GLU;
 import android.opengl.Matrix;
 
 import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.core.WiFiLocator.WiFiFingerprint;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Footprint;
@@ -83,6 +82,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     // Used for debug only to show distribution of active fingerprints
     private LocationMark mDistributionIndicator;
     private FloorPlan mFloorPlan;
+    private Object mFloorPlanLock = new Object();
 
     private static String readResourceAsString(String path) {
         Exception innerException;
@@ -209,7 +209,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         renderTags();
     }
 
-    public void addPrimitive(IFloorPlanPrimitive primitive) {
+    public synchronized void addPrimitive(IFloorPlanPrimitive primitive) {
         if (!mCurrentBuffer.put(primitive)) {
             mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
             mGlBuffers.add(mCurrentBuffer);
@@ -225,7 +225,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         mFloorPlan.addElement(primitive);
     }
 
-    private void addPrimitives(List<IFloorPlanPrimitive> primitives) {
+    private synchronized void addPrimitives(List<IFloorPlanPrimitive> primitives) {
         for (IFloorPlanPrimitive primitive : primitives) {
             primitive.updateVertices();
 
@@ -510,10 +510,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         addPrimitive(footprint);
     }
 
-    public Fingerprint putMark(final float x, final float y, final WiFiFingerprint wifiFingerprint) {
-        Fingerprint mark = new Fingerprint(x, y, wifiFingerprint);
-        addPrimitive(mark);
-        return mark;
+    public void putFingerprint(Fingerprint fingerprint) {
+        addPrimitive(fingerprint);
     }
 
     public void drawLocationMarkAt(final PointF currentLocation) {

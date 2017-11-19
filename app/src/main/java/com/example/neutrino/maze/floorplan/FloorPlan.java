@@ -41,7 +41,9 @@ public class FloorPlan {
 
         // Remove location marks from floorplan
         CommonHelper.extractObjects(LocationMark.class, entities);
-        floorPlan.mSketch = CommonHelper.extractObjects(IFloorPlanPrimitive.class, entities);
+        // Achtung! Synchronized!
+        floorPlan.mSketch = Collections.synchronizedList(
+                CommonHelper.extractObjects(IFloorPlanPrimitive.class, entities));
 //        floorPlan.mSketch.addAll(walls);
 
         final List<FloorPlanDescriptor> floorPlanDescriptors = CommonHelper.extractObjects(FloorPlanDescriptor.class, entities);
@@ -67,7 +69,7 @@ public class FloorPlan {
         FloorPlan floorPlan = new FloorPlan();
         floorPlan.mFingerprints = new ArrayList<>();
         floorPlan.mTags = new ArrayList<>();
-        floorPlan.mSketch = new ArrayList<>();
+        floorPlan.mSketch = Collections.synchronizedList(new ArrayList<IFloorPlanPrimitive>());
         floorPlan.mDescriptor = null;
 
         return floorPlan;
@@ -128,7 +130,7 @@ public class FloorPlan {
     }
 
     public void setSketch(List<IFloorPlanPrimitive> sketch) {
-        this.mSketch = sketch;
+        this.mSketch = Collections.synchronizedList(sketch);
     }
 
     public List<Fingerprint> getFingerprints() {

@@ -37,10 +37,10 @@ import com.example.neutrino.maze.core.FloorWatcher;
 import com.example.neutrino.maze.core.IFloorChangedHandler;
 import com.example.neutrino.maze.core.IMainView;
 import com.example.neutrino.maze.core.IMazePresenter;
-import com.example.neutrino.maze.core.Mapper;
 import com.example.neutrino.maze.core.MazeClient;
 import com.example.neutrino.maze.core.WiFiLocator;
 import com.example.neutrino.maze.floorplan.Building;
+import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Path;
@@ -50,6 +50,7 @@ import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
+import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 import com.github.fafaldo.fabtoolbar.widget.FABToolbarLayout;
@@ -94,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private float mDegreeOffset;
     private float mCurrentDegree = 0f;
     private FloorPlan mFloorPlan = FloorPlan.build();
-    private Mapper mMapper;
     private FloorWatcher mFloorWatcher;
 
     private UiMode mUiMode = UiMode.MAP_VIEW_MODE;
@@ -105,7 +105,8 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private float mCurrentWallLength;
 
     private IMazePresenter mPresenter;
-    private IUiModeChangedListener mUiModeChangedListener;
+    private IFuckingSimpleGenericCallback<UiMode> mUiModeChangedListener;
+    private IFuckingSimpleGenericCallback<Boolean> mMapperEnabledChangedListener;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -142,11 +143,6 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         // initialize your android device sensor capabilities
         if (AppSettings.inDebug) {
 //            mLocator.addDistributionUpdatedListener(this);
-        }
-        mMapper = Mapper.getInstance(this);
-
-        if (AppSettings.inDebug) {
-            mMapper.setFloorPlanView(uiFloorPlanView);
         }
 
         mAdapter = new TagsAdapter(this);
@@ -270,9 +266,9 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
             case R.id.btn_autoscan:
                 mAutoScanEnabled = !mAutoScanEnabled;
                 if (mAutoScanEnabled) {
-                    mMapper.enable();
+                    emitMapperEnabledChangedEvent(true);
                 } else {
-                    mMapper.disable();
+                    emitMapperEnabledChangedEvent(false);
                 }
                 break;
                 // Here come the rest of menu items
@@ -606,13 +602,29 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     }
 
     @Override
-    public void setUiModeChangedListener(IUiModeChangedListener listener) {
+    public void setUiModeChangedListener(IFuckingSimpleGenericCallback<UiMode> listener) {
         mUiModeChangedListener = listener;
     }
 
-    public void emitUiModeChangedEvent(UiMode newMode) {
+    @Override
+    public void setMapperEnabledChangedListener(IFuckingSimpleGenericCallback<Boolean> listener) {
+        mMapperEnabledChangedListener = listener;
+    }
+
+    @Override
+    public void renderFingeprint(Fingerprint fingerprint) {
+        uiFloorPlanView.placeFingerprint(fingerprint);
+    }
+
+    private void emitUiModeChangedEvent(UiMode newMode) {
         if (mUiModeChangedListener != null) {
-            mUiModeChangedListener.onUiModeChanged(newMode);
+            mUiModeChangedListener.onNotify(newMode);
+        }
+    }
+
+    private void emitMapperEnabledChangedEvent(boolean enabled) {
+        if (mMapperEnabledChangedListener != null) {
+            mMapperEnabledChangedListener.onNotify(enabled);
         }
     }
 
@@ -642,6 +654,8 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
 
         // TODO: Add possibility to augment existing floor plan with another parts instead of clearing
         List<IFloorPlanPrimitive> walls = FloorplanVectorizer.translateToWalls(segments);
+        // TODO: Instead  of setting sketch, new floor plan should be instantiated. This is because
+        // TODO: the collection of elements is kept threadsafe within floorplan.
         mFloorPlan.setSketch(walls);
 
         PointF pointToShow = ((Wall)walls.get(0)).getStart(); // we know it is a wall
