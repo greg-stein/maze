@@ -34,7 +34,6 @@ import javax.microedition.khronos.opengles.GL10;
 public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     static final float DEFAULT_SCALE_FACTOR = 0.1f;
-    private static final int DEFAULT_BUFFER_VERTICES_NUM = 65536;
 
     public volatile float mAngle;
     private float mOffsetX;
@@ -53,7 +52,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private static float[] mRay = new float[6]; // ray represented by 2 points
 
     private GLSurfaceView mGlView;
-    private List<GlRenderBuffer> mGlBuffers = new ArrayList<>();
+    private List<RenderGroup> mRenderGroups = new ArrayList<>();
     private GlRenderBuffer mCurrentBuffer = null;
     private int mViewPortWidth;
     private int mViewPortHeight;
@@ -147,13 +146,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         AppSettings.oglTextRenderProgram = ShaderHelper.createAndLinkProgram(textRenderVertexShaderCode, textRenderFragmentShaderCode,
                 ShaderHelper.POSITION_ATTRIBUTE, ShaderHelper.TEXTURE_COORDINATE_ATTRIBUTE, ShaderHelper.MVP_MATRIX_INDEX_ATTRIBUTE);
 
-        mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
-        mGlBuffers.add(mCurrentBuffer);
-
-        if (mQueuedTaskForGlThread != null) {
-            mQueuedTaskForGlThread.run();
-        }
-
         // Create the GLText
         glText = new GLText(AppSettings.oglTextRenderProgram, mContext.getAssets());
 
@@ -202,41 +194,46 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
         GLES20.glUseProgram(AppSettings.oglProgram);
 
-        for (GlRenderBuffer glBuffer : mGlBuffers) {
-            glBuffer.render(mScratch);
+        for (RenderGroup group : mRenderGroups) {
+            if (group.isReadyForRender()) {
+                group.render(mScratch);
+            }
         }
 
         renderTags();
     }
 
-    public synchronized void addPrimitive(IFloorPlanPrimitive primitive) {
-        if (!mCurrentBuffer.put(primitive)) {
-            mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
-            mGlBuffers.add(mCurrentBuffer);
-            mCurrentBuffer.put(primitive);
-        }
+    private void addElementsToRenderGroup(List<IFloorPlanPrimitive> elements, RenderGroup group) {
+    }
+
+    public RenderGroup renderElements(List<IFloorPlanPrimitive> elements) {
+        final RenderGroup newGroup = new RenderGroup(elements);
 
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
-                mCurrentBuffer.allocateGpuBuffers();
+                newGroup.prepareForRender();
             }
         });
-        mFloorPlan.addElement(primitive);
+
+        mRenderGroups.add(newGroup);
+        return newGroup;
     }
 
-    private synchronized void addPrimitives(List<IFloorPlanPrimitive> primitives) {
-        for (IFloorPlanPrimitive primitive : primitives) {
-            primitive.updateVertices();
-
-            if (!mCurrentBuffer.put(primitive)) {
-                mCurrentBuffer.allocateGpuBuffers();
-                mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
-                mGlBuffers.add(mCurrentBuffer);
-                mCurrentBuffer.put(primitive);
-            }
-        }
-        mCurrentBuffer.allocateGpuBuffers();
+    public synchronized void addPrimitive(IFloorPlanPrimitive primitive) {
+//        if (!mCurrentBuffer.put(primitive)) {
+//            mCurrentBuffer = new GlRenderBuffer(GlRenderBuffer.DEFAULT_BUFFER_VERTICES_NUM);
+//            mGlBuffers.add(mCurrentBuffer);
+//            mCurrentBuffer.put(primitive);
+//        }
+//
+//        runOnGlThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                mCurrentBuffer.allocateGpuBuffers();
+//            }
+//        });
+//        mFloorPlan.addElement(primitive);
     }
 
     private void updateModelMatrix() {
@@ -414,29 +411,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
-    // TODO: remove queued task and use simpler method to run this on start
-    private Runnable mQueuedTaskForGlThread = null;
-
-    public void setFloorPlan(final FloorPlan floorPlan) {
-        mFloorPlan = floorPlan;
-        mQueuedTaskForGlThread = new Runnable() {
-            @Override
-            public void run() {
-                addPrimitives(floorPlan.getSketch());
-                onFloorplanLoadComplete();
-            }
-        };
-    }
-
     public FloorPlan getFloorPlan() {
         return mFloorPlan;
-    }
-
-    public void performQueuedTask() {
-        if (mQueuedTaskForGlThread != null) {
-            runOnGlThread(mQueuedTaskForGlThread);
-            mQueuedTaskForGlThread = null;
-        }
     }
 
     public void setTags(List<Tag> tags) {
@@ -571,13 +547,16 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 primitive.cloak();
             }
         }
-        for (GlRenderBuffer buffer : mGlBuffers) {
-            buffer.deallocateGpuBuffers();
+        for (RenderGroup group : mRenderGroups) {
+            group.glDeallocate();
         }
-        mGlBuffers.clear();
-        mFloorPlan.clear();
-        mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
-        mGlBuffers.add(mCurrentBuffer);
+//        for (GlRenderBuffer buffer : mGlBuffers) {
+//            buffer.deallocateGpuBuffers();
+//        }
+//        mGlBuffers.clear();
+//        mFloorPlan.clear();
+//        mCurrentBuffer = new GlRenderBuffer(GlRenderBuffer.DEFAULT_BUFFER_VERTICES_NUM);
+//        mGlBuffers.add(mCurrentBuffer);
     }
 
     public void highlightCentroidMarks(List<Fingerprint> centroidMarks) {
@@ -599,22 +578,22 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public void rescaleFloorplan(float scaleFactor) {
-        if (mGlBuffers == null) return; // TODO: this should be fixed somehow
-        List<? extends IFloorPlanPrimitive> primitives = mFloorPlan.getSketch();
-
-        for (final IFloorPlanPrimitive primitive : primitives) {
-            if (primitive.isRemoved()) continue; // Do not alter removed primitives
-            primitive.scaleVertices(scaleFactor);
-            primitive.updateVertices();
-            runOnGlThread(new Runnable() {
-                @Override
-                public void run() {
-                    primitive.rewriteToBuffer();
-                }
-            });
-        }
-    }
+//    public void rescaleFloorplan(float scaleFactor) {
+//        if (mGlBuffers == null) return; // TODO: this should be fixed somehow
+//        List<? extends IFloorPlanPrimitive> primitives = mFloorPlan.getSketch();
+//
+//        for (final IFloorPlanPrimitive primitive : primitives) {
+//            if (primitive.isRemoved()) continue; // Do not alter removed primitives
+//            primitive.scaleVertices(scaleFactor);
+//            primitive.updateVertices();
+//            runOnGlThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    primitive.rewriteToBuffer();
+//                }
+//            });
+//        }
+//    }
 
     public float getOffsetX() {
         return mOffsetX;
@@ -709,28 +688,5 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
      */
     public interface IWallLengthChangedListener {
         void onWallLengthChanged(float wallLength);
-    }
-
-    private IFloorplanLoadCompleteListener mFloorplanLoadCompleteListener = null;
-    public void setOnFloorplanLoadCompleteListener(IFloorplanLoadCompleteListener listener) {
-        this.mFloorplanLoadCompleteListener = listener;
-    }
-
-    private void onFloorplanLoadComplete() {
-        if (mFloorplanLoadCompleteListener != null) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mFloorplanLoadCompleteListener.onFloorplanLoadComplete();
-                }
-            });
-        }
-    }
-
-    /**
-     * Created by Greg Stein on 9/19/2016.
-     */
-    public interface IFloorplanLoadCompleteListener {
-        void onFloorplanLoadComplete();
     }
 }

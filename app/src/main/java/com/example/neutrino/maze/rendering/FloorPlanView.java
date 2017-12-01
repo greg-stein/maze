@@ -12,15 +12,13 @@ import android.view.ScaleGestureDetector;
 import android.widget.EditText;
 
 import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
+import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Path;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.floorplan.transitions.Teleport;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IWallLengthChangedListener;
-import com.example.neutrino.maze.rendering.FloorPlanRenderer.IFloorplanLoadCompleteListener;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.core.WiFiLocator.WiFiFingerprint;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 
 import java.util.List;
@@ -39,7 +37,6 @@ public class FloorPlanView extends GLSurfaceView {
     private final PointF mCurrentLocation = new PointF();
     private boolean mHandlingTagCreation = false;
     private Path mPath;
-    private PointF mPointToShow;
 
     public FloorPlanView(Context context) {
         this(context, null);
@@ -61,14 +58,6 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.setGlView(this);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
-        mRenderer.setOnFloorplanLoadCompleteListener(new IFloorplanLoadCompleteListener() {
-            @Override
-            public void onFloorplanLoadComplete() {
-                if (mPointToShow != null) {
-                    centerToPoint(mPointToShow);
-                }
-            }
-        });
     }
 
     public void drawDistribution(PointF mean, float stdev) {
@@ -94,9 +83,9 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.highlightCentroidMarks(centroidMarks);
     }
 
-    public void rescaleMap(float scaleFactor) {
-        mRenderer.rescaleFloorplan(scaleFactor);
-    }
+//    public void rescaleMap(float scaleFactor) {
+//        mRenderer.rescaleFloorplan(scaleFactor);
+//    }
 
     public enum MapOperation {
         MOVE, ADD, REMOVE, SET_LOCATION
@@ -351,11 +340,14 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
+    public RenderGroup renderAsGroup(List<IFloorPlanPrimitive> elements) {
+        return mRenderer.renderElements(elements);
+    }
+
     public void plot(FloorPlan floorPlan, PointF pointToShow) {
-        mPointToShow = pointToShow;
-        mRenderer.setFloorPlan(floorPlan);
+        mRenderer.renderElements(floorPlan.getSketch());
         mRenderer.setTags(floorPlan.getTags());
-        mRenderer.performQueuedTask();
+        centerToPoint(pointToShow);
     }
 
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {

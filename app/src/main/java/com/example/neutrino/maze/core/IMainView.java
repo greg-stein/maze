@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Tag;
+import com.example.neutrino.maze.rendering.RenderGroup;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.List;
 public interface IMainView {
     void init();
 
-    void render(FloorPlan floorPlan);
+    RenderGroup render(FloorPlan floorPlan);
 
     void setTags(List<Tag> tags);
 

@@ -49,6 +49,7 @@ import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
+import com.example.neutrino.maze.rendering.RenderGroup;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
@@ -292,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 final float realLength = Float.parseFloat(input.getText().toString());
-                                uiFloorPlanView.rescaleMap(realLength/mCurrentWallLength);
+//                                uiFloorPlanView.rescaleMap(realLength/mCurrentWallLength);
                             }
                         })
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -668,10 +669,13 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     }
 
     @Override
-    public void render(FloorPlan floorPlan) {
+    public RenderGroup render(FloorPlan floorPlan) {
         final RectF boundaries = floorPlan.getBoundaries();
         PointF floorPlanCenter = new PointF(boundaries.centerX(), boundaries.centerY());
-        uiFloorPlanView.plot(floorPlan, floorPlanCenter);
+        RenderGroup floorPlanGroup = uiFloorPlanView.renderAsGroup(floorPlan.getSketch());
+        uiFloorPlanView.centerToPoint(floorPlanCenter);
+
+        return floorPlanGroup;
     }
 
     @Override

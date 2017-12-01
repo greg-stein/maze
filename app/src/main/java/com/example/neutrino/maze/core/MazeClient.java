@@ -11,6 +11,7 @@ import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.RadioMapFragment;
+import com.example.neutrino.maze.rendering.RenderGroup;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
 
@@ -31,8 +32,9 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private SensorListener mSensorListener;
     private FloorPlan mFloorPlan;
 
-    private StepCalibratorService mStepCalibratorService;
+    private RenderGroup mFloorPlanRenderGroup;
 
+    private StepCalibratorService mStepCalibratorService;
     private Intent mStepCalibratorServiceIntent;
     private RadioMapFragment mRadioMapFragment;
     private WifiScanner.IFingerprintAvailableListener mFirstFingerprintAvailableListener
@@ -71,7 +73,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         private void onCompleteDataReceive() {
             if (mRadioTileReceived && mFloorPlanReceived && mBuildingReceived) {
                 // Render the floor plan
-                mMainView.render(MazeClient.this.mFloorPlan);
+                mFloorPlanRenderGroup = mMainView.render(MazeClient.this.mFloorPlan);
                 // Locator uses floor plan for collision recognition
                 mLocator.setFloorPlan(MazeClient.this.mFloorPlan);
             }
