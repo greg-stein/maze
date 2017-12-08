@@ -8,6 +8,8 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
+import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Fingerprint;
@@ -53,7 +55,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     private GLSurfaceView mGlView;
     private List<RenderGroup> mRenderGroups = new ArrayList<>();
-    private GlRenderBuffer mCurrentBuffer = null;
     private int mViewPortWidth;
     private int mViewPortHeight;
     private final PointF mDragStart = new PointF();
@@ -80,8 +81,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     // Used for debug only to show distribution of active fingerprints
     private LocationMark mDistributionIndicator;
-    private FloorPlan mFloorPlan;
-    private Object mFloorPlanLock = new Object();
 
     private static String readResourceAsString(String path) {
         Exception innerException;
@@ -260,7 +259,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public boolean isFloorPlanEmpty() {return mFloorPlan == null || mFloorPlan.getSketch().isEmpty();}
+    public boolean isSketchEmpty() {return mRenderGroups == null || mRenderGroups.isEmpty() || mRenderGroups.get(0).isEmpty();}
 
     public float getAngle() {
         return mAngle;
@@ -333,7 +332,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public void handleStartDrag(final int x, final int y, final FloorPlanView.MapOperation operation, final FloorPlanView.MapOperand operand) {
         // This is needed for FloorPlanView to know if there is any object under tap location
         windowToWorld(x, y, mDragStart);
-        mMovedObject = mFloorPlan.findObjectHavingPoint(mDragStart.x, mDragStart.y);
+        mMovedObject = findObjectHavingPoint(mDragStart).second;
 
         runOnGlThread(new Runnable() {
             @Override
@@ -397,23 +396,25 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 final PointF worldPoint = new PointF();
                 windowToWorld(x, y, worldPoint);
 
-                IMoveable candidate = mFloorPlan.findObjectHavingPoint(worldPoint.x, worldPoint.y);
+                Pair<RenderGroup, IMoveable> candidate = findObjectHavingPoint(worldPoint);
                 if (candidate == null) return;
 
-                if (candidate instanceof IFloorPlanPrimitive) {
-                    IFloorPlanPrimitive candidatePrimitive = (IFloorPlanPrimitive) candidate;
+                if (candidate.second instanceof IFloorPlanPrimitive) {
+                    RenderGroup candidateGroup = candidate.first;
+                    IFloorPlanPrimitive candidatePrimitive = (IFloorPlanPrimitive) candidate.second;
                     candidatePrimitive.cloak();
-                    mFloorPlan.removeElement(candidatePrimitive);
-                } else if (candidate instanceof Tag) {
-                    mTags.remove(candidate);
+                    candidateGroup.removeElement(candidatePrimitive);
+                } else if (candidate.second instanceof Tag) {
+                    mTags.remove(candidate.second);
                 }
             }
         });
     }
 
-    public FloorPlan getFloorPlan() {
-        return mFloorPlan;
-    }
+// WTF
+//    public FloorPlan getFloorPlan() {
+//        return mFloorPlan;
+//    }
 
     public void setTags(List<Tag> tags) {
         this.mTags = tags;
@@ -540,42 +541,31 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
-    public void clearFloorPlan() {
-        List<IFloorPlanPrimitive> floorPlanElements = mFloorPlan.getSketch();
-        for(IFloorPlanPrimitive primitive : floorPlanElements) {
-            if (!primitive.isRemoved()) { // TODO: check if this is always true
-                primitive.cloak();
-            }
-        }
+    public void clearSketch() {
         for (RenderGroup group : mRenderGroups) {
+            group.clear();
             group.glDeallocate();
         }
-//        for (GlRenderBuffer buffer : mGlBuffers) {
-//            buffer.deallocateGpuBuffers();
-//        }
-//        mGlBuffers.clear();
-//        mFloorPlan.clear();
-//        mCurrentBuffer = new GlRenderBuffer(GlRenderBuffer.DEFAULT_BUFFER_VERTICES_NUM);
-//        mGlBuffers.add(mCurrentBuffer);
     }
 
+    // TODO: This method should be moved elsewhere (maybe into controller)
     public void highlightCentroidMarks(List<Fingerprint> centroidMarks) {
-        List<? extends IFloorPlanPrimitive> primitives = mFloorPlan.getSketch();
-        for (IFloorPlanPrimitive primitive : primitives) {
-            if (primitive instanceof Fingerprint) {
-                final Fingerprint mark = (Fingerprint) primitive;
-                if (centroidMarks.contains(mark))
-                    mark.setColor(Color.RED);
-                else
-                    mark.setColor(Color.BLUE);
-                runOnGlThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mark.rewriteToBuffer();
-                    }
-                });
-            }
-        }
+//        List<? extends IFloorPlanPrimitive> primitives = mFloorPlan.getSketch();
+//        for (IFloorPlanPrimitive primitive : primitives) {
+//            if (primitive instanceof Fingerprint) {
+//                final Fingerprint mark = (Fingerprint) primitive;
+//                if (centroidMarks.contains(mark))
+//                    mark.setColor(Color.RED); // Todo: highlighted fingerprint color define in AppSettings
+//                else
+//                    mark.setColor(Color.BLUE); // Todo: fingerprint color define in AppSettings
+//                runOnGlThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        mark.rewriteToBuffer();
+//                    }
+//                });
+//            }
+//        }
     }
 
 //    public void rescaleFloorplan(float scaleFactor) {
@@ -681,6 +671,34 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 }
             }
         });
+    }
+
+    // Returns IMoveable element under given coords and its render group
+    public Pair<RenderGroup, IMoveable> findObjectHavingPoint(PointF p) {
+        for (RenderGroup group : mRenderGroups) {
+            final IFloorPlanPrimitive elementHavingPoint = group.findElementHavingPoint(p);
+            if (elementHavingPoint != null) {
+                return new Pair<>(group, (IMoveable) elementHavingPoint);
+            }
+        }
+
+        IMoveable tag = getTagHavingPoint(p);
+        if (tag != null) return new Pair<>(null, tag);
+
+        return new Pair<>(null, null);
+    }
+
+    @Nullable
+    public Tag getTagHavingPoint(PointF p) {
+        if (mTags == null || mTags.isEmpty()) return null;
+
+        for (Tag tag : mTags) {
+            if (tag.hasPoint(p.x, p.y)) {
+                return tag;
+            }
+        }
+
+        return null;
     }
 
     /**

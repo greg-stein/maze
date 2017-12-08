@@ -148,7 +148,7 @@ public class FloorPlanView extends GLSurfaceView {
                         case WALL:
                             mDragStarted = true;
                             mRenderer.handleStartDrag(xPos, yPos, mapOperation, operand);
-                            mRenderer.getFloorPlan().setSketchDirty(true); // Need to flush it
+//                            mRenderer.getFloorPlan().setSketchDirty(true); // Need to flush it
                             break;
                         case SHORT_WALL:
                             break;
@@ -201,7 +201,7 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.windowToWorld(x, y, worldPoint);
 
         // TODO: Tags should migrate to Floor
-        final Tag tagAtTapLocation = mRenderer.getFloorPlan().getTagHavingPoint(worldPoint.x, worldPoint.y);
+        final Tag tagAtTapLocation = mRenderer.getTagHavingPoint(worldPoint);
         if (tagAtTapLocation != null) {
             input.setText(tagAtTapLocation.getLabel());
             dialogTitle = "Change tag";
@@ -239,7 +239,7 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.windowToWorld(x, y, worldPoint);
 
         // TODO: Tags should migrate to Floor
-        Tag tagAtLocation = mRenderer.getFloorPlan().getTagHavingPoint(worldPoint.x, worldPoint.y);
+        Tag tagAtLocation = mRenderer.getTagHavingPoint(worldPoint);
         if (!(tagAtLocation instanceof Teleport)) {
             tagAtLocation = null;
         }
@@ -379,7 +379,7 @@ public class FloorPlanView extends GLSurfaceView {
 
     // This method is used when you want to set location programmatically
     public void setLocation(float x, float y) {
-        if (!mRenderer.isFloorPlanEmpty()) { // otherwise no need to show current location
+        if (!mRenderer.isSketchEmpty()) { // otherwise no need to show current location
             mCurrentLocation.set(x, y);
             mRenderer.drawLocationMarkAt(mCurrentLocation);
         }
@@ -428,7 +428,7 @@ public class FloorPlanView extends GLSurfaceView {
         Runnable glRunnable = new Runnable() {
             @Override
             public void run() {
-                mRenderer.clearFloorPlan();
+                mRenderer.clearSketch();
                 requestRender();
             }
         };

@@ -1,6 +1,9 @@
 package com.example.neutrino.maze.rendering;
 
+import android.graphics.PointF;
+
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
+import com.example.neutrino.maze.floorplan.IMoveable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,5 +59,32 @@ public class RenderGroup {
         for (GlRenderBuffer buffer : mGlBuffers) {
             buffer.deallocateGpuBuffers();
         }
+    }
+
+    public IFloorPlanPrimitive findElementHavingPoint(PointF p) {
+        for (IFloorPlanPrimitive element : mElements) {
+            if (element.hasPoint(p.x, p.y) && !element.isRemoved()) {
+                return element;
+            }
+        }
+
+        return null;
+    }
+
+    public boolean isEmpty() {
+        return mElements.isEmpty();
+    }
+
+    public void removeElement(IFloorPlanPrimitive element) {
+        mElements.remove(element);
+    }
+
+    public void clear() {
+        for(IFloorPlanPrimitive primitive : mElements) {
+            if (!primitive.isRemoved()) { // TODO: check if this is always true
+                primitive.cloak();
+            }
+        }
+        mElements.clear();
     }
 }

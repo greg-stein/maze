@@ -222,27 +222,4 @@ public class FloorPlan {
     public void setSketchDirty(boolean sketchDirty) {
         mIsSketchDirty = sketchDirty;
     }
-
-    public IMoveable findObjectHavingPoint(float x, float y) {
-        for (IFloorPlanPrimitive primitive : mSketch) {
-            if (primitive.hasPoint(x, y) && !primitive.isRemoved()) {
-                return primitive;
-            }
-        }
-
-        IMoveable tag = getTagHavingPoint(x, y);
-        if (tag != null) return tag;
-
-        return null;
-    }
-
-    @Nullable
-    public Tag getTagHavingPoint(float x, float y) {
-        for (Tag tag : mTags) {
-            if (tag.hasPoint(x, y)) {
-                return tag;
-            }
-        }
-        return null;
-    }
 }
