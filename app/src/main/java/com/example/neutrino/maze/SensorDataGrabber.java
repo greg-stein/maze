@@ -20,6 +20,7 @@ import java.io.IOException;
  */
 
 public class SensorDataGrabber implements SensorEventListener {
+    public static final String MAIN_APP_DIR = "maze";   // find a way to use @string/app_name
     public static final String SENSOR_DATA_DIR = "sensor_data";
     private static final String MAGNETOMETER_SENSOR_LOG_FILENAME = "magnetometer_sensor_data.csv";
     private static final String ACCELEROMETER_SENSOR_LOG_FILENAME = "accelerometer_sensor_data.csv";
@@ -54,6 +55,7 @@ public class SensorDataGrabber implements SensorEventListener {
     private CSVWriter mGyroscopeUncalibratedCsvWriter;
     private CSVWriter mMagnetometerUncalibratedCsvWriter;
     private boolean mIsRecording;
+    private File mSensorDataDir;
 
     public SensorDataGrabber(SensorManager sensorManager) {
         mSensorManager = sensorManager;
@@ -73,11 +75,7 @@ public class SensorDataGrabber implements SensorEventListener {
             return null;
         }
 
-        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-        File sensorDir = new File(path, SENSOR_DATA_DIR);
-        sensorDir.mkdirs();
-
-        File file = new File(sensorDir, filename);
+        File file = new File(mSensorDataDir, filename);
         FileWriter writer = null;
         try {
             file.createNewFile();
@@ -89,6 +87,26 @@ public class SensorDataGrabber implements SensorEventListener {
         }
 
         return writer;
+    }
+
+    private File getDirectoryForSensorData() {
+        File mainDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), MAIN_APP_DIR);
+        if (mainDir.isDirectory() || mainDir.mkdir()) {
+            File sensorDir = new File(mainDir, SENSOR_DATA_DIR);
+            if (sensorDir.isDirectory() || sensorDir.mkdir()) {
+                for (int i = 1;;i++) {
+                    File subDir = new File(sensorDir, String.format("%03d",i));
+                    if (!subDir.exists()) {
+                        if (subDir.mkdir()) {
+                            return subDir;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public void startListeningToSensors() {
@@ -111,6 +129,10 @@ public class SensorDataGrabber implements SensorEventListener {
     }
 
     public void openSensorLogFiles() {
+        mSensorDataDir = getDirectoryForSensorData();
+        if (mSensorDataDir == null) {
+            throw new RuntimeException("Could not get directory for sensor data");
+        }
         mMagnetometerCsvWriter = new CSVWriter(createWriter(MAGNETOMETER_SENSOR_LOG_FILENAME), ',');
         mAccelerometerCsvWriter = new CSVWriter(createWriter(ACCELEROMETER_SENSOR_LOG_FILENAME), ',');
         mGyroscopeCsvWriter = new CSVWriter(createWriter(GYROSCOPE_SENSOR_LOG_FILENAME), ',');
