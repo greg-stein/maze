@@ -133,13 +133,13 @@ public class SensorDataGrabber implements SensorEventListener {
         if (mSensorDataDir == null) {
             throw new RuntimeException("Could not get directory for sensor data");
         }
-        mMagnetometerCsvWriter = new CSVWriter(createWriter(MAGNETOMETER_SENSOR_LOG_FILENAME), ',');
-        mAccelerometerCsvWriter = new CSVWriter(createWriter(ACCELEROMETER_SENSOR_LOG_FILENAME), ',');
-        mGyroscopeCsvWriter = new CSVWriter(createWriter(GYROSCOPE_SENSOR_LOG_FILENAME), ',');
-        mRotationFusedCsvWriter = new CSVWriter(createWriter(ROTATION_FUSED_SENSOR_LOG_FILENAME), ',');
-        mGravityCsvWriter = new CSVWriter(createWriter(GRAVITY_SENSOR_LOG_FILENAME), ',');
-        mGyroscopeUncalibratedCsvWriter = new CSVWriter(createWriter(GYROSCOPE_UNCALIBRATED_SENSOR_LOG_FILENAME), ',');
-        mMagnetometerUncalibratedCsvWriter = new CSVWriter(createWriter(MAGNETOMETER_UNCALIBRATED_SENSOR_LOG_FILENAME), ',');
+        mMagnetometerCsvWriter = new CSVWriter(createWriter(MAGNETOMETER_SENSOR_LOG_FILENAME), CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER);
+        mAccelerometerCsvWriter = new CSVWriter(createWriter(ACCELEROMETER_SENSOR_LOG_FILENAME), CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER);
+        mGyroscopeCsvWriter = new CSVWriter(createWriter(GYROSCOPE_SENSOR_LOG_FILENAME), CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER);
+        mRotationFusedCsvWriter = new CSVWriter(createWriter(ROTATION_FUSED_SENSOR_LOG_FILENAME), CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER);
+        mGravityCsvWriter = new CSVWriter(createWriter(GRAVITY_SENSOR_LOG_FILENAME), CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER);
+        mGyroscopeUncalibratedCsvWriter = new CSVWriter(createWriter(GYROSCOPE_UNCALIBRATED_SENSOR_LOG_FILENAME), CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER);
+        mMagnetometerUncalibratedCsvWriter = new CSVWriter(createWriter(MAGNETOMETER_UNCALIBRATED_SENSOR_LOG_FILENAME), CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER);
     }
 
     public void closeSensorLogFiles() {
