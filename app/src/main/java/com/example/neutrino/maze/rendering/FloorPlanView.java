@@ -12,6 +12,7 @@ import android.view.ScaleGestureDetector;
 import android.widget.EditText;
 
 import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.core.IMainView;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
@@ -23,7 +24,7 @@ import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 
 import java.util.List;
 
-import static com.example.neutrino.maze.rendering.FloorPlanView.MapOperation.MOVE;
+import static com.example.neutrino.maze.core.IMainView.MapOperation.MOVE;
 
 /**
  * Created by neutrino on 7/2/2016.
@@ -87,14 +88,12 @@ public class FloorPlanView extends GLSurfaceView {
 //        mRenderer.rescaleFloorplan(scaleFactor);
 //    }
 
-    public enum MapOperation {
-        MOVE, ADD, REMOVE, SET_LOCATION
+    public IMainView.MapOperation mapOperation = MOVE;
+    public IMainView.MapOperand operand;
+
+    public void setElementFactory(IMainView.IElementFactory elementFactory) {
+        mRenderer.setElementFactory(elementFactory);
     }
-    public MapOperation mapOperation = MOVE;
-    public enum MapOperand {
-        WALL, SHORT_WALL, BOUNDARIES, TELEPORT, LOCATION_TAG
-    }
-    public MapOperand operand;
 
     public enum Operation {
         NONE, ADD_WALL, REMOVE_WALL, ADD_TAG, SET_LOCATION

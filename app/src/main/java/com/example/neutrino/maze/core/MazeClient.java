@@ -10,7 +10,9 @@ import com.example.neutrino.maze.core.SensorListener.IDeviceRotationListener;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
+import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.RadioMapFragment;
+import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.rendering.RenderGroup;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
@@ -107,7 +109,29 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             });
         }
     };
+    
+    private IMainView.IElementFactory mElementFactory = new IMainView.IElementFactory() {
+        @Override
+        public IFloorPlanPrimitive createElement(IMainView.MapOperand elementType, PointF dragStart) {
+            switch (elementType) {
+                case WALL:
+                    Wall newWall = new Wall(dragStart, dragStart);
+                    mFloorPlanRenderGroup.addElement(newWall);
+                    return newWall;
+                case SHORT_WALL:
+                    break;
+                case BOUNDARIES:
+                    break;
+                case TELEPORT:
+                    break;
+                case LOCATION_TAG:
+                    break;
+                default: return null;
+            }
 
+            return null;
+        }
+    };
 // THIS IS HERE FOR REFERENCE ONLY! After successful construction of floor plan remove it
 //        mFloorChangedHandler = new IFloorChangedHandler() {
 //            @Override
@@ -176,6 +200,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mMapperLastState = mMapper.isEnabled();
         mSensorListener = SensorListener.getInstance(mContext);
 
+        mMainView.setElementFactory(mElementFactory);
         setUiHandlers();
     }
 

@@ -141,7 +141,14 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
 
     @Override
     public void rewriteToBuffer() {
-        mGlBuffer.updateSingleObject(this);
+        // This check is required mainly because if there is no buffer set we cannot render this
+        // element. BUT, this invariant should be enforced at instantiation. We have it here just
+        // because at the event of new element creation, we still didn't set the buffer, but this
+        // method is called from handleMoveStart(), which in turn called from handleStartDrag()
+        // This code/design smells!
+        if (mGlBuffer != null) {
+            mGlBuffer.updateSingleObject(this);
+        }
     }
 
     @Override

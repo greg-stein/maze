@@ -118,7 +118,7 @@ public class FloorPlan {
 
     // Returns unmodifiable list. To change it use [add/remove]Element()
     public List<IFloorPlanPrimitive> getSketch() {
-        return Collections.unmodifiableList(mSketch);
+        return mSketch;
     }
 
     public void addElement(IFloorPlanPrimitive primitive) {

@@ -217,11 +217,11 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
 
         switch (id) {
             case R.id.btn_move:
-                uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.MOVE;
+                uiFloorPlanView.mapOperation = IMainView.MapOperation.MOVE;
                 break;
 
             case R.id.btn_delete:
-                uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.REMOVE;
+                uiFloorPlanView.mapOperation = IMainView.MapOperation.REMOVE;
                 break;
 
             case R.id.btn_lock_rotation:
@@ -233,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
                 break;
 
             case R.id.btn_set_location:
-                uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.SET_LOCATION;
+                uiFloorPlanView.mapOperation = IMainView.MapOperation.SET_LOCATION;
                 break;
 
             case R.id.btn_vectorize_floorplan:
@@ -329,23 +329,23 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 switch (position) {
                     case 0:
-                        uiFloorPlanView.operand = FloorPlanView.MapOperand.WALL;
+                        uiFloorPlanView.operand = IMainView.MapOperand.WALL;
                         break;
                     case 1:
-                        uiFloorPlanView.operand = FloorPlanView.MapOperand.SHORT_WALL;
+                        uiFloorPlanView.operand = IMainView.MapOperand.SHORT_WALL;
                         break;
                     case 2:
-                        uiFloorPlanView.operand = FloorPlanView.MapOperand.BOUNDARIES;
+                        uiFloorPlanView.operand = IMainView.MapOperand.BOUNDARIES;
                         break;
                     case 3:
-                        uiFloorPlanView.operand = FloorPlanView.MapOperand.LOCATION_TAG;
+                        uiFloorPlanView.operand = IMainView.MapOperand.LOCATION_TAG;
                         break;
                     case 4:
-                        uiFloorPlanView.operand = FloorPlanView.MapOperand.TELEPORT;
+                        uiFloorPlanView.operand = IMainView.MapOperand.TELEPORT;
                         break;
                 }
                 if (position < 5) {
-                    uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.ADD;
+                    uiFloorPlanView.mapOperation = IMainView.MapOperation.ADD;
                 }
 
                 invalidateOptionsMenu();
@@ -453,7 +453,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
 //        uiFabDeleteWall.setOnLongClickListener(new View.OnLongClickListener() {
 //            @Override
 //            public boolean onLongClick(View view) {
-//                uiFloorPlanView.clearFloorPlan();
+//                uiFloorPlanView.clearSketch();
 //                return false;
 //            }
 //        });
@@ -615,6 +615,11 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     @Override
     public void renderFingeprint(Fingerprint fingerprint) {
         uiFloorPlanView.placeFingerprint(fingerprint);
+    }
+
+    @Override
+    public void setElementFactory(IElementFactory factory) {
+        uiFloorPlanView.setElementFactory(factory);
     }
 
     private void emitUiModeChangedEvent(UiMode newMode) {

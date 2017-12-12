@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
 
 import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.core.IMainView;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Footprint;
@@ -59,7 +60,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private int mViewPortHeight;
     private final PointF mDragStart = new PointF();
     private IMoveable mMovedObject;
-    private boolean mAddedWallByDrag;
     private static final float[] mBgColorF = new float[4];
     private LocationMark mLocationMark = null;
     private List<Tag> mTags;
@@ -81,6 +81,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     // Used for debug only to show distribution of active fingerprints
     private LocationMark mDistributionIndicator;
+    private IMainView.IElementFactory mElementFactory;
 
     private static String readResourceAsString(String path) {
         Exception innerException;
@@ -196,26 +197,18 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         for (RenderGroup group : mRenderGroups) {
             if (group.isReadyForRender()) {
                 group.render(mScratch);
+            } else {
+                group.prepareForRender();
             }
         }
 
         renderTags();
     }
 
-    private void addElementsToRenderGroup(List<IFloorPlanPrimitive> elements, RenderGroup group) {
-    }
-
     public RenderGroup renderElements(List<IFloorPlanPrimitive> elements) {
         final RenderGroup newGroup = new RenderGroup(elements);
-
-        runOnGlThread(new Runnable() {
-            @Override
-            public void run() {
-                newGroup.prepareForRender();
-            }
-        });
-
         mRenderGroups.add(newGroup);
+
         return newGroup;
     }
 
@@ -329,7 +322,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         return mMovedObject != null;
     }
 
-    public void handleStartDrag(final int x, final int y, final FloorPlanView.MapOperation operation, final FloorPlanView.MapOperand operand) {
+    public void setElementFactory(IMainView.IElementFactory factory) {
+        this.mElementFactory = factory;
+    }
+
+    public void handleStartDrag(final int x, final int y, final IMainView.MapOperation operation, final IMainView.MapOperand operand) {
         // This is needed for FloorPlanView to know if there is any object under tap location
         windowToWorld(x, y, mDragStart);
         mMovedObject = findObjectHavingPoint(mDragStart).second;
@@ -337,14 +334,10 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
-                mAddedWallByDrag = false;
-
                 // TODO: This code smells bad. Obviously refactor is needed. Look at where it is called from!
-                if (operation == FloorPlanView.MapOperation.ADD && operand == FloorPlanView.MapOperand.WALL) {
+                if (operation == IMainView.MapOperation.ADD && operand == IMainView.MapOperand.WALL) {
                     // Add new wall at the point
-                    mMovedObject = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y);
-                    addPrimitive((IFloorPlanPrimitive) mMovedObject);
-                    mAddedWallByDrag = true;
+                    mMovedObject = mElementFactory.createElement(operand, mDragStart); //new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y);
                     mMovedObject.setTapLocation(mDragStart.x, mDragStart.y);
                     mMovedObject.handleMoveStart();
                     onStartMove(mMovedObject);

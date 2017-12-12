@@ -3,7 +3,6 @@ package com.example.neutrino.maze.rendering;
 import android.graphics.PointF;
 
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.IMoveable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,24 +12,28 @@ import java.util.List;
  */
 
 public class RenderGroup {
-    private GlRenderBuffer mCurrentBuffer;
+    private GlRenderBuffer mCurrentBuffer = null;
     private List<GlRenderBuffer> mGlBuffers = new ArrayList<>();
-    private List<IFloorPlanPrimitive> mElements;
+    private List<IFloorPlanPrimitive> mRenderedElements = new ArrayList<>();
+    private List<IFloorPlanPrimitive> mElementsNotRenderedYet;
 
     private boolean mReadyForRender;
 
     public RenderGroup(List<IFloorPlanPrimitive> elements) {
-        mElements = elements;
+        mElementsNotRenderedYet = elements;
+        mReadyForRender = false;
     }
 
     // This method should run on GL thread
     public void prepareForRender() {
-        if (mElements == null || mElements.size() == 0) return;
+        if (mElementsNotRenderedYet == null || mElementsNotRenderedYet.size() == 0) return;
 
-        mCurrentBuffer = new GlRenderBuffer(GlRenderBuffer.DEFAULT_BUFFER_VERTICES_NUM);
-        mGlBuffers.add(mCurrentBuffer);
+        if (mCurrentBuffer == null) {
+            mCurrentBuffer = new GlRenderBuffer(GlRenderBuffer.DEFAULT_BUFFER_VERTICES_NUM);
+            mGlBuffers.add(mCurrentBuffer);
+        }
 
-        for (IFloorPlanPrimitive element : mElements) {
+        for (IFloorPlanPrimitive element : mElementsNotRenderedYet) {
             element.updateVertices();
 
             if (!mCurrentBuffer.put(element)) {
@@ -39,7 +42,10 @@ public class RenderGroup {
                 mGlBuffers.add(mCurrentBuffer);
                 mCurrentBuffer.put(element);
             }
+
+            mRenderedElements.add(element);
         }
+        mElementsNotRenderedYet.clear();
         mCurrentBuffer.allocateGpuBuffers();
 
         mReadyForRender = true;
@@ -62,7 +68,7 @@ public class RenderGroup {
     }
 
     public IFloorPlanPrimitive findElementHavingPoint(PointF p) {
-        for (IFloorPlanPrimitive element : mElements) {
+        for (IFloorPlanPrimitive element : mRenderedElements) {
             if (element.hasPoint(p.x, p.y) && !element.isRemoved()) {
                 return element;
             }
@@ -72,19 +78,24 @@ public class RenderGroup {
     }
 
     public boolean isEmpty() {
-        return mElements.isEmpty();
+        return mRenderedElements.isEmpty();
+    }
+
+    public void addElement(IFloorPlanPrimitive element) {
+        mElementsNotRenderedYet.add(element);
+        mReadyForRender = false;
     }
 
     public void removeElement(IFloorPlanPrimitive element) {
-        mElements.remove(element);
+        mRenderedElements.remove(element);
     }
 
     public void clear() {
-        for(IFloorPlanPrimitive primitive : mElements) {
+        for(IFloorPlanPrimitive primitive : mRenderedElements) {
             if (!primitive.isRemoved()) { // TODO: check if this is always true
                 primitive.cloak();
             }
         }
-        mElements.clear();
+        mRenderedElements.clear();
     }
 }
