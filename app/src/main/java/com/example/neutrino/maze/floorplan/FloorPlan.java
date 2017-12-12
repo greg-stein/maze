@@ -116,6 +116,13 @@ public class FloorPlan {
         return boundaries;
     }
 
+    public PointF getCenter() {
+        final RectF boundaries = getBoundaries();
+        PointF floorPlanCenter = new PointF(boundaries.centerX(), boundaries.centerY());
+
+        return floorPlanCenter;
+    }
+
     // Returns unmodifiable list. To change it use [add/remove]Element()
     public List<IFloorPlanPrimitive> getSketch() {
         return mSketch;

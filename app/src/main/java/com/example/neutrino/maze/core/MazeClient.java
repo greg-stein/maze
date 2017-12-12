@@ -35,6 +35,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private FloorPlan mFloorPlan;
 
     private RenderGroup mFloorPlanRenderGroup;
+    private RenderGroup mRadioMapRenderGroup;
 
     private StepCalibratorService mStepCalibratorService;
     private Intent mStepCalibratorServiceIntent;
@@ -75,7 +76,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         private void onCompleteDataReceive() {
             if (mRadioTileReceived && mFloorPlanReceived && mBuildingReceived) {
                 // Render the floor plan
-                mFloorPlanRenderGroup = mMainView.render(MazeClient.this.mFloorPlan);
+                mFloorPlanRenderGroup = mMainView.render(MazeClient.this.mFloorPlan.getSketch());
+                mMainView.centerMapView(MazeClient.this.mFloorPlan.getCenter());
                 // Locator uses floor plan for collision recognition
                 mLocator.setFloorPlan(MazeClient.this.mFloorPlan);
             }

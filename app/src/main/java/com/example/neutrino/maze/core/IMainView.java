@@ -18,7 +18,9 @@ import java.util.List;
 public interface IMainView {
     void init();
 
-    RenderGroup render(FloorPlan floorPlan);
+    RenderGroup render(List<IFloorPlanPrimitive> elements);
+
+    void centerMapView(PointF point);
 
     void setTags(List<Tag> tags);
 

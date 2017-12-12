@@ -674,13 +674,15 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     }
 
     @Override
-    public RenderGroup render(FloorPlan floorPlan) {
-        final RectF boundaries = floorPlan.getBoundaries();
-        PointF floorPlanCenter = new PointF(boundaries.centerX(), boundaries.centerY());
-        RenderGroup floorPlanGroup = uiFloorPlanView.renderAsGroup(floorPlan.getSketch());
-        uiFloorPlanView.centerToPoint(floorPlanCenter);
+    public RenderGroup render(List<IFloorPlanPrimitive> elements) {
+        RenderGroup floorPlanGroup = uiFloorPlanView.renderAsGroup(elements);
 
         return floorPlanGroup;
+    }
+
+    @Override
+    public void centerMapView(PointF point) {
+        uiFloorPlanView.centerToPoint(point);
     }
 
     @Override
