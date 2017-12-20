@@ -19,9 +19,8 @@ import java.util.List;
 public class FingerprintsPathFinder extends PathFinderBase {
     private List<PointF> mNodes;
 
-    public FingerprintsPathFinder(FloorPlan floorPlan) {
+    public FingerprintsPathFinder(FloorPlan floorPlan, List<Fingerprint> fingerprints) {
         super(floorPlan);
-        List<Fingerprint> fingerprints = floorPlan.getFingerprints();
         mNodes = new ArrayList<>(fingerprints.size());
 
         for (Fingerprint fingerprint : fingerprints) {

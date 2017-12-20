@@ -30,7 +30,9 @@ public class LoadFloorPlanTask extends AsyncTask<String, Void, FloorPlan> {
         if (jsonString != null) {
             List<Object> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
             floorPlan = FloorPlan.build(floorplan);
-            WiFiLocator.getInstance().setFingerprintsMap(floorPlan.getFingerprints());
+            // All this class is dead code
+            // TODO: remove it
+//            WiFiLocator.getInstance().setFingerprintsMap(floorPlan.getFingerprints());
             Locator.getInstance(mContext).setFloorPlan(floorPlan);
         }
         return floorPlan;

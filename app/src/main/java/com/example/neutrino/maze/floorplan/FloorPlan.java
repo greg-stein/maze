@@ -25,7 +25,6 @@ import java.util.List;
 public class FloorPlan {
     public static final Object mTagsListLocker = new Object();
     private List<IFloorPlanPrimitive> mSketch;
-    private List<Fingerprint> mFingerprints;
     private List<Tag> mTags;
     private FloorPlanDescriptor mDescriptor;
     private PathFinderBase mPathFinder;
@@ -34,7 +33,6 @@ public class FloorPlan {
 
     public static FloorPlan build(List<Object> entities) {
         FloorPlan floorPlan = new FloorPlan();
-        floorPlan.mFingerprints = CommonHelper.extractObjects(Fingerprint.class, entities);
         floorPlan.mTeleports = CommonHelper.extractObjects(ITeleport.class, entities);
         floorPlan.mTags = CommonHelper.extractObjects(Tag.class, entities);
 //        List<Wall> walls = FloorplanVectorizer.connect(CommonHelper.extractObjects(Wall.class, entities));
@@ -51,23 +49,11 @@ public class FloorPlan {
             floorPlan.mDescriptor = floorPlanDescriptors.get(0);
         }
 
-        if (AppSettings.inDebug && floorPlan.mFingerprints != null) {
-            floorPlan.mSketch.addAll(floorPlan.mFingerprints);
-        }
-
-//        if (floorPlan.mSketch.size() > 0) {
-//            floorPlan.mPathFinder = new GridPathFinder(floorPlan);
-//        } else {
-//            floorPlan.mPathFinder = new FingerprintsPathFinder(floorPlan);
-//        }
-//        floorPlan.mPathFinder.init();
-
         return floorPlan;
     }
 
     public static FloorPlan build() {
         FloorPlan floorPlan = new FloorPlan();
-        floorPlan.mFingerprints = new ArrayList<>();
         floorPlan.mTags = new ArrayList<>();
         floorPlan.mSketch = Collections.synchronizedList(new ArrayList<IFloorPlanPrimitive>());
         floorPlan.mDescriptor = null;
@@ -84,20 +70,15 @@ public class FloorPlan {
     }
 
     public List<Object> disassemble() {
-        if (AppSettings.inDebug) {
-            if (mSketch != null && mFingerprints != null) mSketch.removeAll(mFingerprints);
-        }
 
         int entitiesNum =
                 ((mSketch != null) ? mSketch.size() : 0) +
-                ((mFingerprints != null) ? mFingerprints.size() : 0) +
                 ((mTags != null) ? mTags.size() : 0) +
                 ((mDescriptor != null)? 1 : 0);
 
         List<Object> result = new ArrayList<>(entitiesNum);
 
         if (mSketch != null) result.addAll(mSketch);
-        if (mFingerprints != null)result.addAll(mFingerprints);
         if (mTags != null)result.addAll(mTags);
         if (mDescriptor != null)result.add(mDescriptor);
 
@@ -140,14 +121,6 @@ public class FloorPlan {
         this.mSketch = Collections.synchronizedList(sketch);
     }
 
-    public List<Fingerprint> getFingerprints() {
-        return mFingerprints;
-    }
-
-    public void setFingerprints(List<Fingerprint> fingerprints) {
-        this.mFingerprints = fingerprints;
-    }
-
     public List<Tag> getTags() {
         return mTags;
     }
@@ -170,7 +143,6 @@ public class FloorPlan {
         synchronized (FloorPlan.mTagsListLocker) {
             this.mTags.clear();
         }
-        this.mFingerprints.clear();
     }
 
     public List<ITeleport> getTeleportsOnFloor() {
