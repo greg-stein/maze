@@ -97,4 +97,8 @@ public class Footprint extends FloorPlanPrimitiveBase {
     public PointF getCenter() {
         return mCenter;
     }
+
+    public void setRadius(float radius) {
+        mRadius = radius;
+    }
 }

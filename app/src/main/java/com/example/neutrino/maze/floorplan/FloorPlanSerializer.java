@@ -1,7 +1,9 @@
 package com.example.neutrino.maze.floorplan;
 
 import android.support.annotation.Nullable;
+import android.support.v4.graphics.ColorUtils;
 
+import com.example.neutrino.maze.AppSettings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -91,6 +93,12 @@ public class FloorPlanSerializer {
                     if (className.equals("WifiMark")) className = "Fingerprint";
                     klass = Class.forName(packageName + '.' + className);
                     final Object deserializedInstance = context.deserialize(serializedInstance, klass);
+                    // TODO: REMOVE THIS BLOCK
+                    if (deserializedInstance instanceof Fingerprint) {
+                        Fingerprint fingerprint = (Fingerprint) deserializedInstance;
+                        fingerprint.setColor(ColorUtils.setAlphaComponent(AppSettings.fingerprintColor, 64));
+                        fingerprint.setRadius(2.5f);
+                    }
                     if (deserializedInstance instanceof FloorPlanPrimitiveBase) {
                         FloorPlanPrimitiveBase primitiveBase = (FloorPlanPrimitiveBase) deserializedInstance;
                         if (!primitiveBase.isRemoved()) {
