@@ -16,7 +16,7 @@ public class RenderGroup {
     private List<GlRenderBuffer> mGlBuffers = new ArrayList<>();
     private List<IFloorPlanPrimitive> mRenderedElements = new ArrayList<>();
     private List<IFloorPlanPrimitive> mElementsNotRenderedYet;
-
+    private boolean mVisible = false;
     private boolean mReadyForRender;
 
     public RenderGroup(List<IFloorPlanPrimitive> elements) {
@@ -51,13 +51,23 @@ public class RenderGroup {
         mReadyForRender = true;
     }
 
+    public boolean isVisible() {
+        return mVisible;
+    }
+
+    public void setVisible(boolean visible) {
+        mVisible = visible;
+    }
+
     public boolean isReadyForRender() {
         return mReadyForRender;
     }
 
     public void render(float[] scratch) {
-        for (GlRenderBuffer glBuffer : mGlBuffers) {
-            glBuffer.render(scratch);
+        if (mVisible) {
+            for (GlRenderBuffer glBuffer : mGlBuffers) {
+                glBuffer.render(scratch);
+            }
         }
     }
 

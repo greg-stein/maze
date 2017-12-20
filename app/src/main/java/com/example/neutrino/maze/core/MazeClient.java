@@ -51,7 +51,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 new IFuckingSimpleGenericCallback<RadioMapFragment>() {
             @Override
             public void onNotify(RadioMapFragment wiFiFingerprints) {
-                MazeClient.this.mRadioMapFragment = wiFiFingerprints;
+                mRadioMapFragment = wiFiFingerprints;
+                mRadioMapRenderGroup = mMainView.render(mRadioMapFragment.getFingerprintsAsIFloorPlanElements());
                 mRadioTileReceived = true;
                 onCompleteDataReceive();
             }
@@ -59,7 +60,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         private IFuckingSimpleGenericCallback<FloorPlan> mOnFloorPlanReceived = new IFuckingSimpleGenericCallback<FloorPlan>() {
             @Override
             public void onNotify(FloorPlan floorPlan) {
-                MazeClient.this.mFloorPlan = floorPlan;
+                mFloorPlan = floorPlan;
+                mFloorPlanRenderGroup = mMainView.render(mFloorPlan.getSketch());
                 mFloorPlanReceived = true;
                 onCompleteDataReceive();
             }
@@ -73,13 +75,13 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             }
         };
 
-        private void onCompleteDataReceive() {
+        private synchronized void onCompleteDataReceive() {
             if (mRadioTileReceived && mFloorPlanReceived && mBuildingReceived) {
                 // Render the floor plan
-                mFloorPlanRenderGroup = mMainView.render(MazeClient.this.mFloorPlan.getSketch());
-                mMainView.centerMapView(MazeClient.this.mFloorPlan.getCenter());
+                mFloorPlanRenderGroup.setVisible(true);
+                mMainView.centerMapView(mFloorPlan.getCenter());
                 // Locator uses floor plan for collision recognition
-                mLocator.setFloorPlan(MazeClient.this.mFloorPlan);
+                mLocator.setFloorPlan(mFloorPlan);
             }
         }
 
@@ -211,6 +213,20 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             @Override
             public void onNotify(Boolean enabled) {
                 mMapper.setEnabled(enabled);
+            }
+        });
+
+        mMainView.setUiModeChangedListener(new IFuckingSimpleGenericCallback<IMainView.UiMode>() {
+            @Override
+            public void onNotify(IMainView.UiMode uiMode) {
+                switch (uiMode) {
+                    case MAP_VIEW_MODE:
+                        mRadioMapRenderGroup.setVisible(false);
+                        break;
+                    case MAP_EDIT_MODE:
+                        mRadioMapRenderGroup.setVisible(true);
+                        break;
+                }
             }
         });
     }

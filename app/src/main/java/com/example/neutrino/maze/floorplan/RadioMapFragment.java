@@ -31,4 +31,8 @@ public class RadioMapFragment {
     public void addFingerprint(Fingerprint fingerprint) {
         mFingerprints.add(fingerprint);
     }
+
+    public List<IFloorPlanPrimitive> getFingerprintsAsIFloorPlanElements() {
+        return (List<IFloorPlanPrimitive>) (List<? extends IFloorPlanPrimitive>) mFingerprints;
+    }
 }
