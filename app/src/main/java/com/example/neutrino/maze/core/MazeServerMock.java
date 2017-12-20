@@ -10,6 +10,7 @@ import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
+import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.RadioMapFragment;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
@@ -18,6 +19,7 @@ import com.example.neutrino.maze.util.JsonSerializer;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Greg Stein on 9/30/2017.
@@ -65,17 +67,18 @@ public class MazeServerMock implements IMazeServer {
         floors.add(dbFloor2 = new Floor("2", "floor_id_2"));
         dbBuilding.setFloors(floors);
 
-        dbFloor1Plan = getFloorPlanFromRes();
-        dbRadioMap1 = new RadioMapFragment(dbFloor1Plan.getFingerprints(), dbFloor1.getId());
+        dbFloor1Plan = FloorPlan.build(loadFromRes(R.raw.haifa_mall_detailed_tags));
+        List<Fingerprint> fingerprints = (List<Fingerprint>)(List<?>)loadFromRes(R.raw.radio_map);
+        dbRadioMap1 = new RadioMapFragment(fingerprints, dbFloor1.getId());
         dbFloor1.setTags(dbFloor1Plan.getTags());
         dbFloor1.setTeleports(dbFloor1Plan.getTeleportsOnFloor());
     }
 
-    private FloorPlan getFloorPlanFromRes() {
+    private List<Object> loadFromRes(int resFloorplan) {
         String jsonString = null;
         try {
             Resources res = mContext.getResources();
-            InputStream in_s = res.openRawResource(R.raw.haifa_mall_detailed_tags);
+            InputStream in_s = res.openRawResource(resFloorplan);
 
             byte[] b = new byte[in_s.available()];
             in_s.read(b);
@@ -85,7 +88,7 @@ public class MazeServerMock implements IMazeServer {
         }
 
         List<Object> floorPlan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
-        return FloorPlan.build(floorPlan);
+        return floorPlan;
     }
 
     private static volatile int buildingSequence = 0;
