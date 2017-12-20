@@ -10,7 +10,7 @@ import com.example.neutrino.maze.rendering.VectorHelper;
  * Created by Greg Stein on 9/21/2016.
  */
 public class Footprint extends FloorPlanPrimitiveBase {
-    private static final int SEGMENTS_NUM = 16;
+    private static final int SEGMENTS_NUM = 6;
     private static final int VERTICES_NUM = SEGMENTS_NUM + 2; // radial vertices + center
     private static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlRenderBuffer.COORDS_PER_VERTEX;
     private static final int INDICES_DATA_LENGTH = SEGMENTS_NUM * 3;

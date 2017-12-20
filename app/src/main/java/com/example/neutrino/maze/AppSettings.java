@@ -21,6 +21,7 @@ public class AppSettings {
     public static int oglTextRenderProgram;
     public static boolean inDebug;
     public static int pathColor;
+    public static int fingerprintColor;
 
     public static void init(Context context) {
         pathColor = ContextCompat.getColor(context, R.color.colorPath);
@@ -32,6 +33,7 @@ public class AppSettings {
         primaryDarkColor = ContextCompat.getColor(context, R.color.colorPrimaryDark);
         editModeColor = ContextCompat.getColor(context, R.color.colorEditMode);
         accentColor = ContextCompat.getColor(context, R.color.colorAccent);
+        fingerprintColor = ContextCompat.getColor(context, R.color.colorFingerprint);
         inDebug = true;
     }
 }
