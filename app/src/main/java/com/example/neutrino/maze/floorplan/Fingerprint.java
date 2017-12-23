@@ -1,6 +1,5 @@
 package com.example.neutrino.maze.floorplan;
 
-import android.graphics.Color;
 import android.graphics.PointF;
 import android.support.v4.graphics.ColorUtils;
 
@@ -12,15 +11,25 @@ import com.example.neutrino.maze.core.WiFiLocator.WiFiFingerprint;
  *
  * This class is for debugging/development only!!
  */
-public class Fingerprint extends Footprint {
-    private static final int FINGERPRINT_ALPHA = 128;
+public class Fingerprint extends CircleBase {
+    private static final int FINGERPRINT_ALPHA = 64;
     private static final float FINGERPRINT_RADIUS = 2.50f; // in meters
-    private static final int FINGERPRINT_SEGMENTS_NUM = 6;  // TODO: this should be passed to
-                                                            // TODO: footprint somehow
+    public static final int FINGERPRINT_CIRCLE_SEGMENTS_NUM = 6;
+
     public static int instanceNum = 0;
     public final transient int instanceId = instanceNum++;
 
     private WiFiFingerprint mWiFiFingerprint;
+
+    @Override
+    protected int getSegmentsNum() {
+        return FINGERPRINT_CIRCLE_SEGMENTS_NUM;
+    }
+
+    @Override
+    protected float getRadius() {
+        return FINGERPRINT_RADIUS;
+    }
 
     public Fingerprint() {
         super();
@@ -28,7 +37,7 @@ public class Fingerprint extends Footprint {
     }
 
     public Fingerprint(float cx, float cy, WiFiFingerprint fingerprint) {
-        super(cx, cy, FINGERPRINT_RADIUS);
+        super(cx, cy);
         setColor(ColorUtils.setAlphaComponent(AppSettings.fingerprintColor, FINGERPRINT_ALPHA));
         this.mWiFiFingerprint = fingerprint;
     }

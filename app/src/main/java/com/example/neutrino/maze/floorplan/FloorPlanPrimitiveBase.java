@@ -14,6 +14,7 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     protected transient final float mVertices[];
     protected transient final short mIndices[];
 
+    // TODO: rename to "getCoordsNum"
     protected abstract int getVerticesNum();
 
     protected abstract int getIndicesNum();
