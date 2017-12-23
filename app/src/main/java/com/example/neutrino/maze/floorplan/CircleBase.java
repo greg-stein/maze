@@ -32,7 +32,7 @@ public abstract class CircleBase extends FloorPlanPrimitiveBase {
     }
 
     @Override
-    protected int getVerticesNum() {
+    protected int getVerticesDataLength() {
         int verticesNum = getSegmentsNum() + 2;
         return verticesNum * GlRenderBuffer.COORDS_PER_VERTEX;
     }

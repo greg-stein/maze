@@ -52,7 +52,7 @@ public class ThickLineSegment extends FloorPlanPrimitiveBase {
     private transient final PointF mTappedLocation = new PointF();
 
     @Override
-    protected int getVerticesNum() {
+    protected int getVerticesDataLength() {
         return VERTICES_DATA_LENGTH;
     }
 

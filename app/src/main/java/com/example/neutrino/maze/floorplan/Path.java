@@ -59,8 +59,8 @@ public class Path extends FloorPlanPrimitiveBase {
     }
 
     @Override
-    protected int getVerticesNum() {
-        return mSegments.get(0).getVerticesNum() * mSegments.size();
+    protected int getVerticesDataLength() {
+        return mSegments.get(0).getVerticesDataLength() * mSegments.size();
     }
 
     @Override

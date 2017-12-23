@@ -14,15 +14,14 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     protected transient final float mVertices[];
     protected transient final short mIndices[];
 
-    // TODO: rename to "getCoordsNum"
-    protected abstract int getVerticesNum();
+    protected abstract int getVerticesDataLength();
 
     protected abstract int getIndicesNum();
 
     private transient GlRenderBuffer mGlBuffer;
 
     protected FloorPlanPrimitiveBase() {
-        mVertices = new float[getVerticesNum()];
+        mVertices = new float[getVerticesDataLength()];
         mIndices = new short[getIndicesNum()];
     }
 
@@ -63,7 +62,7 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
 
     @Override
     public int getVerticesDataSize() {
-        return getVerticesNum() * (GlRenderBuffer.COORDS_PER_VERTEX + GlRenderBuffer.COLORS_PER_VERTEX) * GlRenderBuffer.SIZE_OF_FLOAT;
+        return getVerticesDataLength() * (GlRenderBuffer.COORDS_PER_VERTEX + GlRenderBuffer.COLORS_PER_VERTEX) * GlRenderBuffer.SIZE_OF_FLOAT;
     }
 
     @Override
