@@ -219,13 +219,15 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mMainView.setUiModeChangedListener(new IFuckingSimpleGenericCallback<IMainView.UiMode>() {
             @Override
             public void onNotify(IMainView.UiMode uiMode) {
-                switch (uiMode) {
-                    case MAP_VIEW_MODE:
-                        mRadioMapRenderGroup.setVisible(false);
-                        break;
-                    case MAP_EDIT_MODE:
-                        mRadioMapRenderGroup.setVisible(true);
-                        break;
+                if (mRadioMapRenderGroup != null) {
+                    switch (uiMode) {
+                        case MAP_VIEW_MODE:
+                            mRadioMapRenderGroup.setVisible(false);
+                            break;
+                        case MAP_EDIT_MODE:
+                            mRadioMapRenderGroup.setVisible(true);
+                            break;
+                    }
                 }
             }
         });
