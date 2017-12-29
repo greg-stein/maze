@@ -126,6 +126,7 @@ public class SensorDataGrabber implements SensorEventListener {
         mSensorManager.unregisterListener(this, mGravity);
         mSensorManager.unregisterListener(this, mGyroscope);
         mSensorManager.unregisterListener(this, mGyroscopeUncalibrated);
+        mSensorManager.unregisterListener(this, mRotation);
     }
 
     public void openSensorLogFiles() {
