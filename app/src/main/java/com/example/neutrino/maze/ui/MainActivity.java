@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
-import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -49,7 +48,7 @@ import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
-import com.example.neutrino.maze.rendering.RenderGroup;
+import com.example.neutrino.maze.rendering.ElementsRenderGroup;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
@@ -674,8 +673,8 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     }
 
     @Override
-    public RenderGroup render(List<IFloorPlanPrimitive> elements) {
-        RenderGroup floorPlanGroup = uiFloorPlanView.renderAsGroup(elements);
+    public ElementsRenderGroup render(List<IFloorPlanPrimitive> elements) {
+        ElementsRenderGroup floorPlanGroup = uiFloorPlanView.renderAsGroup(elements);
 
         return floorPlanGroup;
     }

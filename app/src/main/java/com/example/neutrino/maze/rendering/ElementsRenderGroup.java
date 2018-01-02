@@ -12,7 +12,7 @@ import java.util.List;
  * Created by Greg Stein on 11/22/2017.
  */
 
-public class RenderGroup implements IRenderGroup {
+public class ElementsRenderGroup implements IRenderGroup {
     private GlRenderBuffer mCurrentBuffer = null;
     private List<GlRenderBuffer> mGlBuffers = new ArrayList<>();
     private List<IFloorPlanPrimitive> mRenderedElements = new ArrayList<>();
@@ -20,7 +20,7 @@ public class RenderGroup implements IRenderGroup {
     private boolean mVisible = false;
     private boolean mReadyForRender;
 
-    public RenderGroup(List<IFloorPlanPrimitive> elements) {
+    public ElementsRenderGroup(List<IFloorPlanPrimitive> elements) {
         mElementsNotRenderedYet = elements;
         mReadyForRender = false;
     }

@@ -339,7 +339,7 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
-    public RenderGroup renderAsGroup(List<IFloorPlanPrimitive> elements) {
+    public ElementsRenderGroup renderAsGroup(List<IFloorPlanPrimitive> elements) {
         return mRenderer.renderElements(elements);
     }
 

@@ -13,7 +13,7 @@ import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.RadioMapFragment;
 import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.rendering.RenderGroup;
+import com.example.neutrino.maze.rendering.ElementsRenderGroup;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
 
@@ -34,8 +34,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private SensorListener mSensorListener;
     private FloorPlan mFloorPlan;
 
-    private RenderGroup mFloorPlanRenderGroup;
-    private RenderGroup mRadioMapRenderGroup;
+    private ElementsRenderGroup mFloorPlanRenderGroup;
+    private ElementsRenderGroup mRadioMapRenderGroup;
 
     private StepCalibratorService mStepCalibratorService;
     private Intent mStepCalibratorServiceIntent;

@@ -205,8 +205,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         renderTags();
     }
 
-    public RenderGroup renderElements(List<IFloorPlanPrimitive> elements) {
-        final RenderGroup newGroup = new RenderGroup(elements);
+    public ElementsRenderGroup renderElements(List<IFloorPlanPrimitive> elements) {
+        final ElementsRenderGroup newGroup = new ElementsRenderGroup(elements);
         mRenderGroups.add(newGroup);
 
         return newGroup;
