@@ -55,7 +55,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private static float[] mRay = new float[6]; // ray represented by 2 points
 
     private GLSurfaceView mGlView;
-    private List<RenderGroup> mRenderGroups = new ArrayList<>();
+    private List<IRenderGroup> mRenderGroups = new ArrayList<>();
     private int mViewPortWidth;
     private int mViewPortHeight;
     private final PointF mDragStart = new PointF();
@@ -194,7 +194,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
         GLES20.glUseProgram(AppSettings.oglProgram);
 
-        for (RenderGroup group : mRenderGroups) {
+        for (IRenderGroup group : mRenderGroups) {
             if (group.isReadyForRender()) {
                 group.render(mScratch);
             } else {
@@ -389,11 +389,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 final PointF worldPoint = new PointF();
                 windowToWorld(x, y, worldPoint);
 
-                Pair<RenderGroup, IMoveable> candidate = findObjectHavingPoint(worldPoint);
+                Pair<IRenderGroup, IMoveable> candidate = findObjectHavingPoint(worldPoint);
                 if (candidate == null) return;
 
                 if (candidate.second instanceof IFloorPlanPrimitive) {
-                    RenderGroup candidateGroup = candidate.first;
+                    IRenderGroup candidateGroup = candidate.first;
                     IFloorPlanPrimitive candidatePrimitive = (IFloorPlanPrimitive) candidate.second;
                     candidatePrimitive.cloak();
                     candidateGroup.removeElement(candidatePrimitive);
@@ -403,11 +403,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             }
         });
     }
-
-// WTF
-//    public FloorPlan getFloorPlan() {
-//        return mFloorPlan;
-//    }
 
     public void setTags(List<Tag> tags) {
         this.mTags = tags;
@@ -535,7 +530,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     public void clearSketch() {
-        for (RenderGroup group : mRenderGroups) {
+        for (IRenderGroup group : mRenderGroups) {
             group.clear();
             group.glDeallocate();
         }
@@ -667,11 +662,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     // Returns IMoveable element under given coords and its render group
-    public Pair<RenderGroup, IMoveable> findObjectHavingPoint(PointF p) {
-        for (RenderGroup group : mRenderGroups) {
-            final IFloorPlanPrimitive elementHavingPoint = group.findElementHavingPoint(p);
+    public Pair<IRenderGroup, IMoveable> findObjectHavingPoint(PointF p) {
+        for (IRenderGroup group : mRenderGroups) {
+            final IMoveable elementHavingPoint = group.findElementHavingPoint(p);
             if (elementHavingPoint != null) {
-                return new Pair<>(group, (IMoveable) elementHavingPoint);
+                return new Pair<>(group, elementHavingPoint);
             }
         }
 

@@ -3,6 +3,7 @@ package com.example.neutrino.maze.rendering;
 import android.graphics.PointF;
 
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
+import com.example.neutrino.maze.floorplan.IMoveable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
  * Created by Greg Stein on 11/22/2017.
  */
 
-public class RenderGroup {
+public class RenderGroup implements IRenderGroup {
     private GlRenderBuffer mCurrentBuffer = null;
     private List<GlRenderBuffer> mGlBuffers = new ArrayList<>();
     private List<IFloorPlanPrimitive> mRenderedElements = new ArrayList<>();
@@ -25,6 +26,7 @@ public class RenderGroup {
     }
 
     // This method should run on GL thread
+    @Override
     public void prepareForRender() {
         if (mElementsNotRenderedYet == null || mElementsNotRenderedYet.size() == 0) return;
 
@@ -51,18 +53,22 @@ public class RenderGroup {
         mReadyForRender = true;
     }
 
+    @Override
     public boolean isVisible() {
         return mVisible;
     }
 
+    @Override
     public void setVisible(boolean visible) {
         mVisible = visible;
     }
 
+    @Override
     public boolean isReadyForRender() {
         return mReadyForRender;
     }
 
+    @Override
     public void render(float[] scratch) {
         if (mVisible) {
             for (GlRenderBuffer glBuffer : mGlBuffers) {
@@ -71,13 +77,15 @@ public class RenderGroup {
         }
     }
 
+    @Override
     public void glDeallocate() {
         for (GlRenderBuffer buffer : mGlBuffers) {
             buffer.deallocateGpuBuffers();
         }
     }
 
-    public IFloorPlanPrimitive findElementHavingPoint(PointF p) {
+    @Override
+    public IMoveable findElementHavingPoint(PointF p) {
         for (IFloorPlanPrimitive element : mRenderedElements) {
             if (element.hasPoint(p.x, p.y) && !element.isRemoved()) {
                 return element;
@@ -87,6 +95,7 @@ public class RenderGroup {
         return null;
     }
 
+    @Override
     public boolean isEmpty() {
         return mRenderedElements.isEmpty();
     }
@@ -96,10 +105,12 @@ public class RenderGroup {
         mReadyForRender = false;
     }
 
-    public void removeElement(IFloorPlanPrimitive element) {
+    @Override
+    public void removeElement(IMoveable element) {
         mRenderedElements.remove(element);
     }
 
+    @Override
     public void clear() {
         for(IFloorPlanPrimitive primitive : mRenderedElements) {
             if (!primitive.isRemoved()) { // TODO: check if this is always true
