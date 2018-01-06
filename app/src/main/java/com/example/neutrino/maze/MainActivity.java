@@ -2,6 +2,7 @@ package com.example.neutrino.maze;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -21,6 +22,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
@@ -281,9 +283,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     mSensorDataGrabber.stopListeningToSensors();
                     mSensorDataGrabber.closeSensorLogFiles();
                 } else {
+                    try {
+                        mSensorDataGrabber.openSensorLogFiles();
+                    } catch (Exception e) {
+                        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                        alertDialog.setTitle("Error");
+                        alertDialog.setMessage("Cannot open directory. Did you forget to grant storage permissions?");
+                        alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, "А ЧЁ, МОЖНО БЫЛО, ДА???", (DialogInterface.OnClickListener) null);
+                        alertDialog.show();
+                        return;
+                    }
                     mSensorDataGrabber.setIsRecording(true);
                     exciteFab(uiFabSensorRecording);
-                    mSensorDataGrabber.openSensorLogFiles();
                     mSensorDataGrabber.startListeningToSensors();
                 }
             }
@@ -399,7 +410,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                String jsonString = PersistenceLayer.loadFloorPlan();
+                String jsonString = null; //    PersistenceLayer.loadFloorPlan();
 
 //                try {
 //                    Resources res = getResources();
