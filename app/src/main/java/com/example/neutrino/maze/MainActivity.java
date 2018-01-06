@@ -96,11 +96,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final float[] mRotationMatrix = new float[9];
     private static final float[] mInclinationMatrix = new float[9];
     private static final float[] mOrientation = new float[3];
-    private boolean mHaveAccelerometer;
-    private boolean mHaveMagnetometer;
-    private boolean mHaveGravity;
-    private boolean mHaveRotation;
-    private boolean mHaveStepDetector;
 
     private WifiManager mWifiManager;
     private WifiScanner mWifiScanner;
@@ -154,12 +149,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mWifiScanner = new WifiScanner(mWifiManager);
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mSensorDataGrabber = new SensorDataGrabber(mSensorManager);
-
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        mGravity = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-        mRotation = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        mStepDetector = mSensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
 
         setUiListeners();
     }
@@ -615,21 +604,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onResume();
 
         registerReceiver(mWifiScanner, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-
-        // for the system's orientation sensor registered listeners
-        mHaveRotation = mSensorManager.registerListener(this, mRotation, SensorManager.SENSOR_DELAY_GAME);
-        if (!mHaveRotation) {
-            mHaveGravity = mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME);
-
-            // if there is a gravity sensor we do not need the accelerometer
-            if (!mHaveGravity) {
-                mHaveAccelerometer = mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
-            }
-            mHaveMagnetometer = mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
-        }
-
-        // Step detector
-        mHaveStepDetector = mSensorManager.registerListener(this, mStepDetector, SensorManager.SENSOR_DELAY_UI);
 
         mWifiScanner.enable();
     }
