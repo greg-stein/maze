@@ -116,6 +116,18 @@ public class Building {
         mCurrentFloor = currentFloor;
     }
 
+    public void setCurrentFloor(String floorId) {
+        for (Floor floor : mFloors) {
+            if (floor.getId().equals(floorId)) {
+                mCurrentFloor = floor;
+                return;
+            }
+        }
+
+        // TODO: deside if this is good.
+        throw new RuntimeException("Floor with given ID doesn't exist in current building.");
+    }
+
     public boolean isDirty() {
         return mDirty;
     }
