@@ -8,7 +8,7 @@ import com.example.neutrino.maze.floorplan.IMoveable;
  * Created by Greg Stein on 1/2/2018.
  */
 
-interface IRenderGroup {
+public interface IRenderGroup {
     // This method should run on GL thread
     void prepareForRender();
 
@@ -18,7 +18,7 @@ interface IRenderGroup {
 
     boolean isReadyForRender();
 
-    void render(float[] scratch);
+    void render(float[] scratch, float deviceAngle);
 
     void glDeallocate();
 

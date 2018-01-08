@@ -49,6 +49,8 @@ import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
 import com.example.neutrino.maze.rendering.ElementsRenderGroup;
+import com.example.neutrino.maze.rendering.IRenderGroup;
+import com.example.neutrino.maze.rendering.TextRenderGroup;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
@@ -673,10 +675,17 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     }
 
     @Override
-    public ElementsRenderGroup render(List<IFloorPlanPrimitive> elements) {
-        ElementsRenderGroup floorPlanGroup = uiFloorPlanView.renderAsGroup(elements);
+    public ElementsRenderGroup renderElements(List<IFloorPlanPrimitive> elements) {
+        ElementsRenderGroup floorPlanGroup = uiFloorPlanView.renderElementsGroup(elements);
 
         return floorPlanGroup;
+    }
+
+    @Override
+    public TextRenderGroup renderTags(List<Tag> tags) {
+        TextRenderGroup tagsGroup = uiFloorPlanView.renderTagsGroup(tags);
+
+        return tagsGroup;
     }
 
     @Override

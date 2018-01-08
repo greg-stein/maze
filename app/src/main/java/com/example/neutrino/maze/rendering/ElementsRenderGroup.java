@@ -69,7 +69,7 @@ public class ElementsRenderGroup implements IRenderGroup {
     }
 
     @Override
-    public void render(float[] scratch) {
+    public void render(float[] scratch, float deviceAngle) {
         if (mVisible) {
             for (GlRenderBuffer glBuffer : mGlBuffers) {
                 glBuffer.render(scratch);

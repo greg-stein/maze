@@ -10,10 +10,12 @@ import com.example.neutrino.maze.core.SensorListener.IDeviceRotationListener;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
+import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.RadioMapFragment;
+import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.rendering.ElementsRenderGroup;
+import com.example.neutrino.maze.rendering.TextRenderGroup;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
 
@@ -36,6 +38,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
     private ElementsRenderGroup mFloorPlanRenderGroup;
     private ElementsRenderGroup mRadioMapRenderGroup;
+    private TextRenderGroup mTagsRenderGroup;
 
     private StepCalibratorService mStepCalibratorService;
     private Intent mStepCalibratorServiceIntent;
@@ -43,6 +46,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private WifiScanner.IFingerprintAvailableListener mFirstFingerprintAvailableListener
             = new WifiScanner.IFingerprintAvailableListener() {
 
+        public String mFloorId;
+        public String mBuildingId;
         public boolean mBuildingReceived = false;
         public boolean mFloorPlanReceived = false;
         public boolean mRadioTileReceived = false;
@@ -52,7 +57,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             @Override
             public void onNotify(RadioMapFragment wiFiFingerprints) {
                 mRadioMapFragment = wiFiFingerprints;
-                mRadioMapRenderGroup = mMainView.render(mRadioMapFragment.getFingerprintsAsIFloorPlanElements());
+                mRadioMapRenderGroup = mMainView.renderElements(mRadioMapFragment.getFingerprintsAsIFloorPlanElements());
                 mRadioTileReceived = true;
                 onCompleteDataReceive();
             }
@@ -61,7 +66,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             @Override
             public void onNotify(FloorPlan floorPlan) {
                 mFloorPlan = floorPlan;
-                mFloorPlanRenderGroup = mMainView.render(mFloorPlan.getSketch());
+                mFloorPlanRenderGroup = mMainView.renderElements(mFloorPlan.getSketch());
                 mFloorPlanReceived = true;
                 onCompleteDataReceive();
             }
@@ -77,8 +82,11 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         private synchronized void onCompleteDataReceive() {
             if (mRadioTileReceived && mFloorPlanReceived && mBuildingReceived) {
+                Building.current.setCurrentFloor(mFloorId);
+                mTagsRenderGroup = mMainView.renderTags(Building.current.getCurrentFloor().getTags());
                 // Render the floor plan
                 mFloorPlanRenderGroup.setVisible(true);
+                mTagsRenderGroup.setVisible(true);
                 mMainView.centerMapView(mFloorPlan.getCenter());
                 // Locator uses floor plan for collision recognition
                 mLocator.setFloorPlan(mFloorPlan);
@@ -96,18 +104,19 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             mMazeServer.findCurrentBuildingAndFloorAsync(fingerprint, new IFuckingSimpleGenericCallback<Pair<String, String>>() {
                 @Override
                 public void onNotify(Pair<String, String> buildingAndFloorIds) {
-                    String buildingId = buildingAndFloorIds.first;
-                    String floorId = buildingAndFloorIds.second;
+                    mBuildingId = buildingAndFloorIds.first;
+                    mFloorId = buildingAndFloorIds.second;
 
                     // Do we need to update building struct?
-                    if (Building.current == null || !Building.current.getId().equals(buildingId)) {
-                        mMazeServer.getBuildingAsync(buildingId, mOnBuildingReceived);
+                    if (Building.current == null || !Building.current.getId().equals(mBuildingId)) {
+                        mMazeServer.getBuildingAsync(mBuildingId, mOnBuildingReceived);
                         mFloorToBeUpdated = true;
                     }
 
-                    if (mFloorToBeUpdated || !Building.current.getCurrentFloor().getId().equals(floorId)) {
-                        mMazeServer.downloadFloorPlanAsync(floorId, mOnFloorPlanReceived);
-                        mMazeServer.downloadRadioMapTileAsync(floorId, fingerprint, mOnRadioTileReceived);
+                    // TODO: what if this condition is NOT met? What will happen to mRadioTileReceived && mFloorPlanReceived?
+                    if (mFloorToBeUpdated || !Building.current.getCurrentFloor().getId().equals(mFloorId)) {
+                        mMazeServer.downloadFloorPlanAsync(mFloorId, mOnFloorPlanReceived);
+                        mMazeServer.downloadRadioMapTileAsync(mFloorId, fingerprint, mOnRadioTileReceived);
                     }
                 }
             });
@@ -116,10 +125,10 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     
     private IMainView.IElementFactory mElementFactory = new IMainView.IElementFactory() {
         @Override
-        public IFloorPlanPrimitive createElement(IMainView.MapOperand elementType, PointF dragStart) {
+        public IMoveable createElement(IMainView.MapOperand elementType, PointF location, Object... params) {
             switch (elementType) {
                 case WALL:
-                    Wall newWall = new Wall(dragStart, dragStart);
+                    Wall newWall = new Wall(location, location);
                     mFloorPlanRenderGroup.addElement(newWall);
                     return newWall;
                 case SHORT_WALL:
@@ -129,6 +138,12 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 case TELEPORT:
                     break;
                 case LOCATION_TAG:
+                    if (params != null && params.length > 0 && params[0] instanceof String) {
+                        String label = (String) params[0];
+                        Tag tag = new Tag(location, label);
+                        mTagsRenderGroup.addItem(tag);
+                        return tag;
+                    }
                     break;
                 default: return null;
             }

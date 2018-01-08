@@ -52,7 +52,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private final float[] mTranslationMatrix = new float[16];
     private final float[] mScaleMatrix = new float[16];
     private final float[] mIntermediateMatrix = new float[16];
-    private static float[] mRay = new float[6]; // ray represented by 2 points
+    private static float[] mRay = new float[6]; // ray represented by 2 points in 3D
 
     private GLSurfaceView mGlView;
     private List<IRenderGroup> mRenderGroups = new ArrayList<>();
@@ -196,17 +196,27 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
         for (IRenderGroup group : mRenderGroups) {
             if (group.isReadyForRender()) {
-                group.render(mScratch);
+                group.render(mScratch, mAngle);
             } else {
                 group.prepareForRender();
             }
         }
+    }
 
-        renderTags();
+    // TODO: refactor to use single method which receives IRenderGroup
+    public void render(IRenderGroup group) {
+        mRenderGroups.add(group); // Lock could be required
     }
 
     public ElementsRenderGroup renderElements(List<IFloorPlanPrimitive> elements) {
         final ElementsRenderGroup newGroup = new ElementsRenderGroup(elements);
+        mRenderGroups.add(newGroup);
+
+        return newGroup;
+    }
+
+    public TextRenderGroup renderTags(List<Tag> tags) {
+        final TextRenderGroup newGroup = new TextRenderGroup(tags, glText);
         mRenderGroups.add(newGroup);
 
         return newGroup;
@@ -225,7 +235,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 //                mCurrentBuffer.allocateGpuBuffers();
 //            }
 //        });
-//        mFloorPlan.addElement(primitive);
+//        mFloorPlan.addItem(primitive);
     }
 
     private void updateModelMatrix() {
@@ -404,26 +414,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
-    public void setTags(List<Tag> tags) {
-        this.mTags = tags;
-        for (Tag tag : mTags) {
-            calculateTagBoundaries(tag);
-        }
-    }
+//    }
 
-    private void renderTags() {
-        synchronized (FloorPlan.mTagsListLocker) {
-            if (mTags == null || mTags.size() == 0) return;
-
-            GLES20.glUseProgram(AppSettings.oglTextRenderProgram);
-            glText.begin(0.0f, 0.0f, 1.0f, 1.0f, mScratch); // Begin Text Rendering (Set Color BLUE)
-
-            for (Tag tag : mTags) {
-                drawTag(tag);
-            }
-            glText.end();                                   // End Text Rendering
-        }
-    }
+//    }
 
     public void calculateTagBoundaries(Tag tag) {
         tag.setRenderedTextWidth(glText.getLength(tag.getLabel()));
@@ -431,20 +424,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         tag.updateBoundariesRect();
     }
 
-    private void drawTag(Tag tag) {
-        PointF tagLocation = tag.getLocation();
-        float[] boundaries = tag.getBoundaryCorners();
-        float[] boundariesTransformed = tag.getBoundaryCornersTransformed();
-
-        android.graphics.Matrix m = new android.graphics.Matrix();
-        m.setRotate(-mAngle, tagLocation.x, tagLocation.y);
-        m.mapPoints(boundariesTransformed, boundaries);
-
-        glText.draw(tag.getLabel(), boundariesTransformed[6], boundariesTransformed[7], 0, 0, 0, -mAngle);  // Draw Text Centered
-    }
+//    }
 
     private static final PointF mPanStart = new PointF();
-
     public void handleStartPan(final int x, final int y) {
         runOnGlThread(new Runnable() {
             @Override
@@ -453,6 +435,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             }
         });
     }
+
     private static final PointF mCurrentPan = new PointF();
 
     public void handlePan(final int x, final int y) {
@@ -556,21 +539,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 //        }
     }
 
-//    public void rescaleFloorplan(float scaleFactor) {
-//        if (mGlBuffers == null) return; // TODO: this should be fixed somehow
-//        List<? extends IFloorPlanPrimitive> primitives = mFloorPlan.getSketch();
-//
-//        for (final IFloorPlanPrimitive primitive : primitives) {
-//            if (primitive.isRemoved()) continue; // Do not alter removed primitives
-//            primitive.scaleVertices(scaleFactor);
-//            primitive.updateVertices();
-//            runOnGlThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    primitive.rewriteToBuffer();
-//                }
-//            });
-//        }
 //    }
 
     public float getOffsetX() {
@@ -580,9 +548,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public float getOffsetY() {
         return mOffsetY;
     }
-
     private IWallLengthChangedListener mWallLengthChangedListener = null;
     private IWallLengthChangedListener mWallLengthStartChangingListener = null;
+
     private IFuckingSimpleCallback mWallLengthEndChangingListener = null;
 
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
@@ -667,22 +635,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             final IMoveable elementHavingPoint = group.findElementHavingPoint(p);
             if (elementHavingPoint != null) {
                 return new Pair<>(group, elementHavingPoint);
-            }
-        }
-
-        IMoveable tag = getTagHavingPoint(p);
-        if (tag != null) return new Pair<>(null, tag);
-
-        return new Pair<>(null, null);
-    }
-
-    @Nullable
-    public Tag getTagHavingPoint(PointF p) {
-        if (mTags == null || mTags.isEmpty()) return null;
-
-        for (Tag tag : mTags) {
-            if (tag.hasPoint(p.x, p.y)) {
-                return tag;
             }
         }
 

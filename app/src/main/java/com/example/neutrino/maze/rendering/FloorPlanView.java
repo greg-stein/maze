@@ -339,13 +339,17 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
-    public ElementsRenderGroup renderAsGroup(List<IFloorPlanPrimitive> elements) {
+    public ElementsRenderGroup renderElementsGroup(List<IFloorPlanPrimitive> elements) {
         return mRenderer.renderElements(elements);
+    }
+
+    public TextRenderGroup renderTagsGroup(List<Tag> tags) {
+        return mRenderer.renderTags(tags);
     }
 
     public void plot(FloorPlan floorPlan, PointF pointToShow) {
         mRenderer.renderElements(floorPlan.getSketch());
-        mRenderer.setTags(floorPlan.getTags());
+//        mRenderer.setTags(floorPlan.getTags());
         centerToPoint(pointToShow);
     }
 

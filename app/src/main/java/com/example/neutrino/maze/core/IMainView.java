@@ -4,8 +4,10 @@ import android.graphics.PointF;
 
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
+import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.rendering.ElementsRenderGroup;
+import com.example.neutrino.maze.rendering.TextRenderGroup;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 
 import java.util.List;
@@ -17,7 +19,9 @@ import java.util.List;
 public interface IMainView {
     void init();
 
-    ElementsRenderGroup render(List<IFloorPlanPrimitive> elements);
+    ElementsRenderGroup renderElements(List<IFloorPlanPrimitive> elements);
+
+    TextRenderGroup renderTags(List<Tag> tags);
 
     void centerMapView(PointF point);
 
@@ -48,6 +52,6 @@ public interface IMainView {
     }
 
     interface IElementFactory {
-        IFloorPlanPrimitive createElement(MapOperand elementType, PointF dragStart);
+        IMoveable createElement(MapOperand elementType, PointF location, Object... params);
     }
 }
