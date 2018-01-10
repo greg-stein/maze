@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
+import android.support.v4.util.Pair;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.AttributeSet;
@@ -16,6 +17,7 @@ import com.example.neutrino.maze.core.IMainView;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
+import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.Path;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.floorplan.transitions.Teleport;
@@ -196,13 +198,14 @@ public class FloorPlanView extends GLSurfaceView {
         final EditText input = new EditText(getContext());
         String dialogTitle = "New tag";
         String okButtonCaption = "Add";
-        PointF worldPoint = new PointF();
+        final PointF worldPoint = new PointF();
         mRenderer.windowToWorld(x, y, worldPoint);
 
         // TODO: Tags should migrate to Floor
-        final Tag tagAtTapLocation = mRenderer.getTagHavingPoint(worldPoint);
-        if (tagAtTapLocation != null) {
-            input.setText(tagAtTapLocation.getLabel());
+        final Pair<IRenderGroup, IMoveable> tagInfo = mRenderer.findObjectHavingPoint(worldPoint, Tag.class);
+        if (tagInfo != null) {
+            Tag foundTag = (Tag)tagInfo.second;
+            input.setText(foundTag.getLabel());
             dialogTitle = "Change tag";
             okButtonCaption = "Change";
         }
@@ -213,9 +216,10 @@ public class FloorPlanView extends GLSurfaceView {
 //                .setMessage("Paste in the link of an image to moustachify!")
                 .setPositiveButton(okButtonCaption, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        if (tagAtTapLocation == null) {
-                            mRenderer.createNewTag(x, y, input.getText().toString());
+                        if (tagInfo == null) {
+                            mRenderer.createNewTag(worldPoint, input.getText().toString());
                         } else {
+                            Tag tagAtTapLocation = (Tag)tagInfo.second;
                             tagAtTapLocation.setLabel(input.getText().toString());
                             mRenderer.calculateTagBoundaries(tagAtTapLocation);
                         }
@@ -238,7 +242,7 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.windowToWorld(x, y, worldPoint);
 
         // TODO: Tags should migrate to Floor
-        Tag tagAtLocation = mRenderer.getTagHavingPoint(worldPoint);
+        Tag tagAtLocation = (Tag)mRenderer.findObjectHavingPoint(worldPoint, Tag.class).second;
         if (!(tagAtLocation instanceof Teleport)) {
             tagAtLocation = null;
         }
@@ -258,7 +262,7 @@ public class FloorPlanView extends GLSurfaceView {
                         if (teleportAtTapLocation == null) {
                             Teleport teleport = new Teleport(worldPoint, input.getText().toString(),
                                     Teleport.Type.ELEVATOR);
-                            mRenderer.addNewTag(teleport);
+//                            mRenderer.addNewTag(teleport);
                             mRenderer.addPrimitive(teleport);
                         } else {
                             teleportAtTapLocation.setLabel(input.getText().toString());

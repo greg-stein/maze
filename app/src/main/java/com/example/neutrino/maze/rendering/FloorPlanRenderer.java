@@ -62,7 +62,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private IMoveable mMovedObject;
     private static final float[] mBgColorF = new float[4];
     private LocationMark mLocationMark = null;
-    private List<Tag> mTags;
     private Context mContext;
 
     private GLText glText;
@@ -339,7 +338,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public void handleStartDrag(final int x, final int y, final IMainView.MapOperation operation, final IMainView.MapOperand operand) {
         // This is needed for FloorPlanView to know if there is any object under tap location
         windowToWorld(x, y, mDragStart);
-        mMovedObject = findObjectHavingPoint(mDragStart).second;
+        final Pair<IRenderGroup, IMoveable> objectHavingPointInfo = findObjectHavingPoint(mDragStart);
+        mMovedObject = (objectHavingPointInfo == null)? null : objectHavingPointInfo.second;
 
         runOnGlThread(new Runnable() {
             @Override
@@ -402,29 +402,24 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 Pair<IRenderGroup, IMoveable> candidate = findObjectHavingPoint(worldPoint);
                 if (candidate == null) return;
 
+                IRenderGroup candidateGroup = candidate.first;
+                IMoveable candidateElement = candidate.second;
+
+                // In case of render element, make it invisible first (it will stay in GPU buffers)
                 if (candidate.second instanceof IFloorPlanPrimitive) {
-                    IRenderGroup candidateGroup = candidate.first;
                     IFloorPlanPrimitive candidatePrimitive = (IFloorPlanPrimitive) candidate.second;
                     candidatePrimitive.cloak();
-                    candidateGroup.removeElement(candidatePrimitive);
-                } else if (candidate.second instanceof Tag) {
-                    mTags.remove(candidate.second);
                 }
+                candidateGroup.removeElement(candidateElement);
             }
         });
     }
-
-//    }
-
-//    }
 
     public void calculateTagBoundaries(Tag tag) {
         tag.setRenderedTextWidth(glText.getLength(tag.getLabel()));
         tag.setRenderedTextHeight(glText.getCharHeight());
         tag.updateBoundariesRect();
     }
-
-//    }
 
     private static final PointF mPanStart = new PointF();
     public void handleStartPan(final int x, final int y) {
@@ -602,31 +597,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public void createNewTag(final int x, final int y, final String label) {
-        runOnGlThread(new Runnable() {
-            @Override
-            public void run() {
-                PointF location = new PointF();
-                windowToWorld(x, y, location);
-                Tag newTag = new Tag(location, label);
-                calculateTagBoundaries(newTag);
-                synchronized (FloorPlan.mTagsListLocker) {
-                    mTags.add(newTag);
-                }
-            }
-        });
-    }
-
-    public void addNewTag(final Tag tag) {
-        runOnGlThread(new Runnable() {
-            @Override
-            public void run() {
-                calculateTagBoundaries(tag);
-                synchronized (FloorPlan.mTagsListLocker) {
-                    mTags.add(tag);
-                }
-            }
-        });
+    public void createNewTag(PointF worldPoint, String label) {
+        mElementFactory.createElement(IMainView.MapOperand.LOCATION_TAG, worldPoint, label);
     }
 
     // Returns IMoveable element under given coords and its render group
@@ -634,6 +606,17 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         for (IRenderGroup group : mRenderGroups) {
             final IMoveable elementHavingPoint = group.findElementHavingPoint(p);
             if (elementHavingPoint != null) {
+                return new Pair<>(group, elementHavingPoint);
+            }
+        }
+
+        return null;
+    }
+
+    public Pair<IRenderGroup, IMoveable> findObjectHavingPoint(PointF p, Class objectType) {
+        for (IRenderGroup group : mRenderGroups) {
+            final IMoveable elementHavingPoint = group.findElementHavingPoint(p);
+            if (elementHavingPoint != null && objectType.isInstance(elementHavingPoint)) {
                 return new Pair<>(group, elementHavingPoint);
             }
         }
