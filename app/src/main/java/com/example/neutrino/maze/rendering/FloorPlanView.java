@@ -136,6 +136,9 @@ public class FloorPlanView extends GLSurfaceView {
         int yPos = (int) MotionEventCompat.getY(event, index);
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+                // Achtung! this is for the case if continuation of current gesture will be panning
+                mRenderer.handleStartPan(xPos, yPos);
+
                 switch (mapOperation) {
                     case MOVE: // move existing wall if under tap location
                         mRenderer.handleStartDrag(xPos, yPos, mapOperation, operand);
