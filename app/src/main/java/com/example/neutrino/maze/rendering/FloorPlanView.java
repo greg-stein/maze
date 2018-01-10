@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView;
 import android.support.v4.util.Pair;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AlertDialog;
+import android.text.method.SingleLineTransformationMethod;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -199,6 +200,12 @@ public class FloorPlanView extends GLSurfaceView {
 
     private void askForTagName(final int x, final int y) {
         final EditText input = new EditText(getContext());
+
+        // This allows only one line. Even if "Enter" is pressed it will put space instead new line
+        // However in the string a new line will still be present!
+        input.setMaxLines(1);
+        input.setTransformationMethod(new SingleLineTransformationMethod());
+
         String dialogTitle = "New tag";
         String okButtonCaption = "Add";
         final PointF worldPoint = new PointF();
@@ -220,7 +227,8 @@ public class FloorPlanView extends GLSurfaceView {
                 .setPositiveButton(okButtonCaption, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         if (tagInfo == null) {
-                            mRenderer.createNewTag(worldPoint, input.getText().toString());
+                            // System.lineSeparator() requires API LEVEL 19
+                            mRenderer.createNewTag(worldPoint, input.getText().toString().replace(System.getProperty("line.separator"), " "));
                         } else {
                             Tag tagAtTapLocation = (Tag)tagInfo.second;
                             tagAtTapLocation.setLabel(input.getText().toString());
@@ -239,6 +247,12 @@ public class FloorPlanView extends GLSurfaceView {
 
     private void askForTeleportNumber(final int x, final int y) {
         final EditText input = new EditText(getContext());
+
+        // This allows only one line. Even if "Enter" is pressed it will put space instead new line
+        // However in the string a new line will still be present!
+        input.setMaxLines(1);
+        input.setTransformationMethod(new SingleLineTransformationMethod());
+
         String dialogTitle = "New teleport";
         String okButtonCaption = "Add";
         final PointF worldPoint = new PointF();
@@ -263,7 +277,8 @@ public class FloorPlanView extends GLSurfaceView {
                 .setPositiveButton(okButtonCaption, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         if (teleportAtTapLocation == null) {
-                            Teleport teleport = new Teleport(worldPoint, input.getText().toString(),
+                            // System.lineSeparator() requires API LEVEL 19
+                            Teleport teleport = new Teleport(worldPoint, input.getText().toString().replace(System.getProperty("line.separator"), " "),
                                     Teleport.Type.ELEVATOR);
 //                            mRenderer.addNewTag(teleport);
                             mRenderer.addPrimitive(teleport);
