@@ -19,6 +19,7 @@ public class ElementsRenderGroup implements IRenderGroup {
     private List<IFloorPlanPrimitive> mElementsNotRenderedYet;
     private boolean mVisible = false;
     private boolean mReadyForRender;
+    private boolean mChanged;
 
     public ElementsRenderGroup(List<IFloorPlanPrimitive> elements) {
         mElementsNotRenderedYet = elements;
@@ -103,11 +104,23 @@ public class ElementsRenderGroup implements IRenderGroup {
     public void addElement(IFloorPlanPrimitive element) {
         mElementsNotRenderedYet.add(element);
         mReadyForRender = false;
+        mChanged = true;
     }
 
     @Override
     public void removeElement(IMoveable element) {
         mRenderedElements.remove(element);
+        mChanged = true;
+    }
+
+    @Override
+    public boolean isChanged() {
+        return mChanged;
+    }
+
+    @Override
+    public void setChanged(boolean changed) {
+        mChanged = changed;
     }
 
     @Override

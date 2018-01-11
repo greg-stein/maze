@@ -29,4 +29,8 @@ public interface IRenderGroup {
     void removeElement(IMoveable element);
 
     void clear();
+
+    boolean isChanged();
+
+    void setChanged(boolean changed);
 }

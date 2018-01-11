@@ -335,6 +335,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         this.mElementFactory = factory;
     }
 
+    // TODO: Check in the caller that there is an object at tap location, if not create it (if
+    // TODO: requested) and call this method only after there is an existing object. Merge both
+    // TODO: if/then (in the code of the method) into one block.
     public void handleStartDrag(final int x, final int y, final IMainView.MapOperation operation, final IMainView.MapOperand operand) {
         // This is needed for FloorPlanView to know if there is any object under tap location
         windowToWorld(x, y, mDragStart);
@@ -357,6 +360,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                         mMovedObject.setTapLocation(mDragStart.x, mDragStart.y);
                         mMovedObject.handleMoveStart();
                         onStartMove(mMovedObject);
+                        // Mark render group of moved element as changed
+                        objectHavingPointInfo.first.setChanged(true);
                     }
                 }
              }

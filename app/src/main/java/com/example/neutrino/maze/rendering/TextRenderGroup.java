@@ -21,6 +21,7 @@ public class TextRenderGroup implements IRenderGroup {
     private List<Tag> mTagsNotRenderedYet;
     private GLText mGlText;
     private boolean mIsVisible = false;
+    private boolean mChanged;
 
     public TextRenderGroup(List<Tag> tags, GLText glText) {
         mTagsNotRenderedYet = tags;
@@ -105,16 +106,28 @@ public class TextRenderGroup implements IRenderGroup {
     public void addItem(Tag tag) {
         mTagsNotRenderedYet.add(tag);
         mReadyForRender = false;
+        mChanged = true;
     }
 
     @Override
     public void removeElement(IMoveable tag) {
         mRenderedTags.remove(tag);
+        mChanged = true;
     }
 
     @Override
     public void clear() {
         mRenderedTags.clear();
+    }
+
+    @Override
+    public boolean isChanged() {
+        return mChanged;
+    }
+
+    @Override
+    public void setChanged(boolean changed) {
+        mChanged = changed;
     }
 
     public void setReadyForRender(boolean readyForRender) {
