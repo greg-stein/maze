@@ -13,6 +13,7 @@ import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.RadioMapFragment;
+import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.JsonSerializer;
 
@@ -95,98 +96,7 @@ public class MazeServerMock implements IMazeServer {
     private static volatile int floorSequence = 0;
 
     @Override
-    public Building findCurrentBuilding(WiFiLocator.WiFiFingerprint fingerprint) {
-        // Mock the mock :)
-        Building haifaMall = new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "охуенно уникальный стринг суканахуй");
-        Floor floor1 = new Floor("1", "1234");
-        List<Floor> floors = new ArrayList<>();
-        floors.add(floor1);
-        haifaMall.setFloors(floors);
-        return haifaMall;
-
-//        String json = PersistenceLayer.load(mContext, BUILDING_STORE);
-//        return JsonSerializer.deserialize(json, Building.class);
-    }
-
-    @Override
-    public void findCurrentBuildingAsync(WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<Building> onDone) {
-
-    }
-
-    @Override
-    public String createFloor() {
-        // TODO: under Building.current?
-        return Integer.toString(floorSequence++);
-    }
-
-    @Override
-    public String createBuilding(Building building) {
-        return Integer.toString(buildingSequence++);
-    }
-
-    @Override
-    public Building createBuilding(String buildingName, String address, String type) {
-        Building building = new Building(buildingName, address, type, "unique ID :)");
-        final String newId = createBuilding(building);
-        building.setID(newId);
-        building.setFloors(new ArrayList<Floor>());
-
-        return building;
-    }
-
-    @Override
-    public String downloadFloorPlanJson(String floorId) {
-//                String jsonString = PersistenceLayer.loadFloorPlan();
-
-        String jsonString = null;
-        try {
-            Resources res = mContext.getResources();
-            InputStream in_s = res.openRawResource(R.raw.haifa_mall_detailed_tags);
-
-            byte[] b = new byte[in_s.available()];
-            in_s.read(b);
-            jsonString = new String(b);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return jsonString;
-
-//                if (MazeServer.connectionAvailable(getApplicationContext())) {
-//                    MazeServer server = new MazeServer(getApplicationContext());
-//                    server.downloadFloorPlan(new MazeServer.AsyncResponse() {
-//                        @Override
-//                        public void processFinish(String jsonString) {
-//                            uiFloorPlanView.setFloorPlanAsJSon(jsonString);
-//                        }
-//                    });
-//                } else {
-//                    Toast.makeText(getApplicationContext(), "No Internet connection", Toast.LENGTH_SHORT).show();
-//                }
-    }
-
-    @Override
-    public List<Fingerprint> downloadRadioMapTile(String floorId, WiFiLocator.WiFiFingerprint fingerprint) {
-        return null;
-    }
-
-    @Override
-    public void uploadFloorPlan(String floorId, FloorPlan floorPlan) {
-
-    }
-
-    @Override
-    public void uploadFingerprints(List<Fingerprint> fingerprints) {
-
-    }
-
-    @Override
-    public void updateBuilding(Building building) {
-        String json = JsonSerializer.serialize(building);
-        PersistenceLayer.save(mContext, json, BUILDING_STORE);
-    }
-
-    @Override
-    public List<Building> findSimilarBuildings(String pattern) {
+    public void findSimilarBuildings(String pattern, IFuckingSimpleGenericCallback<List<Building>> buildingsAcquiredCallback) {
         List<Building> buildings = new ArrayList<>();
 
         buildings.add(new Building("Haifa Mall 1", "Flieman st. Haifa", "Mall", "1"));
@@ -202,7 +112,32 @@ public class MazeServerMock implements IMazeServer {
         buildings.add(new Building("Haifa Mall 11", "Flieman st. Haifa", "Mall", "1"));
         buildings.add(new Building("Haifa Mall 12", "Flieman st. Haifa", "Mall", "1"));
 
-        return buildings;
+        buildingsAcquiredCallback.onNotify(buildings);
+    }
+
+    @Override
+    public void createBuildingAsync(IFuckingSimpleGenericCallback<String> onBuildingCreated) {
+        onBuildingCreated.onNotify(Integer.toString(buildingSequence++));
+    }
+
+    @Override
+    public void createFloorAsync(IFuckingSimpleGenericCallback<String> onFloorCreated) {
+        onFloorCreated.onNotify(Integer.toString(floorSequence++));
+    }
+
+    @Override
+    public void upload(Building building, IFuckingSimpleCallback onDone) {
+        onDone.onNotified();
+    }
+
+    @Override
+    public void upload(FloorPlan floorPlan, IFuckingSimpleCallback onDone) {
+        onDone.onNotified();
+    }
+
+    @Override
+    public void upload(RadioMapFragment radioMap, IFuckingSimpleCallback onDone) {
+        onDone.onNotified();
     }
 
     @Override

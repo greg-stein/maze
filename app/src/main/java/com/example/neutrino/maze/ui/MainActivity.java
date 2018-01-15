@@ -109,6 +109,9 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private IMazePresenter mPresenter;
     private IFuckingSimpleGenericCallback<UiMode> mUiModeChangedListener;
     private IFuckingSimpleGenericCallback<Boolean> mMapperEnabledChangedListener;
+    private IAsyncIdProvider mBuildingIdProvider;
+    private IAsyncIdProvider mFloorIdProvider;
+    private IAsyncSimilarBuildingsFinder mBuildingsFinder;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -273,11 +276,13 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
                     emitMapperEnabledChangedEvent(false);
                 }
                 break;
-                // Here come the rest of menu items
 
             case R.id.btn_new_floorplan:
                 NewFloorDialog nfd = new NewFloorDialog(this);
+                nfd.setBuildingIdProvider(mBuildingIdProvider);
+                nfd.setFloorIdProvider(mFloorIdProvider);
                 nfd.setFloorChangedHandler(mFloorChangedHandler);
+                nfd.setSimilarBuildingsFinder(mBuildingsFinder);
                 nfd.show();
                 break;
 
@@ -621,6 +626,21 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     @Override
     public void setElementFactory(IElementFactory factory) {
         uiFloorPlanView.setElementFactory(factory);
+    }
+
+    @Override
+    public void setBuildingIdProvider(IAsyncIdProvider buildingIdProvider) {
+        mBuildingIdProvider = buildingIdProvider;
+    }
+
+    @Override
+    public void setFloorIdProvider(IAsyncIdProvider floorIdProvider) {
+        mFloorIdProvider = floorIdProvider;
+    }
+
+    @Override
+    public void setSimilarBuildingsFinder(IAsyncSimilarBuildingsFinder buildingsFinder) {
+        mBuildingsFinder = buildingsFinder;
     }
 
     private void emitUiModeChangedEvent(UiMode newMode) {

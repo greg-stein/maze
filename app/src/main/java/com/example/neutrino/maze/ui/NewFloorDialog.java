@@ -35,11 +35,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.core.IFloorChangedHandler;
-import com.example.neutrino.maze.core.MazeServerMock;
 import com.example.neutrino.maze.R;
+import com.example.neutrino.maze.core.IFloorChangedHandler;
+import com.example.neutrino.maze.core.IMainView;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Floor;
+import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
 
 import org.apache.commons.lang3.math.NumberUtils;
@@ -78,6 +79,9 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private BuildingsAdapter mBuildingsAdapter;
     private boolean mIsBuildingDirty = false;
     private IFloorChangedHandler mFloorChangedHandler;
+    private IMainView.IAsyncIdProvider mBuildingIdProvider;
+    private IMainView.IAsyncIdProvider mFloorIdProvider;
+    private IMainView.IAsyncSimilarBuildingsFinder mSimilarBuildingsFinder;
 
     public NewFloorDialog(@NonNull Context context) {
         super(context);
@@ -205,12 +209,18 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnCreateBuilding.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Building.current = MazeServerMock.getInstance(getContext()).createBuilding(
-                        txtBuilding.getText().toString(),
-                        txtAddress.getText().toString(),
-                        txtType.getText().toString());
-
-                setCreatingFloorsAllowed(true);
+                mBuildingIdProvider.generateId(new IFuckingSimpleGenericCallback<String>() {
+                    @Override
+                    public void onNotify(String buildingId) {
+                        Building.current = new Building(
+                                txtBuilding.getText().toString(),
+                                txtAddress.getText().toString(),
+                                txtType.getText().toString(),
+                                buildingId
+                        );
+                        setCreatingFloorsAllowed(true);
+                    }
+                });
             }
         });
 
@@ -306,17 +316,21 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnInsertFloor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String floorName = txtFloor.getText().toString();
+                final String floorName = txtFloor.getText().toString();
                 if (floorName.isEmpty()) return;
 
-                int proposedPosition = suggestPosition(floorName);
+                final int proposedPosition = suggestPosition(floorName);
 
-                String floorId = MazeServerMock.getInstance(getContext()).createFloor();
-                Floor newFloor = new Floor(floorName, floorId);
-                mBuildingFloors.add(proposedPosition, newFloor);
-                mSelectedFloorIndex = proposedPosition;
-                mFloorsAdapter.notifyDataSetChanged();
-                mIsBuildingDirty = true; // indicate to save building upon exit
+                mFloorIdProvider.generateId(new IFuckingSimpleGenericCallback<String>() {
+                    @Override
+                    public void onNotify(String floorId) {
+                        Floor newFloor = new Floor(floorName, floorId);
+                        mBuildingFloors.add(proposedPosition, newFloor);
+                        mSelectedFloorIndex = proposedPosition;
+                        mFloorsAdapter.notifyDataSetChanged();
+                        mIsBuildingDirty = true; // indicate to save building upon exit
+                    }
+                });
             }
         });
 
@@ -360,14 +374,31 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             public void afterTextChanged(Editable s) {
                 if (s.length() > 2) {
                     mBuildings.clear();
-                    mBuildings.addAll(MazeServerMock.getInstance(getContext()).findSimilarBuildings(s.toString()));
-                    mBuildingsAdapter.notifyDataSetChanged();
-                    rcvBuildingLookup.setVisibility(View.VISIBLE);
+                    mSimilarBuildingsFinder.findBuildings(s.toString(), new IFuckingSimpleGenericCallback<List<Building>>() {
+                        @Override
+                        public void onNotify(List<Building> buildings) {
+                            mBuildings.addAll(buildings);
+                            mBuildingsAdapter.notifyDataSetChanged();
+                            rcvBuildingLookup.setVisibility(View.VISIBLE);
+                        }
+                    });
                 } else {
                     rcvBuildingLookup.setVisibility(View.GONE);
                 }
             }
         });
+    }
+
+    public void setBuildingIdProvider(IMainView.IAsyncIdProvider buildingIdProvider) {
+        mBuildingIdProvider = buildingIdProvider;
+    }
+
+    public void setFloorIdProvider(IMainView.IAsyncIdProvider floorIdProvider) {
+        mFloorIdProvider = floorIdProvider;
+    }
+
+    public void setSimilarBuildingsFinder(IMainView.IAsyncSimilarBuildingsFinder similarBuildingsFinder) {
+        mSimilarBuildingsFinder = similarBuildingsFinder;
     }
 
     private void setCreatingFloorsAllowed(boolean allowed) {

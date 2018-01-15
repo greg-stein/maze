@@ -2,6 +2,7 @@ package com.example.neutrino.maze.core;
 
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.IMoveable;
@@ -41,6 +42,12 @@ public interface IMainView {
 
     void setElementFactory(IElementFactory factory);
 
+    void setBuildingIdProvider(IAsyncIdProvider buildingIdProvider);
+
+    void setFloorIdProvider(IAsyncIdProvider floorIdProvider);
+
+    void setSimilarBuildingsFinder(IAsyncSimilarBuildingsFinder buildingsFinder);
+
     enum UiMode { MAP_VIEW_MODE, MAP_EDIT_MODE}
 
     enum MapOperation {
@@ -53,5 +60,13 @@ public interface IMainView {
 
     interface IElementFactory {
         IMoveable createElement(MapOperand elementType, PointF location, Object... params);
+    }
+
+    interface IAsyncIdProvider {
+        void generateId(IFuckingSimpleGenericCallback<String> idGeneratedCallback);
+    }
+
+    interface IAsyncSimilarBuildingsFinder {
+        void findBuildings(String pattern, IFuckingSimpleGenericCallback<List<Building>> buildingsAcquiredCallback);
     }
 }

@@ -19,6 +19,8 @@ import com.example.neutrino.maze.rendering.TextRenderGroup;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
 
+import java.util.List;
+
 import static com.example.neutrino.maze.core.Locator.*;
 
 /**
@@ -244,6 +246,27 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                             break;
                     }
                 }
+            }
+        });
+
+        mMainView.setBuildingIdProvider(new IMainView.IAsyncIdProvider() {
+            @Override
+            public void generateId(IFuckingSimpleGenericCallback<String> idGeneratedCallback) {
+                mMazeServer.createBuildingAsync(idGeneratedCallback);
+            }
+        });
+
+        mMainView.setFloorIdProvider(new IMainView.IAsyncIdProvider() {
+            @Override
+            public void generateId(IFuckingSimpleGenericCallback<String> idGeneratedCallback) {
+                mMazeServer.createFloorAsync(idGeneratedCallback);
+            }
+        });
+        
+        mMainView.setSimilarBuildingsFinder(new IMainView.IAsyncSimilarBuildingsFinder() {
+            @Override
+            public void findBuildings(String pattern, IFuckingSimpleGenericCallback<List<Building>> buildingsAcquiredCallback) {
+                mMazeServer.findSimilarBuildings(pattern, buildingsAcquiredCallback);
             }
         });
     }
