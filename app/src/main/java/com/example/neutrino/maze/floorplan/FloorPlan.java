@@ -17,7 +17,6 @@ import java.util.List;
 public class FloorPlan {
     public static final Object mTagsListLocker = new Object(); // TODO: remove
     private List<IFloorPlanPrimitive> mSketch;
-    private FloorPlanDescriptor mDescriptor; // TODO: remove
     private PathFinderBase mPathFinder; // TODO: remove
     private List<ITeleport> mTeleports; // TODO: remove
     private boolean mIsSketchDirty = false;
@@ -34,18 +33,12 @@ public class FloorPlan {
                 CommonHelper.extractObjects(IFloorPlanPrimitive.class, entities));
 //        floorPlan.mSketch.addAll(walls);
 
-        final List<FloorPlanDescriptor> floorPlanDescriptors = CommonHelper.extractObjects(FloorPlanDescriptor.class, entities);
-        if (floorPlanDescriptors != null && floorPlanDescriptors.size() > 0) {
-            floorPlan.mDescriptor = floorPlanDescriptors.get(0);
-        }
-
         return floorPlan;
     }
 
     public static FloorPlan build() {
         FloorPlan floorPlan = new FloorPlan();
         floorPlan.mSketch = Collections.synchronizedList(new ArrayList<IFloorPlanPrimitive>());
-        floorPlan.mDescriptor = null;
 
         return floorPlan;
     }
@@ -61,13 +54,11 @@ public class FloorPlan {
     public List<Object> disassemble() {
 
         int entitiesNum =
-                ((mSketch != null) ? mSketch.size() : 0) +
-                ((mDescriptor != null)? 1 : 0);
+                ((mSketch != null) ? mSketch.size() : 0);
 
         List<Object> result = new ArrayList<>(entitiesNum);
 
         if (mSketch != null) result.addAll(mSketch);
-        if (mDescriptor != null)result.add(mDescriptor);
 
         return result;
     }
@@ -106,14 +97,6 @@ public class FloorPlan {
 
     public void setSketch(List<IFloorPlanPrimitive> sketch) {
         this.mSketch = Collections.synchronizedList(sketch);
-    }
-
-    public FloorPlanDescriptor getDescriptor() {
-        return mDescriptor;
-    }
-
-    public void setDescriptor(FloorPlanDescriptor descriptor) {
-        this.mDescriptor = descriptor;
     }
 
     // Clears any source data

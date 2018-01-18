@@ -1,9 +1,6 @@
 package com.example.neutrino.maze;
 
-import com.example.neutrino.maze.floorplan.FloorPlanDescriptor;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
-import com.example.neutrino.maze.floorplan.Footprint;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.LocationMark;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.Fingerprint;
@@ -16,7 +13,6 @@ import org.robolectric.annotation.Config;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -86,5 +82,30 @@ public class FloorPlanSerializerTest {
 
         assertNotNull(deserializedList);
         assertThat(deserializedList, hasSize(70));
+    }
+
+    /**
+     * Created by Greg Stein on 4/4/2017.
+     */
+
+    public static class FloorPlanDescriptor {
+        private String mFloorPlanName;
+        private List<String> mBuildingNames;
+
+        public String getFloorPlanName() {
+            return mFloorPlanName;
+        }
+
+        public void setFloorPlanName(String mFloorPlanName) {
+            this.mFloorPlanName = mFloorPlanName;
+        }
+
+        public List<String> getBuildingNames() {
+            return mBuildingNames;
+        }
+
+        public void setBuildingNames(List<String> mBuildingNames) {
+            this.mBuildingNames = mBuildingNames;
+        }
     }
 }
