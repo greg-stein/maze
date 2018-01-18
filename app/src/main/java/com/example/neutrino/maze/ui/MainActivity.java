@@ -396,7 +396,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                mAdapter.updateListData(mFloorPlan.searchMostSimilarTags(newText, 20));
+                mAdapter.updateListData(Building.current.searchMostSimilarTags(newText, 20));
                 return true;
             }
         });

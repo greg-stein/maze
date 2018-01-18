@@ -2,6 +2,8 @@ package com.example.neutrino.maze;
 
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.floorplan.Building;
+import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.Tag;
@@ -40,7 +42,7 @@ import java.util.List;
 @Config(manifest=Config.NONE, sdk = 23)
 public class FloorPlanTagSearchTests {
     private static CSVReader csvReader;
-    private FloorPlan floorPlan;
+    private Building mBuilding;
 
     @Before
     public void setup() {
@@ -55,8 +57,12 @@ public class FloorPlanTagSearchTests {
                 tags.add(new Tag(new PointF(), nextLine[1]));
             }
 
-            floorPlan = FloorPlan.build();
-            floorPlan.setTags(tags);
+            mBuilding = new Building();
+            Floor floor = new Floor();
+            floor.setTags(tags);
+            List<Floor> floors = new ArrayList<>();
+            floors.add(floor);
+            mBuilding.setFloors(floors);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -64,7 +70,7 @@ public class FloorPlanTagSearchTests {
 
     @Test
     public void CommonTagSearchTest() {
-        List<Tag> similarTags = floorPlan.searchMostSimilarTags("smasnung", 10);
+        List<Tag> similarTags = mBuilding.searchMostSimilarTags("smasnung", 10);
 
         assertThat(similarTags, hasSize(10));
         for (Tag t : similarTags) {

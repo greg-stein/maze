@@ -1,34 +1,26 @@
 package com.example.neutrino.maze.floorplan;
 
-import android.annotation.TargetApi;
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.os.Build;
-import android.support.annotation.Nullable;
 
-import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.transitions.ITeleport;
 import com.example.neutrino.maze.navigation.PathFinderBase;
 import com.example.neutrino.maze.util.CommonHelper;
 
-import org.simmetrics.StringMetric;
-import org.simmetrics.metrics.StringMetrics;
-
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
  * Created by Greg Stein on 4/3/2017.
  */
 public class FloorPlan {
-    public static final Object mTagsListLocker = new Object();
+    public static final Object mTagsListLocker = new Object(); // TODO: remove
     private List<IFloorPlanPrimitive> mSketch;
-    private List<Tag> mTags;
-    private FloorPlanDescriptor mDescriptor;
-    private PathFinderBase mPathFinder;
-    private List<ITeleport> mTeleports;
+    private List<Tag> mTags; // TODO: remove
+    private FloorPlanDescriptor mDescriptor; // TODO: remove
+    private PathFinderBase mPathFinder; // TODO: remove
+    private List<ITeleport> mTeleports; // TODO: remove
     private boolean mIsSketchDirty = false;
 
     public static FloorPlan build(List<Object> entities) {
@@ -151,47 +143,6 @@ public class FloorPlan {
 
     public List<ITeleport> getTeleportsById(String id) {
         return null;
-    }
-
-    private static class TagComparator implements Comparator<Tag> {
-
-        private String sample;
-        public TagComparator(String sample) {
-            this.sample = sample;
-        }
-
-        @TargetApi(Build.VERSION_CODES.KITKAT)
-        @Override
-        public int compare(Tag t1, Tag t2) {
-            StringMetric metric = StringMetrics.levenshtein();
-//            StringMetric metric =
-//            with(new CosineSimilarity<String>())
-//                    .simplify(Simplifiers.toLowerCase(Locale.ENGLISH))
-//                    .tokenize(Tokenizers.whitespace())
-//                    .build();
-
-            float t1Similarity = metric.compare(this.sample, t1.getLabel());
-            float t2Similarity = metric.compare(this.sample, t2.getLabel());
-            int compare = Float.compare(t1Similarity, t2Similarity);
-            // Make compare method consistent with equals()
-            if (compare == 0 && !t1.equals(t2)) {
-                PointF t1Location = t1.getLocation();
-                PointF t2Location = t2.getLocation();
-                return Integer.compare(Float.compare(t1Location.x, t2Location.x), Float.compare(t1Location.y, t2Location.y));
-            }
-            return compare;
-        }
-
-    }
-    public List<Tag> searchMostSimilarTags(String sample, int maxResults) {
-        TagComparator comparator = new TagComparator(sample);
-        synchronized (mTagsListLocker) {
-            Collections.sort(mTags, comparator);
-//        Collections.reverse(mTags); // slower
-            List<Tag> tail = mTags.subList(Math.max(mTags.size() - maxResults, 0), mTags.size());
-            Collections.reverse(tail);
-            return tail;
-        }
     }
 
     public boolean isSketchDirty() {

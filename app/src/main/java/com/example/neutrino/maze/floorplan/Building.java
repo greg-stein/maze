@@ -1,9 +1,17 @@
 package com.example.neutrino.maze.floorplan;
 
+import android.annotation.TargetApi;
+import android.graphics.PointF;
+import android.os.Build;
+
 import com.example.neutrino.maze.floorplan.transitions.ITeleport;
-import com.example.neutrino.maze.floorplan.transitions.Teleport;
+
+import org.simmetrics.StringMetric;
+import org.simmetrics.metrics.StringMetrics;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -66,6 +74,22 @@ public class Building {
 
     public List<ITeleport> getTeleportsById(String teleportId) {
         return mTeleportsById.get(teleportId);
+    }
+
+    public List<Tag> searchMostSimilarTags(String sample, int maxResults) {
+        List<Tag> tags = new ArrayList<>();
+        for (Floor floor : mFloors) {
+            final List<Tag> floorTags = floor.getTags();
+            if (floorTags != null) {
+                tags.addAll(floorTags);
+            }
+        }
+        TagComparator comparator = new TagComparator(sample);
+        Collections.sort(tags, comparator);
+//        Collections.reverse(tags); // slower
+        List<Tag> tail = tags.subList(Math.max(tags.size() - maxResults, 0), tags.size());
+        Collections.reverse(tail);
+        return tail;
     }
 
     public String getName() {
@@ -134,5 +158,36 @@ public class Building {
 
     public void setDirty(boolean dirty) {
         mDirty = dirty;
+    }
+
+    public static class TagComparator implements Comparator<Tag> {
+
+        private String sample;
+        public TagComparator(String sample) {
+            this.sample = sample;
+        }
+
+        @TargetApi(Build.VERSION_CODES.KITKAT)
+        @Override
+        public int compare(Tag t1, Tag t2) {
+            StringMetric metric = StringMetrics.levenshtein();
+//            StringMetric metric =
+//            with(new CosineSimilarity<String>())
+//                    .simplify(Simplifiers.toLowerCase(Locale.ENGLISH))
+//                    .tokenize(Tokenizers.whitespace())
+//                    .build();
+
+            float t1Similarity = metric.compare(this.sample, t1.getLabel());
+            float t2Similarity = metric.compare(this.sample, t2.getLabel());
+            int compare = Float.compare(t1Similarity, t2Similarity);
+            // Make compare method consistent with equals()
+            if (compare == 0 && !t1.equals(t2)) {
+                PointF t1Location = t1.getLocation();
+                PointF t2Location = t2.getLocation();
+                return Integer.compare(Float.compare(t1Location.x, t2Location.x), Float.compare(t1Location.y, t2Location.y));
+            }
+            return compare;
+        }
+
     }
 }
