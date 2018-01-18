@@ -15,7 +15,6 @@ import java.util.List;
  * Created by Greg Stein on 4/3/2017.
  */
 public class FloorPlan {
-    public static final Object mTagsListLocker = new Object(); // TODO: remove
     private List<IFloorPlanPrimitive> mSketch;
     private List<ITeleport> mTeleports; // TODO: remove
     private boolean mIsSketchDirty = false;
