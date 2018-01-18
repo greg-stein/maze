@@ -379,11 +379,11 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
             public void onItemClick(Tag t) {
                 uiSearchView.close(true);
                 // tag "enter" from res location:
-                PointF enter = new PointF(244.76593f, 55.589268f);
-                List<PointF> pathPoints = mFloorPlan.getPathFinder().constructPath(enter, t.getLocation());
+//                PointF enter = new PointF(244.76593f, 55.589268f);
+//                List<PointF> pathPoints = mFloorPlan.getPathFinder().constructPath(enter, t.getLocation());
 //                List<PointF> pathPoints = pathFinder.constructPath(mLocator.getLocation(), t.getLocation());
-                Path path = new Path(pathPoints);
-                uiFloorPlanView.renderPath(path);
+//                Path path = new Path(pathPoints);
+//                uiFloorPlanView.renderPath(path);
             }
         });
 

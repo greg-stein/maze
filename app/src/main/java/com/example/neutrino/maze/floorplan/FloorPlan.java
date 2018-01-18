@@ -17,7 +17,6 @@ import java.util.List;
 public class FloorPlan {
     public static final Object mTagsListLocker = new Object(); // TODO: remove
     private List<IFloorPlanPrimitive> mSketch;
-    private PathFinderBase mPathFinder; // TODO: remove
     private List<ITeleport> mTeleports; // TODO: remove
     private boolean mIsSketchDirty = false;
 
@@ -41,14 +40,6 @@ public class FloorPlan {
         floorPlan.mSketch = Collections.synchronizedList(new ArrayList<IFloorPlanPrimitive>());
 
         return floorPlan;
-    }
-
-    public void setPathFinder(PathFinderBase pathFinder) {
-        this.mPathFinder = pathFinder;
-    }
-
-    public PathFinderBase getPathFinder() {
-        return mPathFinder;
     }
 
     public List<Object> disassemble() {
