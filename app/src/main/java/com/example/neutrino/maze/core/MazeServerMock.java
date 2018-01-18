@@ -71,9 +71,9 @@ public class MazeServerMock implements IMazeServer {
 
         dbFloor1Plan = FloorPlan.build(loadFromRes(R.raw.haifa_mall_detailed_tags));
         List<Fingerprint> fingerprints = (List<Fingerprint>)(List<?>)loadFromRes(R.raw.radio_map);
-        List<Tag> tags = (List<Tag>)(List<?>)loadFromRes(R.raw.tags);
+        List<Tag> tagsFloor1 = (List<Tag>)(List<?>)loadFromRes(R.raw.tags);
         dbRadioMap1 = new RadioMapFragment(fingerprints, dbFloor1.getId());
-        dbFloor1.setTags(tags);
+        dbFloor1.setTags(tagsFloor1);
         dbFloor1.setTeleports(dbFloor1Plan.getTeleportsOnFloor());
     }
 
