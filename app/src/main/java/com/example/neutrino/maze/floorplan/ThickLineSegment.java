@@ -179,13 +179,13 @@ public class ThickLineSegment extends FloorPlanPrimitiveBase {
 
     @Override
     public void handleMoveStart() {
-        setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ALPHA));
+        setColor(ColorUtils.setAlphaComponent(getColor(), ALPHA));
         rewriteToBuffer();
     }
 
     @Override
     public void handleMoveEnd() {
-        setColor(ColorUtils.setAlphaComponent(AppSettings.wallColor, ThickLineSegment.OPAQUE));
+        setColor(ColorUtils.setAlphaComponent(getColor(), ThickLineSegment.OPAQUE));
         rewriteToBuffer();
     }
 

@@ -70,8 +70,8 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
         return getIndicesNum() * GlRenderBuffer.SIZE_OF_SHORT;
     }
 
-    private int mColor;
-    private final float[] mColor4f = new float[GlRenderBuffer.COLORS_PER_VERTEX];
+    private transient int mColor;
+    private transient final float[] mColor4f = new float[GlRenderBuffer.COLORS_PER_VERTEX];
 
     @Override
     public int getColor() {
