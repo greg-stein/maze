@@ -84,6 +84,12 @@ public class Building {
                 tags.addAll(floorTags);
             }
         }
+
+        // No search string? return as is.
+        if (sample == null || sample.isEmpty()) {
+            return tags;
+        }
+
         TagComparator comparator = new TagComparator(sample);
         Collections.sort(tags, comparator);
 //        Collections.reverse(tags); // slower

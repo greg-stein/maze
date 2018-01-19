@@ -404,11 +404,13 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         uiSearchView.setOnOpenCloseListener(new SearchView.OnOpenCloseListener() {
             @Override
             public boolean onOpen() {
+                mAdapter.updateListData(Building.current.searchMostSimilarTags(null, 20));
                 uiRecPanel.setVisibility(View.VISIBLE);
                 uiRecPanelSpacer.setVisibility(View.VISIBLE);
 
                 // Hide fabs
                 uiFabFindMeOnMap.hide();
+                uiFabEditMode.hide();
                 return true;
             }
 
@@ -419,6 +421,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
 
                 /// Show fabs
                 uiFabFindMeOnMap.show(mPreserveAlphaOnShow);
+                uiFabEditMode.show(mPreserveAlphaOnShow);
                 return true;
             }
         });

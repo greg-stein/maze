@@ -18,13 +18,13 @@ public class TextRenderGroup implements IRenderGroup {
     private boolean mReadyForRender;
 
     private List<Tag> mRenderedTags = new ArrayList<>();
-    private List<Tag> mTagsNotRenderedYet;
+    private List<Tag> mTagsNotRenderedYet = new ArrayList<>();
     private GLText mGlText;
     private boolean mIsVisible = false;
     private boolean mChanged;
 
     public TextRenderGroup(List<Tag> tags, GLText glText) {
-        mTagsNotRenderedYet = tags;
+        mTagsNotRenderedYet.addAll(tags);
         mGlText = glText;
         mReadyForRender = false;
     }

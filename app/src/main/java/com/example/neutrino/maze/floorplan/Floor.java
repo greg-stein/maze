@@ -3,6 +3,7 @@ package com.example.neutrino.maze.floorplan;
 import com.example.neutrino.maze.floorplan.transitions.ITeleport;
 import com.example.neutrino.maze.floorplan.transitions.Teleport;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -51,7 +52,10 @@ public class Floor {
     }
 
     public List<Tag> getTags() {
-        return mTags;
+        if (mTags != null) {
+            return Collections.unmodifiableList(mTags);
+        }
+        return null;
     }
 
     public void setTags(List<Tag> tags) {
