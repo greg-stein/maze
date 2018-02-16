@@ -82,6 +82,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private IMainView.IAsyncIdProvider mBuildingIdProvider;
     private IMainView.IAsyncIdProvider mFloorIdProvider;
     private IMainView.IAsyncSimilarBuildingsFinder mSimilarBuildingsFinder;
+    private IMainView.IAsyncBuildingCreator mBuildingCreator;
 
     public NewFloorDialog(@NonNull Context context) {
         super(context);
@@ -209,18 +210,20 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnCreateBuilding.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mBuildingIdProvider.generateId(new IFuckingSimpleGenericCallback<String>() {
-                    @Override
-                    public void onNotify(String buildingId) {
-                        Building.current = new Building(
-                                txtBuilding.getText().toString(),
-                                txtAddress.getText().toString(),
-                                txtType.getText().toString(),
-                                buildingId
-                        );
-                        setCreatingFloorsAllowed(true);
-                    }
-                });
+                // This method will send these fields to server
+                mBuildingCreator.createBuilding(
+                        txtBuilding.getText().toString(),
+                        txtType.getText().toString(),
+                        txtAddress.getText().toString(),
+                        // This async callback will be executed after getting newly created building
+                        new IFuckingSimpleGenericCallback<Building>() {
+                            @Override
+                            public void onNotify(Building building) {
+                                Building.current = building;
+                                setCreatingFloorsAllowed(true);
+                            }
+                        }
+                );
             }
         });
 
@@ -387,6 +390,10 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 }
             }
         });
+    }
+
+    public void setBuildingCreator(IMainView.IAsyncBuildingCreator buildingCreator) {
+        mBuildingCreator = buildingCreator;
     }
 
     public void setBuildingIdProvider(IMainView.IAsyncIdProvider buildingIdProvider) {

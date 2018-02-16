@@ -48,6 +48,8 @@ public interface IMainView {
 
     void setSimilarBuildingsFinder(IAsyncSimilarBuildingsFinder buildingsFinder);
 
+    void setCreateBuildingCallback(IAsyncBuildingCreator iAsyncBuildingCreator);
+
     enum UiMode { MAP_VIEW_MODE, MAP_EDIT_MODE}
 
     enum MapOperation {
@@ -68,5 +70,9 @@ public interface IMainView {
 
     interface IAsyncSimilarBuildingsFinder {
         void findBuildings(String pattern, IFuckingSimpleGenericCallback<List<Building>> buildingsAcquiredCallback);
+    }
+
+    interface IAsyncBuildingCreator {
+        void createBuilding(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback);
     }
 }

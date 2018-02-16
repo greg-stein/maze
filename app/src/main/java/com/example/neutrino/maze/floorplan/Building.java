@@ -39,7 +39,7 @@ public class Building {
     public Building() {
     }
 
-    public Building(String name, String address, String type, String id) {
+    public Building(String name, String type, String address, String id) {
         this.mName = name;
         this.mAddress = address;
         this.mType = type;

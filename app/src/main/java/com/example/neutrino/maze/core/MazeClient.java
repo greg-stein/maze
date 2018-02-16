@@ -269,6 +269,13 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mMazeServer.findSimilarBuildings(pattern, buildingsAcquiredCallback);
             }
         });
+
+        mMainView.setCreateBuildingCallback(new IMainView.IAsyncBuildingCreator() {
+          @Override
+          public void createBuilding(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback) {
+                mMazeServer.createBuildingAsync(name, type, address, buildingCreatedCallback);
+          }
+        });
     }
 
     @Override

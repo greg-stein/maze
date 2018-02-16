@@ -112,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private IAsyncIdProvider mBuildingIdProvider;
     private IAsyncIdProvider mFloorIdProvider;
     private IAsyncSimilarBuildingsFinder mBuildingsFinder;
+    private IAsyncBuildingCreator mBuildingCreator;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -280,6 +281,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
             case R.id.btn_new_floorplan:
                 NewFloorDialog nfd = new NewFloorDialog(this);
                 nfd.setBuildingIdProvider(mBuildingIdProvider);
+                nfd.setBuildingCreator(mBuildingCreator);
                 nfd.setFloorIdProvider(mFloorIdProvider);
                 nfd.setFloorChangedHandler(mFloorChangedHandler);
                 nfd.setSimilarBuildingsFinder(mBuildingsFinder);
@@ -644,6 +646,11 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     @Override
     public void setSimilarBuildingsFinder(IAsyncSimilarBuildingsFinder buildingsFinder) {
         mBuildingsFinder = buildingsFinder;
+    }
+
+    @Override
+    public void setCreateBuildingCallback(IAsyncBuildingCreator buildingCreator) {
+        mBuildingCreator = buildingCreator;
     }
 
     private void emitUiModeChangedEvent(UiMode newMode) {
