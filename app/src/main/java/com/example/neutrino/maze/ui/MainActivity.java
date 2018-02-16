@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private IAsyncIdProvider mFloorIdProvider;
     private IAsyncSimilarBuildingsFinder mBuildingsFinder;
     private IAsyncBuildingCreator mBuildingCreator;
+    private IFuckingSimpleGenericCallback<Building> mBuildingUpdater;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -323,6 +324,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         NewFloorDialog nfd = new NewFloorDialog(this);
         nfd.setBuildingIdProvider(mBuildingIdProvider);
         nfd.setBuildingCreator(mBuildingCreator);
+        nfd.setBuildingUpdater(mBuildingUpdater);
         nfd.setFloorIdProvider(mFloorIdProvider);
         nfd.setFloorChangedHandler(mFloorChangedHandler);
         nfd.setSimilarBuildingsFinder(mBuildingsFinder);
@@ -546,6 +548,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
             fab.setAlpha(mFabAlpha);
         }
     };
+
     private float mFabAlpha;
     private float getAlphaFromRes() {
         TypedValue outValue = new TypedValue();
@@ -558,7 +561,6 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private void calmFab(FloatingActionButton fab) {
         fab.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
     }
-
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void updateActionsUiStates() {
         MenuItem btnMove = uiToolbar.getMenu().getItem(0);
@@ -673,8 +675,13 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     }
 
     @Override
-    public void setCreateBuildingCallback(IAsyncBuildingCreator buildingCreator) {
+    public void setBuildingCreator(IAsyncBuildingCreator buildingCreator) {
         mBuildingCreator = buildingCreator;
+    }
+
+    @Override
+    public void setBuildingUpdater(IFuckingSimpleGenericCallback<Building> buildingUpdater) {
+        mBuildingUpdater = buildingUpdater;
     }
 
     private void emitUiModeChangedEvent(UiMode newMode) {

@@ -84,6 +84,8 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private IMainView.IAsyncSimilarBuildingsFinder mSimilarBuildingsFinder;
     private IMainView.IAsyncBuildingCreator mBuildingCreator;
 
+    private IFuckingSimpleGenericCallback<Building> mBuildingUpdater;
+
     public NewFloorDialog(@NonNull Context context) {
         super(context);
     }
@@ -134,6 +136,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 if (Building.current.isDirty()) {
                     // Save changes to current building
                 }
+                // TODO: Ask if user really wants to switch to this building?
                 Building.current = building;
                 Toast.makeText(getContext(),  building.getName(), Toast.LENGTH_SHORT).show();
                 setCreatingFloorsAllowed(true);
@@ -156,10 +159,11 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             Building.current.setAddress(txtAddress.getText().toString());
             Building.current.setFloors(mBuildingFloors);
             Building.current.setDirty(true);
+            mBuildingUpdater.onNotify(Building.current);
         }
 
         final Floor selectedFloor = mBuildingFloors.get(mSelectedFloorIndex);
-        if (Building.current.getCurrentFloor() != selectedFloor) {
+        if (!Building.current.getCurrentFloor().getId().equals(selectedFloor.getId())) {
             Building.current.setCurrentFloor(selectedFloor);
             emitFloorChangedEvent(selectedFloor);
         }
@@ -394,6 +398,10 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
     public void setBuildingCreator(IMainView.IAsyncBuildingCreator buildingCreator) {
         mBuildingCreator = buildingCreator;
+    }
+
+    public void setBuildingUpdater(IFuckingSimpleGenericCallback<Building> buildingUpdater) {
+        mBuildingUpdater = buildingUpdater;
     }
 
     public void setBuildingIdProvider(IMainView.IAsyncIdProvider buildingIdProvider) {

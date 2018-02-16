@@ -50,7 +50,9 @@ public interface IMainView {
 
     void setSimilarBuildingsFinder(IAsyncSimilarBuildingsFinder buildingsFinder);
 
-    void setCreateBuildingCallback(IAsyncBuildingCreator iAsyncBuildingCreator);
+    void setBuildingCreator(IAsyncBuildingCreator iAsyncBuildingCreator);
+
+    void setBuildingUpdater(IFuckingSimpleGenericCallback<Building> buildingUpdater);
 
     void showBuildingEditDialog();
 

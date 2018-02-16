@@ -133,6 +133,11 @@ public class MazeServerMock implements IMazeServer {
 
     @Override
     public void upload(Building building, IFuckingSimpleCallback onDone) {
+        dbBuilding.setName(building.getName());
+        dbBuilding.setType(building.getType());
+        dbBuilding.setAddress(building.getAddress());
+        dbBuilding.setFloors(building.getFloors());
+        building.setDirty(false);
         onDone.onNotified();
     }
 

@@ -16,6 +16,7 @@ import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.rendering.ElementsRenderGroup;
 import com.example.neutrino.maze.rendering.TextRenderGroup;
+import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
 
@@ -283,11 +284,23 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             }
         });
 
-        mMainView.setCreateBuildingCallback(new IMainView.IAsyncBuildingCreator() {
+        mMainView.setBuildingCreator(new IMainView.IAsyncBuildingCreator() {
           @Override
           public void createBuilding(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback) {
                 mMazeServer.createBuildingAsync(name, type, address, buildingCreatedCallback);
           }
+        });
+
+        mMainView.setBuildingUpdater(new IFuckingSimpleGenericCallback<Building>() {
+            @Override
+            public void onNotify(Building building) {
+                mMazeServer.upload(building, new IFuckingSimpleCallback() {
+                    @Override
+                    public void onNotified() {
+                        // Do nothing. Maybe indicate in UI that building has been updated on server?
+                    }
+                });
+            }
         });
     }
 
