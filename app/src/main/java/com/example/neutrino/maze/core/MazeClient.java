@@ -109,6 +109,19 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                     mBuildingId = buildingAndFloorIds.first;
                     mFloorId = buildingAndFloorIds.second;
 
+                    // If we failed to find a building based on fingerprint (i.e. new building)
+                    if (mBuildingId.isEmpty()) {
+                        mMainView.askUserToCreateBuilding(new IFuckingSimpleGenericCallback<Boolean>() {
+                            @Override
+                            public void onNotify(Boolean agreed) {
+                                if (agreed) {
+                                    mMainView.showBuildingEditDialog();
+                                }
+                            }
+                        });
+                        return;
+                    }
+
                     // Do we need to update building struct?
                     if (Building.current == null || !Building.current.getId().equals(mBuildingId)) {
                         mMazeServer.getBuildingAsync(mBuildingId, mOnBuildingReceived);

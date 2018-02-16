@@ -279,13 +279,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
                 break;
 
             case R.id.btn_new_floorplan:
-                NewFloorDialog nfd = new NewFloorDialog(this);
-                nfd.setBuildingIdProvider(mBuildingIdProvider);
-                nfd.setBuildingCreator(mBuildingCreator);
-                nfd.setFloorIdProvider(mFloorIdProvider);
-                nfd.setFloorChangedHandler(mFloorChangedHandler);
-                nfd.setSimilarBuildingsFinder(mBuildingsFinder);
-                nfd.show();
+                 showBuildingEditDialog();
                 break;
 
             case R.id.btn_set_scale:
@@ -322,6 +316,17 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
 
         invalidateOptionsMenu();
         return true;
+    }
+
+    @Override
+    public void showBuildingEditDialog() {
+        NewFloorDialog nfd = new NewFloorDialog(this);
+        nfd.setBuildingIdProvider(mBuildingIdProvider);
+        nfd.setBuildingCreator(mBuildingCreator);
+        nfd.setFloorIdProvider(mFloorIdProvider);
+        nfd.setFloorChangedHandler(mFloorChangedHandler);
+        nfd.setSimilarBuildingsFinder(mBuildingsFinder);
+        nfd.show();
     }
 
     private void setUiListeners() {
@@ -611,6 +616,25 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     @Override
     public UiMode getUiMode() {
         return mUiMode;
+    }
+
+    @Override
+    public void askUserToCreateBuilding(final IFuckingSimpleGenericCallback<Boolean> userAnswerHandler) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Looks like this building is not in Maze. Do you want to aMaze it?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        userAnswerHandler.onNotify(true);
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        userAnswerHandler.onNotify(false);
+                    }
+                }).show();
+
     }
 
     @Override

@@ -157,7 +157,9 @@ public class MazeServerMock implements IMazeServer {
     @Override
     public void findCurrentBuildingAndFloorAsync(WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<Pair<String, String>> callback) {
         if (fingerprint != null && !fingerprint.isEmpty()) {
-            callback.onNotify(new Pair<>(dbBuilding.getId(), dbFloor1.getId()));
+            // test only
+            callback.onNotify(new Pair<>("", ""));
+//            callback.onNotify(new Pair<>(dbBuilding.getId(), dbFloor1.getId()));
         }
         // else JOPA
     }

@@ -34,6 +34,8 @@ public interface IMainView {
 
     UiMode getUiMode();
 
+    void askUserToCreateBuilding(IFuckingSimpleGenericCallback<Boolean> userAnswerHandler);
+
     void setUiModeChangedListener(IFuckingSimpleGenericCallback<UiMode> listener);
 
     void setMapperEnabledChangedListener(IFuckingSimpleGenericCallback<Boolean> listener);
@@ -49,6 +51,8 @@ public interface IMainView {
     void setSimilarBuildingsFinder(IAsyncSimilarBuildingsFinder buildingsFinder);
 
     void setCreateBuildingCallback(IAsyncBuildingCreator iAsyncBuildingCreator);
+
+    void showBuildingEditDialog();
 
     enum UiMode { MAP_VIEW_MODE, MAP_EDIT_MODE}
 
