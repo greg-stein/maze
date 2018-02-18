@@ -8,13 +8,11 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
-import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.core.IMainView;
 import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.IMoveable;
@@ -60,15 +58,17 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private int mViewPortHeight;
     private final PointF mDragStart = new PointF();
     private IMoveable mMovedObject;
+    private IRenderGroup mMovedObjectGroup;
     private static final float[] mBgColorF = new float[4];
     private LocationMark mLocationMark = null;
+
     private Context mContext;
 
     private GLText glText;
-
     static private String vertexShaderCode;
     static private String fragmentShaderCode;
     static private String textRenderVertexShaderCode;
+
     static private String textRenderFragmentShaderCode;
 
     static {
@@ -77,7 +77,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         textRenderVertexShaderCode = readResourceAsString("/res/raw/text_render_vertex_shader.glsl");
         textRenderFragmentShaderCode = readResourceAsString("/res/raw/text_render_fragment_shader.glsl");
     }
-
     // Used for debug only to show distribution of active fingerprints
     private LocationMark mDistributionIndicator;
     private IMainView.IElementFactory mElementFactory;
@@ -343,6 +342,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         windowToWorld(x, y, mDragStart);
         final Pair<IRenderGroup, IMoveable> objectHavingPointInfo = findObjectHavingPoint(mDragStart);
         mMovedObject = (objectHavingPointInfo == null)? null : objectHavingPointInfo.second;
+        mMovedObjectGroup = (objectHavingPointInfo == null)? null : objectHavingPointInfo.first;
 
         runOnGlThread(new Runnable() {
             @Override
@@ -377,6 +377,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
                 if (mMovedObject != null) {
                     mMovedObject.handleMove(worldPoint.x, worldPoint.y);
+                    mMovedObjectGroup.setChanged(true);
                     // TODO: Handle This for non-wall
                     onMoving(mMovedObject);
                 }
@@ -416,6 +417,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     candidatePrimitive.cloak();
                 }
                 candidateGroup.removeElement(candidateElement);
+                candidateGroup.setChanged(true); // mark for later update to server
             }
         });
     }
@@ -602,8 +604,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public void createNewTag(PointF worldPoint, String label) {
-        mElementFactory.createElement(IMainView.MapOperand.LOCATION_TAG, worldPoint, label);
+    public Tag createNewTag(PointF worldPoint, String label) {
+        return (Tag)mElementFactory.createElement(IMainView.MapOperand.LOCATION_TAG, worldPoint, label);
     }
 
     // Returns IMoveable element under given coords and its render group

@@ -158,6 +158,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                         String label = (String) params[0];
                         Tag tag = new Tag(location, label);
                         mTagsRenderGroup.addItem(tag);
+                        mTagsRenderGroup.setChanged(true);
                         return tag;
                     }
                     break;
