@@ -146,6 +146,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 case WALL:
                     Wall newWall = new Wall(location, location);
                     mFloorPlanRenderGroup.addElement(newWall);
+                    mFloorPlanRenderGroup.setChanged(true);
                     return newWall;
                 case SHORT_WALL:
                     break;
