@@ -9,7 +9,9 @@ import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.core.SensorListener.IDeviceRotationListener;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
+import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.FloorPlan;
+import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.RadioMapFragment;
 import com.example.neutrino.maze.floorplan.Tag;
@@ -20,6 +22,7 @@ import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.neutrino.maze.core.Locator.*;
@@ -28,7 +31,7 @@ import static com.example.neutrino.maze.core.Locator.*;
  * Created by Greg Stein on 10/31/2017.
  */
 
-public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDeviceRotationListener, IFuckingSimpleGenericCallback<Fingerprint> {
+public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDeviceRotationListener, IFuckingSimpleGenericCallback<Fingerprint>,IFloorChangedHandler {
     private Context mContext;
     private final IMainView mMainView;
     private WifiScanner mWifiScanner = null;
@@ -38,9 +41,13 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private boolean mMapperLastState;
     private SensorListener mSensorListener;
     private FloorPlan mFloorPlan;
+    private FloorWatcher mFloorWatcher;
 
     private ElementsRenderGroup mFloorPlanRenderGroup;
     private ElementsRenderGroup mRadioMapRenderGroup;
+    // This is for newly created fingerprints during scan (mapping)
+    private ElementsRenderGroup mAugmentedRadioMapRenderGroup;
+    private List<Fingerprint> mAugmentedRadioMap = new ArrayList<>();
     private TextRenderGroup mTagsRenderGroup;
 
     private StepCalibratorService mStepCalibratorService;
@@ -85,6 +92,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         private synchronized void onCompleteDataReceive() {
             if (mRadioTileReceived && mFloorPlanReceived && mBuildingReceived) {
+                onFloorChanged(Building.current.getFloor(mFloorId));
                 Building.current.setCurrentFloor(mFloorId);
                 mTagsRenderGroup = mMainView.renderTags(Building.current.getCurrentFloor().getTags());
                 // Render the floor plan
@@ -236,6 +244,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mMapper = Mapper.getInstance(mContext);
         mMapperLastState = mMapper.isEnabled();
         mSensorListener = SensorListener.getInstance(mContext);
+        mFloorWatcher = FloorWatcher.getInstance(mContext);
+        mFloorWatcher.addOnFloorChangedListener(this);
 
         mMainView.setElementFactory(mElementFactory);
         setUiHandlers();
@@ -366,12 +376,39 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mMainView.updateLocation(location); // draw new location on map
     }
 
+    // This callback is executed when mapper is active and it obtained a new fingerprint
     @Override
     public void onNotify(Fingerprint fingerprint) {
-        mMainView.renderFingeprint(fingerprint);
         // TODO: It should not be the case that any newly created fingerprint is added to the radiomap
         // TODO: Instead, we should examine fingerprint's quality and only after that add it to SEPARATE
         // TODO: collection which later will be upoaded to server.
-        mRadioMapFragment.addFingerprint(fingerprint);
+        mAugmentedRadioMap.add(fingerprint);
+        mAugmentedRadioMapRenderGroup.addElement(fingerprint);
+    }
+
+    @Override
+    public void onFloorChanged(Floor newFloor) {
+        final Floor currentFloor = Building.current.getCurrentFloor();
+
+        // If on the same floor - it wasn't really changed
+        if (currentFloor != null && currentFloor.getId().equals(newFloor.getId())) return;
+
+        // Are there scans to upload to the server?
+        if (!mAugmentedRadioMap.isEmpty()) {
+            RadioMapFragment radioMapFragment = new RadioMapFragment(mAugmentedRadioMap, currentFloor.getId());
+            mMazeServer.upload(radioMapFragment, new IFuckingSimpleCallback() {
+                @Override
+                public void onNotified() {
+                    mAugmentedRadioMap.clear(); // clear to store scans on another floor
+                    // TODO: notify UI maybe?
+                }
+            });
+        }
+
+        if (mAugmentedRadioMapRenderGroup != null) {
+            mAugmentedRadioMapRenderGroup.clear();
+        } else {
+            mAugmentedRadioMapRenderGroup = new ElementsRenderGroup(new ArrayList<IFloorPlanPrimitive>());
+        }
     }
 }

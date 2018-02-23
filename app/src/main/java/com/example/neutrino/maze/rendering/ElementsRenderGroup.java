@@ -127,9 +127,12 @@ public class ElementsRenderGroup implements IRenderGroup {
     public void clear() {
         for(IFloorPlanPrimitive primitive : mRenderedElements) {
             if (!primitive.isRemoved()) { // TODO: check if this is always true
+                // TODO: this will call glUpdateBuffer for each element. It is possible to update
+                // TODO: the whole buffer instead, which is faster
                 primitive.cloak();
             }
         }
+        mElementsNotRenderedYet.clear();
         mRenderedElements.clear();
     }
 }

@@ -97,7 +97,6 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private float mDegreeOffset;
     private float mCurrentDegree = 0f;
     private FloorPlan mFloorPlan = FloorPlan.build();
-    private FloorWatcher mFloorWatcher;
 
     private UiMode mUiMode = UiMode.MAP_VIEW_MODE;
     private boolean mAutoScanEnabled = false;
@@ -167,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
 
         // TODO: commented-out temporarily
 //        mFloorWatcher = FloorWatcher.getInstance(this);
-//        mFloorWatcher.addOnFloorChangedListenerHandler(mFloorChangedHandler);
+//        mFloorWatcher.addOnFloorChangedListener(mFloorChangedHandler);
         mPresenter.onCreate();
     }
 

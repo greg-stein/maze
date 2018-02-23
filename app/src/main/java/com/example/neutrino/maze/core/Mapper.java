@@ -59,7 +59,7 @@ public class Mapper implements Locator.ILocationUpdatedListener, WifiScanner.IFi
         }
     }
 
-    public void disable() {
+    private void disable() {
         if (mIsEnabled) {
             mIsEnabled = false;
             mLocator.useWifiScanner(mOldWifiScannerState);

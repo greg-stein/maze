@@ -156,7 +156,7 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
         }
     }
 
-    public void addOnFloorChangedListenerHandler(IFloorChangedHandler handler) {
+    public void addOnFloorChangedListener(IFloorChangedHandler handler) {
         mOnFloorChangedHandlers.add(handler);
     }
 

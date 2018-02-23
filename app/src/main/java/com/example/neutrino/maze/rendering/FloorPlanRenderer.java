@@ -220,6 +220,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         return newGroup;
     }
 
+    @Deprecated
     public synchronized void addPrimitive(IFloorPlanPrimitive primitive) {
 //        if (!mCurrentBuffer.put(primitive)) {
 //            mCurrentBuffer = new GlRenderBuffer(GlRenderBuffer.DEFAULT_BUFFER_VERTICES_NUM);

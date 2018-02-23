@@ -166,6 +166,16 @@ public class Building {
         mDirty = dirty;
     }
 
+    public Floor getFloor(String floorId) {
+        for (Floor floor : mFloors) {
+            if (floor.getId().equals(floorId)) {
+                return floor;
+            }
+        }
+
+        return null;
+    }
+
     public static class TagComparator implements Comparator<Tag> {
 
         private String sample;
