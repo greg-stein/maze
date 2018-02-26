@@ -101,6 +101,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mMainView.centerMapView(mFloorPlan.getCenter());
                 // Locator uses floor plan for collision recognition
                 mLocator.setFloorPlan(mFloorPlan);
+                mFloorWatcher.setBuilding(Building.current);
+                if (Building.current != null) mFloorWatcher.enable(mContext);
             }
         }
 

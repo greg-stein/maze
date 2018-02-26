@@ -29,10 +29,11 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
 
     private final Set<ITeleport> mProximityTeleports = new HashSet<>();
     private Map<ITeleport, List<ITeleport>> mDestinationTeleports = new HashMap<>();
-    private boolean mSubscribed = false;
+    private boolean mEnabled = false;
     private WiFiLocator.WiFiFingerprint mLastFingerprint;
     private List<IFloorChangedHandler> mOnFloorChangedHandlers = new ArrayList<>();
     private Locator mLocator;
+    private Building mBuilding;
 
     private static volatile FloorWatcher instance = null;
     private static final Object mutex = new Object();
@@ -46,34 +47,32 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
         }
         return instance;
     }
-
     private boolean inRangeOfATeleport() {
         return mProximityTeleports.size() > 0;
     }
 
     private FloorWatcher(Context context) {
-        subscribe(context);
         mLocator = Locator.getInstance(context);
     }
 
-    private void subscribe(Context context) {
-        if (!mSubscribed) {
+    public void enable(Context context) {
+        if (!mEnabled) {
             WifiScanner.getInstance(context).addFingerprintAvailableListener(this);
             Locator.getInstance(context).addLocationUpdatedListener(this);
-            mSubscribed = true;
+            mEnabled = true;
         }
     }
 
-    public void unsubscribe(Context context) {
-        if (mSubscribed) {
+    public void disable(Context context) {
+        if (mEnabled) {
             WifiScanner.getInstance(context).removeFingerprintAvailableListener(this);
             Locator.getInstance(context).removeLocationUpdatedListener(this);
-            mSubscribed = false;
+            mEnabled = false;
         }
     }
 
     private boolean teleportsInProximityExist(PointF location) {
-        // Check if user exit range of teleports
+        // Check if user is exiting range of teleport
         Iterator<ITeleport> iter = mProximityTeleports.iterator();
         while (iter.hasNext()) {
             ITeleport teleport = iter.next();
@@ -84,8 +83,8 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
             }
         }
 
-        // Check if user enter range of new teleport
-        List<ITeleport> teleports = mLocator.getFloorPlan().getTeleportsOnFloor();
+        // Check if user is entering range of new teleport
+        List<ITeleport> teleports = mBuilding.getCurrentFloor().getTeleports();
         for (ITeleport teleport : teleports) {
             if (VectorHelper.squareDistance(teleport.getLocation(), location) <= TELEPORT_RANGE_ENTER_SQ) {
                 mProximityTeleports.add(teleport);
@@ -93,7 +92,7 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
         }
 
         for (ITeleport teleport : mProximityTeleports) {
-            mDestinationTeleports.put(teleport, Building.current.getTeleportsById(teleport.getId()));
+            mDestinationTeleports.put(teleport, mBuilding.getTeleportsById(teleport.getId()));
         }
 
         return !mProximityTeleports.isEmpty();
@@ -162,5 +161,13 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
 
     public void removeOnFloorChangedListenerHandler(IFloorChangedHandler handler) {
         mOnFloorChangedHandlers.remove(handler);
+    }
+
+    public Building getBuilding() {
+        return mBuilding;
+    }
+
+    public void setBuilding(Building building) {
+        mBuilding = building;
     }
 }
