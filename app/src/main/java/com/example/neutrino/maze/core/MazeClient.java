@@ -108,6 +108,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         @Override
         public void onFingerprintAvailable(final WiFiLocator.WiFiFingerprint fingerprint) {
+            if (fingerprint == null || fingerprint.isEmpty()) return;
             // Unsubscribe from recieving more fingerprints. We need only first fingerprint to find
             // building and floor
             mWifiScanner.removeFingerprintAvailableListener(mFirstFingerprintAvailableListener);
@@ -405,10 +406,10 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             });
         }
 
-        if (mAugmentedRadioMapRenderGroup != null) {
-            mAugmentedRadioMapRenderGroup.clear();
-        } else {
+        if (mAugmentedRadioMapRenderGroup == null) {
             mAugmentedRadioMapRenderGroup = new ElementsRenderGroup(new ArrayList<IFloorPlanPrimitive>());
+        } else {
+            mAugmentedRadioMapRenderGroup.clear();
         }
     }
 }
