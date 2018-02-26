@@ -148,6 +148,18 @@ public class MazeServerMock implements IMazeServer {
 
     @Override
     public void upload(RadioMapFragment radioMap, IFuckingSimpleCallback onDone) {
+        final List<Fingerprint> fingerprints = radioMap.getFingerprints();
+
+        if (radioMap.getFloorId().equals(dbFloor1.getId())) {
+            for (Fingerprint fingerprint : fingerprints) {
+                dbRadioMap1.addFingerprint(fingerprint);
+            }
+        } else if (radioMap.getFloorId().equals(dbFloor2.getId())) {
+            for (Fingerprint fingerprint : fingerprints) {
+                dbRadioMap2.addFingerprint(fingerprint);
+            }
+        }
+
         onDone.onNotified();
     }
 
