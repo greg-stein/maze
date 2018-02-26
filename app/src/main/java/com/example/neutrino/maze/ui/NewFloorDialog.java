@@ -163,7 +163,8 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         }
 
         final Floor selectedFloor = mBuildingFloors.get(mSelectedFloorIndex);
-        if (!Building.current.getCurrentFloor().getId().equals(selectedFloor.getId())) {
+        final Floor currentFloor = Building.current.getCurrentFloor();
+        if (currentFloor == null || !currentFloor.getId().equals(selectedFloor.getId())) {
             Building.current.setCurrentFloor(selectedFloor);
             emitFloorChangedEvent(selectedFloor);
         }
