@@ -248,6 +248,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mMapperLastState = mMapper.isEnabled();
         mSensorListener = SensorListener.getInstance(mContext);
         mFloorWatcher = FloorWatcher.getInstance(mContext);
+        // Occurs when floor change is recognized
         mFloorWatcher.addOnFloorChangedListener(this);
 
         mMainView.setElementFactory(mElementFactory);
@@ -255,6 +256,9 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     }
 
     private void setUiHandlers() {
+        // Occurs when user explicitly sets current floor
+        mMainView.setFloorChangedHandler(this);
+
         mMainView.setMapperEnabledChangedListener(new IFuckingSimpleGenericCallback<Boolean>() {
             @Override
             public void onNotify(Boolean enabled) {

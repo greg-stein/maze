@@ -56,6 +56,8 @@ public interface IMainView {
 
     void showBuildingEditDialog();
 
+    void setFloorChangedHandler(IFloorChangedHandler floorChangedHandler);
+
     enum UiMode { MAP_VIEW_MODE, MAP_EDIT_MODE}
 
     enum MapOperation {

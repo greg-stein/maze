@@ -757,4 +757,9 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     public void setTags(List<Tag> tags) {
         mAdapter.updateListData(tags);
     }
+
+    @Override
+    public void setFloorChangedHandler(IFloorChangedHandler floorChangedHandler) {
+        mFloorChangedHandler = floorChangedHandler;
+    }
 }
