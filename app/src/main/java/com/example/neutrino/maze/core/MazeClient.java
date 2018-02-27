@@ -51,6 +51,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private TextRenderGroup mTagsRenderGroup;
 
     private StepCalibratorService mStepCalibratorService;
+    private boolean mStepCalibratorEnabled = false; // temporary change to disable StepCalibratorService
     private Intent mStepCalibratorServiceIntent;
     private RadioMapFragment mRadioMapFragment;
     private WifiScanner.IFingerprintAvailableListener mFirstFingerprintAvailableListener
@@ -229,13 +230,14 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         // TODO: instead of just killing the app, consider reloading activity when the permission is granted.
         if (!PermissionsHelper.requestPermissions(mContext)) return;
 
-        mStepCalibratorService = new StepCalibratorService(mContext);
-        mStepCalibratorServiceIntent = new Intent(mContext, mStepCalibratorService.getClass());
+        if (mStepCalibratorEnabled) {
+            mStepCalibratorService = new StepCalibratorService(mContext);
+            mStepCalibratorServiceIntent = new Intent(mContext, mStepCalibratorService.getClass());
 
-        if (!StepCalibratorService.isRunning(mContext)) {
-            mContext.startService(mStepCalibratorServiceIntent);
+            if (!StepCalibratorService.isRunning(mContext)) {
+                mContext.startService(mStepCalibratorServiceIntent);
+            }
         }
-
         mMazeServer = MazeServerMock.getInstance(mContext);
 
         if (mWifiScanner == null) {
@@ -349,10 +351,12 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
     @Override
     public void onDestroy() {
-        // In case the permissions were granted previous time the app was running, we can
-        // start the service. The service will start by stopping it :) Because this forces restart.
-        if (PermissionsHelper.permissionsWereAlreadyGranted) {
-            mContext.stopService(mStepCalibratorServiceIntent); // This will resurrect the service
+        if (mStepCalibratorEnabled) {
+            // In case the permissions were granted previous time the app was running, we can
+            // start the service. The service will start by stopping it :) Because this forces restart.
+            if (PermissionsHelper.permissionsWereAlreadyGranted) {
+                mContext.stopService(mStepCalibratorServiceIntent); // This will resurrect the service
+            }
         }
         mWifiScanner.removeFingerprintAvailableListener(mFirstFingerprintAvailableListener);
         if (mLocator != null) {
