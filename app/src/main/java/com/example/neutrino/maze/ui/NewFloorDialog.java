@@ -153,20 +153,24 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
     @Override
     protected void onStop() {
-        if (mIsBuildingDirty) {
-            Building.current.setName(txtBuilding.getText().toString());
-            Building.current.setType(txtType.getText().toString());
-            Building.current.setAddress(txtAddress.getText().toString());
-            Building.current.setFloors(mBuildingFloors);
-            Building.current.setDirty(true);
-            mBuildingUpdater.onNotify(Building.current);
-        }
+        if (Building.current != null) {
+            if (mIsBuildingDirty) {
+                Building.current.setName(txtBuilding.getText().toString());
+                Building.current.setType(txtType.getText().toString());
+                Building.current.setAddress(txtAddress.getText().toString());
+                Building.current.setFloors(mBuildingFloors);
+                Building.current.setDirty(true);
+                mBuildingUpdater.onNotify(Building.current);
+            }
 
-        final Floor selectedFloor = mBuildingFloors.get(mSelectedFloorIndex);
-        final Floor currentFloor = Building.current.getCurrentFloor();
-        if (currentFloor == null || !currentFloor.getId().equals(selectedFloor.getId())) {
-            Building.current.setCurrentFloor(selectedFloor);
-            emitFloorChangedEvent(selectedFloor);
+            final Floor selectedFloor = mBuildingFloors.get(mSelectedFloorIndex);
+            final Floor currentFloor = Building.current.getCurrentFloor();
+            if (currentFloor == null || !currentFloor.getId().equals(selectedFloor.getId())) {
+                Building.current.setCurrentFloor(selectedFloor);
+                emitFloorChangedEvent(selectedFloor);
+            }
+        } else {
+            Toast.makeText(getContext(), "The building creation was cancelled. To add a new floor plan create a building first.", Toast.LENGTH_LONG).show();
         }
         super.onStop();
     }
