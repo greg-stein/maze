@@ -14,14 +14,12 @@ import java.util.List;
  * Created by Greg Stein on 12/29/2017.
  */
 
-public class TextRenderGroup implements IRenderGroup {
+public class TextRenderGroup extends RenderGroupBase {
     private boolean mReadyForRender;
 
     private List<Tag> mRenderedTags = new ArrayList<>();
     private List<Tag> mTagsNotRenderedYet = new ArrayList<>();
     private GLText mGlText;
-    private boolean mIsVisible = false;
-    private boolean mChanged;
 
     public TextRenderGroup(List<Tag> tags, GLText glText) {
         mTagsNotRenderedYet.addAll(tags);
@@ -41,23 +39,13 @@ public class TextRenderGroup implements IRenderGroup {
         mReadyForRender = true;
     }
 
-    @Override
-    public boolean isVisible() {
-        return mIsVisible;
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        mIsVisible = visible;
-    }
-
     public boolean isReadyForRender() {
         return mReadyForRender;
     }
 
     @Override
     public void render(float[] scratch, float deviceAngle) {
-        if (!mIsVisible) return;
+        if (!isVisible()) return;
 
         // TODO: This is not good. What if we have several TextRenderGroups? Each will do glUseProgram?
         // TODO: this should go away with the refactoring of text render code. Currently only one
@@ -106,28 +94,18 @@ public class TextRenderGroup implements IRenderGroup {
     public void addItem(Tag tag) {
         mTagsNotRenderedYet.add(tag);
         mReadyForRender = false;
-        mChanged = true;
+        setChanged(true);
     }
 
     @Override
     public void removeElement(IMoveable tag) {
         mRenderedTags.remove(tag);
-        mChanged = true;
+        setChanged(true);
     }
 
     @Override
     public void clear() {
         mRenderedTags.clear();
-    }
-
-    @Override
-    public boolean isChanged() {
-        return mChanged;
-    }
-
-    @Override
-    public void setChanged(boolean changed) {
-        mChanged = changed;
     }
 
     public void setReadyForRender(boolean readyForRender) {
