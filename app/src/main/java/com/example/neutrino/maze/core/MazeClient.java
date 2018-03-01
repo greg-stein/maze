@@ -261,6 +261,13 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         // Occurs when user explicitly sets current floor
         mMainView.setFloorChangedHandler(this);
 
+        mMainView.setOnLocateMeEnabledChangedListener(new IFuckingSimpleGenericCallback<Boolean>() {
+            @Override
+            public void onNotify(Boolean locatorEnabled) {
+                mLocator.useWifiScanner(locatorEnabled);
+            }
+        });
+
         mMainView.setMapperEnabledChangedListener(new IFuckingSimpleGenericCallback<Boolean>() {
             @Override
             public void onNotify(Boolean enabled) {

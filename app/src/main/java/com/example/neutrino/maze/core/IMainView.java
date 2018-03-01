@@ -58,6 +58,8 @@ public interface IMainView {
 
     void setFloorChangedHandler(IFloorChangedHandler floorChangedHandler);
 
+    void setOnLocateMeEnabledChangedListener(IFuckingSimpleGenericCallback<Boolean> listener);
+
     enum UiMode { MAP_VIEW_MODE, MAP_EDIT_MODE}
 
     enum MapOperation {

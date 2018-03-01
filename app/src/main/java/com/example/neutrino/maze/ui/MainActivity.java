@@ -113,6 +113,8 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private IAsyncSimilarBuildingsFinder mBuildingsFinder;
     private IAsyncBuildingCreator mBuildingCreator;
     private IFuckingSimpleGenericCallback<Building> mBuildingUpdater;
+    private IFuckingSimpleGenericCallback<Boolean> mLocateMeEnabledChangedListener;
+    private boolean mLocateMeEnabled = false;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -461,7 +463,14 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         uiFabFindMeOnMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                uiFloorPlanView.centerToLocation();
+                mLocateMeEnabled = !mLocateMeEnabled;
+                if (mLocateMeEnabled) {
+//                    uiFloorPlanView.centerToLocation();
+                    exciteFab(uiFabFindMeOnMap);
+                } else {
+                    calmFab(uiFabFindMeOnMap);
+                }
+                mLocateMeEnabledChangedListener.onNotify(mLocateMeEnabled);
             }
         });
 
@@ -761,5 +770,10 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     @Override
     public void setFloorChangedHandler(IFloorChangedHandler floorChangedHandler) {
         mFloorChangedHandler = floorChangedHandler;
+    }
+
+    @Override
+    public void setOnLocateMeEnabledChangedListener(IFuckingSimpleGenericCallback<Boolean> listener) {
+        mLocateMeEnabledChangedListener = listener;
     }
 }
