@@ -79,10 +79,12 @@ public class FloorPlan {
 
     public void addElement(IFloorPlanPrimitive primitive) {
         mSketch.add(primitive);
+        setSketchDirty(true);
     }
 
     public void removeElement(IFloorPlanPrimitive primitive) {
         mSketch.remove(primitive);
+        setSketchDirty(true);
     }
 
     public void setSketch(List<IFloorPlanPrimitive> sketch) {

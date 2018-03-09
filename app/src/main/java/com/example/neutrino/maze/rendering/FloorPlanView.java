@@ -235,8 +235,8 @@ public class FloorPlanView extends GLSurfaceView {
                         } else { // existing tag
                             tagAtTapLocation = (Tag)tagInfo.second;
                             tagAtTapLocation.setLabel(tagLabel);
-                            IRenderGroup tagGroup = tagInfo.first; // incase of tag creation, the
-                            tagGroup.setChanged(true);             // group.setChanged() in factory
+                            IRenderGroup tagGroup = tagInfo.first;
+                            tagGroup.setChangedElement(tagAtTapLocation);
                         }
 
                         mRenderer.calculateTagBoundaries(tagAtTapLocation);

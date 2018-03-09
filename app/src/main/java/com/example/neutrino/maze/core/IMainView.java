@@ -74,6 +74,12 @@ public interface IMainView {
         IMoveable createElement(MapOperand elementType, PointF location, Object... params);
     }
 
+    interface IRenderGroupChangedListener {
+        void onElementAdd(IMoveable element);
+        void onElementChange(IMoveable element);
+        void onElementRemoved(IMoveable element);
+    }
+
     interface IAsyncIdProvider {
         void generateId(IFuckingSimpleGenericCallback<String> idGeneratedCallback);
     }

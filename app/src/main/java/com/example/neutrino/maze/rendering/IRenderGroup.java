@@ -2,8 +2,8 @@ package com.example.neutrino.maze.rendering;
 
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.core.IMainView;
 import com.example.neutrino.maze.floorplan.IMoveable;
-import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 
 /**
  * Created by Greg Stein on 1/2/2018.
@@ -35,5 +35,7 @@ public interface IRenderGroup {
 
     void setChanged(boolean changed);
 
-    void setChangedListener(IFuckingSimpleGenericCallback<IRenderGroup> listener);
+    void setChangedElement(IMoveable element);
+
+    void setChangedListener(IMainView.IRenderGroupChangedListener listener);
 }

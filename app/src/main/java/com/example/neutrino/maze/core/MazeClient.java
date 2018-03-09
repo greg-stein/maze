@@ -40,8 +40,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private Mapper mMapper;
     private boolean mMapperLastState;
     private SensorListener mSensorListener;
-    private FloorPlan mFloorPlan;
     private FloorWatcher mFloorWatcher;
+    private FloorPlan mFloorPlan;
 
     private ElementsRenderGroup mFloorPlanRenderGroup;
     private ElementsRenderGroup mRadioMapRenderGroup;
@@ -54,6 +54,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private boolean mStepCalibratorEnabled = false; // temporary change to disable StepCalibratorService
     private Intent mStepCalibratorServiceIntent;
     private RadioMapFragment mRadioMapFragment;
+    private List<Tag> mTags;
     private WifiScanner.IFingerprintAvailableListener mFirstFingerprintAvailableListener
             = new WifiScanner.IFingerprintAvailableListener() {
 
@@ -96,6 +97,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 onFloorChanged(Building.current.getFloor(mFloorId));
                 Building.current.setCurrentFloor(mFloorId);
                 mTagsRenderGroup = mMainView.renderTags(Building.current.getCurrentFloor().getTags());
+                mTagsRenderGroup.setChangedListener(mTagsChangedHandler);
+                mFloorPlanRenderGroup.setChangedListener(mFlorPlanChangedListener);
                 // Render the floor plan
                 mFloorPlanRenderGroup.setVisible(true);
                 mTagsRenderGroup.setVisible(true);
@@ -150,15 +153,51 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             });
         }
     };
-    
+
+    private IMainView.IRenderGroupChangedListener mFlorPlanChangedListener = new IMainView.IRenderGroupChangedListener() {
+        @Override
+        public void onElementAdd(IMoveable element) {
+            mFloorPlan.addElement((IFloorPlanPrimitive) element); // add to floor plan container
+        }
+
+        @Override
+        public void onElementChange(IMoveable element) {
+            mFloorPlan.setSketchDirty(true); // NOTE: assume mFloorPlan is not null
+        }
+
+        @Override
+        public void onElementRemoved(IMoveable element) {
+            mFloorPlan.removeElement((IFloorPlanPrimitive) element);
+        }
+    };
+
+
+    private IMainView.IRenderGroupChangedListener mTagsChangedHandler = new IMainView.IRenderGroupChangedListener() {
+        @Override
+        public void onElementAdd(IMoveable element) {
+            Building.current.getCurrentFloor().addTag((Tag) element); // add new tag to floor
+            Building.current.setDirty(true); // mark building to upload the tag
+        }
+
+        @Override
+        public void onElementChange(IMoveable element) {
+            Building.current.setDirty(true);
+        }
+
+        @Override
+        public void onElementRemoved(IMoveable element) {
+            Building.current.getCurrentFloor().removeTag((Tag) element);
+            Building.current.setDirty(true);
+        }
+    };
+
     private IMainView.IElementFactory mElementFactory = new IMainView.IElementFactory() {
         @Override
         public IMoveable createElement(IMainView.MapOperand elementType, PointF location, Object... params) {
             switch (elementType) {
                 case WALL:
                     Wall newWall = new Wall(location, location);
-                    mFloorPlanRenderGroup.addElement(newWall);
-                    mFloorPlanRenderGroup.setChanged(true);
+                    mFloorPlanRenderGroup.addElement(newWall); // render new wall
                     return newWall;
                 case SHORT_WALL:
                     break;
@@ -170,8 +209,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                     if (params != null && params.length > 0 && params[0] instanceof String) {
                         String label = (String) params[0];
                         Tag tag = new Tag(location, label);
-                        mTagsRenderGroup.addItem(tag);
-                        mTagsRenderGroup.setChanged(true);
+                        mTagsRenderGroup.addItem(tag); // render tag
                         return tag;
                     }
                     break;

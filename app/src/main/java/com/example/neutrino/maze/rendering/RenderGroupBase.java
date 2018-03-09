@@ -1,5 +1,7 @@
 package com.example.neutrino.maze.rendering;
 
+import com.example.neutrino.maze.core.IMainView;
+import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 
 /**
@@ -9,7 +11,7 @@ import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 public abstract class RenderGroupBase implements IRenderGroup {
     private boolean mChanged = false;
     private boolean mVisible = false;
-    private IFuckingSimpleGenericCallback<IRenderGroup> mChangedListener;
+    private IMainView.IRenderGroupChangedListener mChangedListener;
 
     @Override
     public boolean isVisible() {
@@ -30,18 +32,35 @@ public abstract class RenderGroupBase implements IRenderGroup {
     public void setChanged(boolean changed) {
         if (changed != mChanged) {
             mChanged = changed;
-            emitOnChangedEvent();
         }
     }
 
     @Override
-    public void setChangedListener(IFuckingSimpleGenericCallback<IRenderGroup> listener) {
+    public void setChangedListener(IMainView.IRenderGroupChangedListener listener) {
         mChangedListener = listener;
     }
 
-    private void emitOnChangedEvent() {
+    @Override
+    public void setChangedElement(IMoveable element) {
+        setChanged(true);
+        emitElementChangedEvent(element);
+    }
+
+    protected void emitElementAddedEvent(IMoveable newElement) {
         if (mChangedListener != null) {
-            mChangedListener.onNotify(this);
+            mChangedListener.onElementAdd(newElement);
+        }
+    }
+
+    protected void emitElementChangedEvent(IMoveable changedElement) {
+        if (mChangedListener != null) {
+            mChangedListener.onElementChange(changedElement);
+        }
+    }
+
+    protected void emitElementRemovedEvent(IMoveable removedElement) {
+        if (mChangedListener != null) {
+            mChangedListener.onElementRemoved(removedElement);
         }
     }
 }

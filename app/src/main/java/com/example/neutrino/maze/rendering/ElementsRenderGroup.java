@@ -93,12 +93,14 @@ public class ElementsRenderGroup extends RenderGroupBase {
         mElementsNotRenderedYet.add(element);
         mReadyForRender = false;
         setChanged(true);
+        emitElementAddedEvent(element);
     }
 
     @Override
     public void removeElement(IMoveable element) {
         mRenderedElements.remove(element);
         setChanged(true);
+        emitElementRemovedEvent(element);
     }
 
     @Override
@@ -112,5 +114,6 @@ public class ElementsRenderGroup extends RenderGroupBase {
         }
         mElementsNotRenderedYet.clear();
         mRenderedElements.clear();
+        // TODO: What about emitting element deleted event? How to handle it?
     }
 }

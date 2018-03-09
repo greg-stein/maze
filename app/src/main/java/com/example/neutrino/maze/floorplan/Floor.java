@@ -51,10 +51,17 @@ public class Floor {
         mTeleports = teleports;
     }
 
+    public void addTag(Tag tag) {
+        mTags.add(tag);
+    }
+
+    public void removeTag(Tag tag) {
+        mTags.remove(tag);
+    }
+
     public List<Tag> getTags() {
         if (mTags != null) {
-
-            return Collections.unmodifiableList(mTags);
+            return Collections.unmodifiableList(mTags); // TODO: WHY??
         }
         return null;
     }

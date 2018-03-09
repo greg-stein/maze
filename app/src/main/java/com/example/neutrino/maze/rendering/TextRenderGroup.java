@@ -83,7 +83,6 @@ public class TextRenderGroup extends RenderGroupBase {
         }
 
         return null;
-
     }
 
     @Override
@@ -95,12 +94,14 @@ public class TextRenderGroup extends RenderGroupBase {
         mTagsNotRenderedYet.add(tag);
         mReadyForRender = false;
         setChanged(true);
+        emitElementAddedEvent(tag);
     }
 
     @Override
     public void removeElement(IMoveable tag) {
         mRenderedTags.remove(tag);
         setChanged(true);
+        emitElementRemovedEvent(tag);
     }
 
     @Override

@@ -362,7 +362,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                         mMovedObject.handleMoveStart();
                         onStartMove(mMovedObject);
                         // Mark render group of moved element as changed
-                        objectHavingPointInfo.first.setChanged(true);
+                        mMovedObjectGroup.setChangedElement(mMovedObject);
                     }
                 }
              }
@@ -378,7 +378,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
                 if (mMovedObject != null) {
                     mMovedObject.handleMove(worldPoint.x, worldPoint.y);
-                    mMovedObjectGroup.setChanged(true);
+                    mMovedObjectGroup.setChangedElement(mMovedObject);
                     // TODO: Handle This for non-wall
                     onMoving(mMovedObject);
                 }
@@ -418,7 +418,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                     candidatePrimitive.cloak();
                 }
                 candidateGroup.removeElement(candidateElement);
-                candidateGroup.setChanged(true); // mark for later update to server
             }
         });
     }
