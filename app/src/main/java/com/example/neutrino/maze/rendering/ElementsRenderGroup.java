@@ -16,11 +16,13 @@ public class ElementsRenderGroup extends RenderGroupBase {
     private GlRenderBuffer mCurrentBuffer = null;
     private List<GlRenderBuffer> mGlBuffers = new ArrayList<>();
     private List<IFloorPlanPrimitive> mRenderedElements = new ArrayList<>();
-    private List<IFloorPlanPrimitive> mElementsNotRenderedYet;
+    private List<IFloorPlanPrimitive> mElementsNotRenderedYet = new ArrayList<>();
     private boolean mReadyForRender;
 
     public ElementsRenderGroup(List<IFloorPlanPrimitive> elements) {
-        mElementsNotRenderedYet = elements;
+        if (elements != null) {
+            mElementsNotRenderedYet.addAll(elements);
+        }
         mReadyForRender = false;
     }
 

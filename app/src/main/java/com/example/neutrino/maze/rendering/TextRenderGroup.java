@@ -22,7 +22,9 @@ public class TextRenderGroup extends RenderGroupBase {
     private GLText mGlText;
 
     public TextRenderGroup(List<Tag> tags, GLText glText) {
-        mTagsNotRenderedYet.addAll(tags);
+        if (tags != null) {
+            mTagsNotRenderedYet.addAll(tags);
+        }
         mGlText = glText;
         mReadyForRender = false;
     }
