@@ -744,14 +744,14 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     }
 
     @Override
-    public ElementsRenderGroup renderElements(List<IFloorPlanPrimitive> elements) {
+    public ElementsRenderGroup createElementsRenderGroup(List<IFloorPlanPrimitive> elements) {
         ElementsRenderGroup floorPlanGroup = uiFloorPlanView.renderElementsGroup(elements);
 
         return floorPlanGroup;
     }
 
     @Override
-    public TextRenderGroup renderTags(List<Tag> tags) {
+    public TextRenderGroup createTextRenderGroup(List<Tag> tags) {
         TextRenderGroup tagsGroup = uiFloorPlanView.renderTagsGroup(tags);
 
         return tagsGroup;

@@ -69,7 +69,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             @Override
             public void onNotify(RadioMapFragment wiFiFingerprints) {
                 mRadioMapFragment = wiFiFingerprints;
-                mRadioMapRenderGroup = mMainView.renderElements(mRadioMapFragment.getFingerprintsAsIFloorPlanElements());
+                mRadioMapRenderGroup = mMainView.createElementsRenderGroup(mRadioMapFragment.getFingerprintsAsIFloorPlanElements());
                 mRadioTileReceived = true;
                 onCompleteDataReceive();
             }
@@ -78,7 +78,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             @Override
             public void onNotify(FloorPlan floorPlan) {
                 mFloorPlan = floorPlan;
-                mFloorPlanRenderGroup = mMainView.renderElements(mFloorPlan.getSketch());
+                mFloorPlanRenderGroup = mMainView.createElementsRenderGroup(mFloorPlan.getSketch());
                 mFloorPlanReceived = true;
                 onCompleteDataReceive();
             }
@@ -96,7 +96,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             if (mRadioTileReceived && mFloorPlanReceived && mBuildingReceived) {
                 onFloorChanged(Building.current.getFloor(mFloorId));
                 Building.current.setCurrentFloor(mFloorId);
-                mTagsRenderGroup = mMainView.renderTags(Building.current.getCurrentFloor().getTags());
+                mTagsRenderGroup = mMainView.createTextRenderGroup(Building.current.getCurrentFloor().getTags());
                 mTagsRenderGroup.setChangedListener(mTagsChangedHandler);
                 mFloorPlanRenderGroup.setChangedListener(mFlorPlanChangedListener);
                 // Render the floor plan

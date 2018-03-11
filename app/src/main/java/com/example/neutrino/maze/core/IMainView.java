@@ -20,9 +20,9 @@ import java.util.List;
 public interface IMainView {
     void init();
 
-    ElementsRenderGroup renderElements(List<IFloorPlanPrimitive> elements);
+    ElementsRenderGroup createElementsRenderGroup(List<IFloorPlanPrimitive> elements);
 
-    TextRenderGroup renderTags(List<Tag> tags);
+    TextRenderGroup createTextRenderGroup(List<Tag> tags);
 
     void centerMapView(PointF point);
 
