@@ -378,7 +378,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
                 if (mMovedObject != null) {
                     mMovedObject.handleMove(worldPoint.x, worldPoint.y);
-                    mMovedObjectGroup.setChangedElement(mMovedObject);
+                    if (mMovedObjectGroup != null) {
+                        mMovedObjectGroup.setChangedElement(mMovedObject);
+                    }
                     // TODO: Handle This for non-wall
                     onMoving(mMovedObject);
                 }
