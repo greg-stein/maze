@@ -192,10 +192,13 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     public void onBackPressed() {
         if (uiToolbarLayout.isToolbar()) {
             uiToolbarLayout.hide();
-            uiFabFindMeOnMap.animate().translationYBy(uiToolbar.getHeight());
+            uiFabFindMeOnMap.show();
             uiFloorPlanView.setFloorplanEditMode(false);
             mUiMode = UiMode.MAP_VIEW_MODE;
             emitUiModeChangedEvent(mUiMode);
+        } else {
+            // Exit the app
+            finish();
         }
     }
 
@@ -376,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         uiFabEditMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                uiFabFindMeOnMap.animate().translationYBy(-uiToolbar.getHeight());
+                uiFabFindMeOnMap.hide();
                 uiToolbarLayout.show();
                 uiFloorPlanView.setFloorplanEditMode(true);
                 mUiMode = UiMode.MAP_EDIT_MODE;
