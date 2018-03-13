@@ -351,7 +351,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 // TODO: This code smells bad. Obviously refactor is needed. Look at where it is called from!
                 if (operation == IMainView.MapOperation.ADD && operand == IMainView.MapOperand.WALL) {
                     // Add new wall at the point
-                    mMovedObject = mElementFactory.createElement(operand, mDragStart); //new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y);
+                    mMovedObject = mElementFactory.createElement(operand, mDragStart);
                     mMovedObject.setTapLocation(mDragStart.x, mDragStart.y);
                     mMovedObject.handleMoveStart();
                     onStartMove(mMovedObject);

@@ -10,4 +10,5 @@
     <color name="colorFingerprint">#ca761b</color>
     <color name="colorAccent">#9E9E9E</color>
     <color name="colorPath">#FF0000</color>
+    <color name="colorUpload">#03A9F4</color>
 </resources>

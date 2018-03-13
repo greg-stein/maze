@@ -97,7 +97,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 onFloorChanged(Building.current.getFloor(mFloorId));
                 Building.current.setCurrentFloor(mFloorId);
                 mTagsRenderGroup = mMainView.createTextRenderGroup(Building.current.getCurrentFloor().getTags());
-                mTagsRenderGroup.setChangedListener(mTagsChangedHandler);
+                mTagsRenderGroup.setChangedListener(mTagsChangedListener);
                 mFloorPlanRenderGroup.setChangedListener(mFlorPlanChangedListener);
                 // Render the floor plan
                 mFloorPlanRenderGroup.setVisible(true);
@@ -158,36 +158,42 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         @Override
         public void onElementAdd(IMoveable element) {
             mFloorPlan.addElement((IFloorPlanPrimitive) element); // add to floor plan container
+            mMainView.setUploadButtonVisibility(true);
         }
 
         @Override
         public void onElementChange(IMoveable element) {
             mFloorPlan.setSketchDirty(true); // NOTE: assume mFloorPlan is not null
+            mMainView.setUploadButtonVisibility(true);
         }
 
         @Override
         public void onElementRemoved(IMoveable element) {
             mFloorPlan.removeElement((IFloorPlanPrimitive) element);
+            mMainView.setUploadButtonVisibility(true);
         }
     };
 
 
-    private IMainView.IRenderGroupChangedListener mTagsChangedHandler = new IMainView.IRenderGroupChangedListener() {
+    private IMainView.IRenderGroupChangedListener mTagsChangedListener = new IMainView.IRenderGroupChangedListener() {
         @Override
         public void onElementAdd(IMoveable element) {
             Building.current.getCurrentFloor().addTag((Tag) element); // add new tag to floor
             Building.current.setDirty(true); // mark building to upload the tag
+            mMainView.setUploadButtonVisibility(true);
         }
 
         @Override
         public void onElementChange(IMoveable element) {
             Building.current.setDirty(true);
+            mMainView.setUploadButtonVisibility(true);
         }
 
         @Override
         public void onElementRemoved(IMoveable element) {
             Building.current.getCurrentFloor().removeTag((Tag) element);
             Building.current.setDirty(true);
+            mMainView.setUploadButtonVisibility(true);
         }
     };
 
@@ -298,6 +304,13 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private void setUiHandlers() {
         // Occurs when user explicitly sets current floor
         mMainView.setFloorChangedHandler(this);
+
+        mMainView.setUploadButtonClickListener(new IFuckingSimpleCallback() {
+            @Override
+            public void onNotified() {
+                // TODO: Upload changes in floor plan, radio map, tags, teleports, ...
+            }
+        });
 
         mMainView.setOnLocateMeEnabledChangedListener(new IFuckingSimpleGenericCallback<Boolean>() {
             @Override

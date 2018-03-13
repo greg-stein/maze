@@ -9,6 +9,7 @@ import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.rendering.ElementsRenderGroup;
 import com.example.neutrino.maze.rendering.TextRenderGroup;
+import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 
 import java.util.List;
@@ -59,6 +60,10 @@ public interface IMainView {
     void setFloorChangedHandler(IFloorChangedHandler floorChangedHandler);
 
     void setOnLocateMeEnabledChangedListener(IFuckingSimpleGenericCallback<Boolean> listener);
+
+    void setUploadButtonVisibility(boolean visible);
+
+    void setUploadButtonClickListener(IFuckingSimpleCallback listener);
 
     enum UiMode { MAP_VIEW_MODE, MAP_EDIT_MODE}
 
