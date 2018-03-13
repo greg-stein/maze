@@ -3,6 +3,7 @@ package com.example.neutrino.maze.floorplan;
 import com.example.neutrino.maze.floorplan.transitions.ITeleport;
 import com.example.neutrino.maze.floorplan.transitions.Teleport;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,9 +21,11 @@ public class Floor {
 
     public Floor() {}
 
-    public Floor(String mName, String mId) {
-        this.mName = mName;
-        this.mId = mId;
+    public Floor(String name, String id) {
+        mName = name;
+        mId = id;
+        mTags = new ArrayList<>();
+        mTeleports = new ArrayList<>();
     }
 
     private transient boolean mIsSelected;
