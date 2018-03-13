@@ -354,10 +354,16 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
           @Override
           public void createBuilding(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback) {
                 mMazeServer.createBuildingAsync(name, type, address, buildingCreatedCallback);
+
                 mFloorPlanRenderGroup = mMainView.createElementsRenderGroup(null);
                 mFloorPlanRenderGroup.setVisible(true);
+                mFloorPlanRenderGroup.setChangedListener(mFlorPlanChangedListener);
+
                 mTagsRenderGroup = mMainView.createTextRenderGroup(null);
                 mTagsRenderGroup.setVisible(true);
+                mTagsRenderGroup.setChangedListener(mTagsChangedListener);
+
+                mFloorPlan = FloorPlan.build();
           }
         });
 
