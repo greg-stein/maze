@@ -82,6 +82,9 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private IMainView.IAsyncIdProvider mBuildingIdProvider;
     private IMainView.IAsyncIdProvider mFloorIdProvider;
     private IMainView.IAsyncSimilarBuildingsFinder mSimilarBuildingsFinder;
+    private IMainView.IAsyncBuildingCreator mBuildingCreator;
+
+    private IFuckingSimpleGenericCallback<Building> mBuildingUpdater;
 
     public NewFloorDialog(@NonNull Context context) {
         super(context);
@@ -133,6 +136,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 if (Building.current.isDirty()) {
                     // Save changes to current building
                 }
+                // TODO: Ask if user really wants to switch to this building?
                 Building.current = building;
                 Toast.makeText(getContext(),  building.getName(), Toast.LENGTH_SHORT).show();
                 setCreatingFloorsAllowed(true);
@@ -149,18 +153,24 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
     @Override
     protected void onStop() {
-        if (mIsBuildingDirty) {
-            Building.current.setName(txtBuilding.getText().toString());
-            Building.current.setType(txtType.getText().toString());
-            Building.current.setAddress(txtAddress.getText().toString());
-            Building.current.setFloors(mBuildingFloors);
-            Building.current.setDirty(true);
-        }
+        if (Building.current != null) {
+            if (mIsBuildingDirty) {
+                Building.current.setName(txtBuilding.getText().toString());
+                Building.current.setType(txtType.getText().toString());
+                Building.current.setAddress(txtAddress.getText().toString());
+                Building.current.setFloors(mBuildingFloors);
+                Building.current.setDirty(true);
+                mBuildingUpdater.onNotify(Building.current);
+            }
 
-        final Floor selectedFloor = mBuildingFloors.get(mSelectedFloorIndex);
-        if (Building.current.getCurrentFloor() != selectedFloor) {
-            Building.current.setCurrentFloor(selectedFloor);
-            emitFloorChangedEvent(selectedFloor);
+            final Floor selectedFloor = mBuildingFloors.get(mSelectedFloorIndex);
+            final Floor currentFloor = Building.current.getCurrentFloor();
+            if (currentFloor == null || !currentFloor.getId().equals(selectedFloor.getId())) {
+                Building.current.setCurrentFloor(selectedFloor);
+                emitFloorChangedEvent(selectedFloor);
+            }
+        } else {
+            Toast.makeText(getContext(), "The building creation was cancelled. To add a new floor plan create a building first.", Toast.LENGTH_LONG).show();
         }
         super.onStop();
     }
@@ -209,18 +219,20 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnCreateBuilding.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mBuildingIdProvider.generateId(new IFuckingSimpleGenericCallback<String>() {
-                    @Override
-                    public void onNotify(String buildingId) {
-                        Building.current = new Building(
-                                txtBuilding.getText().toString(),
-                                txtAddress.getText().toString(),
-                                txtType.getText().toString(),
-                                buildingId
-                        );
-                        setCreatingFloorsAllowed(true);
-                    }
-                });
+                // This method will send these fields to server
+                mBuildingCreator.createBuilding(
+                        txtBuilding.getText().toString(),
+                        txtType.getText().toString(),
+                        txtAddress.getText().toString(),
+                        // This async callback will be executed after getting newly created building
+                        new IFuckingSimpleGenericCallback<Building>() {
+                            @Override
+                            public void onNotify(Building building) {
+                                Building.current = building;
+                                setCreatingFloorsAllowed(true);
+                            }
+                        }
+                );
             }
         });
 
@@ -387,6 +399,14 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 }
             }
         });
+    }
+
+    public void setBuildingCreator(IMainView.IAsyncBuildingCreator buildingCreator) {
+        mBuildingCreator = buildingCreator;
+    }
+
+    public void setBuildingUpdater(IFuckingSimpleGenericCallback<Building> buildingUpdater) {
+        mBuildingUpdater = buildingUpdater;
     }
 
     public void setBuildingIdProvider(IMainView.IAsyncIdProvider buildingIdProvider) {

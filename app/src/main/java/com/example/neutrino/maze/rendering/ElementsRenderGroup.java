@@ -12,17 +12,17 @@ import java.util.List;
  * Created by Greg Stein on 11/22/2017.
  */
 
-public class ElementsRenderGroup implements IRenderGroup {
+public class ElementsRenderGroup extends RenderGroupBase {
     private GlRenderBuffer mCurrentBuffer = null;
     private List<GlRenderBuffer> mGlBuffers = new ArrayList<>();
     private List<IFloorPlanPrimitive> mRenderedElements = new ArrayList<>();
-    private List<IFloorPlanPrimitive> mElementsNotRenderedYet;
-    private boolean mVisible = false;
+    private List<IFloorPlanPrimitive> mElementsNotRenderedYet = new ArrayList<>();
     private boolean mReadyForRender;
-    private boolean mChanged;
 
     public ElementsRenderGroup(List<IFloorPlanPrimitive> elements) {
-        mElementsNotRenderedYet = elements;
+        if (elements != null) {
+            mElementsNotRenderedYet.addAll(elements);
+        }
         mReadyForRender = false;
     }
 
@@ -55,23 +55,13 @@ public class ElementsRenderGroup implements IRenderGroup {
     }
 
     @Override
-    public boolean isVisible() {
-        return mVisible;
-    }
-
-    @Override
-    public void setVisible(boolean visible) {
-        mVisible = visible;
-    }
-
-    @Override
     public boolean isReadyForRender() {
         return mReadyForRender;
     }
 
     @Override
     public void render(float[] scratch, float deviceAngle) {
-        if (mVisible) {
+        if (isVisible()) {
             for (GlRenderBuffer glBuffer : mGlBuffers) {
                 glBuffer.render(scratch);
             }
@@ -104,32 +94,28 @@ public class ElementsRenderGroup implements IRenderGroup {
     public void addElement(IFloorPlanPrimitive element) {
         mElementsNotRenderedYet.add(element);
         mReadyForRender = false;
-        mChanged = true;
+        setChanged(true);
+        emitElementAddedEvent(element);
     }
 
     @Override
     public void removeElement(IMoveable element) {
         mRenderedElements.remove(element);
-        mChanged = true;
-    }
-
-    @Override
-    public boolean isChanged() {
-        return mChanged;
-    }
-
-    @Override
-    public void setChanged(boolean changed) {
-        mChanged = changed;
+        setChanged(true);
+        emitElementRemovedEvent(element);
     }
 
     @Override
     public void clear() {
         for(IFloorPlanPrimitive primitive : mRenderedElements) {
             if (!primitive.isRemoved()) { // TODO: check if this is always true
+                // TODO: this will call glUpdateBuffer for each element. It is possible to update
+                // TODO: the whole buffer instead, which is faster
                 primitive.cloak();
             }
         }
+        mElementsNotRenderedYet.clear();
         mRenderedElements.clear();
+        // TODO: What about emitting element deleted event? How to handle it?
     }
 }

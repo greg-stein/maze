@@ -2,6 +2,7 @@ package com.example.neutrino.maze.rendering;
 
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.core.IMainView;
 import com.example.neutrino.maze.floorplan.IMoveable;
 
 /**
@@ -33,4 +34,8 @@ public interface IRenderGroup {
     boolean isChanged();
 
     void setChanged(boolean changed);
+
+    void setChangedElement(IMoveable element);
+
+    void setChangedListener(IMainView.IRenderGroupChangedListener listener);
 }

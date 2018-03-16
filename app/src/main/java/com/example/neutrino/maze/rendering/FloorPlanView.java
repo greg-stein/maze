@@ -226,16 +226,21 @@ public class FloorPlanView extends GLSurfaceView {
 //                .setMessage("Paste in the link of an image to moustachify!")
                 .setPositiveButton(okButtonCaption, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        if (tagInfo == null) {
-                            // System.lineSeparator() requires API LEVEL 19
-                            mRenderer.createNewTag(worldPoint, input.getText().toString().replace(System.getProperty("line.separator"), " "));
-                        } else {
-                            Tag tagAtTapLocation = (Tag)tagInfo.second;
-                            tagAtTapLocation.setLabel(input.getText().toString());
-                            mRenderer.calculateTagBoundaries(tagAtTapLocation);
+                        // System.lineSeparator() requires API LEVEL 19
+                        final String tagLabel = input.getText().toString().replace(System.getProperty("line.separator"), " ");
+                        Tag tagAtTapLocation;
+
+                        if (tagInfo == null) { // New tag?
+                            tagAtTapLocation = mRenderer.createNewTag(worldPoint, tagLabel);
+                        } else { // existing tag
+                            tagAtTapLocation = (Tag)tagInfo.second;
+                            tagAtTapLocation.setLabel(tagLabel);
                             IRenderGroup tagGroup = tagInfo.first;
-                            tagGroup.setChanged(true);
+                            tagGroup.setChangedElement(tagAtTapLocation);
                         }
+
+                        mRenderer.calculateTagBoundaries(tagAtTapLocation);
+
                         mHandlingTagCreation = false;
                     }
                 })

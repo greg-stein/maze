@@ -32,7 +32,6 @@ import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.R;
-import com.example.neutrino.maze.core.FloorWatcher;
 import com.example.neutrino.maze.core.IFloorChangedHandler;
 import com.example.neutrino.maze.core.IMainView;
 import com.example.neutrino.maze.core.IMazePresenter;
@@ -42,14 +41,12 @@ import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.Path;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
 import com.example.neutrino.maze.rendering.ElementsRenderGroup;
-import com.example.neutrino.maze.rendering.IRenderGroup;
 import com.example.neutrino.maze.rendering.TextRenderGroup;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
@@ -79,6 +76,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private FABToolbarLayout uiToolbarLayout;
     private Toolbar uiToolbar;
     private FloatingActionButton uiFabEditMode;
+    private FloatingActionButton uiFabUploadChanges;
     private Spinner uiAddSpinner;
     private static final List<Pair<String, Integer>> addSpinnerData = new ArrayList<>();
 
@@ -97,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private float mDegreeOffset;
     private float mCurrentDegree = 0f;
     private FloorPlan mFloorPlan = FloorPlan.build();
-    private FloorWatcher mFloorWatcher;
 
     private UiMode mUiMode = UiMode.MAP_VIEW_MODE;
     private boolean mAutoScanEnabled = false;
@@ -112,6 +109,12 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private IAsyncIdProvider mBuildingIdProvider;
     private IAsyncIdProvider mFloorIdProvider;
     private IAsyncSimilarBuildingsFinder mBuildingsFinder;
+    private IAsyncBuildingCreator mBuildingCreator;
+    private IFuckingSimpleGenericCallback<Building> mBuildingUpdater;
+    private IFuckingSimpleGenericCallback<Boolean> mLocateMeEnabledChangedListener;
+    private boolean mLocateMeEnabled = false;
+    private boolean mUploadButtonVisible;
+    private IFuckingSimpleCallback mUploadButtonClickListener;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -140,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
 
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
         uiFabFindMeOnMap = (FloatingActionButton) findViewById(R.id.fab_find_me_on_map);
+        uiFabUploadChanges = (FloatingActionButton) findViewById(R.id.fab_upload_changes);
         txtWallLength = (TextView) findViewById(R.id.txt_wall_length);
 //        uiFabRemoveLastFingerprint = (FloatingActionButton) findViewById(R.id.fab_remove_last_fingerprint);
 
@@ -165,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
 
         // TODO: commented-out temporarily
 //        mFloorWatcher = FloorWatcher.getInstance(this);
-//        mFloorWatcher.addOnFloorChangedListenerHandler(mFloorChangedHandler);
+//        mFloorWatcher.addOnFloorChangedListener(mFloorChangedHandler);
         mPresenter.onCreate();
     }
 
@@ -189,10 +193,14 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     public void onBackPressed() {
         if (uiToolbarLayout.isToolbar()) {
             uiToolbarLayout.hide();
-            uiFabFindMeOnMap.animate().translationYBy(uiToolbar.getHeight());
+            uiFabFindMeOnMap.show();
+            uiFabUploadChanges.hide();
             uiFloorPlanView.setFloorplanEditMode(false);
             mUiMode = UiMode.MAP_VIEW_MODE;
             emitUiModeChangedEvent(mUiMode);
+        } else {
+            // Exit the app
+            finish();
         }
     }
 
@@ -278,12 +286,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
                 break;
 
             case R.id.btn_new_floorplan:
-                NewFloorDialog nfd = new NewFloorDialog(this);
-                nfd.setBuildingIdProvider(mBuildingIdProvider);
-                nfd.setFloorIdProvider(mFloorIdProvider);
-                nfd.setFloorChangedHandler(mFloorChangedHandler);
-                nfd.setSimilarBuildingsFinder(mBuildingsFinder);
-                nfd.show();
+                 showBuildingEditDialog();
                 break;
 
             case R.id.btn_set_scale:
@@ -322,6 +325,18 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         return true;
     }
 
+    @Override
+    public void showBuildingEditDialog() {
+        NewFloorDialog nfd = new NewFloorDialog(this);
+        nfd.setBuildingIdProvider(mBuildingIdProvider);
+        nfd.setBuildingCreator(mBuildingCreator);
+        nfd.setBuildingUpdater(mBuildingUpdater);
+        nfd.setFloorIdProvider(mFloorIdProvider);
+        nfd.setFloorChangedHandler(mFloorChangedHandler);
+        nfd.setSimilarBuildingsFinder(mBuildingsFinder);
+        nfd.show();
+    }
+
     private void setUiListeners() {
 //        uiToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
 //            @Override
@@ -329,6 +344,15 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
 //                return onOptionsItemSelected(item);
 //            }
 //        });
+
+        uiFabUploadChanges.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mUploadButtonClickListener != null) {
+                    mUploadButtonClickListener.onNotified();
+                }
+            }
+        });
 
         uiAddSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -366,8 +390,13 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         uiFabEditMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                uiFabFindMeOnMap.animate().translationYBy(-uiToolbar.getHeight());
+                uiFabFindMeOnMap.hide();
                 uiToolbarLayout.show();
+                if (mUploadButtonVisible) {
+                    uiFabUploadChanges.show();
+                } else {
+                    uiFabUploadChanges.hide();
+                }
                 uiFloorPlanView.setFloorplanEditMode(true);
                 mUiMode = UiMode.MAP_EDIT_MODE;
                 emitUiModeChangedEvent(mUiMode);
@@ -453,7 +482,14 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         uiFabFindMeOnMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                uiFloorPlanView.centerToLocation();
+                mLocateMeEnabled = !mLocateMeEnabled;
+                if (mLocateMeEnabled) {
+//                    uiFloorPlanView.centerToLocation();
+                    exciteFab(uiFabFindMeOnMap);
+                } else {
+                    calmFab(uiFabFindMeOnMap);
+                }
+                mLocateMeEnabledChangedListener.onNotify(mLocateMeEnabled);
             }
         });
 
@@ -539,6 +575,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
             fab.setAlpha(mFabAlpha);
         }
     };
+
     private float mFabAlpha;
     private float getAlphaFromRes() {
         TypedValue outValue = new TypedValue();
@@ -551,7 +588,6 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private void calmFab(FloatingActionButton fab) {
         fab.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
     }
-
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void updateActionsUiStates() {
         MenuItem btnMove = uiToolbar.getMenu().getItem(0);
@@ -612,6 +648,25 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     }
 
     @Override
+    public void askUserToCreateBuilding(final IFuckingSimpleGenericCallback<Boolean> userAnswerHandler) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Looks like this building is not in Maze. Do you want to aMaze it?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        userAnswerHandler.onNotify(true);
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        userAnswerHandler.onNotify(false);
+                    }
+                }).show();
+
+    }
+
+    @Override
     public void setUiModeChangedListener(IFuckingSimpleGenericCallback<UiMode> listener) {
         mUiModeChangedListener = listener;
     }
@@ -644,6 +699,16 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     @Override
     public void setSimilarBuildingsFinder(IAsyncSimilarBuildingsFinder buildingsFinder) {
         mBuildingsFinder = buildingsFinder;
+    }
+
+    @Override
+    public void setBuildingCreator(IAsyncBuildingCreator buildingCreator) {
+        mBuildingCreator = buildingCreator;
+    }
+
+    @Override
+    public void setBuildingUpdater(IFuckingSimpleGenericCallback<Building> buildingUpdater) {
+        mBuildingUpdater = buildingUpdater;
     }
 
     private void emitUiModeChangedEvent(UiMode newMode) {
@@ -698,14 +763,14 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     }
 
     @Override
-    public ElementsRenderGroup renderElements(List<IFloorPlanPrimitive> elements) {
+    public ElementsRenderGroup createElementsRenderGroup(List<IFloorPlanPrimitive> elements) {
         ElementsRenderGroup floorPlanGroup = uiFloorPlanView.renderElementsGroup(elements);
 
         return floorPlanGroup;
     }
 
     @Override
-    public TextRenderGroup renderTags(List<Tag> tags) {
+    public TextRenderGroup createTextRenderGroup(List<Tag> tags) {
         TextRenderGroup tagsGroup = uiFloorPlanView.renderTagsGroup(tags);
 
         return tagsGroup;
@@ -719,5 +784,40 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     @Override
     public void setTags(List<Tag> tags) {
         mAdapter.updateListData(tags);
+    }
+
+    @Override
+    public void setFloorChangedHandler(IFloorChangedHandler floorChangedHandler) {
+        mFloorChangedHandler = floorChangedHandler;
+    }
+
+    @Override
+    public void setOnLocateMeEnabledChangedListener(IFuckingSimpleGenericCallback<Boolean> listener) {
+        mLocateMeEnabledChangedListener = listener;
+    }
+
+    @Override
+    public void setUploadButtonVisibility(boolean visible) {
+        mUploadButtonVisible = visible;
+        // TODO: See this note below? It shouldn't be here.
+        // NOTE: This is hack/patch/shitty code. WTF?! MainActivity should know that this is coming
+        // from non-UI thread? (actually coming from GL thread)
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mUiMode == UiMode.MAP_EDIT_MODE) {
+                    if (mUploadButtonVisible) {
+                        uiFabUploadChanges.show();
+                    } else {
+                        uiFabUploadChanges.hide();
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    public void setUploadButtonClickListener(IFuckingSimpleCallback listener) {
+        mUploadButtonClickListener = listener;
     }
 }

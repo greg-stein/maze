@@ -9,6 +9,7 @@ import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.rendering.ElementsRenderGroup;
 import com.example.neutrino.maze.rendering.TextRenderGroup;
+import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 
 import java.util.List;
@@ -20,9 +21,9 @@ import java.util.List;
 public interface IMainView {
     void init();
 
-    ElementsRenderGroup renderElements(List<IFloorPlanPrimitive> elements);
+    ElementsRenderGroup createElementsRenderGroup(List<IFloorPlanPrimitive> elements);
 
-    TextRenderGroup renderTags(List<Tag> tags);
+    TextRenderGroup createTextRenderGroup(List<Tag> tags);
 
     void centerMapView(PointF point);
 
@@ -33,6 +34,8 @@ public interface IMainView {
     void setMapRotation(double degree);
 
     UiMode getUiMode();
+
+    void askUserToCreateBuilding(IFuckingSimpleGenericCallback<Boolean> userAnswerHandler);
 
     void setUiModeChangedListener(IFuckingSimpleGenericCallback<UiMode> listener);
 
@@ -48,6 +51,20 @@ public interface IMainView {
 
     void setSimilarBuildingsFinder(IAsyncSimilarBuildingsFinder buildingsFinder);
 
+    void setBuildingCreator(IAsyncBuildingCreator iAsyncBuildingCreator);
+
+    void setBuildingUpdater(IFuckingSimpleGenericCallback<Building> buildingUpdater);
+
+    void showBuildingEditDialog();
+
+    void setFloorChangedHandler(IFloorChangedHandler floorChangedHandler);
+
+    void setOnLocateMeEnabledChangedListener(IFuckingSimpleGenericCallback<Boolean> listener);
+
+    void setUploadButtonVisibility(boolean visible);
+
+    void setUploadButtonClickListener(IFuckingSimpleCallback listener);
+
     enum UiMode { MAP_VIEW_MODE, MAP_EDIT_MODE}
 
     enum MapOperation {
@@ -62,11 +79,21 @@ public interface IMainView {
         IMoveable createElement(MapOperand elementType, PointF location, Object... params);
     }
 
+    interface IRenderGroupChangedListener {
+        void onElementAdd(IMoveable element);
+        void onElementChange(IMoveable element);
+        void onElementRemoved(IMoveable element);
+    }
+
     interface IAsyncIdProvider {
         void generateId(IFuckingSimpleGenericCallback<String> idGeneratedCallback);
     }
 
     interface IAsyncSimilarBuildingsFinder {
         void findBuildings(String pattern, IFuckingSimpleGenericCallback<List<Building>> buildingsAcquiredCallback);
+    }
+
+    interface IAsyncBuildingCreator {
+        void createBuilding(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback);
     }
 }

@@ -39,7 +39,7 @@ public class Building {
     public Building() {
     }
 
-    public Building(String name, String address, String type, String id) {
+    public Building(String name, String type, String address, String id) {
         this.mName = name;
         this.mAddress = address;
         this.mType = type;
@@ -164,6 +164,16 @@ public class Building {
 
     public void setDirty(boolean dirty) {
         mDirty = dirty;
+    }
+
+    public Floor getFloor(String floorId) {
+        for (Floor floor : mFloors) {
+            if (floor.getId().equals(floorId)) {
+                return floor;
+            }
+        }
+
+        return null;
     }
 
     public static class TagComparator implements Comparator<Tag> {

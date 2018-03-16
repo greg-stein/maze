@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:clipChildren="false"
-    android:clipToPadding="false"
-    tools:context="com.example.neutrino.maze.ui.MainActivity">
+                                                 xmlns:tools="http://schemas.android.com/tools"
+                                                 android:layout_width="match_parent"
+                                                 android:layout_height="match_parent"
+                                                 xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                 android:fitsSystemWindows="true"
+                                                 android:clipChildren="false"
+                                                 android:clipToPadding="false"
+                                                 tools:context="com.example.neutrino.maze.ui.MainActivity">
 
     <include layout="@layout/content_main" />
 
@@ -21,5 +22,21 @@
         android:alpha="@dimen/alpha_default"
         android:elevation="@dimen/fab_elevation"
         android:src="@drawable/ic_gps_fixed_white_24dp"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_upload_changes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_marginBottom="85dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginLeft="15dp"
+        android:alpha="0.75"
+        app:backgroundTint="@color/colorUpload"
+        android:elevation="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        android:src="@drawable/ic_cloud_upload_white_24dp"/>
 
 </android.support.design.widget.CoordinatorLayout>

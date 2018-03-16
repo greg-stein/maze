@@ -34,6 +34,7 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_margin="@dimen/fab_margin"
+            app:backgroundTint="@color/colorEditMode"
             android:src="@drawable/ic_mode_edit_white_24dp"
             app:fabSize="mini" />
 

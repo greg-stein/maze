@@ -10,18 +10,14 @@ import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.PersistenceLayer;
 import com.example.neutrino.maze.floorplan.RadioMapFragment;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
-import com.example.neutrino.maze.util.JsonSerializer;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Created by Greg Stein on 9/30/2017.
@@ -63,7 +59,7 @@ public class MazeServerMock implements IMazeServer {
 
     private MazeServerMock(Context context) {
         this.mContext = context;
-        dbBuilding = new Building("Haifa Mall", "Flieman str. Haifa", "Mall", "building_id");
+        dbBuilding = new Building("Haifa Mall", "Mall", "Flieman str. Haifa", "building_id");
         List<Floor> floors = new ArrayList<>();
         floors.add(dbFloor1 = new Floor("1", "floor_id_1"));
         floors.add(dbFloor2 = new Floor("2", "floor_id_2"));
@@ -101,25 +97,33 @@ public class MazeServerMock implements IMazeServer {
     public void findSimilarBuildings(String pattern, IFuckingSimpleGenericCallback<List<Building>> buildingsAcquiredCallback) {
         List<Building> buildings = new ArrayList<>();
 
-        buildings.add(new Building("Haifa Mall 1", "Flieman st. Haifa", "Mall", "1"));
-        buildings.add(new Building("Haifa Mall 2", "Flieman st. Haifa", "Mall", "1"));
-        buildings.add(new Building("Haifa Mall 3", "Flieman st. Haifa", "Mall", "1"));
-        buildings.add(new Building("Haifa Mall 4", "Flieman st. Haifa", "Mall", "1"));
-        buildings.add(new Building("Haifa Mall 5", "Flieman st. Haifa", "Mall", "1"));
-        buildings.add(new Building("Haifa Mall 6", "Flieman st. Haifa", "Mall", "1"));
-        buildings.add(new Building("Haifa Mall 7", "Flieman st. Haifa", "Mall", "1"));
-        buildings.add(new Building("Haifa Mall 8", "Flieman st. Haifa", "Mall", "1"));
-        buildings.add(new Building("Haifa Mall 9", "Flieman st. Haifa", "Mall", "1"));
-        buildings.add(new Building("Haifa Mall 10", "Flieman st. Haifa", "Mall", "1"));
-        buildings.add(new Building("Haifa Mall 11", "Flieman st. Haifa", "Mall", "1"));
-        buildings.add(new Building("Haifa Mall 12", "Flieman st. Haifa", "Mall", "1"));
+        buildings.add(new Building("Haifa Mall 1", "Mall", "Flieman st. Haifa", "1"));
+        buildings.add(new Building("Haifa Mall 2", "Mall", "Flieman st. Haifa", "1"));
+        buildings.add(new Building("Haifa Mall 3", "Mall", "Flieman st. Haifa", "1"));
+        buildings.add(new Building("Haifa Mall 4", "Mall", "Flieman st. Haifa", "1"));
+        buildings.add(new Building("Haifa Mall 5", "Mall", "Flieman st. Haifa", "1"));
+        buildings.add(new Building("Haifa Mall 6", "Mall", "Flieman st. Haifa", "1"));
+        buildings.add(new Building("Haifa Mall 7", "Mall", "Flieman st. Haifa", "1"));
+        buildings.add(new Building("Haifa Mall 8", "Mall", "Flieman st. Haifa", "1"));
+        buildings.add(new Building("Haifa Mall 9", "Mall", "Flieman st. Haifa", "1"));
+        buildings.add(new Building("Haifa Mall 10", "Mall", "Flieman st. Haifa", "1"));
+        buildings.add(new Building("Haifa Mall 11", "Mall", "Flieman st. Haifa", "1"));
+        buildings.add(new Building("Haifa Mall 12", "Mall", "Flieman st. Haifa", "1"));
 
         buildingsAcquiredCallback.onNotify(buildings);
     }
 
     @Override
     public void createBuildingAsync(IFuckingSimpleGenericCallback<String> onBuildingCreated) {
-        onBuildingCreated.onNotify(Integer.toString(buildingSequence++));
+        final String buildingId = Integer.toString(buildingSequence++);
+        onBuildingCreated.onNotify(buildingId);
+    }
+
+    @Override
+    public void createBuildingAsync(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback) {
+        final String buildingId = Integer.toString(buildingSequence++);
+        final Building building = new Building(name, type, address, buildingId);
+        buildingCreatedCallback.onNotify(building);
     }
 
     @Override
@@ -129,6 +133,11 @@ public class MazeServerMock implements IMazeServer {
 
     @Override
     public void upload(Building building, IFuckingSimpleCallback onDone) {
+        dbBuilding.setName(building.getName());
+        dbBuilding.setType(building.getType());
+        dbBuilding.setAddress(building.getAddress());
+        dbBuilding.setFloors(building.getFloors());
+        building.setDirty(false);
         onDone.onNotified();
     }
 
@@ -139,6 +148,18 @@ public class MazeServerMock implements IMazeServer {
 
     @Override
     public void upload(RadioMapFragment radioMap, IFuckingSimpleCallback onDone) {
+        final List<Fingerprint> fingerprints = radioMap.getFingerprints();
+
+        if (radioMap.getFloorId().equals(dbFloor1.getId())) {
+            for (Fingerprint fingerprint : fingerprints) {
+                dbRadioMap1.addFingerprint(fingerprint);
+            }
+        } else if (radioMap.getFloorId().equals(dbFloor2.getId())) {
+            for (Fingerprint fingerprint : fingerprints) {
+                dbRadioMap2.addFingerprint(fingerprint);
+            }
+        }
+
         onDone.onNotified();
     }
 
@@ -153,7 +174,9 @@ public class MazeServerMock implements IMazeServer {
     @Override
     public void findCurrentBuildingAndFloorAsync(WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<Pair<String, String>> callback) {
         if (fingerprint != null && !fingerprint.isEmpty()) {
-            callback.onNotify(new Pair<>(dbBuilding.getId(), dbFloor1.getId()));
+            // test only
+            callback.onNotify(new Pair<>("", ""));
+//            callback.onNotify(new Pair<>(dbBuilding.getId(), dbFloor1.getId()));
         }
         // else JOPA
     }

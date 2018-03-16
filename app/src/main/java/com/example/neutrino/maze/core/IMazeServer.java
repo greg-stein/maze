@@ -20,6 +20,7 @@ import java.util.List;
 public interface IMazeServer {
     void findSimilarBuildings(String pattern, IFuckingSimpleGenericCallback<List<Building>> buildingsAcquiredCallback);
     void createBuildingAsync(IFuckingSimpleGenericCallback<String> onBuildingCreated);
+    void createBuildingAsync(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback);
     void createFloorAsync(IFuckingSimpleGenericCallback<String> onFloorCreated);
     void upload(Building building, IFuckingSimpleCallback onDone);
     void upload(FloorPlan floorPlan, IFuckingSimpleCallback onDone);
