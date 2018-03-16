@@ -31,7 +31,7 @@ import static com.example.neutrino.maze.core.Locator.*;
  * Created by Greg Stein on 10/31/2017.
  */
 
-public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDeviceRotationListener, IFuckingSimpleGenericCallback<Fingerprint>,IFloorChangedHandler {
+public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDeviceRotationListener, IFuckingSimpleGenericCallback<Fingerprint>, IFloorChangedHandler {
     private Context mContext;
     private final IMainView mMainView;
     private WifiScanner mWifiScanner = null;
@@ -306,9 +306,67 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mMainView.setFloorChangedHandler(this);
 
         mMainView.setUploadButtonClickListener(new IFuckingSimpleCallback() {
+            private boolean mFloorPlanUploadRequested = false;
+            private boolean mFloorPlanUploadDone = false;
+            private boolean mBuildingUploadRequested = false;
+            private boolean mBuildingUploadDone = false;
+            private boolean mRadioMapUploadRequested = false;
+            private boolean mRadioMapUploadDone = false;
+
+            private IFuckingSimpleCallback mFloorPlanOnUploadDone = new IFuckingSimpleCallback() {
+                @Override
+                public void onNotified() {
+                    mFloorPlanUploadDone = true;
+                    allUploadDone();
+                }
+            };
+
+            private IFuckingSimpleCallback mBuildingOnUploadDone = new IFuckingSimpleCallback() {
+                @Override
+                public void onNotified() {
+                    mBuildingUploadDone = true;
+                    allUploadDone();
+                }
+            };
+
+            private IFuckingSimpleCallback mRadioMapOnUploadDone = new IFuckingSimpleCallback() {
+                @Override
+                public void onNotified() {
+                    mRadioMapUploadDone = true;
+                    allUploadDone();
+                }
+            };
+
+            private synchronized void allUploadDone() {
+                final boolean floorPlanDone = !mFloorPlanUploadRequested || mFloorPlanUploadDone;
+                final boolean buildingDone = !mBuildingUploadRequested || mBuildingUploadDone;
+                final boolean radioMapDone = !mRadioMapUploadRequested || mRadioMapUploadDone;
+
+                if (floorPlanDone && buildingDone && radioMapDone) {
+                    mMainView.setUploadButtonVisibility(false);
+                }
+            }
+
             @Override
             public void onNotified() {
                 // TODO: Upload changes in floor plan, radio map, tags, teleports, ...
+                if (mFloorPlan.isSketchDirty()) {
+                    mFloorPlanUploadRequested = true;
+                    mMazeServer.upload(mFloorPlan, mFloorPlanOnUploadDone);
+                }
+
+                if (Building.current.isDirty()) {
+                    mBuildingUploadRequested = true;
+                    mMazeServer.upload(Building.current, mBuildingOnUploadDone);
+                }
+
+                // New fingerprints were added?
+                if (!mAugmentedRadioMap.isEmpty()) {
+                    mRadioMapUploadRequested = true;
+                    Floor currentFloor = Building.current.getCurrentFloor();
+                    RadioMapFragment newRadioMapFragment = new RadioMapFragment(mAugmentedRadioMap, currentFloor.getId());
+                    mMazeServer.upload(newRadioMapFragment, mRadioMapOnUploadDone);
+                }
             }
         });
 
@@ -460,7 +518,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     public void onNotify(Fingerprint fingerprint) {
         // TODO: It should not be the case that any newly created fingerprint is added to the radiomap
         // TODO: Instead, we should examine fingerprint's quality and only after that add it to SEPARATE
-        // TODO: collection which later will be upoaded to server.
+        // TODO: collection which later will be uploaded to server.
         mAugmentedRadioMap.add(fingerprint);
         mAugmentedRadioMapRenderGroup.addElement(fingerprint);
     }
