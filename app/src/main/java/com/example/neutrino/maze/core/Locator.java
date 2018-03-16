@@ -38,9 +38,10 @@ public class Locator implements WifiScanner.IFingerprintAvailableListener, Senso
         return instance;
     }
 
-    private WifiScanner mWifiScanner;
-    private SensorListener mSensorListener;
-    private WiFiLocator mWifiLocator;
+    private WifiScanner mWifiScanner = WifiScanner.getInstance();
+    private SensorListener mSensorListener = SensorListener.getInstance();
+    private WiFiLocator mWifiLocator = WiFiLocator.getInstance();
+    private LiftDetector mLiftDetector = LiftDetector.getInstance();
     private boolean mUseWifiScanner;
     private MovingAveragePointsQueue mLastLocations = new MovingAveragePointsQueue(WINDOW_SIZE);
     private PointF mCurrentLocation = new PointF(Float.MAX_VALUE, Float.MAX_VALUE);
@@ -60,6 +61,7 @@ public class Locator implements WifiScanner.IFingerprintAvailableListener, Senso
         mWifiScanner.addFingerprintAvailableListener(this);
         mSensorListener.addStepDetectedListener(this);
         mSensorListener.addDeviceRotationListener(this);
+        mSensorListener.addGravityChangedListener(mLiftDetector);
         mUseWifiScanner = true;
 
         SharedPreferences settings = context.getSharedPreferences(

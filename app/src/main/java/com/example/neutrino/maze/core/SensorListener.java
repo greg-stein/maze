@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.opengl.Matrix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class SensorListener implements SensorEventListener {
     private boolean mActive;
 
     public static SensorListener getInstance(Context context) {
+
         if (instance == null) {
             synchronized (mutex) {
                 if (instance == null)
@@ -39,6 +41,7 @@ public class SensorListener implements SensorEventListener {
 
     private List<IDeviceRotationListener> mDeviceRotationEventListeners = new ArrayList<>();
     private List<IStepDetectedListener> mStepDetectedEventListeners = new ArrayList<>();
+    private List<IGravityChangedListener> mGravityChangedEventListeners = new ArrayList<>();
 
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
@@ -55,7 +58,9 @@ public class SensorListener implements SensorEventListener {
 
     private float[] mGravitySensorRawData;
     private float[] mGeomagneticSensorRawData;
-    private static final float[] mRotationMatrix = new float[9];
+    private static final float[] mGravitySensorRawDataAugmented = new float[4];
+    private static final float[] mGravitySensorAdjustedData = new float[4];
+    private static final float[] mRotationMatrix = new float[16];   // 4x4 for compatibility with OpenGL
     private static final float[] mInclinationMatrix = new float[9];
     private static final float[] mOrientation = new float[3];
 
@@ -102,15 +107,15 @@ public class SensorListener implements SensorEventListener {
 
         switch (event.sensor.getType()) {
             case Sensor.TYPE_GRAVITY: {
-                mGravitySensorRawData = lowPass(event.values.clone(), mGravitySensorRawData);
+                mGravitySensorRawData = lowPass(event.values, mGravitySensorRawData);
                 break;
             }
             case Sensor.TYPE_ACCELEROMETER: {
-                mGravitySensorRawData = lowPass(event.values.clone(), mGravitySensorRawData);
+                mGravitySensorRawData = lowPass(event.values, mGravitySensorRawData);
                 break;
             }
             case Sensor.TYPE_MAGNETIC_FIELD: {
-                mGeomagneticSensorRawData = lowPass(event.values.clone(), mGeomagneticSensorRawData);
+                mGeomagneticSensorRawData = lowPass(event.values, mGeomagneticSensorRawData);
                 break;
             }
             case Sensor.TYPE_ROTATION_VECTOR: {
@@ -135,6 +140,15 @@ public class SensorListener implements SensorEventListener {
             SensorManager.getOrientation(mRotationMatrix, mOrientation);
             double degree = Math.toDegrees(mOrientation[0]);
             emitDeviceRotationEvent(degree);
+            if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER || event.sensor.getType() == Sensor.TYPE_GRAVITY) {
+                mGravitySensorRawDataAugmented[0] = mGravitySensorRawData[0];
+                mGravitySensorRawDataAugmented[1] = mGravitySensorRawData[1];
+                mGravitySensorRawDataAugmented[2] = mGravitySensorRawData[2];
+                // according to getRotationMatrix documentation: [0 0 g] = R * gravity (g = magnitude of gravity)
+                // the third element (Z coordinate) of the resultant vector is the current magnitude of acceleration in the earth Z axis)
+                Matrix.multiplyMV(mGravitySensorAdjustedData, 0, mRotationMatrix, 0, mGravitySensorRawDataAugmented, 0);
+                emitGravityChangedEvent(mGravitySensorAdjustedData[2]);
+            }
         }
     }
 
@@ -187,8 +201,22 @@ public class SensorListener implements SensorEventListener {
         }
     }
 
+    public interface IGravityChangedListener {
+        void onGravityChanged(float newGravity);
+    }
+
+    public void addGravityChangedListener(IGravityChangedListener listener) {
+        mGravityChangedEventListeners.add(listener);
+    }
+
+    private void emitGravityChangedEvent(float newGravity) {
+        for (IGravityChangedListener listener : mGravityChangedEventListeners) {
+            listener.onGravityChanged(newGravity);
+        }
+    }
+
     private static float[] lowPass( float[] newSensorData, float[] oldSensorData ) {
-        if ( oldSensorData == null ) return newSensorData;
+        if ( oldSensorData == null ) return newSensorData.clone();
 
         for ( int i=0; i < newSensorData.length; i++ ) {
             oldSensorData[i] = newSensorData[i] + LOW_PASS_ALPHA * (oldSensorData[i] - newSensorData[i]);
