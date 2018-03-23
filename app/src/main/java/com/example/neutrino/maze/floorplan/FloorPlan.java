@@ -4,6 +4,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 
 import com.example.neutrino.maze.floorplan.transitions.ITeleport;
+import com.example.neutrino.maze.floorplan.transitions.Teleport;
 import com.example.neutrino.maze.navigation.PathFinderBase;
 import com.example.neutrino.maze.util.CommonHelper;
 
@@ -16,12 +17,12 @@ import java.util.List;
  */
 public class FloorPlan {
     private List<IFloorPlanPrimitive> mSketch;
-    private List<ITeleport> mTeleports; // TODO: remove
+    private List<Teleport> mTeleports; // TODO: remove
     private boolean mIsSketchDirty = false;
 
     public static FloorPlan build(List<Object> entities) {
         FloorPlan floorPlan = new FloorPlan();
-        floorPlan.mTeleports = CommonHelper.extractObjects(ITeleport.class, entities);
+        floorPlan.mTeleports = CommonHelper.extractObjects(Teleport.class, entities);
 //        List<Wall> walls = FloorplanVectorizer.connect(CommonHelper.extractObjects(Wall.class, entities));
 
         // Remove location marks from floorplan
@@ -96,11 +97,11 @@ public class FloorPlan {
         this.mSketch.clear();
     }
 
-    public List<ITeleport> getTeleportsOnFloor() {
+    public List<Teleport> getTeleportsOnFloor() {
         return mTeleports;
     }
 
-    public List<ITeleport> getTeleportsById(String id) {
+    public List<Teleport> getTeleportsById(String id) {
         return null;
     }
 

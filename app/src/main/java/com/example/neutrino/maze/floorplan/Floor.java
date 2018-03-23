@@ -16,7 +16,7 @@ public class Floor {
 
     private String mName;
     private String mId; // TODO: this should be changed to ObjectId later
-    private List<ITeleport> mTeleports;
+    private List<Teleport> mTeleports;
     private List<Tag> mTags;
 
     public Floor() {}
@@ -46,11 +46,11 @@ public class Floor {
         this.mId = mId;
     }
 
-    public List<ITeleport> getTeleports() {
+    public List<Teleport> getTeleports() {
         return mTeleports;
     }
 
-    public void setTeleports(List<ITeleport> teleports) {
+    public void setTeleports(List<Teleport> teleports) {
         mTeleports = teleports;
     }
 
@@ -71,5 +71,13 @@ public class Floor {
 
     public void setTags(List<Tag> tags) {
         mTags = tags;
+    }
+
+    public void addTeleport(Teleport teleport) {
+        mTeleports.add(teleport);
+    }
+
+    public void removeTeleport(Teleport teleport) {
+        mTeleports.remove(teleport);
     }
 }

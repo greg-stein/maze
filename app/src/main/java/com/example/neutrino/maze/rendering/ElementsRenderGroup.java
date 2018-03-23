@@ -19,7 +19,7 @@ public class ElementsRenderGroup extends RenderGroupBase {
     private List<IFloorPlanPrimitive> mElementsNotRenderedYet = new ArrayList<>();
     private boolean mReadyForRender;
 
-    public ElementsRenderGroup(List<IFloorPlanPrimitive> elements) {
+    public ElementsRenderGroup(List<? extends IFloorPlanPrimitive> elements) {
         if (elements != null) {
             mElementsNotRenderedYet.addAll(elements);
         }

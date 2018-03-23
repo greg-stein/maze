@@ -16,6 +16,7 @@ import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.RadioMapFragment;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.floorplan.Wall;
+import com.example.neutrino.maze.floorplan.transitions.Teleport;
 import com.example.neutrino.maze.rendering.ElementsRenderGroup;
 import com.example.neutrino.maze.rendering.TextRenderGroup;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
@@ -49,12 +50,14 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private ElementsRenderGroup mAugmentedRadioMapRenderGroup;
     private List<Fingerprint> mAugmentedRadioMap = new ArrayList<>();
     private TextRenderGroup mTagsRenderGroup;
+    private TextRenderGroup mTeleportsLabelsRenderGroup;
+    private ElementsRenderGroup mTeleportsElementsRenderGroup;
 
     private StepCalibratorService mStepCalibratorService;
     private boolean mStepCalibratorEnabled = false; // temporary change to disable StepCalibratorService
     private Intent mStepCalibratorServiceIntent;
     private RadioMapFragment mRadioMapFragment;
-    private List<Tag> mTags;
+
     private WifiScanner.IFingerprintAvailableListener mFirstFingerprintAvailableListener
             = new WifiScanner.IFingerprintAvailableListener() {
 
@@ -97,6 +100,9 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 onFloorChanged(Building.current.getFloor(mFloorId));
                 Building.current.setCurrentFloor(mFloorId);
                 mTagsRenderGroup = mMainView.createTextRenderGroup(Building.current.getCurrentFloor().getTags());
+                mTeleportsLabelsRenderGroup = mMainView.createTextRenderGroup(Building.current.getCurrentFloor().getTeleports());
+                mTeleportsElementsRenderGroup = mMainView.createElementsRenderGroup(Building.current.getCurrentFloor().getTeleports());
+                mTeleportsElementsRenderGroup.setChangedListener(mTeleportsChangedListener);
                 mTagsRenderGroup.setChangedListener(mTagsChangedListener);
                 mFloorPlanRenderGroup.setChangedListener(mFlorPlanChangedListener);
                 // Render the floor plan
@@ -174,6 +180,27 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         }
     };
 
+    private IMainView.IRenderGroupChangedListener mTeleportsChangedListener = new IMainView.IRenderGroupChangedListener() {
+        @Override
+        public void onElementAdd(IMoveable element) {
+            Building.current.getCurrentFloor().addTeleport((Teleport) element);
+            Building.current.setDirty(true); // mark building to upload the tag
+            mMainView.setUploadButtonVisibility(true);
+        }
+
+        @Override
+        public void onElementChange(IMoveable element) {
+            Building.current.setDirty(true);
+            mMainView.setUploadButtonVisibility(true);
+        }
+
+        @Override
+        public void onElementRemoved(IMoveable element) {
+            Building.current.getCurrentFloor().removeTeleport((Teleport) element);
+            Building.current.setDirty(true);
+            mMainView.setUploadButtonVisibility(true);
+        }
+    };
 
     private IMainView.IRenderGroupChangedListener mTagsChangedListener = new IMainView.IRenderGroupChangedListener() {
         @Override
@@ -210,6 +237,13 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 case BOUNDARIES:
                     break;
                 case TELEPORT:
+                    if (params != null && params.length > 0 && params[0] instanceof String) {
+                        String teleportId = (String) params[0];
+                        Teleport teleport = new Teleport(location, teleportId);
+                        mTeleportsLabelsRenderGroup.addItem(teleport); // this will render teleportId as text
+                        mTeleportsElementsRenderGroup.addElement(teleport); // this will render teleport shape
+                        return teleport;
+                    }
                     break;
                 case LOCATION_TAG:
                     if (params != null && params.length > 0 && params[0] instanceof String) {
@@ -433,6 +467,12 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mTagsRenderGroup = mMainView.createTextRenderGroup(null);
                 mTagsRenderGroup.setVisible(true);
                 mTagsRenderGroup.setChangedListener(mTagsChangedListener);
+
+                mTeleportsElementsRenderGroup = mMainView.createElementsRenderGroup(null);
+                mTeleportsLabelsRenderGroup = mMainView.createTextRenderGroup(null);
+                mTeleportsElementsRenderGroup.setChangedListener(mTeleportsChangedListener);
+                mTeleportsElementsRenderGroup.setVisible(true);
+                mTeleportsLabelsRenderGroup.setVisible(true);
 
                 mFloorPlan = FloorPlan.build();
           }

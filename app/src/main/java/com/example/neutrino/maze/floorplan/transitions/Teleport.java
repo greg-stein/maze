@@ -38,7 +38,7 @@ public class Teleport extends Tag implements ITeleport, IFloorPlanPrimitive {
 
     public Teleport(PointF location, String id, Type type) {
         super(location, id);
-        mElevatorMark = new Footprint(location.x, location.y, ELEVATOR_MARK_RADIUS);
+        mElevatorMark = new Footprint(location.x, location.y);//, ELEVATOR_MARK_RADIUS);
         mElevatorMark.setColor(Color.DKGRAY);
         mType = type;
     }

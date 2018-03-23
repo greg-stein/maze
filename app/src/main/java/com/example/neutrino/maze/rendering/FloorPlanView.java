@@ -266,33 +266,33 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.windowToWorld(x, y, worldPoint);
 
         // TODO: Tags should migrate to Floor
-        Tag tagAtLocation = (Tag)mRenderer.findObjectHavingPoint(worldPoint, Tag.class).second;
-        if (!(tagAtLocation instanceof Teleport)) {
-            tagAtLocation = null;
-        }
-        if (tagAtLocation != null) {
-            input.setText(tagAtLocation.getLabel());
+        final Pair<IRenderGroup, IMoveable> teleportInfo = mRenderer.findObjectHavingPoint(worldPoint, Teleport.class);
+        if (teleportInfo != null) {
+            // Existing teleport
+            Teleport foundTeleport = (Teleport) teleportInfo.second;
+            input.setText(foundTeleport.getLabel());
             dialogTitle = "Change teleport id";
             okButtonCaption = "Change";
         }
-        final Tag teleportAtTapLocation = tagAtLocation;
 
         new AlertDialog.Builder(getContext())
                 .setTitle(dialogTitle)
                 .setView(input)
-//                .setMessage("Paste in the link of an image to moustachify!")
                 .setPositiveButton(okButtonCaption, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        if (teleportAtTapLocation == null) {
-                            // System.lineSeparator() requires API LEVEL 19
-                            Teleport teleport = new Teleport(worldPoint, input.getText().toString().replace(System.getProperty("line.separator"), " "),
-                                    Teleport.Type.ELEVATOR);
-//                            mRenderer.addNewTag(teleport);
-                            mRenderer.addPrimitive(teleport);
-                        } else {
-                            teleportAtTapLocation.setLabel(input.getText().toString());
-                            mRenderer.calculateTagBoundaries(teleportAtTapLocation);
+                        // System.lineSeparator() requires API LEVEL 19
+                        String teleportId = input.getText().toString().replace(System.getProperty("line.separator"), "");
+                        Teleport teleportAtTapLocation;
+
+                        if (teleportInfo == null) { // New teleport?
+                            teleportAtTapLocation = mRenderer.createNewTeleport(worldPoint, teleportId);
+                        } else { // Existing teleport
+                            teleportAtTapLocation = (Teleport) teleportInfo.second;
+                            teleportAtTapLocation.setLabel(teleportId);
+                            IRenderGroup teleportGroup = teleportInfo.first;
+                            teleportGroup.setChangedElement(teleportAtTapLocation);
                         }
+                        mRenderer.calculateTagBoundaries(teleportAtTapLocation);
                         mHandlingTagCreation = false;
                     }
                 })
@@ -368,11 +368,11 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
-    public ElementsRenderGroup renderElementsGroup(List<IFloorPlanPrimitive> elements) {
+    public ElementsRenderGroup renderElementsGroup(List<? extends IFloorPlanPrimitive> elements) {
         return mRenderer.renderElements(elements);
     }
 
-    public TextRenderGroup renderTagsGroup(List<Tag> tags) {
+    public TextRenderGroup renderTagsGroup(List<? extends Tag> tags) {
         return mRenderer.renderTags(tags);
     }
 

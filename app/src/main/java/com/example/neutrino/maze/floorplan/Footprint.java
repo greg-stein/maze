@@ -7,7 +7,7 @@ import android.graphics.PointF;
  */
 // TODO: to be deleted
 public class Footprint extends CircleBase {
-    private static final int SEGMENTS_NUM = 6;
+    private static final int SEGMENTS_NUM = 32;
     private static final float RADIUS = 2.5f; // in meters
 
     public void setRadius(float radius) {

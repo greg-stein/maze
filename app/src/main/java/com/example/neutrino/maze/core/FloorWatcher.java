@@ -5,6 +5,7 @@ import android.graphics.PointF;
 
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.transitions.ITeleport;
+import com.example.neutrino.maze.floorplan.transitions.Teleport;
 import com.example.neutrino.maze.rendering.VectorHelper;
 
 import java.util.ArrayList;
@@ -84,8 +85,8 @@ public class FloorWatcher implements Locator.ILocationUpdatedListener, WifiScann
         }
 
         // Check if user is entering range of new teleport
-        List<ITeleport> teleports = mBuilding.getCurrentFloor().getTeleports();
-        for (ITeleport teleport : teleports) {
+        List<Teleport> teleports = mBuilding.getCurrentFloor().getTeleports();
+        for (Teleport teleport : teleports) {
             if (VectorHelper.squareDistance(teleport.getLocation(), location) <= TELEPORT_RANGE_ENTER_SQ) {
                 mProximityTeleports.add(teleport);
             }

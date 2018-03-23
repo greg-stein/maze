@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.PointF;
 
 import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.LiftDetector;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;
@@ -38,10 +39,10 @@ public class Locator implements WifiScanner.IFingerprintAvailableListener, Senso
         return instance;
     }
 
-    private WifiScanner mWifiScanner = WifiScanner.getInstance();
-    private SensorListener mSensorListener = SensorListener.getInstance();
-    private WiFiLocator mWifiLocator = WiFiLocator.getInstance();
-    private LiftDetector mLiftDetector = LiftDetector.getInstance();
+    private WifiScanner mWifiScanner;
+    private SensorListener mSensorListener;
+    private WiFiLocator mWifiLocator;
+    private LiftDetector mLiftDetector;
     private boolean mUseWifiScanner;
     private MovingAveragePointsQueue mLastLocations = new MovingAveragePointsQueue(WINDOW_SIZE);
     private PointF mCurrentLocation = new PointF(Float.MAX_VALUE, Float.MAX_VALUE);
@@ -57,6 +58,7 @@ public class Locator implements WifiScanner.IFingerprintAvailableListener, Senso
         mWifiScanner = WifiScanner.getInstance(context);
         mSensorListener = SensorListener.getInstance(context);
         mWifiLocator = WiFiLocator.getInstance();
+        mLiftDetector = LiftDetector.getInstance();
 
         mWifiScanner.addFingerprintAvailableListener(this);
         mSensorListener.addStepDetectedListener(this);

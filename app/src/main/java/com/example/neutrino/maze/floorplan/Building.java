@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import android.os.Build;
 
 import com.example.neutrino.maze.floorplan.transitions.ITeleport;
+import com.example.neutrino.maze.floorplan.transitions.Teleport;
 
 import org.simmetrics.StringMetric;
 import org.simmetrics.metrics.StringMetrics;
@@ -56,8 +57,8 @@ public class Building {
         if (null == mFloors) return;
 
         for (Floor floor : mFloors) {
-            final List<ITeleport> floorTeleports = floor.getTeleports();
-            for (ITeleport teleport : floorTeleports) {
+            final List<Teleport> floorTeleports = floor.getTeleports();
+            for (Teleport teleport : floorTeleports) {
                 List<ITeleport> sameIdTeleports;
                 final String teleportId = teleport.getId();
 

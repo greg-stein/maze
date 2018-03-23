@@ -21,7 +21,7 @@ public class TextRenderGroup extends RenderGroupBase {
     private List<Tag> mTagsNotRenderedYet = new ArrayList<>();
     private GLText mGlText;
 
-    public TextRenderGroup(List<Tag> tags, GLText glText) {
+    public TextRenderGroup(List<? extends Tag> tags, GLText glText) {
         if (tags != null) {
             mTagsNotRenderedYet.addAll(tags);
         }

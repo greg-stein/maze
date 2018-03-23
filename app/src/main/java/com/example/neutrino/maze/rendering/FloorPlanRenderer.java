@@ -19,6 +19,7 @@ import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.LocationMark;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.floorplan.Wall;
+import com.example.neutrino.maze.floorplan.transitions.Teleport;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 
 import java.io.IOException;
@@ -206,14 +207,14 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         mRenderGroups.add(group); // Lock could be required
     }
 
-    public ElementsRenderGroup renderElements(List<IFloorPlanPrimitive> elements) {
+    public ElementsRenderGroup renderElements(List<? extends IFloorPlanPrimitive> elements) {
         final ElementsRenderGroup newGroup = new ElementsRenderGroup(elements);
         mRenderGroups.add(newGroup);
 
         return newGroup;
     }
 
-    public TextRenderGroup renderTags(List<Tag> tags) {
+    public TextRenderGroup renderTags(List<? extends Tag> tags) {
         final TextRenderGroup newGroup = new TextRenderGroup(tags, glText);
         mRenderGroups.add(newGroup);
 
@@ -608,6 +609,10 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public Tag createNewTag(PointF worldPoint, String label) {
         return (Tag)mElementFactory.createElement(IMainView.MapOperand.LOCATION_TAG, worldPoint, label);
+    }
+
+    public Teleport createNewTeleport(PointF worldPoint, String teleportId) {
+        return (Teleport)mElementFactory.createElement(IMainView.MapOperand.TELEPORT, worldPoint, teleportId);
     }
 
     // Returns IMoveable element under given coords and its render group

@@ -1,5 +1,7 @@
 package com.example.neutrino.maze;
 
+import com.example.neutrino.maze.core.SensorListener;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

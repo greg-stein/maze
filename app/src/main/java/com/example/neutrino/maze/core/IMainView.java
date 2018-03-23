@@ -21,9 +21,9 @@ import java.util.List;
 public interface IMainView {
     void init();
 
-    ElementsRenderGroup createElementsRenderGroup(List<IFloorPlanPrimitive> elements);
+    ElementsRenderGroup createElementsRenderGroup(List<? extends IFloorPlanPrimitive> elements);
 
-    TextRenderGroup createTextRenderGroup(List<Tag> tags);
+    TextRenderGroup createTextRenderGroup(List<? extends Tag> tags);
 
     void centerMapView(PointF point);
 
