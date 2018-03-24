@@ -55,6 +55,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     private GLSurfaceView mGlView;
     private List<IRenderGroup> mRenderGroups = new ArrayList<>();
+    private List<IRenderGroup> mTextRenderGroups = new ArrayList<>();
     private int mViewPortWidth;
     private int mViewPortHeight;
     private final PointF mDragStart = new PointF();
@@ -191,9 +192,20 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // Clear frame
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
+        // Achtung! It is super important that we first render the elements and only then
+        // we render text labels. Otherwise, elements will be drown on top of text labels
+        // obscuring them.
         GLES20.glUseProgram(AppSettings.oglProgram);
-
         for (IRenderGroup group : mRenderGroups) {
+            if (group.isReadyForRender()) {
+                group.render(mScratch, mAngle);
+            } else {
+                group.prepareForRender();
+            }
+        }
+
+        GLES20.glUseProgram(AppSettings.oglTextRenderProgram);
+        for (IRenderGroup group : mTextRenderGroups) {
             if (group.isReadyForRender()) {
                 group.render(mScratch, mAngle);
             } else {
@@ -216,7 +228,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public TextRenderGroup renderTags(List<? extends Tag> tags) {
         final TextRenderGroup newGroup = new TextRenderGroup(tags, glText);
-        mRenderGroups.add(newGroup);
+        mTextRenderGroups.add(newGroup);
 
         return newGroup;
     }

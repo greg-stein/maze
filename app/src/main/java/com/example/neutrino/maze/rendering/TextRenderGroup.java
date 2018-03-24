@@ -1,9 +1,7 @@
 package com.example.neutrino.maze.rendering;
 
 import android.graphics.PointF;
-import android.opengl.GLES20;
 
-import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.Tag;
 
@@ -49,10 +47,6 @@ public class TextRenderGroup extends RenderGroupBase {
     public void render(float[] scratch, float deviceAngle) {
         if (!isVisible()) return;
 
-        // TODO: This is not good. What if we have several TextRenderGroups? Each will do glUseProgram?
-        // TODO: this should go away with the refactoring of text render code. Currently only one
-        // TODO: TextRenderGroup is supported and it should be after all other groups.
-        GLES20.glUseProgram(AppSettings.oglTextRenderProgram);
         mGlText.begin(0.0f, 0.0f, 1.0f, 1.0f, scratch); // Begin Text Rendering (Set Color BLUE)
 
         for (Tag tag : mRenderedTags) {
