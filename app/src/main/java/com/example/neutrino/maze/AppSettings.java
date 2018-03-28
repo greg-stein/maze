@@ -22,6 +22,7 @@ public class AppSettings {
     public static boolean inDebug;
     public static int pathColor;
     public static int fingerprintColor;
+    public static int teleportColor;
 
     public static void init(Context context) {
         pathColor = ContextCompat.getColor(context, R.color.colorPath);
@@ -34,6 +35,7 @@ public class AppSettings {
         editModeColor = ContextCompat.getColor(context, R.color.colorEditMode);
         accentColor = ContextCompat.getColor(context, R.color.colorAccent);
         fingerprintColor = ContextCompat.getColor(context, R.color.colorFingerprint);
+        teleportColor = ContextCompat.getColor(context, R.color.colorTeleport);
         inDebug = true;
     }
 }

@@ -11,4 +11,5 @@
     <color name="colorAccent">#9E9E9E</color>
     <color name="colorPath">#FF0000</color>
     <color name="colorUpload">#03A9F4</color>
+    <color name="colorTeleport">#4CAF50</color>
 </resources>

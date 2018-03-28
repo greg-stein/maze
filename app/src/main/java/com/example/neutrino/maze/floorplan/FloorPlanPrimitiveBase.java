@@ -11,6 +11,8 @@ import java.util.Arrays;
  * Created by Greg Stein on 9/22/2016.
  */
 public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
+    public static final int ALPHA = 128;
+    public static final int OPAQUE = 255;
     protected transient final float mVertices[];
     protected transient final short mIndices[];
 
@@ -25,8 +27,8 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
         mIndices = new short[getIndicesNum()];
     }
 
-    protected FloorPlanPrimitiveBase(int verticesNum, int indicesNum) {
-        mVertices = new float[verticesNum];
+    protected FloorPlanPrimitiveBase(int verticesDataLen, int indicesNum) {
+        mVertices = new float[verticesDataLen];
         mIndices = new short[indicesNum];
     }
 

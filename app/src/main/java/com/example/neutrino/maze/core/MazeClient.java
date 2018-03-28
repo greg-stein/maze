@@ -11,6 +11,7 @@ import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.FloorPlan;
+import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.RadioMapFragment;
@@ -104,7 +105,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mTeleportsElementsRenderGroup = mMainView.createElementsRenderGroup(Building.current.getCurrentFloor().getTeleports());
                 mTeleportsElementsRenderGroup.setChangedListener(mTeleportsChangedListener);
                 mTagsRenderGroup.setChangedListener(mTagsChangedListener);
-                mFloorPlanRenderGroup.setChangedListener(mFlorPlanChangedListener);
+                mFloorPlanRenderGroup.setChangedListener(mFloorPlanChangedListener);
                 // Render the floor plan
                 mFloorPlanRenderGroup.setVisible(true);
                 mTagsRenderGroup.setVisible(true);
@@ -160,7 +161,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         }
     };
 
-    private IMainView.IRenderGroupChangedListener mFlorPlanChangedListener = new IMainView.IRenderGroupChangedListener() {
+    private IMainView.IRenderGroupChangedListener mFloorPlanChangedListener = new IMainView.IRenderGroupChangedListener() {
         @Override
         public void onElementAdd(IMoveable element) {
             mFloorPlan.addElement((IFloorPlanPrimitive) element); // add to floor plan container
@@ -199,6 +200,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             Building.current.getCurrentFloor().removeTeleport((Teleport) element);
             Building.current.setDirty(true);
             mMainView.setUploadButtonVisibility(true);
+            mTeleportsLabelsRenderGroup.removeElement(element);
         }
     };
 
@@ -456,23 +458,23 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         });
 
         mMainView.setBuildingCreator(new IMainView.IAsyncBuildingCreator() {
-          @Override
-          public void createBuilding(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback) {
+            @Override
+            public void createBuilding(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback) {
                 mMazeServer.createBuildingAsync(name, type, address, buildingCreatedCallback);
 
                 mFloorPlanRenderGroup = mMainView.createElementsRenderGroup(null);
                 mFloorPlanRenderGroup.setVisible(true);
-                mFloorPlanRenderGroup.setChangedListener(mFlorPlanChangedListener);
+                mFloorPlanRenderGroup.setChangedListener(mFloorPlanChangedListener);
 
                 mTagsRenderGroup = mMainView.createTextRenderGroup(null);
                 mTagsRenderGroup.setVisible(true);
                 mTagsRenderGroup.setChangedListener(mTagsChangedListener);
 
-                mTeleportsElementsRenderGroup = mMainView.createElementsRenderGroup(null);
                 mTeleportsLabelsRenderGroup = mMainView.createTextRenderGroup(null);
-                mTeleportsElementsRenderGroup.setChangedListener(mTeleportsChangedListener);
-                mTeleportsElementsRenderGroup.setVisible(true);
                 mTeleportsLabelsRenderGroup.setVisible(true);
+                mTeleportsElementsRenderGroup = mMainView.createElementsRenderGroup(null);
+                mTeleportsElementsRenderGroup.setVisible(true);
+                mTeleportsElementsRenderGroup.setChangedListener(mTeleportsChangedListener);
 
                 mFloorPlan = FloorPlan.build();
           }

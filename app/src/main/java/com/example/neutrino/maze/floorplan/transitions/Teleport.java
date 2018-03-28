@@ -4,10 +4,11 @@ import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.RectF;
 
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.core.WiFiLocator;
 import com.example.neutrino.maze.floorplan.Floor;
-import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
+import com.example.neutrino.maze.floorplan.Ring;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.rendering.GlRenderBuffer;
 
@@ -19,8 +20,10 @@ import java.nio.ShortBuffer;
  */
 
 public class Teleport extends Tag implements ITeleport, IFloorPlanPrimitive {
-    private static final float ELEVATOR_MARK_RADIUS = 1.5f;
-    private Footprint mElevatorMark;
+    public static final float ELEVATOR_MARK_OUTER_RADIUS = 2.00f;
+    public static final float ELEVATOR_MARK_INNER_RADIUS = 1.75f;
+    public static final int ELEVATOR_MARK_SEGMENTS_NUM = 32;
+    private transient Ring mElevatorMark;
 
     public enum Type {
         ELEVATOR, ESCALATOR, STAIRS, RAMP
@@ -38,8 +41,8 @@ public class Teleport extends Tag implements ITeleport, IFloorPlanPrimitive {
 
     public Teleport(PointF location, String id, Type type) {
         super(location, id);
-        mElevatorMark = new Footprint(location.x, location.y);//, ELEVATOR_MARK_RADIUS);
-        mElevatorMark.setColor(Color.DKGRAY);
+        mElevatorMark = new Ring(location.x, location.y, ELEVATOR_MARK_INNER_RADIUS, ELEVATOR_MARK_OUTER_RADIUS, ELEVATOR_MARK_SEGMENTS_NUM);
+        mElevatorMark.setColor(AppSettings.teleportColor);
         mType = type;
     }
 
@@ -184,4 +187,34 @@ public class Teleport extends Tag implements ITeleport, IFloorPlanPrimitive {
     public RectF getBoundingBox() {
         return mElevatorMark.getBoundingBox();
     }
+
+    @Override
+    public void handleMove(float x, float y) {
+        super.handleMove(x, y);
+        mElevatorMark.handleMove(x, y);
+    }
+
+    @Override
+    public void setTapLocation(float x, float y) {
+        super.setTapLocation(x, y);
+        mElevatorMark.setTapLocation(x, y);
+    }
+
+    @Override
+    public void handleMoveStart() {
+        super.handleMoveStart();
+        mElevatorMark.handleMoveStart();
+    }
+
+    @Override
+    public void handleMoveEnd() {
+        super.handleMoveEnd();
+        mElevatorMark.handleMoveEnd();
+    }
+
+    @Override
+    public boolean hasPoint(float x, float y) {
+        return mElevatorMark.hasPoint(x, y);
+    }
+
 }

@@ -4,7 +4,6 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.support.v4.graphics.ColorUtils;
 
-import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.rendering.GlRenderBuffer;
 import com.example.neutrino.maze.rendering.VectorHelper;
 
@@ -12,8 +11,6 @@ import com.example.neutrino.maze.rendering.VectorHelper;
  * Created by neutrino on 7/7/2016.
  */
 public class ThickLineSegment extends FloorPlanPrimitiveBase {
-    public static final int ALPHA = 128;
-    public static final int OPAQUE = 255;
     private static final int VERTICES_NUM = 4; // it's a rect after all
     protected static final int VERTICES_DATA_LENGTH = VERTICES_NUM * GlRenderBuffer.COORDS_PER_VERTEX;
     protected static final int INDICES_DATA_LENGTH = 6;
@@ -179,13 +176,13 @@ public class ThickLineSegment extends FloorPlanPrimitiveBase {
 
     @Override
     public void handleMoveStart() {
-        setColor(ColorUtils.setAlphaComponent(getColor(), ALPHA));
+        setColor(ColorUtils.setAlphaComponent(getColor(), FloorPlanPrimitiveBase.ALPHA));
         rewriteToBuffer();
     }
 
     @Override
     public void handleMoveEnd() {
-        setColor(ColorUtils.setAlphaComponent(getColor(), ThickLineSegment.OPAQUE));
+        setColor(ColorUtils.setAlphaComponent(getColor(), FloorPlanPrimitiveBase.OPAQUE));
         rewriteToBuffer();
     }
 
