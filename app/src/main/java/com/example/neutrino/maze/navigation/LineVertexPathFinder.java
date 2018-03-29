@@ -4,6 +4,7 @@ import android.graphics.PointF;
 
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Wall;
+import com.example.neutrino.maze.rendering.VectorHelper;
 
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
@@ -21,8 +22,8 @@ public class LineVertexPathFinder extends PathFinderBase {
 
     @Override
     public void init() {
-        initGrid();
-        assignObstaclesToCells();
+//        initGrid();
+//        assignObstaclesToCells();
         buildGraph();
     }
 
@@ -53,52 +54,36 @@ public class LineVertexPathFinder extends PathFinderBase {
             mGraph.addVertex(new PointF(wallEnd.x + cos - sin, wallEnd.y - sin - cos ));
             mGraph.addVertex(new PointF(wallEnd.x - cos + sin, wallEnd.y + sin + cos ));
             mGraph.addVertex(new PointF(wallEnd.x + cos + sin, wallEnd.y - sin + cos ));
-
         }
 
-        for (int x = mBoundaries.left; x < mBoundaries.right - 1; x++) {
-            for (int y = mBoundaries.top; y < mBoundaries.bottom - 1; y++) {
-                final int cellX = (x - mBoundaries.left) / mCellSize + 1;
-                final int cellY = (y - mBoundaries.top) / mCellSize + 1;
-                GridCell cell = mGrid[cellX][cellY];
+        PointF[] allVertexes = new PointF[]{};
+        mGraph.vertexSet().toArray(allVertexes);
 
-                PointF topLeft = new PointF(x, y);
-                PointF topRight = new PointF(x+1, y);
-                PointF bottomLeft = new PointF(x, y+1);
-                PointF bottomRight = new PointF(x+1, y+1);
-                mGraph.addVertex(topLeft);
-                mGraph.addVertex(topRight);
-                mGraph.addVertex(bottomLeft);
-                mGraph.addVertex(bottomRight);
-
-                if (!obstacleBetween(cell, topLeft, topRight)) addEdge(topLeft, topRight);
-                if (!obstacleBetween(cell, topRight, bottomRight)) addEdge(topLeft, topRight);
-                if (!obstacleBetween(cell, bottomRight, bottomLeft)) addEdge(bottomRight, bottomLeft);
-                if (!obstacleBetween(cell, bottomLeft, topLeft)) addEdge(bottomLeft, topLeft);
-                if (!obstacleBetween(cell, topLeft, bottomRight)) addEdge(topLeft, bottomRight);
-                if (!obstacleBetween(cell, topRight, bottomLeft)) addEdge(topRight, bottomLeft);
-            }
-        }
+        for (int i =0;i < allVertexes.length; i++)
+            for (int j = 0; j < i; j++)
+                if (!anyObstacleBetween(allVertexes[i], allVertexes[j]))
+                    addEdge(allVertexes[i], allVertexes[j]);
     }
 
     @Override
     protected PointF findClosestVertex(PointF source) {
-        final int cellX = (int) ((source.x - mBoundaries.left) / mCellSize + 1);
-        final int cellY = (int) ((source.y - mBoundaries.top) / mCellSize + 1);
-        GridCell cell = mGrid[cellX][cellY];
+        PointF candidate = null;
 
-        PointF p = new PointF((int)source.x, (int)source.y);
-        if (!obstacleBetween(cell, source, p)) return p;
-
-        p.offset(1, 0);
-        if (!obstacleBetween(cell, source, p)) return p;
-
-        p.offset(0, 1);
-        if (!obstacleBetween(cell, source, p)) return p;
-
-        p.offset(-1, 0);
-        if (!obstacleBetween(cell, source, p)) return p;
-
-        return null;
+        for (PointF point : mGraph.vertexSet()) {
+            if (candidate == null || VectorHelper.squareDistance(point, source) < VectorHelper.squareDistance(candidate, source))
+                if (!anyObstacleBetween(point, source))
+                    candidate = point;
+        }
+        return candidate;
     }
+
+    protected final boolean anyObstacleBetween(PointF p1, PointF p2) {
+        for (Wall obstacle : mObstacles) {
+            if (VectorHelper.linesIntersect(obstacle.getStart(), obstacle.getEnd(), p1, p2)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
