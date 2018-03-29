@@ -43,7 +43,7 @@ public class GridPathFinder extends PathFinderBase {
                 mGraph.addVertex(bottomRight);
 
                 if (!obstacleBetween(cell, topLeft, topRight)) addEdge(topLeft, topRight);
-                if (!obstacleBetween(cell, topRight, bottomRight)) addEdge(topLeft, topRight);
+                if (!obstacleBetween(cell, topRight, bottomRight)) addEdge(topRight, bottomRight);
                 if (!obstacleBetween(cell, bottomRight, bottomLeft)) addEdge(bottomRight, bottomLeft);
                 if (!obstacleBetween(cell, bottomLeft, topLeft)) addEdge(bottomLeft, topLeft);
                 if (!obstacleBetween(cell, topLeft, bottomRight)) addEdge(topLeft, bottomRight);
