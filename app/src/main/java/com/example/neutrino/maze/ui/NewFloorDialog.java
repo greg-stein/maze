@@ -123,8 +123,21 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         } else {
             txtBuilding.setText(Building.current.getName());
             txtType.setText(Building.current.getType());
+            txtAddress.setText(Building.current.getAddress());
 
             mBuildingFloors = Building.current.getFloors();
+            Floor currentFloor = Building.current.getCurrentFloor();
+            if (currentFloor != null && mBuildingFloors != null && !mBuildingFloors.isEmpty()) {
+                // Find index of current floor within building floors
+                int index = 0;
+                for (Floor floor : mBuildingFloors) {
+                    if (floor.getId().equals(currentFloor.getId())) {
+                        mSelectedFloorIndex = index;
+                        break;
+                    }
+                    index++;
+                }
+            }
         }
 
         mFloorsAdapter = new FloorsAdapter(getContext(), mBuildingFloors, this);
@@ -148,7 +161,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         rcvBuildingLookup.setAdapter(mBuildingsAdapter);
 
         setUiListeners();
-        setCreatingFloorsAllowed(false);
+        setCreatingFloorsAllowed(Building.current != null);
     }
 
     @Override
@@ -162,13 +175,13 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 Building.current.setDirty(true);
                 mBuildingUpdater.onNotify(Building.current);
             }
+        }
 
-            final Floor selectedFloor = mBuildingFloors.get(mSelectedFloorIndex);
-            final Floor currentFloor = Building.current.getCurrentFloor();
-            if (currentFloor == null || !currentFloor.getId().equals(selectedFloor.getId())) {
-                Building.current.setCurrentFloor(selectedFloor);
-                emitFloorChangedEvent(selectedFloor);
-            }
+        final Floor selectedFloor = mBuildingFloors.get(mSelectedFloorIndex);
+        final Floor currentFloor = Building.current.getCurrentFloor();
+        if (currentFloor == null || !currentFloor.getId().equals(selectedFloor.getId())) {
+            Building.current.setCurrentFloor(selectedFloor);
+            emitFloorChangedEvent(selectedFloor);
         } else {
             Toast.makeText(getContext(), "The building creation was cancelled. To add a new floor plan create a building first.", Toast.LENGTH_LONG).show();
         }
