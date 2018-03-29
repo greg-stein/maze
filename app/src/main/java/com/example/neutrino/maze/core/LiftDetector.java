@@ -1,6 +1,4 @@
-package com.example.neutrino.maze;
-
-import com.example.neutrino.maze.core.SensorListener;
+package com.example.neutrino.maze.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;

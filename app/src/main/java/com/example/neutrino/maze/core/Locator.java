@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.graphics.PointF;
 
 import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.LiftDetector;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;

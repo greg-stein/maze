@@ -1,6 +1,6 @@
 package com.example.neutrino.maze;
 
-import android.graphics.PointF;
+import com.example.neutrino.maze.core.LiftDetector;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,12 +10,10 @@ import org.robolectric.annotation.Config;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.closeTo;
 import static org.junit.Assert.assertThat;
