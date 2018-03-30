@@ -65,6 +65,8 @@ public interface IMainView {
 
     void setUploadButtonClickListener(IFuckingSimpleCallback listener);
 
+    void clearRenderedElements();
+
     enum UiMode { MAP_VIEW_MODE, MAP_EDIT_MODE}
 
     enum MapOperation {

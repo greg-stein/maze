@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.support.v4.util.Pair;
+import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.core.SensorListener.IDeviceRotationListener;
@@ -572,22 +573,12 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         // If on the same floor - it wasn't really changed
         if (currentFloor != null && currentFloor.getId().equals(newFloor.getId())) return;
 
-        // Are there scans to upload to the server?
-        if (!mAugmentedRadioMap.isEmpty()) {
-            RadioMapFragment radioMapFragment = new RadioMapFragment(mAugmentedRadioMap, currentFloor.getId());
-            mMazeServer.upload(radioMapFragment, new IFuckingSimpleCallback() {
-                @Override
-                public void onNotified() {
-                    mAugmentedRadioMap.clear(); // clear to store scans on another floor
-                    // TODO: notify UI maybe?
-                }
-            });
-        }
+        // NOTE: All changes that were not uploaded to the server and saved are discarded!
+        Building.current.setCurrentFloor(newFloor);
 
-        if (mAugmentedRadioMapRenderGroup == null) {
-            mAugmentedRadioMapRenderGroup = new ElementsRenderGroup(new ArrayList<IFloorPlanPrimitive>());
-        } else {
-            mAugmentedRadioMapRenderGroup.clear();
-        }
+        // Clean up all floor-related data like radio map, floor plan, tags, ...
+        mMainView.clearRenderedElements();
+
+        // Load new data from newFloor, render
     }
 }

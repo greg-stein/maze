@@ -650,6 +650,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         return null;
     }
 
+    public void clearRenderedElements() {
+    }
+
     /**
      * Created by Greg Stein on 9/19/2016.
      */

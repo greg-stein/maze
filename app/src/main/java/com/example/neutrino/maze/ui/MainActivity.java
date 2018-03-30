@@ -820,4 +820,9 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     public void setUploadButtonClickListener(IFuckingSimpleCallback listener) {
         mUploadButtonClickListener = listener;
     }
+
+    @Override
+    public void clearRenderedElements() {
+        uiFloorPlanView.clearRenderedElements();
+    }
 }

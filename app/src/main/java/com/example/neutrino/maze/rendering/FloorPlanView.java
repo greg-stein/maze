@@ -98,6 +98,10 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.setElementFactory(elementFactory);
     }
 
+    public void clearRenderedElements() {
+        mRenderer.clearRenderedElements();
+    }
+
     public enum Operation {
         NONE, ADD_WALL, REMOVE_WALL, ADD_TAG, SET_LOCATION
     }
