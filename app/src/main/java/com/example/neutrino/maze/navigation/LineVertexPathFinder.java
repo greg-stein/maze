@@ -56,7 +56,7 @@ public class LineVertexPathFinder extends PathFinderBase {
             mGraph.addVertex(new PointF(wallEnd.x + cos + sin, wallEnd.y - sin + cos ));
         }
 
-        PointF[] allVertexes = new PointF[]{};
+        PointF[] allVertexes = new PointF[mGraph.vertexSet().size()];
         mGraph.vertexSet().toArray(allVertexes);
 
         for (int i =0;i < allVertexes.length; i++)
