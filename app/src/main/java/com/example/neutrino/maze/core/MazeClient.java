@@ -21,6 +21,7 @@ import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.transitions.Teleport;
 import com.example.neutrino.maze.rendering.ElementsRenderGroup;
 import com.example.neutrino.maze.rendering.TextRenderGroup;
+import com.example.neutrino.maze.ui.NewFloorDialog;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
@@ -60,25 +61,48 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private Intent mStepCalibratorServiceIntent;
     private RadioMapFragment mRadioMapFragment;
 
-    private WifiScanner.IFingerprintAvailableListener mFirstFingerprintAvailableListener
-            = new WifiScanner.IFingerprintAvailableListener() {
+    private WifiScanner.IFingerprintAvailableListener mFirstFingerprintAvailableListener = new WifiScanner.IFingerprintAvailableListener() {
+        @Override
+        public void onFingerprintAvailable(final WiFiLocator.WiFiFingerprint fingerprint) {
+            if (fingerprint == null || fingerprint.isEmpty()) return;
+            // Unsubscribe from recieving more fingerprints. We need only first fingerprint to find
+            // building and floor
+            mWifiScanner.removeFingerprintAvailableListener(mFirstFingerprintAvailableListener);
+            // TODO: check whether it makes sense to acquire several fingerprints and average them
+            mMazeServer.findCurrentBuildingAndFloorAsync(fingerprint, new IFuckingSimpleGenericCallback<Pair<String, String>>() {
 
+                @Override
+                public void onNotify(Pair<String, String> buildingAndFloorIds) {
+                    BuildingAndFloorUpdater buildingAndFloorUpdater = new BuildingAndFloorUpdater(fingerprint);
+                    buildingAndFloorUpdater.update(buildingAndFloorIds);
+                }
+            });
+        }
+    };
+
+    private class BuildingAndFloorUpdater {
+
+        private final WiFiLocator.WiFiFingerprint mFingerprint;
         public String mFloorId;
         public String mBuildingId;
         public boolean mBuildingReceived = false;
         public boolean mFloorPlanReceived = false;
         public boolean mRadioTileReceived = false;
 
+        public BuildingAndFloorUpdater(WiFiLocator.WiFiFingerprint fingerprint) {
+            mFingerprint = fingerprint;
+        }
+
         private IFuckingSimpleGenericCallback<RadioMapFragment> mOnRadioTileReceived =
                 new IFuckingSimpleGenericCallback<RadioMapFragment>() {
-            @Override
-            public void onNotify(RadioMapFragment wiFiFingerprints) {
-                mRadioMapFragment = wiFiFingerprints;
-                mRadioMapRenderGroup = mMainView.createElementsRenderGroup(mRadioMapFragment.getFingerprintsAsIFloorPlanElements());
-                mRadioTileReceived = true;
-                onCompleteDataReceive();
-            }
-        };
+                    @Override
+                    public void onNotify(RadioMapFragment wiFiFingerprints) {
+                        mRadioMapFragment = wiFiFingerprints;
+                        mRadioMapRenderGroup = mMainView.createElementsRenderGroup(mRadioMapFragment.getFingerprintsAsIFloorPlanElements());
+                        mRadioTileReceived = true;
+                        onCompleteDataReceive();
+                    }
+                };
         private IFuckingSimpleGenericCallback<FloorPlan> mOnFloorPlanReceived = new IFuckingSimpleGenericCallback<FloorPlan>() {
             @Override
             public void onNotify(FloorPlan floorPlan) {
@@ -120,47 +144,36 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         public boolean mFloorToBeUpdated = false;
 
-        @Override
-        public void onFingerprintAvailable(final WiFiLocator.WiFiFingerprint fingerprint) {
-            if (fingerprint == null || fingerprint.isEmpty()) return;
-            // Unsubscribe from recieving more fingerprints. We need only first fingerprint to find
-            // building and floor
-            mWifiScanner.removeFingerprintAvailableListener(mFirstFingerprintAvailableListener);
-            // TODO: check whether it makes sense to acquire several fingerprints and average them
-            mMazeServer.findCurrentBuildingAndFloorAsync(fingerprint, new IFuckingSimpleGenericCallback<Pair<String, String>>() {
-                @Override
-                public void onNotify(Pair<String, String> buildingAndFloorIds) {
-                    mBuildingId = buildingAndFloorIds.first;
-                    mFloorId = buildingAndFloorIds.second;
+        public void update(Pair<String, String> buildingAndFloorIds) {
+            mBuildingId = buildingAndFloorIds.first;
+            mFloorId = buildingAndFloorIds.second;
 
-                    // If we failed to find a building based on fingerprint (i.e. new building)
-                    if (mBuildingId.isEmpty()) {
-                        mMainView.askUserToCreateBuilding(new IFuckingSimpleGenericCallback<Boolean>() {
-                            @Override
-                            public void onNotify(Boolean agreed) {
-                                if (agreed) {
-                                    mMainView.showBuildingEditDialog();
-                                }
-                            }
-                        });
-                        return;
+            // If we failed to find a building based on fingerprint (i.e. new building)
+            if (mBuildingId.isEmpty()) {
+                mMainView.askUserToCreateBuilding(new IFuckingSimpleGenericCallback<Boolean>() {
+                    @Override
+                    public void onNotify(Boolean agreed) {
+                        if (agreed) {
+                            mMainView.showBuildingEditDialog();
+                        }
                     }
+                });
+                return;
+            }
 
-                    // Do we need to update building struct?
-                    if (Building.current == null || !Building.current.getId().equals(mBuildingId)) {
-                        mMazeServer.getBuildingAsync(mBuildingId, mOnBuildingReceived);
-                        mFloorToBeUpdated = true;
-                    }
+            // Do we need to update building struct?
+            if (Building.current == null || !Building.current.getId().equals(mBuildingId)) {
+                mMazeServer.getBuildingAsync(mBuildingId, mOnBuildingReceived);
+                mFloorToBeUpdated = true;
+            }
 
-                    // TODO: what if this condition is NOT met? What will happen to mRadioTileReceived && mFloorPlanReceived?
-                    if (mFloorToBeUpdated || !Building.current.getCurrentFloor().getId().equals(mFloorId)) {
-                        mMazeServer.downloadFloorPlanAsync(mFloorId, mOnFloorPlanReceived);
-                        mMazeServer.downloadRadioMapTileAsync(mFloorId, fingerprint, mOnRadioTileReceived);
-                    }
-                }
-            });
+            // TODO: what if this condition is NOT met? What will happen to mRadioTileReceived && mFloorPlanReceived?
+            if (mFloorToBeUpdated || !Building.current.getCurrentFloor().getId().equals(mFloorId)) {
+                mMazeServer.downloadFloorPlanAsync(mFloorId, mOnFloorPlanReceived);
+                mMazeServer.downloadRadioMapTileAsync(mFloorId, mFingerprint, mOnRadioTileReceived);
+            }
         }
-    };
+    }
 
     private IMainView.IRenderGroupChangedListener mFloorPlanChangedListener = new IMainView.IRenderGroupChangedListener() {
         @Override
