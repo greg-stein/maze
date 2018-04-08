@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.support.v4.util.Pair;
-import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.core.SensorListener.IDeviceRotationListener;
@@ -12,7 +11,6 @@ import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Floor;
 import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.RadioMapFragment;
@@ -21,7 +19,6 @@ import com.example.neutrino.maze.floorplan.Wall;
 import com.example.neutrino.maze.floorplan.transitions.Teleport;
 import com.example.neutrino.maze.rendering.ElementsRenderGroup;
 import com.example.neutrino.maze.rendering.TextRenderGroup;
-import com.example.neutrino.maze.ui.NewFloorDialog;
 import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 import com.example.neutrino.maze.util.PermissionsHelper;
@@ -73,23 +70,21 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
                 @Override
                 public void onNotify(Pair<String, String> buildingAndFloorIds) {
-                    BuildingAndFloorUpdater buildingAndFloorUpdater = new BuildingAndFloorUpdater(fingerprint);
+                    BuildingUpdater buildingAndFloorUpdater = new BuildingUpdater(fingerprint);
                     buildingAndFloorUpdater.update(buildingAndFloorIds);
                 }
             });
         }
     };
 
-    private class BuildingAndFloorUpdater {
+    private class FloorUpdater {
+        protected String mFloorId;
 
-        private final WiFiLocator.WiFiFingerprint mFingerprint;
-        public String mFloorId;
-        public String mBuildingId;
-        public boolean mBuildingReceived = false;
-        public boolean mFloorPlanReceived = false;
-        public boolean mRadioTileReceived = false;
+        protected boolean mFloorPlanReceived = false;
+        protected boolean mRadioTileReceived = false;
+        protected WiFiLocator.WiFiFingerprint mFingerprint;
 
-        public BuildingAndFloorUpdater(WiFiLocator.WiFiFingerprint fingerprint) {
+        public FloorUpdater(WiFiLocator.WiFiFingerprint fingerprint) {
             mFingerprint = fingerprint;
         }
 
@@ -112,18 +107,10 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 onCompleteDataReceive();
             }
         };
-        private IFuckingSimpleGenericCallback<Building> mOnBuildingReceived = new IFuckingSimpleGenericCallback<Building>() {
-            @Override
-            public void onNotify(Building building) {
-                Building.current = building;
-                mBuildingReceived = true;
-                onCompleteDataReceive();
-            }
-        };
 
         private synchronized void onCompleteDataReceive() {
-            if (mRadioTileReceived && mFloorPlanReceived && mBuildingReceived) {
-                onFloorChanged(Building.current.getFloor(mFloorId));
+            if (mRadioTileReceived && mFloorPlanReceived ) {
+                onFloorChanged(Building.current.getFloor(mFloorId)); // !!! do we need this call here?
                 Building.current.setCurrentFloor(mFloorId);
                 mTagsRenderGroup = mMainView.createTextRenderGroup(Building.current.getCurrentFloor().getTags());
                 mTeleportsLabelsRenderGroup = mMainView.createTextRenderGroup(Building.current.getCurrentFloor().getTeleports());
@@ -135,18 +122,52 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mFloorPlanRenderGroup.setVisible(true);
                 mTagsRenderGroup.setVisible(true);
                 mMainView.centerMapView(mFloorPlan.getCenter());
-                // Locator uses floor plan for collision recognition
+                // Locator uses floor plan for collision detection
                 mLocator.setFloorPlan(mFloorPlan);
+            }
+        }
+
+        public void update(Pair<String, String> buildingAndFloorIds) {
+            mFloorId = buildingAndFloorIds.second;
+
+            // TODO: what if this condition is NOT met? What will happen to mRadioTileReceived && mFloorPlanReceived?
+            if (Building.current.getCurrentFloor() == null || !Building.current.getCurrentFloor().getId().equals(mFloorId)) {
+                mMazeServer.downloadFloorPlanAsync(mFloorId, mOnFloorPlanReceived);
+                mMazeServer.downloadRadioMapTileAsync(mFloorId, mFingerprint, mOnRadioTileReceived);
+            }
+        }
+    }
+
+    private class BuildingUpdater extends FloorUpdater {
+
+        protected String mBuildingId;
+        protected boolean mBuildingReceived = false;
+
+        public BuildingUpdater(WiFiLocator.WiFiFingerprint fingerprint) {
+            super(fingerprint);
+        }
+
+        private IFuckingSimpleGenericCallback<Building> mOnBuildingReceived = new IFuckingSimpleGenericCallback<Building>() {
+            @Override
+            public void onNotify(Building building) {
+                Building.current = building;
+                mBuildingReceived = true;
+                onCompleteDataReceive();
+            }
+        };
+
+        private synchronized void onCompleteDataReceive() {
+            if (mBuildingReceived) {
                 mFloorWatcher.setBuilding(Building.current);
                 if (Building.current != null) mFloorWatcher.enable(mContext);
             }
+            super.onCompleteDataReceive();
         }
 
         public boolean mFloorToBeUpdated = false;
 
         public void update(Pair<String, String> buildingAndFloorIds) {
             mBuildingId = buildingAndFloorIds.first;
-            mFloorId = buildingAndFloorIds.second;
 
             // If we failed to find a building based on fingerprint (i.e. new building)
             if (mBuildingId.isEmpty()) {
@@ -164,14 +185,9 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             // Do we need to update building struct?
             if (Building.current == null || !Building.current.getId().equals(mBuildingId)) {
                 mMazeServer.getBuildingAsync(mBuildingId, mOnBuildingReceived);
-                mFloorToBeUpdated = true;
             }
 
-            // TODO: what if this condition is NOT met? What will happen to mRadioTileReceived && mFloorPlanReceived?
-            if (mFloorToBeUpdated || !Building.current.getCurrentFloor().getId().equals(mFloorId)) {
-                mMazeServer.downloadFloorPlanAsync(mFloorId, mOnFloorPlanReceived);
-                mMazeServer.downloadRadioMapTileAsync(mFloorId, mFingerprint, mOnRadioTileReceived);
-            }
+            super.update(buildingAndFloorIds);
         }
     }
 
