@@ -114,8 +114,10 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 Building.current.setCurrentFloor(mFloorId);
                 mTagsRenderGroup = mMainView.createTextRenderGroup(Building.current.getCurrentFloor().getTags());
                 mTeleportsLabelsRenderGroup = mMainView.createTextRenderGroup(Building.current.getCurrentFloor().getTeleports());
+                mTeleportsLabelsRenderGroup.setVisible(false);
                 mTeleportsElementsRenderGroup = mMainView.createElementsRenderGroup(Building.current.getCurrentFloor().getTeleports());
                 mTeleportsElementsRenderGroup.setChangedListener(mTeleportsChangedListener);
+                mTeleportsElementsRenderGroup.setVisible(false);
                 mTagsRenderGroup.setChangedListener(mTagsChangedListener);
                 mFloorPlanRenderGroup.setChangedListener(mFloorPlanChangedListener);
                 // Render the floor plan
@@ -457,9 +459,13 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                     switch (uiMode) {
                         case MAP_VIEW_MODE:
                             mRadioMapRenderGroup.setVisible(false);
+                            mTeleportsElementsRenderGroup.setVisible(false);
+                            mTeleportsLabelsRenderGroup.setVisible(false);
                             break;
                         case MAP_EDIT_MODE:
                             mRadioMapRenderGroup.setVisible(true);
+                            mTeleportsElementsRenderGroup.setVisible(true);
+                            mTeleportsLabelsRenderGroup.setVisible(true);
                             break;
                     }
                 }
@@ -500,11 +506,15 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mTagsRenderGroup.setVisible(true);
                 mTagsRenderGroup.setChangedListener(mTagsChangedListener);
 
+                // These groups are visible in Edit Mode only
                 mTeleportsLabelsRenderGroup = mMainView.createTextRenderGroup(null);
-                mTeleportsLabelsRenderGroup.setVisible(true);
+                mTeleportsLabelsRenderGroup.setVisible(false);
                 mTeleportsElementsRenderGroup = mMainView.createElementsRenderGroup(null);
-                mTeleportsElementsRenderGroup.setVisible(true);
+                mTeleportsElementsRenderGroup.setVisible(false);
                 mTeleportsElementsRenderGroup.setChangedListener(mTeleportsChangedListener);
+
+                mRadioMapRenderGroup = mMainView.createElementsRenderGroup(null);
+                mRadioMapRenderGroup.setVisible(false);
 
                 mFloorPlan = FloorPlan.build();
           }
