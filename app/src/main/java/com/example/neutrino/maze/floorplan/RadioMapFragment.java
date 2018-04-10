@@ -35,4 +35,8 @@ public class RadioMapFragment {
     public List<IFloorPlanPrimitive> getFingerprintsAsIFloorPlanElements() {
         return (List<IFloorPlanPrimitive>) (List<? extends IFloorPlanPrimitive>) mFingerprints;
     }
+
+    public void clear() {
+        mFingerprints.clear();
+    }
 }
