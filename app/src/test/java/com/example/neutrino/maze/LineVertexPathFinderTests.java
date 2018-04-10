@@ -86,8 +86,12 @@ public class LineVertexPathFinderTests {
 
 //        pathFinder.init();// Does that:
         long start = System.nanoTime();
-        invokeMethod(pathFinder, "buildGraph");
-        System.out.println(String.format("buildGraph. elapsed: %.2f ms", (System.nanoTime() - start)/1000000f));
+        invokeMethod(pathFinder, "addVertexes");
+        System.out.println(String.format("addVertexes. elapsed: %.2f ms", (System.nanoTime() - start)/1000000f));
+
+        start = System.nanoTime();
+        invokeMethod(pathFinder, "addEdges");
+        System.out.println(String.format("addEdges. elapsed: %.2f ms", (System.nanoTime() - start)/1000000f));
 
         PointF startPoint = new PointF(244.76593f, 55.589268f);
         PointF endPoint = new PointF(55.76811f, 49.82863f);

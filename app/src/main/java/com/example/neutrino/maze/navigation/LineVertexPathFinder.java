@@ -29,6 +29,11 @@ public class LineVertexPathFinder extends PathFinderBase {
 
     @Override
     protected void buildGraph() {
+        addVertexes();
+        addEdges();
+    }
+
+    private void addVertexes() {
         mGraph = new SimpleWeightedGraph<>(DefaultWeightedEdge.class);
 
         for (Wall wall : mObstacles) {
@@ -55,11 +60,13 @@ public class LineVertexPathFinder extends PathFinderBase {
             mGraph.addVertex(new PointF(wallEnd.x - cos + sin, wallEnd.y + sin + cos ));
             mGraph.addVertex(new PointF(wallEnd.x + cos + sin, wallEnd.y - sin + cos ));
         }
+    }
 
+    private void addEdges() {
         PointF[] allVertexes = new PointF[mGraph.vertexSet().size()];
         mGraph.vertexSet().toArray(allVertexes);
 
-        for (int i =0;i < allVertexes.length; i++)
+        for (int i = 0; i < allVertexes.length; i++)
             for (int j = 0; j < i; j++)
                 if (!anyObstacleBetween(allVertexes[i], allVertexes[j]))
                     addEdge(allVertexes[i], allVertexes[j]);
