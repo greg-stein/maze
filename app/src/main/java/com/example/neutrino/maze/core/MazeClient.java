@@ -109,8 +109,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         };
 
         private synchronized void onCompleteDataReceive() {
-            if (mRadioTileReceived && mFloorPlanReceived ) {
-                onFloorChanged(Building.current.getFloor(mFloorId)); // !!! do we need this call here?
+            if (mRadioTileReceived && mFloorPlanReceived) {
                 Building.current.setCurrentFloor(mFloorId);
                 mTagsRenderGroup = mMainView.createTextRenderGroup(Building.current.getCurrentFloor().getTags());
                 mTeleportsLabelsRenderGroup = mMainView.createTextRenderGroup(Building.current.getCurrentFloor().getTeleports());
@@ -141,7 +140,6 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     }
 
     private class BuildingUpdater extends FloorUpdater {
-
         protected String mBuildingId;
         protected boolean mBuildingReceived = false;
 
@@ -154,16 +152,15 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             public void onNotify(Building building) {
                 Building.current = building;
                 mBuildingReceived = true;
-                onCompleteDataReceive();
+                onCompleteBuildingReceive();
             }
         };
 
-        private synchronized void onCompleteDataReceive() {
+        private synchronized void onCompleteBuildingReceive() {
             if (mBuildingReceived) {
                 mFloorWatcher.setBuilding(Building.current);
                 if (Building.current != null) mFloorWatcher.enable(mContext);
             }
-            super.onCompleteDataReceive();
         }
 
         public boolean mFloorToBeUpdated = false;
