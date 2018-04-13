@@ -31,6 +31,8 @@ dependencies {
     androidTestCompile "com.android.support.test:rules:0.5"
     androidTestCompile "com.opencsv:opencsv:3.8"
     androidTestCompile "com.google.code.gson:gson:2.4"
+    androidTestCompile "com.squareup.retrofit2:retrofit:2.4.0"
+    androidTestCompile "com.squareup.retrofit2:converter-scalars:2.4.0"
 
     testCompile("junit:junit-dep:4.8.+")
     testCompile "org.hamcrest:hamcrest-all:1.3"
