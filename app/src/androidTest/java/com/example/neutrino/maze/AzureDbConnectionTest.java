@@ -30,7 +30,7 @@ public class AzureDbConnectionTest {
         public String ip;
     }
 
-    public interface GitHubService {
+    public interface JsonTestService {
         @GET Call<IpResponse> getIp(@Url String empty);
     }
 
@@ -38,7 +38,7 @@ public class AzureDbConnectionTest {
     public void retrofitSimpleApiRequestTest() throws IOException {
         Retrofit retrofit = new Retrofit.Builder().baseUrl("http://ip.jsontest.com/").addConverterFactory(GsonConverterFactory.create()).build();
 
-        GitHubService service = retrofit.create(GitHubService.class);
+        JsonTestService service = retrofit.create(JsonTestService.class);
         Call<IpResponse> ipRequest = service.getIp("");
         Response<IpResponse> ip = ipRequest.execute();
         System.out.println(ip.toString());
