@@ -357,6 +357,8 @@ public class HoughTransform {
         LineSegment current = set.first();   // Assume there is always a first otherwise why are we even here
 
         for (LineSegment seg : set) {
+            if (seg == current)     // skip first element since we already have it
+                continue;
             if (X_COMPARATOR.compare(seg.start, current.end) <= 0) {     // starts inside current segment (or at boundary)
                 if (X_COMPARATOR.compare(seg.end, current.end) > 0) {   // ends outside current segment
                     current.end = seg.end;                              // extend current segment
