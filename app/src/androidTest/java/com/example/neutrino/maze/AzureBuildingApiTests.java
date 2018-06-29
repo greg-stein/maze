@@ -7,8 +7,6 @@ import com.example.neutrino.maze.floorplan.Building;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import junit.framework.Assert;
-
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -16,7 +14,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +27,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
@@ -37,8 +35,8 @@ import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import
-        static org.junit.Assert.assertThat;
+//import static org.hamcrest.Matchers.hasSize; // Hamcrest doesn't work with androidTest!
+import static org.junit.Assert.assertThat;
 
 /**
  * Created by Greg Stein on 6/8/2018.
@@ -60,6 +58,9 @@ public class AzureBuildingApiTests {
         @GET("buildings/{id}")
         Call<Building> getBuilding(@Path("id") String id);
 
+        @GET("buildings/search")
+        Call<List<Building>> searchBuilding(@Query("pattern") String pattern);
+
         @PUT("buildings/{id}")
         Call<Building> updateBuilding(@Path("id") String id, @Body Building newBuildingData);
 
@@ -71,7 +72,7 @@ public class AzureBuildingApiTests {
     static public void setUpTests() {
         buildingId = UUID.randomUUID().toString();
 
-        mCreatedBuilding = new Building("Some random building", "Mall",
+        mCreatedBuilding = new Building("Some rnadom building", "Mall",
                 "Entuziastov koshesi 42, Ust-Kamenogorsk, Kazakhstan", buildingId);
     }
 
@@ -160,7 +161,29 @@ public class AzureBuildingApiTests {
     }
 
     @Test
-    public void test04BuildingDelete() throws IOException {
+    public void test04BuildingGetByName() throws IOException {
+        Gson gson = new GsonBuilder().create();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+
+        MazeApiInterface mazeApiInterface = retrofit.create(MazeApiInterface.class);
+
+        Call<List<Building>> responseCall = mazeApiInterface.searchBuilding(mCreatedBuilding.getName());
+        Response<List<Building>> response = responseCall.execute();
+        List<Building> buildings = response.body();
+
+        assertNotNull(buildings);
+        assertThat(buildings.size(), is(1));
+        assertTrue(response.isSuccessful());
+        assertThat(response.code(), is(equalTo(200)));
+        assertThat(response.message(), is(equalTo("OK")));
+    }
+
+    @Test
+    public void test05BuildingDelete() throws IOException {
         Gson gson = new GsonBuilder().create();
 
         Retrofit retrofit = new Retrofit.Builder()
