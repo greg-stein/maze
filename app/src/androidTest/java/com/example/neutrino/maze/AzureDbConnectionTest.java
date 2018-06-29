@@ -3,6 +3,9 @@ package com.example.neutrino.maze;
 import android.support.test.filters.MediumTest;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -15,6 +18,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Url;
 
+import static junit.framework.TestCase.assertTrue;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 /**
  * Created by Greg Stein on 4/13/2018.
  */
@@ -22,10 +30,6 @@ import retrofit2.http.Url;
 @RunWith(AndroidJUnit4.class)
 @MediumTest
 public class AzureDbConnectionTest {
-    public static final String DB_URL = "https://maze.documents.azure.com:443/";
-    public static final String PRIMARY_KEY = "6sYVR4O7v0QQxB7dPdAZbYLHaVpSSH4lcPT8ZgA8mKelYx7qsO9BKvcMgb2TiIRAduSTlH2JxkdePO2mB8Qmog==";
-    public static final String SECONDARY_KEY = "DKDUK6Kvijop2YeEK52G3AsRoccqcKVq9ZWFaASByTqk19iNMwBKqEAdXR62CmRgsEb5mMJ58YDx2jfbjP57CQ==";
-
     public class IpResponse {
         public String ip;
     }
@@ -44,8 +48,48 @@ public class AzureDbConnectionTest {
         System.out.println(ip.toString());
     }
 
-    @Test
-    public void serverConnectionTest() {
+    /**
+     * Simple test for connection to API deployed on Azure
+     */
+    public class SimpleApiResponse {
+        public int code;
+        public String message;
+    }
 
+    public static final String BASE_URL = "http://maze.westeurope.cloudapp.azure.com:8001/";
+
+    public interface ConnectionApiEndpointInterface {
+        @GET
+        Call<SimpleApiResponse> getApiOk(@Url String url);
+    }
+
+    @Test
+    public void retrofitAzureSimpleConnectionTest() throws IOException {
+        Gson gson = new GsonBuilder().create();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+
+        ConnectionApiEndpointInterface azureService = retrofit.create(ConnectionApiEndpointInterface.class);
+        Call<SimpleApiResponse> responseCall = azureService.getApiOk("");
+        Response<SimpleApiResponse> response = responseCall.execute();
+
+        assertTrue(response.isSuccessful());
+        assertThat(response.code(), is(equalTo(200)));
+        assertThat(response.message(), is(equalTo("OK")));
+        assertThat(response.body().code, is(equalTo(200)));
+        assertThat(response.body().message, is(equalTo("Ok")));
+
+        // ------------------------------------------------------------------------------------------
+        responseCall = azureService.getApiOk("api/");
+        response = responseCall.execute();
+
+        assertTrue(response.isSuccessful());
+        assertThat(response.code(), is(equalTo(200)));
+        assertThat(response.message(), is(equalTo("OK")));
+        assertThat(response.body().code, is(equalTo(200)));
+        assertThat(response.body().message, is(equalTo("API")));
     }
 }
