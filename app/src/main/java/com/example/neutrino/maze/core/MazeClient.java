@@ -566,6 +566,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mWifiScanner.removeFingerprintAvailableListener(mFirstFingerprintAvailableListener);
         if (mLocator != null) {
             mLocator.onDestroy();
+            mLocator = null;
         }
     }
 
