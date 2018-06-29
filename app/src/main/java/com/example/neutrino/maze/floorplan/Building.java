@@ -177,6 +177,35 @@ public class Building {
         return null;
     }
 
+    @Override
+    public boolean equals(Object another) {
+        if (this == another) return true;
+        if (another == null || !(another instanceof Building)) return false;
+        Building anotherBuilding = (Building) another;
+        if (anotherBuilding.mID != this.mID) return false;
+        if (anotherBuilding.mAddress != this.mAddress) return false;
+        if (anotherBuilding.mName != this.mName) return false;
+        if (anotherBuilding.mType != this.mType) return false;
+
+        // Omit checking floors and tags/teleports... Actually checking only id should suffice.
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash *= 31;
+        hash += (mID != null)? mID.hashCode() : 0;
+        hash *= 31;
+        hash += (mName != null)? mName.hashCode() : 0;
+        hash *= 31;
+        hash += (mAddress != null)? mAddress.hashCode() : 0;
+        hash *= 31;
+        hash += (mType != null)? mType.hashCode() : 0;
+
+        return hash;
+    }
+
     public static class TagComparator implements Comparator<Tag> {
 
         private String sample;
