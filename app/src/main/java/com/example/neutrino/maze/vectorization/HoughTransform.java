@@ -344,24 +344,26 @@ public class HoughTransform {
 
     public static List<LineSegment> mergeSegments(List<LineSegment> lineSegments) {
 
-        HashMap<HoughLine, SortedSet<LineSegment>> segmentsByLine = new HashMap<>();
-
-        // Organize all segments by their HoughLine (rho,theta) in a sorted set
-        for (LineSegment s: lineSegments) {
-            if (segmentsByLine.get(s.line) == null) {
-                segmentsByLine.put(s.line, new TreeSet<LineSegment>());
-            }
-            segmentsByLine.get(s.line).add(s);
-        }
+//        HashMap<HoughLine, SortedSet<LineSegment>> segmentsByLine = new HashMap<>();
+//
+//        // Organize all segments by their HoughLine (rho,theta) in a sorted set
+//        for (LineSegment s: lineSegments) {
+//            if (segmentsByLine.get(s.line) == null) {
+//                segmentsByLine.put(s.line, new TreeSet<LineSegment>());
+//            }
+//            segmentsByLine.get(s.line).add(s);
+//        }
+//
+        TreeSet<LineSegment> sortedSegments = new TreeSet<>(lineSegments);
 
         List<LineSegment> mergedSegments = new ArrayList<>();
+//
+//        for (SortedSet<LineSegment> set: segmentsByLine.values()) { // Merge for this (rho,theta)
+//            List<LineSegment> mergedList = mergeSegmentsSameLine(set);
+//            mergedSegments.addAll(mergedList);
+//        }
 
-        for (SortedSet<LineSegment> set: segmentsByLine.values()) { // Merge for this (rho,theta)
-            List<LineSegment> mergedList = mergeSegmentsSameLine(set);
-            mergedSegments.addAll(mergedList);
-        }
-
-        return mergedSegments;
+        return lineSegments;    // change this to mergedSegments when implementation is complete
     }
 
     public static List<LineSegment> mergeSegmentsSameLine(SortedSet<LineSegment> set) {
