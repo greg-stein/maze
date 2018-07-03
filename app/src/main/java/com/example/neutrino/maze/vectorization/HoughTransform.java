@@ -117,8 +117,20 @@ public class HoughTransform {
             return PointF.length(end.x - start.x, end.y - start.y);
         }
 
+        public int getIntegerSlope() {
+            if (start.x == end.x) {
+                return 90;
+            }
+            return (int) Math.floor(RAD_TO_ANGLE * (Math.atan((double) (end.y - start.y) / (double) (end.x - start.x))));
+        }
+
         @Override
         public int compareTo(LineSegment another) {
+
+            if (this.getIntegerSlope() < another.getIntegerSlope())
+                return -1;
+            if (this.getIntegerSlope() > another.getIntegerSlope())
+                return 1;
 
             if (this.start.x < another.start.x)
                 return -1;
@@ -164,6 +176,7 @@ public class HoughTransform {
     public static final int MAX_THETA = 360;
     // Using MAX_THETA, work out the step
     public static final double THETA_STEP = Math.PI / MAX_THETA;
+    public static final double RAD_TO_ANGLE = 180 / Math.PI;
     private static final int INIT_LINES_NUMBER = 200;
     public static final int CONTINUOUS_LINE_MAX_GAP = 4;
     public static final int MIN_LINE_SEGMENT_LENGTH = 10;
