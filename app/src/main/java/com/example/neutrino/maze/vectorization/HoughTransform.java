@@ -186,6 +186,7 @@ public class HoughTransform {
     private static final int MIN_LINE_SEGMENT_LENGTH_SQ =
             MIN_LINE_SEGMENT_LENGTH * MIN_LINE_SEGMENT_LENGTH; // and this is a square of minimal length!
     private static final int MIN_DIFF_BETWEEN_SEGMENTS_SQ = MIN_DIFF_BETWEEN_SEGMENTS * MIN_DIFF_BETWEEN_SEGMENTS;
+    private static final int MAX_ANGLE_DIFFERENCE = 5;
 
     public class HoughBin extends ArrayList<Point>{};
 
@@ -355,6 +356,24 @@ public class HoughTransform {
 //        }
 //
         TreeSet<LineSegment> sortedSegments = new TreeSet<>(lineSegments);
+
+        HashMap<Integer, SortedSet<LineSegment>> segmentsBySlope = new HashMap<>();
+
+        int currentSlope = Integer.MIN_VALUE;   // Start at invalid slope
+        for (LineSegment s: sortedSegments) {
+            int slope = s.getIntegerSlope();
+            // Group lines with similar slopes (within MAX_ANGLE_DIFFERENCE degrees)
+            // Once difference goes over MAX_ANGLE_DIFFERENCE, change current slope
+            // (slopes are given in increasing order because the set is sorted)
+            if (slope - currentSlope > MAX_ANGLE_DIFFERENCE) {
+                currentSlope = slope;
+            }
+            if (segmentsBySlope.get(currentSlope) == null) {
+                // Within the set, segments will be sorted by their endpoints
+                segmentsBySlope.put(currentSlope, new TreeSet<LineSegment>());
+            }
+            segmentsBySlope.get(currentSlope).add(s);
+        }
 
         List<LineSegment> mergedSegments = new ArrayList<>();
 //
