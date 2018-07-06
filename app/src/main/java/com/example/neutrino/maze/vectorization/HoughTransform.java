@@ -100,6 +100,7 @@ public class HoughTransform {
         transient private HoughLine line;
         public Point start;
         public Point end;
+        transient public int mergeId; // used internally for the line merge algorithm
 
         public LineSegment(Point start, Point end) {
             this.start = start;
@@ -379,13 +380,66 @@ public class HoughTransform {
         }
 
         List<LineSegment> mergedSegments = new ArrayList<>();
+        List<LineSegment> mergeCandidates = new ArrayList<>();
+
+        for (SortedSet<LineSegment> set: segmentsBySlope.values()) {
+
+            int mergeId = 0;
+
+            // pass 1: find candidates for merging
+            for (LineSegment segment: set) {
+                for (LineSegment other: set) {
+                    // do not compare with itself
+                    if (segment == other)
+                        continue;
+                    if (PointsDistSqr(segment.start, other.start) < MIN_DIFF_BETWEEN_SEGMENTS_SQ ||
+                            PointsDistSqr(segment.start, other.end) < MIN_DIFF_BETWEEN_SEGMENTS_SQ ||
+                            PointsDistSqr(segment.end, other.start) < MIN_DIFF_BETWEEN_SEGMENTS_SQ ||
+                            PointsDistSqr(segment.end, other.end) < MIN_DIFF_BETWEEN_SEGMENTS_SQ) {
+                        if (segment.mergeId == 0) {
+                            if (other.mergeId !=0) {
+                                segment.mergeId = other.mergeId;
+                            } else {
+                                other.mergeId = segment.mergeId = ++mergeId;
+                            }
+                        } else {
+                            if (other.mergeId == 0) {
+                                other.mergeId = segment.mergeId;
+                            } else {
+                                // the case where both segments are already candidates to merge
+                                // with different segments is going to be checked later
+                            }
+                        }
+                    }
+                }
+            }
+
+            // pass 2: add segments which are not to be merged to final list
+            for (LineSegment segment: set) {
+                if (segment.mergeId == 0) {
+                    mergedSegments.add(segment);
+                }
+            }
+
+            // pass 3: merge segments with same id
+            for (int i = 1 ; i <= mergeId; i++) {
+                for (LineSegment segment : set) {
+                    if (segment.mergeId == i) {
+                        mergeCandidates.add(segment);
+                    }
+                }
+                // TODO: actually merge all mergeCandidates into one
+                mergeCandidates.clear();
+            }
+        }
+
 //
 //        for (SortedSet<LineSegment> set: segmentsByLine.values()) { // Merge for this (rho,theta)
 //            List<LineSegment> mergedList = mergeSegmentsSameLine(set);
 //            mergedSegments.addAll(mergedList);
 //        }
 
-        return lineSegments;    // change this to mergedSegments when implementation is complete
+        return mergedSegments;    // change this to mergedSegments when implementation is complete
     }
 
     public static List<LineSegment> mergeSegmentsSameLine(SortedSet<LineSegment> set) {
@@ -401,10 +455,7 @@ public class HoughTransform {
                     current.end = seg.end;                              // extend current segment
                 }
             } else {    // Check if segments are distinct but very close
-                int dx = Math.abs(seg.start.x - current.end.x);
-                int dy = Math.abs(seg.start.y - current.end.y);
-                int gap = dx*dx + dy*dy;
-                if (gap < MIN_DIFF_BETWEEN_SEGMENTS_SQ) {
+                if (PointsDistSqr(seg.start, current.end) < MIN_DIFF_BETWEEN_SEGMENTS_SQ) {
                     current.end = seg.end;
                 } else {
                     newlist.add(current);   // cannot merge segments - finalize current
@@ -469,6 +520,12 @@ public class HoughTransform {
             LineSegment newSegment = new LineSegment(start, end, line);
             segments.add(newSegment);
         }
+    }
+
+    private static int PointsDistSqr (Point p1, Point p2) {
+        int dx = p1.x - p2.x;
+        int dy = p1.y - p2.y;
+        return (dx*dx + dy*dy);
     }
 
     // Preconditions:
