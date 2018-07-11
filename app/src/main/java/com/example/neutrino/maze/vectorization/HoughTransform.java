@@ -346,16 +346,6 @@ public class HoughTransform {
 
     public static List<LineSegment> mergeSegments(List<LineSegment> lineSegments) {
 
-//        HashMap<HoughLine, SortedSet<LineSegment>> segmentsByLine = new HashMap<>();
-//
-//        // Organize all segments by their HoughLine (rho,theta) in a sorted set
-//        for (LineSegment s: lineSegments) {
-//            if (segmentsByLine.get(s.line) == null) {
-//                segmentsByLine.put(s.line, new TreeSet<LineSegment>());
-//            }
-//            segmentsByLine.get(s.line).add(s);
-//        }
-//
         TreeSet<LineSegment> sortedSegments = new TreeSet<>(lineSegments);
 
         HashMap<Integer, SortedSet<LineSegment>> segmentsBySlope = new HashMap<>();
@@ -380,7 +370,7 @@ public class HoughTransform {
         }
 
         List<LineSegment> mergedSegments = new ArrayList<>();
-        List<LineSegment> mergeCandidates = new ArrayList<>();
+        List<Point> mergeCandidates = new ArrayList<>();
 
         for (SortedSet<LineSegment> set: segmentsBySlope.values()) {
 
@@ -392,10 +382,17 @@ public class HoughTransform {
                     // do not compare with itself
                     if (segment == other)
                         continue;
+                    // if either of the two ends of the segments are close enough
                     if (PointsDistSqr(segment.start, other.start) < MIN_DIFF_BETWEEN_SEGMENTS_SQ ||
                             PointsDistSqr(segment.start, other.end) < MIN_DIFF_BETWEEN_SEGMENTS_SQ ||
                             PointsDistSqr(segment.end, other.start) < MIN_DIFF_BETWEEN_SEGMENTS_SQ ||
                             PointsDistSqr(segment.end, other.end) < MIN_DIFF_BETWEEN_SEGMENTS_SQ) {
+                        // algorithm works like this: mergeId=0 indicate segment cannot be merged with another segment.
+                        // mergeId!=0 indicates segment is a candidate for merging, and all segments with the same mergeId
+                        // are to be merged together.
+                        // If we find close segments and both have mergeId=0, we assign an identical mergeId to both,
+                        // and increment the counter. If one of them already has a non-zero mergeId, we simply assign the
+                        // same mergeId to the other one (adding it to the group).
                         if (segment.mergeId == 0) {
                             if (other.mergeId !=0) {
                                 segment.mergeId = other.mergeId;
@@ -408,13 +405,14 @@ public class HoughTransform {
                             } else {
                                 // the case where both segments are already candidates to merge
                                 // with different segments is going to be checked later
+                                // (we expect this to be a rare anomaly)
                             }
                         }
                     }
                 }
             }
 
-            // pass 2: add segments which are not to be merged to final list
+            // pass 2: add segments which are not to be merged to final list "as are"
             for (LineSegment segment: set) {
                 if (segment.mergeId == 0) {
                     mergedSegments.add(segment);
@@ -422,26 +420,43 @@ public class HoughTransform {
             }
 
             // pass 3: merge segments with same id
+            // note that here we don't care about the segments, only their endpoints
+            // we add both endpoints of all segments with same mergeId to a list of
+            // candidate points, and want to construct the maximum length segment
             for (int i = 1 ; i <= mergeId; i++) {
                 for (LineSegment segment : set) {
                     if (segment.mergeId == i) {
-                        mergeCandidates.add(segment);
+                        mergeCandidates.add(segment.start);
+                        mergeCandidates.add(segment.end);
                     }
                 }
-                // TODO: actually merge all mergeCandidates into one
-                mergeCandidates.clear();
+                // simple algorithm: the new "merged" segment boundaries are the two points
+                // which are farthest apart in the group of endpoints
+                int distance, maxDistance = 0;
+                LineSegment seg = new LineSegment(new Point(0,0), new Point(0,0));
+                for (Point point : mergeCandidates) {
+                    for (Point other : mergeCandidates) {
+                        // do not compare with itself
+                        if (point == other)
+                            continue;
+                        distance = PointsDistSqr(point, other);
+                        if (distance > maxDistance) {
+                            maxDistance = distance;
+                            seg.start = point;
+                            seg.end = other;
+                        }
+                    }
+                }
+
+                mergedSegments.add(seg);    // add final segment to output list
+                mergeCandidates.clear();    // clear candidate points before going to next mergeId
             }
         }
-
-//
-//        for (SortedSet<LineSegment> set: segmentsByLine.values()) { // Merge for this (rho,theta)
-//            List<LineSegment> mergedList = mergeSegmentsSameLine(set);
-//            mergedSegments.addAll(mergedList);
-//        }
 
         return mergedSegments;    // change this to mergedSegments when implementation is complete
     }
 
+    // DEPRECATED FUNCTION - UNUSED AND TO BE REMOVED IN A FUTURE RELEASE
     public static List<LineSegment> mergeSegmentsSameLine(SortedSet<LineSegment> set) {
         List<LineSegment> newlist = new ArrayList<>();
 
