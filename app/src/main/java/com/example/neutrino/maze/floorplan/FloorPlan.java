@@ -19,6 +19,15 @@ public class FloorPlan {
     private List<IFloorPlanPrimitive> mSketch;
     private List<Teleport> mTeleports; // TODO: remove
     private boolean mIsSketchDirty = false;
+    private String mFloorId;
+
+    public FloorPlan(String floorId) {
+        this.mFloorId = floorId;
+    }
+
+    public FloorPlan() {
+
+    }
 
     public static FloorPlan build(List<Object> entities) {
         FloorPlan floorPlan = new FloorPlan();
@@ -52,6 +61,14 @@ public class FloorPlan {
         if (mSketch != null) result.addAll(mSketch);
 
         return result;
+    }
+
+    public String getFloorId() {
+        return mFloorId;
+    }
+
+    public void setFloorId(String floorId) {
+        mFloorId = floorId;
     }
 
     public RectF getBoundaries() {
