@@ -100,6 +100,7 @@ public class HoughTransform {
         transient private HoughLine line;
         public Point start;
         public Point end;
+        transient public int mergeId; // used internally for the line merge algorithm
 
         public LineSegment(Point start, Point end) {
             this.start = start;
@@ -117,8 +118,20 @@ public class HoughTransform {
             return PointF.length(end.x - start.x, end.y - start.y);
         }
 
+        public int getIntegerSlope() {
+            if (start.x == end.x) {
+                return 90;
+            }
+            return (int) Math.floor(RAD_TO_ANGLE * (Math.atan((double) (end.y - start.y) / (double) (end.x - start.x))));
+        }
+
         @Override
         public int compareTo(LineSegment another) {
+
+            if (this.getIntegerSlope() < another.getIntegerSlope())
+                return -1;
+            if (this.getIntegerSlope() > another.getIntegerSlope())
+                return 1;
 
             if (this.start.x < another.start.x)
                 return -1;
@@ -164,6 +177,7 @@ public class HoughTransform {
     public static final int MAX_THETA = 360;
     // Using MAX_THETA, work out the step
     public static final double THETA_STEP = Math.PI / MAX_THETA;
+    public static final double RAD_TO_ANGLE = 180 / Math.PI;
     private static final int INIT_LINES_NUMBER = 200;
     public static final int CONTINUOUS_LINE_MAX_GAP = 4;
     public static final int MIN_LINE_SEGMENT_LENGTH = 10;
@@ -173,6 +187,7 @@ public class HoughTransform {
     private static final int MIN_LINE_SEGMENT_LENGTH_SQ =
             MIN_LINE_SEGMENT_LENGTH * MIN_LINE_SEGMENT_LENGTH; // and this is a square of minimal length!
     private static final int MIN_DIFF_BETWEEN_SEGMENTS_SQ = MIN_DIFF_BETWEEN_SEGMENTS * MIN_DIFF_BETWEEN_SEGMENTS;
+    private static final int MAX_ANGLE_DIFFERENCE = 5;
 
     public class HoughBin extends ArrayList<Point>{};
 
@@ -331,41 +346,131 @@ public class HoughTransform {
 
     public static List<LineSegment> mergeSegments(List<LineSegment> lineSegments) {
 
-        HashMap<HoughLine, SortedSet<LineSegment>> segmentsByLine = new HashMap<>();
+        TreeSet<LineSegment> sortedSegments = new TreeSet<>(lineSegments);
 
-        // Organize all segments by their HoughLine (rho,theta) in a sorted set
-        for (LineSegment s: lineSegments) {
-            if (segmentsByLine.get(s.line) == null) {
-                segmentsByLine.put(s.line, new TreeSet<LineSegment>());
+        HashMap<Integer, SortedSet<LineSegment>> segmentsBySlope = new HashMap<>();
+
+        int currentSlope = Integer.MIN_VALUE;   // Start at invalid slope
+        for (LineSegment s: sortedSegments) {
+            int slope = s.getIntegerSlope();
+            // Group lines with similar slopes (within MAX_ANGLE_DIFFERENCE degrees)
+            // Once difference goes over MAX_ANGLE_DIFFERENCE, change current slope
+            // (slopes are given in increasing order because the set is sorted)
+            // Note that +90 and -90 degrees are counted as the same
+            if (slope + 90 < MAX_ANGLE_DIFFERENCE || 90 - slope < MAX_ANGLE_DIFFERENCE) {
+                currentSlope = -90;
+            } else if (slope - currentSlope > MAX_ANGLE_DIFFERENCE) {
+                currentSlope = slope;
             }
-            segmentsByLine.get(s.line).add(s);
+            if (segmentsBySlope.get(currentSlope) == null) {
+                // Within the set, segments will be sorted by their endpoints
+                segmentsBySlope.put(currentSlope, new TreeSet<LineSegment>());
+            }
+            segmentsBySlope.get(currentSlope).add(s);
         }
 
         List<LineSegment> mergedSegments = new ArrayList<>();
+        List<Point> mergeCandidates = new ArrayList<>();
 
-        for (SortedSet<LineSegment> set: segmentsByLine.values()) { // Merge for this (rho,theta)
-            List<LineSegment> mergedList = mergeSegmentsSameLine(set);
-            mergedSegments.addAll(mergedList);
+        for (SortedSet<LineSegment> set: segmentsBySlope.values()) {
+
+            int mergeId = 0;
+
+            // pass 1: find candidates for merging
+            for (LineSegment segment: set) {
+                for (LineSegment other: set) {
+                    // do not compare with itself
+                    if (segment == other)
+                        continue;
+                    // if either of the two ends of the segments are close enough
+                    if (PointsDistSqr(segment.start, other.start) < MIN_DIFF_BETWEEN_SEGMENTS_SQ ||
+                            PointsDistSqr(segment.start, other.end) < MIN_DIFF_BETWEEN_SEGMENTS_SQ ||
+                            PointsDistSqr(segment.end, other.start) < MIN_DIFF_BETWEEN_SEGMENTS_SQ ||
+                            PointsDistSqr(segment.end, other.end) < MIN_DIFF_BETWEEN_SEGMENTS_SQ) {
+                        // algorithm works like this: mergeId=0 indicate segment cannot be merged with another segment.
+                        // mergeId!=0 indicates segment is a candidate for merging, and all segments with the same mergeId
+                        // are to be merged together.
+                        // If we find close segments and both have mergeId=0, we assign an identical mergeId to both,
+                        // and increment the counter. If one of them already has a non-zero mergeId, we simply assign the
+                        // same mergeId to the other one (adding it to the group).
+                        if (segment.mergeId == 0) {
+                            if (other.mergeId !=0) {
+                                segment.mergeId = other.mergeId;
+                            } else {
+                                other.mergeId = segment.mergeId = ++mergeId;
+                            }
+                        } else {
+                            if (other.mergeId == 0) {
+                                other.mergeId = segment.mergeId;
+                            } else {
+                                // the case where both segments are already candidates to merge
+                                // with different segments is going to be checked later
+                                // (we expect this to be a rare anomaly)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // pass 2: add segments which are not to be merged to final list "as are"
+            for (LineSegment segment: set) {
+                if (segment.mergeId == 0) {
+                    mergedSegments.add(segment);
+                }
+            }
+
+            // pass 3: merge segments with same id
+            // note that here we don't care about the segments, only their endpoints
+            // we add both endpoints of all segments with same mergeId to a list of
+            // candidate points, and want to construct the maximum length segment
+            for (int i = 1 ; i <= mergeId; i++) {
+                for (LineSegment segment : set) {
+                    if (segment.mergeId == i) {
+                        mergeCandidates.add(segment.start);
+                        mergeCandidates.add(segment.end);
+                    }
+                }
+                // simple algorithm: the new "merged" segment boundaries are the two points
+                // which are farthest apart in the group of endpoints
+                int distance, maxDistance = 0;
+                LineSegment seg = new LineSegment(new Point(0,0), new Point(0,0));
+                for (Point point : mergeCandidates) {
+                    for (Point other : mergeCandidates) {
+                        // do not compare with itself
+                        if (point == other)
+                            continue;
+                        distance = PointsDistSqr(point, other);
+                        if (distance > maxDistance) {
+                            maxDistance = distance;
+                            seg.start = point;
+                            seg.end = other;
+                        }
+                    }
+                }
+
+                mergedSegments.add(seg);    // add final segment to output list
+                mergeCandidates.clear();    // clear candidate points before going to next mergeId
+            }
         }
 
-        return mergedSegments;
+        return mergedSegments;    // change this to mergedSegments when implementation is complete
     }
 
+    // DEPRECATED FUNCTION - UNUSED AND TO BE REMOVED IN A FUTURE RELEASE
     public static List<LineSegment> mergeSegmentsSameLine(SortedSet<LineSegment> set) {
         List<LineSegment> newlist = new ArrayList<>();
 
         LineSegment current = set.first();   // Assume there is always a first otherwise why are we even here
 
         for (LineSegment seg : set) {
+            if (seg == current)     // skip first element since we already have it
+                continue;
             if (X_COMPARATOR.compare(seg.start, current.end) <= 0) {     // starts inside current segment (or at boundary)
                 if (X_COMPARATOR.compare(seg.end, current.end) > 0) {   // ends outside current segment
                     current.end = seg.end;                              // extend current segment
                 }
             } else {    // Check if segments are distinct but very close
-                int dx = Math.abs(seg.start.x - current.end.x);
-                int dy = Math.abs(seg.start.y - current.end.y);
-                int gap = dx*dx + dy*dy;
-                if (gap < MIN_DIFF_BETWEEN_SEGMENTS_SQ) {
+                if (PointsDistSqr(seg.start, current.end) < MIN_DIFF_BETWEEN_SEGMENTS_SQ) {
                     current.end = seg.end;
                 } else {
                     newlist.add(current);   // cannot merge segments - finalize current
@@ -430,6 +535,12 @@ public class HoughTransform {
             LineSegment newSegment = new LineSegment(start, end, line);
             segments.add(newSegment);
         }
+    }
+
+    private static int PointsDistSqr (Point p1, Point p2) {
+        int dx = p1.x - p2.x;
+        int dy = p1.y - p2.y;
+        return (dx*dx + dy*dy);
     }
 
     // Preconditions:

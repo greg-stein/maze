@@ -538,7 +538,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
                 String jsonString = null;
                 try {
                     Resources res = getResources();
-                    InputStream in_s = res.openRawResource(R.raw.haifa_mall_detailed_tags);
+                    InputStream in_s = res.openRawResource(R.raw.floorplan_greg_home_2nd_floor);
 
                     byte[] b = new byte[in_s.available()];
                     in_s.read(b);

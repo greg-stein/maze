@@ -6,6 +6,7 @@ import android.graphics.RectF;
 import android.os.Build;
 
 import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.util.CommonHelper;
 import com.example.neutrino.maze.navigation.FingerprintsPathFinder;
 import com.example.neutrino.maze.navigation.GridPathFinder;
 import com.example.neutrino.maze.navigation.PathFinderBase;

@@ -1694,7 +1694,7 @@
     }
   },
   {
-    "CLASSNAME":"LocationmStartrk",
+    "CLASSNAME":"LocationMark",
     "INSTANCE":{
       "mCenter":{
         "x":5.0788813,
