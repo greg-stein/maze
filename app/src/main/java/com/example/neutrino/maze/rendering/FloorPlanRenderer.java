@@ -1,23 +1,26 @@
 package com.example.neutrino.maze.rendering;
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.opengl.Matrix;
-import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 
 import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
+import com.example.neutrino.maze.core.IMainView;
 import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.Footprint;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.LocationMark;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.floorplan.Wall;
+import com.example.neutrino.maze.floorplan.transitions.Teleport;
+import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +36,6 @@ import javax.microedition.khronos.opengles.GL10;
 public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     static final float DEFAULT_SCALE_FACTOR = 0.1f;
-    private static final int DEFAULT_BUFFER_VERTICES_NUM = 65536;
 
     public volatile float mAngle;
     private float mOffsetX;
@@ -49,26 +51,26 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private final float[] mTranslationMatrix = new float[16];
     private final float[] mScaleMatrix = new float[16];
     private final float[] mIntermediateMatrix = new float[16];
-    private static float[] mRay = new float[6]; // ray represented by 2 points
+    private static float[] mRay = new float[6]; // ray represented by 2 points in 3D
 
     private GLSurfaceView mGlView;
-    private List<GlRenderBuffer> mGlBuffers = new ArrayList<>();
-    private GlRenderBuffer mCurrentBuffer = null;
+    private List<IRenderGroup> mRenderGroups = new ArrayList<>();
+    private List<IRenderGroup> mTextRenderGroups = new ArrayList<>();
     private int mViewPortWidth;
     private int mViewPortHeight;
     private final PointF mDragStart = new PointF();
     private IMoveable mMovedObject;
-    private boolean mAddedWallByDrag;
+    private IRenderGroup mMovedObjectGroup;
     private static final float[] mBgColorF = new float[4];
     private LocationMark mLocationMark = null;
-    private List<IFloorPlanPrimitive> mFloorPlanPrimitives;
-    private List<Tag> mTags;
+
+    private Context mContext;
 
     private GLText glText;
-
     static private String vertexShaderCode;
     static private String fragmentShaderCode;
     static private String textRenderVertexShaderCode;
+
     static private String textRenderFragmentShaderCode;
 
     static {
@@ -77,9 +79,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         textRenderVertexShaderCode = readResourceAsString("/res/raw/text_render_vertex_shader.glsl");
         textRenderFragmentShaderCode = readResourceAsString("/res/raw/text_render_fragment_shader.glsl");
     }
-
     // Used for debug only to show distribution of active fingerprints
     private LocationMark mDistributionIndicator;
+    private IMainView.IElementFactory mElementFactory;
 
     private static String readResourceAsString(String path) {
         Exception innerException;
@@ -98,6 +100,10 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         throw new RuntimeException("Cannot load shader code from resources.", innerException);
     }
 
+    public FloorPlanRenderer(Context context) {
+        mContext = context;
+    }
+
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // Set the background frame color
@@ -106,7 +112,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         GLES20.glEnable(GLES20.GL_BLEND);
 //        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
-        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA/*GL_ONE*/, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
 //        GLES20.glDepthFunc(GLES20.GL_LESS);
 //        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
@@ -140,15 +146,8 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         AppSettings.oglTextRenderProgram = ShaderHelper.createAndLinkProgram(textRenderVertexShaderCode, textRenderFragmentShaderCode,
                 ShaderHelper.POSITION_ATTRIBUTE, ShaderHelper.TEXTURE_COORDINATE_ATTRIBUTE, ShaderHelper.MVP_MATRIX_INDEX_ATTRIBUTE);
 
-        mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
-        mGlBuffers.add(mCurrentBuffer);
-
-        if (mQueuedTaskForGlThread != null) {
-            mQueuedTaskForGlThread.run();
-        }
-
         // Create the GLText
-        glText = new GLText(AppSettings.oglTextRenderProgram, AppSettings.appActivity.getAssets());
+        glText = new GLText(AppSettings.oglTextRenderProgram, mContext.getAssets());
 
         // Load the font from file (set size + padding), creates the texture
         // NOTE: after a successful call to this the font is ready for rendering!
@@ -193,45 +192,62 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         // Clear frame
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
+        // Achtung! It is super important that we first render the elements and only then
+        // we render text labels. Otherwise, elements will be drown on top of text labels
+        // obscuring them.
         GLES20.glUseProgram(AppSettings.oglProgram);
-
-        for (GlRenderBuffer glBuffer : mGlBuffers) {
-            glBuffer.render(mScratch);
-        }
-
-        renderTags();
-    }
-
-    public void addPrimitive(IFloorPlanPrimitive primitive) {
-        if (!mCurrentBuffer.put(primitive)) {
-            mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
-            mGlBuffers.add(mCurrentBuffer);
-            mCurrentBuffer.put(primitive);
-        }
-
-        runOnGlThread(new Runnable() {
-            @Override
-            public void run() {
-                mCurrentBuffer.allocateGpuBuffers();
-            }
-        });
-        mFloorPlanPrimitives.add(primitive);
-    }
-
-    private void addPrimitives(List<IFloorPlanPrimitive> primitives) {
-        for (IFloorPlanPrimitive primitive : primitives) {
-            primitive.updateVertices();
-
-            if (!mCurrentBuffer.put(primitive)) {
-                mCurrentBuffer.allocateGpuBuffers();
-                mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
-                mGlBuffers.add(mCurrentBuffer);
-                mCurrentBuffer.put(primitive);
+        for (IRenderGroup group : mRenderGroups) {
+            if (group.isReadyForRender()) {
+                group.render(mScratch, mAngle);
+            } else {
+                group.prepareForRender();
             }
         }
-        mCurrentBuffer.allocateGpuBuffers();
 
-        mFloorPlanPrimitives = primitives;
+        GLES20.glUseProgram(AppSettings.oglTextRenderProgram);
+        for (IRenderGroup group : mTextRenderGroups) {
+            if (group.isReadyForRender()) {
+                group.render(mScratch, mAngle);
+            } else {
+                group.prepareForRender();
+            }
+        }
+    }
+
+    // TODO: refactor to use single method which receives IRenderGroup
+    public void render(IRenderGroup group) {
+        mRenderGroups.add(group); // Lock could be required
+    }
+
+    public ElementsRenderGroup renderElements(List<? extends IFloorPlanPrimitive> elements) {
+        final ElementsRenderGroup newGroup = new ElementsRenderGroup(elements);
+        mRenderGroups.add(newGroup);
+
+        return newGroup;
+    }
+
+    public TextRenderGroup renderTags(List<? extends Tag> tags) {
+        final TextRenderGroup newGroup = new TextRenderGroup(tags, glText);
+        mTextRenderGroups.add(newGroup);
+
+        return newGroup;
+    }
+
+    @Deprecated
+    public synchronized void addPrimitive(IFloorPlanPrimitive primitive) {
+//        if (!mCurrentBuffer.put(primitive)) {
+//            mCurrentBuffer = new GlRenderBuffer(GlRenderBuffer.DEFAULT_BUFFER_VERTICES_NUM);
+//            mGlBuffers.add(mCurrentBuffer);
+//            mCurrentBuffer.put(primitive);
+//        }
+//
+//        runOnGlThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                mCurrentBuffer.allocateGpuBuffers();
+//            }
+//        });
+//        mFloorPlan.addItem(primitive);
     }
 
     private void updateModelMatrix() {
@@ -253,12 +269,12 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     protected void runOnUiThread(Runnable runnable) {
-        if (AppSettings.appActivity != null) {
-            AppSettings.appActivity.runOnUiThread(runnable);
+        if (mContext instanceof Activity) {
+            ((Activity)mContext).runOnUiThread(runnable);
         }
     }
 
-    public boolean isFloorPlanSet() {return mFloorPlanPrimitives != null;}
+    public boolean isSketchEmpty() {return mRenderGroups == null || mRenderGroups.isEmpty() || mRenderGroups.get(0).isEmpty();}
 
     public float getAngle() {
         return mAngle;
@@ -328,31 +344,41 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         return mMovedObject != null;
     }
 
-    public void handleStartDrag(final int x, final int y, final FloorPlanView.MapOperation operation, final FloorPlanView.MapOperand operand) {
+    public void setElementFactory(IMainView.IElementFactory factory) {
+        this.mElementFactory = factory;
+    }
+
+    // TODO: Check in the caller that there is an object at tap location, if not create it (if
+    // TODO: requested) and call this method only after there is an existing object. Merge both
+    // TODO: if/then (in the code of the method) into one block.
+    public void handleStartDrag(final int x, final int y, final IMainView.MapOperation operation, final IMainView.MapOperand operand) {
         // This is needed for FloorPlanView to know if there is any object under tap location
         windowToWorld(x, y, mDragStart);
-        mMovedObject = findObjectHavingPoint(mDragStart.x, mDragStart.y);
+        final Pair<IRenderGroup, IMoveable> objectHavingPointInfo = findObjectHavingPoint(mDragStart);
+        mMovedObject = (objectHavingPointInfo == null)? null : objectHavingPointInfo.second;
+        mMovedObjectGroup = (objectHavingPointInfo == null)? null : objectHavingPointInfo.first;
 
         runOnGlThread(new Runnable() {
             @Override
             public void run() {
-                mAddedWallByDrag = false;
-
-                if (operation == FloorPlanView.MapOperation.ADD && operand == FloorPlanView.MapOperand.WALL) {
+                // TODO: This code smells bad. Obviously refactor is needed. Look at where it is called from!
+                if (operation == IMainView.MapOperation.ADD && operand == IMainView.MapOperand.WALL) {
                     // Add new wall at the point
-                    mMovedObject = new Wall(mDragStart.x, mDragStart.y, mDragStart.x, mDragStart.y);
-                    addPrimitive((IFloorPlanPrimitive) mMovedObject);
-                    mAddedWallByDrag = true;
+                    mMovedObject = mElementFactory.createElement(operand, mDragStart);
                     mMovedObject.setTapLocation(mDragStart.x, mDragStart.y);
                     mMovedObject.handleMoveStart();
+                    onStartMove(mMovedObject);
                 }
                 else {
                     if (mMovedObject != null) {
                         mMovedObject.setTapLocation(mDragStart.x, mDragStart.y);
                         mMovedObject.handleMoveStart();
+                        onStartMove(mMovedObject);
+                        // Mark render group of moved element as changed
+                        mMovedObjectGroup.setChangedElement(mMovedObject);
                     }
                 }
-            }
+             }
         });
     }
 
@@ -365,6 +391,9 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
                 if (mMovedObject != null) {
                     mMovedObject.handleMove(worldPoint.x, worldPoint.y);
+                    if (mMovedObjectGroup != null) {
+                        mMovedObjectGroup.setChangedElement(mMovedObject);
+                    }
                     // TODO: Handle This for non-wall
                     onMoving(mMovedObject);
                 }
@@ -378,6 +407,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             public void run() {
                 if (mMovedObject != null) {
                     mMovedObject.handleMoveEnd();
+                    onEndMove(mMovedObject);
                 }
                 mMovedObject = null;
             }
@@ -391,59 +421,20 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
                 final PointF worldPoint = new PointF();
                 windowToWorld(x, y, worldPoint);
 
-                IMoveable candidate = findObjectHavingPoint(worldPoint.x, worldPoint.y);
+                Pair<IRenderGroup, IMoveable> candidate = findObjectHavingPoint(worldPoint);
                 if (candidate == null) return;
 
-                if (candidate instanceof IFloorPlanPrimitive) {
-                    IFloorPlanPrimitive candidatePrimitive = (IFloorPlanPrimitive) candidate;
+                IRenderGroup candidateGroup = candidate.first;
+                IMoveable candidateElement = candidate.second;
+
+                // In case of render element, make it invisible first (it will stay in GPU buffers)
+                if (candidate.second instanceof IFloorPlanPrimitive) {
+                    IFloorPlanPrimitive candidatePrimitive = (IFloorPlanPrimitive) candidate.second;
                     candidatePrimitive.cloak();
-                    mFloorPlanPrimitives.remove(candidatePrimitive);
-                } else if (candidate instanceof Tag) {
-                    mTags.remove(candidate);
                 }
+                candidateGroup.removeElement(candidateElement);
             }
         });
-    }
-
-    // TODO: remove queued task and use simpler method to run this on start
-    private Runnable mQueuedTaskForGlThread = null;
-
-    public void setFloorPlan(final List<IFloorPlanPrimitive> primitives) {
-        mQueuedTaskForGlThread = new Runnable() {
-            @Override
-            public void run() {
-                addPrimitives(primitives);
-                onFloorplanLoadComplete();
-            }
-        };
-    }
-
-    public void performQueuedTask() {
-        if (mQueuedTaskForGlThread != null) {
-            runOnGlThread(mQueuedTaskForGlThread);
-            mQueuedTaskForGlThread = null;
-        }
-    }
-
-    public void setTags(List<Tag> tags) {
-        this.mTags = tags;
-        for (Tag tag : mTags) {
-            calculateTagBoundaries(tag);
-        }
-    }
-
-    private void renderTags() {
-        synchronized (FloorPlan.mTagsListLocker) {
-            if (mTags == null || mTags.size() == 0) return;
-
-            GLES20.glUseProgram(AppSettings.oglTextRenderProgram);
-            glText.begin(0.0f, 0.0f, 1.0f, 1.0f, mScratch); // Begin Text Rendering (Set Color BLUE)
-
-            for (Tag tag : mTags) {
-                drawTag(tag);
-            }
-            glText.end();                                   // End Text Rendering
-        }
     }
 
     public void calculateTagBoundaries(Tag tag) {
@@ -452,43 +443,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         tag.updateBoundariesRect();
     }
 
-    private void drawTag(Tag tag) {
-        PointF tagLocation = tag.getLocation();
-        float[] boundaries = tag.getBoundaryCorners();
-        float[] boundariesTransformed = tag.getBoundaryCornersTransformed();
-
-        android.graphics.Matrix m = new android.graphics.Matrix();
-        m.setRotate(-mAngle, tagLocation.x, tagLocation.y);
-        m.mapPoints(boundariesTransformed, boundaries);
-
-        glText.draw(tag.getLabel(), boundariesTransformed[6], boundariesTransformed[7], 0, 0, 0, -mAngle);  // Draw Text Centered
-    }
-
-    public IMoveable findObjectHavingPoint(float x, float y) {
-        for (IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
-            if (primitive.hasPoint(x, y) && !primitive.isRemoved()) {
-                return primitive;
-            }
-        }
-
-        IMoveable tag = getTagHavingPoint(x, y);
-        if (tag != null) return tag;
-
-        return null;
-    }
-
-    @Nullable
-    public Tag getTagHavingPoint(float x, float y) {
-        for (Tag tag : mTags) {
-            if (tag.hasPoint(x, y)) {
-                return tag;
-            }
-        }
-        return null;
-    }
-
     private static final PointF mPanStart = new PointF();
-
     public void handleStartPan(final int x, final int y) {
         runOnGlThread(new Runnable() {
             @Override
@@ -497,6 +452,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
             }
         });
     }
+
     private static final PointF mCurrentPan = new PointF();
 
     public void handlePan(final int x, final int y) {
@@ -513,20 +469,14 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
-    public List<IFloorPlanPrimitive> getFloorPlan() {
-        return mFloorPlanPrimitives;
-    }
-
     public void putStep(final float x, final float y) {
         Footprint footprint = new Footprint(x, y);
         footprint.setColor(AppSettings.footprintColor);
         addPrimitive(footprint);
     }
 
-    public Fingerprint putMark(final float x, final float y, final WiFiFingerprint wifiFingerprint) {
-        Fingerprint mark = new Fingerprint(x, y, wifiFingerprint);
-        addPrimitive(mark);
-        return mark;
+    public void putFingerprint(Fingerprint fingerprint) {
+        addPrimitive(fingerprint);
     }
 
     public void drawLocationMarkAt(final PointF currentLocation) {
@@ -579,56 +529,34 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
-    public void clearFloorPlan() {
-        for(IFloorPlanPrimitive primitive : mFloorPlanPrimitives) {
-            if (!primitive.isRemoved()) { // TODO: check if this is always true
-                primitive.cloak();
-            }
+    public void clearSketch() {
+        for (IRenderGroup group : mRenderGroups) {
+            group.clear();
+            group.glDeallocate();
         }
-        for (GlRenderBuffer buffer : mGlBuffers) {
-            buffer.deallocateGpuBuffers();
-        }
-        mGlBuffers.clear();
-        mFloorPlanPrimitives.clear();
-        mCurrentBuffer = new GlRenderBuffer(DEFAULT_BUFFER_VERTICES_NUM);
-        mGlBuffers.add(mCurrentBuffer);
     }
 
+    // TODO: This method should be moved elsewhere (maybe into controller)
     public void highlightCentroidMarks(List<Fingerprint> centroidMarks) {
-        List<? extends IFloorPlanPrimitive> primitives = mFloorPlanPrimitives;
-        for (IFloorPlanPrimitive primitive : primitives) {
-            if (primitive instanceof Fingerprint) {
-                final Fingerprint mark = (Fingerprint) primitive;
-                if (centroidMarks.contains(mark))
-                    mark.setColor(Color.RED);
-                else
-                    mark.setColor(Color.BLUE);
-                runOnGlThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mark.rewriteToBuffer();
-                    }
-                });
-            }
-        }
+//        List<? extends IFloorPlanPrimitive> primitives = mFloorPlan.getSketch();
+//        for (IFloorPlanPrimitive primitive : primitives) {
+//            if (primitive instanceof Fingerprint) {
+//                final Fingerprint mark = (Fingerprint) primitive;
+//                if (centroidMarks.contains(mark))
+//                    mark.setColor(Color.RED); // Todo: highlighted fingerprint color define in AppSettings
+//                else
+//                    mark.setColor(Color.BLUE); // Todo: fingerprint color define in AppSettings
+//                runOnGlThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        mark.rewriteToBuffer();
+//                    }
+//                });
+//            }
+//        }
     }
 
-    public void rescaleFloorplan(float scaleFactor) {
-        if (mGlBuffers == null) return; // TODO: this should be fixed somehow
-        List<? extends IFloorPlanPrimitive> primitives = mFloorPlanPrimitives;
-
-        for (final IFloorPlanPrimitive primitive : primitives) {
-            if (primitive.isRemoved()) continue; // Do not alter removed primitives
-            primitive.scaleVertices(scaleFactor);
-            primitive.updateVertices();
-            runOnGlThread(new Runnable() {
-                @Override
-                public void run() {
-                    primitive.rewriteToBuffer();
-                }
-            });
-        }
-    }
+//    }
 
     public float getOffsetX() {
         return mOffsetX;
@@ -637,44 +565,92 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     public float getOffsetY() {
         return mOffsetY;
     }
-
     private IWallLengthChangedListener mWallLengthChangedListener = null;
+    private IWallLengthChangedListener mWallLengthStartChangingListener = null;
+
+    private IFuckingSimpleCallback mWallLengthEndChangingListener = null;
 
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
         this.mWallLengthChangedListener = listener;
     }
 
-    private void onMoving(final IMoveable moved) {
-        if (mWallLengthChangedListener != null) {
+    public void setOnWallLengthStartChangingListener(IWallLengthChangedListener callback) {
+        mWallLengthStartChangingListener = callback;
+    }
+
+    public void setOnWallLengthEndChangingListener(IFuckingSimpleCallback callback) {
+        mWallLengthEndChangingListener = callback;
+    }
+
+    private void onStartMove(final IMoveable moved) {
+        if ((mWallLengthStartChangingListener != null) && (moved instanceof Wall)) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (moved instanceof Wall) {
-                        Wall wall =(Wall) moved;
-                        PointF wallVector = new PointF();
-                        wallVector.set(wall.getEnd());
-                        wallVector.offset(-wall.getStart().x, -wall.getStart().y);
-
-                        mWallLengthChangedListener.onWallLengthChanged(wallVector.length());
-                    }
+                    Wall wall = (Wall) moved;
+                    float wallLength = wall.length();
+                    mWallLengthStartChangingListener.onWallLengthChanged(wallLength);
                 }
             });
         }
     }
 
-    public void createNewTag(final int x, final int y, final String label) {
-        runOnGlThread(new Runnable() {
-            @Override
-            public void run() {
-                PointF location = new PointF();
-                windowToWorld(x, y, location);
-                Tag newTag = new Tag(location, label);
-                calculateTagBoundaries(newTag);
-                synchronized (FloorPlan.mTagsListLocker) {
-                    mTags.add(newTag);
+    private void onMoving(final IMoveable moved) {
+        if ((mWallLengthChangedListener != null) && (moved instanceof Wall)) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Wall wall = (Wall) moved;
+                        float wallLength = wall.length();
+                        mWallLengthChangedListener.onWallLengthChanged(wallLength);
+                    }
+                });
+        }
+    }
+
+    private void onEndMove(final IMoveable moved) {
+        if ((mWallLengthEndChangingListener != null) && (moved instanceof Wall)) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mWallLengthEndChangingListener.onNotified();
                 }
+            });
+        }
+    }
+
+    public Tag createNewTag(PointF worldPoint, String label) {
+        return (Tag)mElementFactory.createElement(IMainView.MapOperand.LOCATION_TAG, worldPoint, label);
+    }
+
+    public Teleport createNewTeleport(PointF worldPoint, String teleportId) {
+        return (Teleport)mElementFactory.createElement(IMainView.MapOperand.TELEPORT, worldPoint, teleportId);
+    }
+
+    // Returns IMoveable element under given coords and its render group
+    public Pair<IRenderGroup, IMoveable> findObjectHavingPoint(PointF p) {
+        for (IRenderGroup group : mRenderGroups) {
+            final IMoveable elementHavingPoint = group.findElementHavingPoint(p);
+            if (elementHavingPoint != null) {
+                return new Pair<>(group, elementHavingPoint);
             }
-        });
+        }
+
+        return null;
+    }
+
+    public Pair<IRenderGroup, IMoveable> findObjectHavingPoint(PointF p, Class objectType) {
+        for (IRenderGroup group : mRenderGroups) {
+            final IMoveable elementHavingPoint = group.findElementHavingPoint(p);
+            if (elementHavingPoint != null && objectType.isInstance(elementHavingPoint)) {
+                return new Pair<>(group, elementHavingPoint);
+            }
+        }
+
+        return null;
+    }
+
+    public void clearRenderedElements() {
     }
 
     /**
@@ -682,28 +658,5 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
      */
     public interface IWallLengthChangedListener {
         void onWallLengthChanged(float wallLength);
-    }
-
-    private IFloorplanLoadCompleteListener mFloorplanLoadCompleteListener = null;
-    public void setOnFloorplanLoadCompleteListener(IFloorplanLoadCompleteListener listener) {
-        this.mFloorplanLoadCompleteListener = listener;
-    }
-
-    private void onFloorplanLoadComplete() {
-        if (mFloorplanLoadCompleteListener != null) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mFloorplanLoadCompleteListener.onFloorplanLoadComplete();
-                }
-            });
-        }
-    }
-
-    /**
-     * Created by Greg Stein on 9/19/2016.
-     */
-    public interface IFloorplanLoadCompleteListener {
-        void onFloorplanLoadComplete();
     }
 }

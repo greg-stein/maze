@@ -47,12 +47,12 @@ public class FloorPlanTests {
         List<IFloorPlanPrimitive> sketch = floorPlan.getSketch();
         sketch.add(new Wall(1, 4, 3, 2));
         sketch.add(new LocationMark(1, 4, 3, 5));
-        sketch.add(new Footprint(9, 4, 1));
+        sketch.add(new Footprint(9, 4));
 
         RectF boundaries = floorPlan.getBoundaries();
         assertThat(boundaries.left, is(equalTo(-4f)));
         assertThat(boundaries.top, is(equalTo(-1f)));
-        assertThat(boundaries.right, is(equalTo(10f)));
+        assertThat(boundaries.right, is(equalTo(11.5f)));
         assertThat(boundaries.bottom, is(equalTo(9f)));
     }
 

@@ -1,104 +1,74 @@
 package com.example.neutrino.maze.floorplan;
 
-import android.annotation.TargetApi;
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.os.Build;
 
-import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.util.CommonHelper;
-import com.example.neutrino.maze.navigation.FingerprintsPathFinder;
-import com.example.neutrino.maze.navigation.GridPathFinder;
+import com.example.neutrino.maze.floorplan.transitions.ITeleport;
+import com.example.neutrino.maze.floorplan.transitions.Teleport;
 import com.example.neutrino.maze.navigation.PathFinderBase;
-
-import org.simmetrics.StringMetric;
-import org.simmetrics.metrics.StringMetrics;
+import com.example.neutrino.maze.util.CommonHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-
-import com.example.neutrino.maze.util.CommonHelper;
 
 /**
  * Created by Greg Stein on 4/3/2017.
  */
 public class FloorPlan {
-    public static final Object mTagsListLocker = new Object();
     private List<IFloorPlanPrimitive> mSketch;
-    private List<Fingerprint> mFingerprints;
-    private List<Tag> mTags;
-    private FloorPlanDescriptor mDescriptor;
-    private PathFinderBase mPathFinder;
+    private List<Teleport> mTeleports; // TODO: remove
+    private boolean mIsSketchDirty = false;
+    private String mFloorId;
+
+    public FloorPlan(String floorId) {
+        this.mFloorId = floorId;
+    }
+
+    public FloorPlan() {
+
+    }
 
     public static FloorPlan build(List<Object> entities) {
         FloorPlan floorPlan = new FloorPlan();
-        floorPlan.mFingerprints = CommonHelper.extractObjects(Fingerprint.class, entities);
-        floorPlan.mTags = CommonHelper.extractObjects(Tag.class, entities);
+        floorPlan.mTeleports = CommonHelper.extractObjects(Teleport.class, entities);
 //        List<Wall> walls = FloorplanVectorizer.connect(CommonHelper.extractObjects(Wall.class, entities));
 
         // Remove location marks from floorplan
         CommonHelper.extractObjects(LocationMark.class, entities);
-        floorPlan.mSketch = CommonHelper.extractObjects(IFloorPlanPrimitive.class, entities);
+        // Achtung! Synchronized!
+        floorPlan.mSketch = Collections.synchronizedList(
+                CommonHelper.extractObjects(IFloorPlanPrimitive.class, entities));
 //        floorPlan.mSketch.addAll(walls);
-
-        final List<FloorPlanDescriptor> floorPlanDescriptors = CommonHelper.extractObjects(FloorPlanDescriptor.class, entities);
-        if (floorPlanDescriptors != null && floorPlanDescriptors.size() > 0) {
-            floorPlan.mDescriptor = floorPlanDescriptors.get(0);
-        }
-
-        if (AppSettings.inDebug && floorPlan.mFingerprints != null) {
-            floorPlan.mSketch.addAll(floorPlan.mFingerprints);
-        }
-
-        if (floorPlan.mSketch.size() > 0) {
-            floorPlan.mPathFinder = new GridPathFinder(floorPlan);
-        } else {
-            floorPlan.mPathFinder = new FingerprintsPathFinder(floorPlan);
-        }
-        floorPlan.mPathFinder.init();
 
         return floorPlan;
     }
 
     public static FloorPlan build() {
         FloorPlan floorPlan = new FloorPlan();
-        floorPlan.mFingerprints = new ArrayList<>();
-        floorPlan.mTags = new ArrayList<>();
-        floorPlan.mSketch = new ArrayList<>();
-        floorPlan.mDescriptor = null;
+        floorPlan.mSketch = Collections.synchronizedList(new ArrayList<IFloorPlanPrimitive>());
 
         return floorPlan;
     }
 
-    public void setPathFinder(PathFinderBase pathFinder) {
-        this.mPathFinder = pathFinder;
-    }
-
-    public PathFinderBase getPathFinder() {
-        return mPathFinder;
-    }
-
     public List<Object> disassemble() {
-        if (AppSettings.inDebug) {
-            if (mSketch != null && mFingerprints != null) mSketch.removeAll(mFingerprints);
-        }
 
         int entitiesNum =
-                ((mSketch != null) ? mSketch.size() : 0) +
-                ((mFingerprints != null) ? mFingerprints.size() : 0) +
-                ((mTags != null) ? mTags.size() : 0) +
-                ((mDescriptor != null)? 1 : 0);
+                ((mSketch != null) ? mSketch.size() : 0);
 
         List<Object> result = new ArrayList<>(entitiesNum);
 
         if (mSketch != null) result.addAll(mSketch);
-        if (mFingerprints != null)result.addAll(mFingerprints);
-        if (mTags != null)result.addAll(mTags);
-        if (mDescriptor != null)result.add(mDescriptor);
 
         return result;
+    }
+
+    public String getFloorId() {
+        return mFloorId;
+    }
+
+    public void setFloorId(String floorId) {
+        mFloorId = floorId;
     }
 
     public RectF getBoundaries() {
@@ -113,85 +83,50 @@ public class FloorPlan {
         return boundaries;
     }
 
+    public PointF getCenter() {
+        final RectF boundaries = getBoundaries();
+        PointF floorPlanCenter = new PointF(boundaries.centerX(), boundaries.centerY());
+
+        return floorPlanCenter;
+    }
+
+    // Returns unmodifiable list. To change it use [add/remove]Element()
     public List<IFloorPlanPrimitive> getSketch() {
         return mSketch;
     }
 
+    public void addElement(IFloorPlanPrimitive primitive) {
+        mSketch.add(primitive);
+        setSketchDirty(true);
+    }
+
+    public void removeElement(IFloorPlanPrimitive primitive) {
+        mSketch.remove(primitive);
+        setSketchDirty(true);
+    }
+
     public void setSketch(List<IFloorPlanPrimitive> sketch) {
-        this.mSketch = sketch;
-    }
-
-    public List<Fingerprint> getFingerprints() {
-        return mFingerprints;
-    }
-
-    public void setFingerprints(List<Fingerprint> fingerprints) {
-        this.mFingerprints = fingerprints;
-    }
-
-    public List<Tag> getTags() {
-        return mTags;
-    }
-
-    public void setTags(List<Tag> tags) {
-        this.mTags = tags;
-    }
-
-    public FloorPlanDescriptor getDescriptor() {
-        return mDescriptor;
-    }
-
-    public void setDescriptor(FloorPlanDescriptor descriptor) {
-        this.mDescriptor = descriptor;
+        this.mSketch = Collections.synchronizedList(sketch);
     }
 
     // Clears any source data
     public void clear() {
         this.mSketch.clear();
-        synchronized (FloorPlan.mTagsListLocker) {
-            this.mTags.clear();
-        }
-        this.mFingerprints.clear();
     }
 
-    private static class TagComparator implements Comparator<Tag> {
-        private String sample;
-
-        public TagComparator(String sample) {
-            this.sample = sample;
-        }
-
-        @TargetApi(Build.VERSION_CODES.KITKAT)
-        @Override
-        public int compare(Tag t1, Tag t2) {
-            StringMetric metric = StringMetrics.levenshtein();
-//            StringMetric metric =
-//            with(new CosineSimilarity<String>())
-//                    .simplify(Simplifiers.toLowerCase(Locale.ENGLISH))
-//                    .tokenize(Tokenizers.whitespace())
-//                    .build();
-
-            float t1Similarity = metric.compare(this.sample, t1.getLabel());
-            float t2Similarity = metric.compare(this.sample, t2.getLabel());
-            int compare = Float.compare(t1Similarity, t2Similarity);
-            // Make compare method consistent with equals()
-            if (compare == 0 && !t1.equals(t2)) {
-                PointF t1Location = t1.getLocation();
-                PointF t2Location = t2.getLocation();
-                return Integer.compare(Float.compare(t1Location.x, t2Location.x), Float.compare(t1Location.y, t2Location.y));
-            }
-            return compare;
-        }
+    public List<Teleport> getTeleportsOnFloor() {
+        return mTeleports;
     }
 
-    public List<Tag> searchMostSimilarTags(String sample, int maxResults) {
-        TagComparator comparator = new TagComparator(sample);
-        synchronized (mTagsListLocker) {
-            Collections.sort(mTags, comparator);
-//        Collections.reverse(mTags); // slower
-            List<Tag> tail = mTags.subList(Math.max(mTags.size() - maxResults, 0), mTags.size());
-            Collections.reverse(tail);
-            return tail;
-        }
+    public List<Teleport> getTeleportsById(String id) {
+        return null;
+    }
+
+    public boolean isSketchDirty() {
+        return mIsSketchDirty;
+    }
+
+    public void setSketchDirty(boolean sketchDirty) {
+        mIsSketchDirty = sketchDirty;
     }
 }

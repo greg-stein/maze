@@ -1,28 +1,29 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.core;
 
 import android.content.Context;
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.Locator.ILocationUpdatedListener;
-import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.rendering.FloorPlanView;
+import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
 
 import java.util.Stack;
-import static com.example.neutrino.maze.WifiScanner.IFingerprintAvailableListener;
 
 /**
  * Created by Greg Stein on 4/13/2017.
  */
 
-public class Mapper implements ILocationUpdatedListener, IFingerprintAvailableListener {
+public class Mapper implements Locator.ILocationUpdatedListener, WifiScanner.IFingerprintAvailableListener {
     private boolean mOldWifiScannerState;
     private boolean mFingerprintPlacedAtCurrentLocation = true;
     private PointF mCurrentLocation;
 
     private static Mapper instance = null;
     private static final Object mutex = new Object();
+    private IFuckingSimpleGenericCallback<Fingerprint> mOnNewFingerprintListener;
+
     public static Mapper getInstance(Context context) {
         if (instance == null) {
             synchronized (mutex) {
@@ -48,7 +49,7 @@ public class Mapper implements ILocationUpdatedListener, IFingerprintAvailableLi
 
     private FloorPlanView mFloorPlanView;
 
-    public void enable() {
+    private void enable() {
         if (!mIsEnabled) {
             mIsEnabled = true;
             mOldWifiScannerState = mLocator.isWifiScannerUsed();
@@ -58,7 +59,7 @@ public class Mapper implements ILocationUpdatedListener, IFingerprintAvailableLi
         }
     }
 
-    public void disable() {
+    private void disable() {
         if (mIsEnabled) {
             mIsEnabled = false;
             mLocator.useWifiScanner(mOldWifiScannerState);
@@ -67,6 +68,19 @@ public class Mapper implements ILocationUpdatedListener, IFingerprintAvailableLi
         }
     }
 
+    public boolean isEnabled() {
+        return mIsEnabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        if (enabled) {
+            enable();
+        } else {
+            disable();
+        }
+    }
+
+
     @Override
     public void onLocationUpdated(PointF location) {
         mCurrentLocation = location;
@@ -74,19 +88,23 @@ public class Mapper implements ILocationUpdatedListener, IFingerprintAvailableLi
     }
 
     @Override
-    public void onFingerprintAvailable(WiFiFingerprint fingerprint) {
+    public void onFingerprintAvailable(WiFiLocator.WiFiFingerprint fingerprint) {
         if (!mFingerprintPlacedAtCurrentLocation) {
-            // To display the fingerprint in debug mode
-            if (AppSettings.inDebug) {
-                // This call will also add the fingerprint to FloorPlan
-                final Fingerprint newFp = mFloorPlanView.placeWiFiMarkAt(mCurrentLocation, fingerprint);
-                mRecentlyAddedFingerprints.push(newFp); // to undo addition
-            } else {
-                Fingerprint newFp = new Fingerprint(mCurrentLocation, fingerprint);
-                mFloorPlan.getFingerprints().add(newFp);
-            }
+            Fingerprint newFp = new Fingerprint(mCurrentLocation, fingerprint);
+            mRecentlyAddedFingerprints.push(newFp); // to undo addition
+            emitOnNewFingerprintEvent(newFp);
 
             mFingerprintPlacedAtCurrentLocation = true;
+        }
+    }
+
+    public void setOnNewFingerprintListener(IFuckingSimpleGenericCallback<Fingerprint> listener) {
+        mOnNewFingerprintListener = listener;
+    }
+
+    private void emitOnNewFingerprintEvent(Fingerprint fingerprint) {
+        if (mOnNewFingerprintListener != null) {
+            mOnNewFingerprintListener.onNotify(fingerprint);
         }
     }
 

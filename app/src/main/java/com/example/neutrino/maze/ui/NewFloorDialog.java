@@ -11,6 +11,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -35,8 +36,12 @@ import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.R;
+import com.example.neutrino.maze.core.IFloorChangedHandler;
+import com.example.neutrino.maze.core.IMainView;
 import com.example.neutrino.maze.floorplan.Building;
 import com.example.neutrino.maze.floorplan.Floor;
+import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
+import com.example.neutrino.maze.util.PermissionsHelper;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -54,25 +59,32 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private EditText txtBuilding;
     private AutoCompleteTextView txtType;
     private EditText txtAddress;
-    private EditText txtFloor;
     private Button btnGuessAddress;
+    private EditText txtFloor;
     private ImageButton btnUp;
     private ImageButton btnDown;
     private ImageButton btnInsertFloor;
     private ImageButton btnDeleteFloor;
     private ListView lstFloors;
     private RecyclerView rcvBuildingLookup;
+    private Button btnCreateBuilding;
 
     private int mSelectedFloorIndex = NOT_SELECTED;
     private static String[] buildingTypes;
-    // TODO: These should be recieved from server
-    private String[] mFloorsMock = {"5", "4", "3", "2", "1", "G", "P", "-2", "-3"};
-    private List<Floor> mBuildingFloors = new ArrayList<>();
+    private List<Floor> mBuildingFloors;
     private boolean mUpdateFloorNameInList = false;
     private LocationManager mLocationManager;
     private FloorsAdapter mFloorsAdapter;
     private List<Building> mBuildings = new ArrayList<>();
     private BuildingsAdapter mBuildingsAdapter;
+    private boolean mIsBuildingDirty = false;
+    private IFloorChangedHandler mFloorChangedHandler;
+    private IMainView.IAsyncIdProvider mBuildingIdProvider;
+    private IMainView.IAsyncIdProvider mFloorIdProvider;
+    private IMainView.IAsyncSimilarBuildingsFinder mSimilarBuildingsFinder;
+    private IMainView.IAsyncBuildingCreator mBuildingCreator;
+
+    private IFuckingSimpleGenericCallback<Building> mBuildingUpdater;
 
     public NewFloorDialog(@NonNull Context context) {
         super(context);
@@ -95,6 +107,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnInsertFloor = (ImageButton) findViewById(R.id.btn_insert_floor);
         btnDeleteFloor = (ImageButton) findViewById(R.id.btn_remove_floor);
         rcvBuildingLookup = (RecyclerView) findViewById(R.id.rcv_building_lookup);
+        btnCreateBuilding = (Button) findViewById(R.id.btn_create_building);
 
         buildingTypes = getContext().getResources().getStringArray(R.array.buildings);
         ArrayAdapter<String> buildingTypesAdapter = new ArrayAdapter<>
@@ -102,24 +115,134 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         txtType.setThreshold(0);    // will start working from first character
         txtType.setAdapter(buildingTypesAdapter);
 
-        for (String floor : mFloorsMock) {
-            mBuildingFloors.add(new Floor(floor, "lkjwehrkjhewrkljhelrkjhkjerh"));
+        if (Building.current == null) {
+            // TODO: Current building comes from two sources: depending on fingerprint from server or the one we are working on now
+            Toast.makeText(getContext(), "No building is defined. Either create a new one or try finding existing one", Toast.LENGTH_LONG).show();
+
+            mBuildingFloors = new ArrayList<>();
+        } else {
+            txtBuilding.setText(Building.current.getName());
+            txtType.setText(Building.current.getType());
+            txtAddress.setText(Building.current.getAddress());
+
+            mBuildingFloors = Building.current.getFloors();
+            Floor currentFloor = Building.current.getCurrentFloor();
+            if (currentFloor != null && mBuildingFloors != null && !mBuildingFloors.isEmpty()) {
+                // Find index of current floor within building floors
+                int index = 0;
+                for (Floor floor : mBuildingFloors) {
+                    if (floor.getId().equals(currentFloor.getId())) {
+                        mSelectedFloorIndex = index;
+                        break;
+                    }
+                    index++;
+                }
+            }
         }
 
         mFloorsAdapter = new FloorsAdapter(getContext(), mBuildingFloors, this);
         lstFloors.setAdapter(mFloorsAdapter);
 
-
-        mBuildingsAdapter = new BuildingsAdapter(mBuildings);
+        mBuildingsAdapter = new BuildingsAdapter(mBuildings, new BuildingsAdapter.OnBuildingClickListener() {
+            @Override
+            public void onBuildingClick(Building building) {
+                if (Building.current.isDirty()) {
+                    // Save changes to current building
+                }
+                // TODO: Ask if user really wants to switch to this building?
+                Building.current = building;
+                Toast.makeText(getContext(),  building.getName(), Toast.LENGTH_SHORT).show();
+                setCreatingFloorsAllowed(true);
+            }
+        });
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getContext());
         rcvBuildingLookup.setLayoutManager(mLayoutManager);
         rcvBuildingLookup.setItemAnimator(new DefaultItemAnimator());
         rcvBuildingLookup.setAdapter(mBuildingsAdapter);
 
         setUiListeners();
+        setCreatingFloorsAllowed(Building.current != null);
+    }
+
+    @Override
+    protected void onStop() {
+        if (Building.current != null) {
+            if (mIsBuildingDirty) {
+                Building.current.setName(txtBuilding.getText().toString());
+                Building.current.setType(txtType.getText().toString());
+                Building.current.setAddress(txtAddress.getText().toString());
+                Building.current.setFloors(mBuildingFloors);
+                Building.current.setDirty(true);
+                mBuildingUpdater.onNotify(Building.current);
+            }
+        }
+
+        final Floor selectedFloor = mBuildingFloors.get(mSelectedFloorIndex);
+        emitFloorChangedEvent(selectedFloor);
+        super.onStop();
     }
 
     private void setUiListeners() {
+        txtType.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+               mIsBuildingDirty = true; // indicate to save building upon exit
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        txtAddress.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mIsBuildingDirty = true; // indicate to save building upon exit
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        txtBuilding.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                if (keyEvent != null && keyEvent.getAction() != KeyEvent.ACTION_DOWN) {
+                    return false;
+                } else if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE
+                        || keyEvent == null || keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    rcvBuildingLookup.setVisibility(View.GONE);
+                }
+
+                return false;
+            }
+        });
+
+        btnCreateBuilding.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // This method will send these fields to server
+                mBuildingCreator.createBuilding(
+                        txtBuilding.getText().toString(),
+                        txtType.getText().toString(),
+                        txtAddress.getText().toString(),
+                        // This async callback will be executed after getting newly created building
+                        new IFuckingSimpleGenericCallback<Building>() {
+                            @Override
+                            public void onNotify(Building building) {
+                                Building.current = building;
+                                setCreatingFloorsAllowed(true);
+                            }
+                        }
+                );
+            }
+        });
+
         btnGuessAddress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -134,6 +257,9 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 mFloorsAdapter.notifyDataSetChanged();
                 if (mUpdateFloorNameInList) {
                     txtFloor.setText(mBuildingFloors.get(position).getName(), TextView.BufferType.EDITABLE);
+                    if (Building.current != null) {
+                        Building.current.setCurrentFloor(mBuildingFloors.get(position));
+                    }
                 }
             }
         });
@@ -142,6 +268,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 mUpdateFloorNameInList = true;
+                mIsBuildingDirty = true; // indicate to save building upon exit
                 return false;
             }
         });
@@ -208,16 +335,21 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnInsertFloor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String floorName = txtFloor.getText().toString();
+                final String floorName = txtFloor.getText().toString();
                 if (floorName.isEmpty()) return;
 
-                int proposedPosition = suggestPosition(floorName);
+                final int proposedPosition = suggestPosition(floorName);
 
-                // TODO: Here we should request floor creation from server and get real ID (second parameter)
-                Floor newFloor = new Floor(floorName, "JOPAJOPAJOPA");
-                mBuildingFloors.add(proposedPosition, newFloor);
-                mSelectedFloorIndex = proposedPosition;
-                mFloorsAdapter.notifyDataSetChanged();
+                mFloorIdProvider.generateId(new IFuckingSimpleGenericCallback<String>() {
+                    @Override
+                    public void onNotify(String floorId) {
+                        Floor newFloor = new Floor(floorName, floorId);
+                        mBuildingFloors.add(proposedPosition, newFloor);
+                        mSelectedFloorIndex = proposedPosition;
+                        mFloorsAdapter.notifyDataSetChanged();
+                        mIsBuildingDirty = true; // indicate to save building upon exit
+                    }
+                });
             }
         });
 
@@ -250,25 +382,59 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
         txtBuilding.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mIsBuildingDirty = true; // indicate to save building upon exit
             }
 
             @Override
             public void afterTextChanged(Editable s) {
                 if (s.length() > 2) {
-                    findSimilarBuildings(s.toString());
-                    mBuildingsAdapter.notifyDataSetChanged();
-                    rcvBuildingLookup.setVisibility(View.VISIBLE);
+                    mBuildings.clear();
+                    mSimilarBuildingsFinder.findBuildings(s.toString(), new IFuckingSimpleGenericCallback<List<Building>>() {
+                        @Override
+                        public void onNotify(List<Building> buildings) {
+                            mBuildings.addAll(buildings);
+                            mBuildingsAdapter.notifyDataSetChanged();
+                            rcvBuildingLookup.setVisibility(View.VISIBLE);
+                        }
+                    });
                 } else {
                     rcvBuildingLookup.setVisibility(View.GONE);
                 }
             }
         });
+    }
+
+    public void setBuildingCreator(IMainView.IAsyncBuildingCreator buildingCreator) {
+        mBuildingCreator = buildingCreator;
+    }
+
+    public void setBuildingUpdater(IFuckingSimpleGenericCallback<Building> buildingUpdater) {
+        mBuildingUpdater = buildingUpdater;
+    }
+
+    public void setBuildingIdProvider(IMainView.IAsyncIdProvider buildingIdProvider) {
+        mBuildingIdProvider = buildingIdProvider;
+    }
+
+    public void setFloorIdProvider(IMainView.IAsyncIdProvider floorIdProvider) {
+        mFloorIdProvider = floorIdProvider;
+    }
+
+    public void setSimilarBuildingsFinder(IMainView.IAsyncSimilarBuildingsFinder similarBuildingsFinder) {
+        mSimilarBuildingsFinder = similarBuildingsFinder;
+    }
+
+    private void setCreatingFloorsAllowed(boolean allowed) {
+        txtFloor.setEnabled(allowed);
+        btnUp.setEnabled(allowed);
+        btnDown.setEnabled(allowed);
+        btnInsertFloor.setEnabled(allowed);
+        btnDeleteFloor.setEnabled(allowed);
+        lstFloors.setEnabled(allowed);
     }
 
     // Finds best position to insert new floor based on its name
@@ -315,25 +481,20 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         return currentPosition;
     }
 
-    private void findSimilarBuildings(String pattern) {
-        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
-        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
-        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
-        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
-        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
-        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
-        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
-        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
-        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
-        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
-        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
-        mBuildings.add(new Building("Haifa Mall", "Flieman st. Haifa", "Mall", "1"));
-    }
-
     private void getCurrentAddress() {
         mLocationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-        if (!MainActivity.locationPermissionsGranted(getContext())) {
+        if (PermissionsHelper.locationPermissionsGranted(getContext())) {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, mLocationListener);
+        }
+    }
+
+    public void setFloorChangedHandler(IFloorChangedHandler floorChangedHandler) {
+        mFloorChangedHandler = floorChangedHandler;
+    }
+
+    private void emitFloorChangedEvent(Floor floor) {
+        if (mFloorChangedHandler != null) {
+            mFloorChangedHandler.onFloorChanged(floor);
         }
     }
 
@@ -437,7 +598,6 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 onFinishHandler.onFinish(address);
             }
         }
-
     }
 
     private interface AsyncResponse {
@@ -445,8 +605,8 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     }
 
     protected static class FloorsAdapter extends ArrayAdapter<Floor> {
-        private final ISelectionProvider mSelectioProvider;
-        private final List<Floor> data;
+        private final ISelectionProvider mSelectionProvider;
+        private List<Floor> data;
 
         private class ViewHolder {
             TextView txtFloor;
@@ -454,13 +614,23 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
         public FloorsAdapter(@NonNull Context context, List<Floor> data, ISelectionProvider selectionProvider) {
             super(context, R.layout.floor_listview_item, data);
-            mSelectioProvider = selectionProvider;
+            mSelectionProvider = selectionProvider;
             this.data = data;
+        }
+
+        public void setFloors(List<Floor> floorsData) {
+            this.data = floorsData;
         }
 
         @Override
         public int getCount() {
             return data.size();
+        }
+
+        @Nullable
+        @Override
+        public Floor getItem(int position) {
+            return data.get(position);
         }
 
         @Override
@@ -481,7 +651,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             }
 
             viewHolder.txtFloor.setText(floor.getName());
-            if (position == mSelectioProvider.getSelectedIndex()) {
+            if (position == mSelectionProvider.getSelectedIndex()) {
                 viewHolder.txtFloor.setBackgroundColor(AppSettings.primaryDarkColor);
             }
             else {
@@ -493,23 +663,50 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
     }
 
-    public class BuildingsAdapter extends RecyclerView.Adapter<BuildingsAdapter.BuildingViewHolder> {
+    public static class BuildingsAdapter extends RecyclerView.Adapter<BuildingsAdapter.BuildingViewHolder> {
         private List<Building> mBuildings;
 
+        private OnBuildingClickListener mBuildingClickListener;
         public class BuildingViewHolder extends RecyclerView.ViewHolder {
-            public TextView txtBuildingName;
-            public TextView txtBuildingAddress;
 
+            public TextView txtBuildingName;
+
+            public TextView txtBuildingAddress;
             public BuildingViewHolder(View itemView) {
                 super(itemView);
                 // Works with simple_list_item_2
                 txtBuildingName = (TextView) itemView.findViewById(R.id.text1);
                 txtBuildingAddress = (TextView) itemView.findViewById(R.id.text2);
             }
-        }
+            public void bind(final Building building, final OnBuildingClickListener listener) {
+                itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        listener.onBuildingClick(building);
+                    }
+                });
+            }
 
+        }
+        public interface OnBuildingClickListener {
+
+            void onBuildingClick(Building building);
+        }
         public BuildingsAdapter(List<Building> buildings) {
             this.mBuildings = buildings;
+        }
+
+        public BuildingsAdapter(List<Building> buildings, OnBuildingClickListener listener) {
+            this(buildings);
+            setBuildingClickListener(listener);
+        }
+
+        public void setBuildings(List<Building> buildings) {
+            mBuildings = buildings;
+        }
+
+        public void setBuildingClickListener(OnBuildingClickListener listener) {
+            mBuildingClickListener = listener;
         }
 
         @Override
@@ -525,6 +722,9 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
             Building building = mBuildings.get(position);
             holder.txtBuildingName.setText(building.getName());
             holder.txtBuildingAddress.setText(building.getAddress());
+            if (mBuildingClickListener != null) {
+                holder.bind(building, mBuildingClickListener);
+            }
         }
 
         @Override

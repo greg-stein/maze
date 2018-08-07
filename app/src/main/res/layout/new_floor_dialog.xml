@@ -11,46 +11,59 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="*Building (Empire State)"
-        android:minLines="1"
-        android:maxLines="1"/>
+        android:inputType="text"
+        android:maxLines="1"
+        android:minLines="1"/>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <AutoCompleteTextView
                 android:id="@+id/txt_building_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="*Type (Mall | Hospital ...)"
-                android:minLines="1"
-                android:maxLines="1"/>
+                android:inputType="text"
+                android:maxLines="1"
+                android:minLines="1"/>
 
-            <FrameLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
                 <EditText
                     android:id="@+id/txt_address"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="8"
                     android:ems="10"
                     android:hint="Address"
-                    android:inputType="textPostalAddress" />
+                    android:inputType="textPostalAddress"
+                    android:maxLines="1"/>
 
                 <Button
                     android:id="@+id/btn_guess_address"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
+                    android:layout_weight="2"
                     android:layout_gravity="center_vertical|end"
-                    android:layout_marginRight="20dp"
-                    android:text="guess" />
-            </FrameLayout>
+                    android:text="guess"/>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btn_create_building"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="CREATE BUILDING"/>
+
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -68,7 +81,7 @@
                     android:layout_marginStart="@dimen/form_default_margin"
                     android:ems="10"
                     android:hint="*Floor (G | -2 ...)"
-                    android:inputType="textPersonName" />
+                    android:inputType="textPersonName"/>
 
                 <ListView
                     android:id="@+id/lst_floors"
@@ -91,7 +104,7 @@
                     android:layout_marginStart="@dimen/form_default_margin"
                     android:layout_toEndOf="@+id/lst_floors"
                     android:layout_toRightOf="@+id/lst_floors"
-                    app:srcCompat="@drawable/ic_arrow_up_bold_black_24dp" />
+                    app:srcCompat="@drawable/ic_arrow_up_bold_black_24dp"/>
 
                 <ImageButton
                     android:id="@+id/btn_down"
@@ -100,7 +113,7 @@
                     android:layout_alignLeft="@+id/btn_up"
                     android:layout_alignStart="@+id/btn_up"
                     android:layout_below="@+id/txt_floor"
-                    app:srcCompat="@drawable/ic_arrow_down_bold_black_24dp" />
+                    app:srcCompat="@drawable/ic_arrow_down_bold_black_24dp"/>
 
                 <ImageButton
                     android:id="@+id/btn_insert_floor"
@@ -112,7 +125,7 @@
                     android:layout_marginTop="0dp"
                     android:layout_toLeftOf="@+id/lst_floors"
                     android:layout_toStartOf="@+id/lst_floors"
-                    app:srcCompat="@drawable/ic_inser_row_rev" />
+                    app:srcCompat="@drawable/ic_inser_row_rev"/>
 
                 <ImageButton
                     android:id="@+id/btn_remove_floor"
@@ -121,15 +134,18 @@
                     android:layout_alignLeft="@+id/btn_insert_floor"
                     android:layout_alignStart="@+id/btn_insert_floor"
                     android:layout_alignTop="@+id/btn_up"
-                    app:srcCompat="@drawable/ic_table_row_remove_black_24dp" />
+                    app:srcCompat="@drawable/ic_table_row_remove_black_24dp"/>
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignLeft="@+id/txt_floor"
+                    android:layout_alignStart="@+id/txt_floor"
+                    android:layout_alignTop="@+id/lst_floors"
+                    android:text="Floors:"/>
 
             </RelativeLayout>
-
-            <Button
-                android:id="@+id/btn_submit"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="CREATE" />
 
         </LinearLayout>
 
@@ -138,7 +154,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone"/>
-            <!--android:background="@color/colorAccent" />-->
+        <!--android:background="@color/colorAccent" />-->
 
     </FrameLayout>
 </LinearLayout>

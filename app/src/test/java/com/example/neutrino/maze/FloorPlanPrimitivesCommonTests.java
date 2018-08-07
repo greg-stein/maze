@@ -55,12 +55,12 @@ public class FloorPlanPrimitivesCommonTests {
 
     @Test
     public void footprintBoundingBoxTest() {
-        Footprint footprint = new Footprint(1, 4, 3);
+        Footprint footprint = new Footprint(1, 4);
         RectF boundingBox = footprint.getBoundingBox();
-        assertThat(boundingBox.left, is(equalTo(-2f)));
-        assertThat(boundingBox.top, is(equalTo(1f)));
-        assertThat(boundingBox.right, is(equalTo(4f)));
-        assertThat(boundingBox.bottom, is(equalTo(7f)));
+        assertThat(boundingBox.left, is(equalTo(-1.5f)));
+        assertThat(boundingBox.top, is(equalTo(1.5f)));
+        assertThat(boundingBox.right, is(equalTo(3.5f)));
+        assertThat(boundingBox.bottom, is(equalTo(6.5f)));
     }
 
     @Test

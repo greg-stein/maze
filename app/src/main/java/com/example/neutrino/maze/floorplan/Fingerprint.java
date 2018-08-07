@@ -1,30 +1,44 @@
 package com.example.neutrino.maze.floorplan;
 
-import android.graphics.Color;
 import android.graphics.PointF;
+import android.support.v4.graphics.ColorUtils;
 
-import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
+import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.core.WiFiLocator.WiFiFingerprint;
 
 /**
  * Created by Greg Stein on 9/25/2016.
  *
  * This class is for debugging/development only!!
  */
-public class Fingerprint extends Footprint {
+public class Fingerprint extends CircleBase {
+    private static final int FINGERPRINT_ALPHA = 64;
+    private static final float FINGERPRINT_RADIUS = 2.50f; // in meters
+    public static final int FINGERPRINT_CIRCLE_SEGMENTS_NUM = 6;
+
     public static int instanceNum = 0;
     public final transient int instanceId = instanceNum++;
-    public static final float MARK_RADIUS = 0.05f;
 
     private WiFiFingerprint mWiFiFingerprint;
 
+    @Override
+    protected int getSegmentsNum() {
+        return FINGERPRINT_CIRCLE_SEGMENTS_NUM;
+    }
+
+    @Override
+    protected float getRadius() {
+        return FINGERPRINT_RADIUS;
+    }
+
     public Fingerprint() {
         super();
-        setColor(Color.BLUE);
+        setColor(ColorUtils.setAlphaComponent(AppSettings.fingerprintColor, FINGERPRINT_ALPHA));
     }
 
     public Fingerprint(float cx, float cy, WiFiFingerprint fingerprint) {
-        super(cx, cy, MARK_RADIUS);
-        setColor(Color.BLUE);
+        super(cx, cy);
+        setColor(ColorUtils.setAlphaComponent(AppSettings.fingerprintColor, FINGERPRINT_ALPHA));
         this.mWiFiFingerprint = fingerprint;
     }
 

@@ -1,10 +1,12 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.core;
 
 import android.net.wifi.ScanResult;
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.Footprint;
+import com.example.neutrino.maze.rendering.VectorHelper;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ public class WiFiLocator {
     }
 
     // Yeah, fake class is so antipattern...
+    // TODO: MAC address could be stored into 64-bit integer instead of String!!!
     public static class WiFiFingerprint extends HashMap<String, Integer> {
         // ACHTUNG! This is not supposed to be stored in DB, hence transient. For DB use currentTimeMillis()
         public final transient long timestamp = System.nanoTime();
@@ -71,7 +74,7 @@ public class WiFiLocator {
         private Queue<WiFiFingerprint> mQueue;
         private int mLength;
 
-        FingerprintHistory(int historyLength) {
+        public FingerprintHistory(int historyLength) {
             mQueue = new ArrayDeque<>(this.mLength = historyLength);
         }
 
@@ -103,7 +106,7 @@ public class WiFiLocator {
     private WiFiFingerprint currentWiFiFingerprint = null;
     public FingerprintHistory currentHistory = null; //TODO: no encapsulation!
 
-    void addToFingerprintHistory(WiFiFingerprint fingerprint) {
+    public void addToFingerprintHistory(WiFiFingerprint fingerprint) {
         currentHistory.add(fingerprint);
     }
 
@@ -381,7 +384,7 @@ public class WiFiLocator {
                     candidatesList.add(wmark);
                 } else {    // Previous list of candidate chains exists
                     for (LinkableWifiMark storedmark : candidatesList) {
-                        if (distanceXYsqr(wmark.mark, storedmark.mark) <= MAX_SQRDISTANCE_TWO_WIFIMARKS) {
+                        if (VectorHelper.squareDistance(wmark.mark.getCenter(), storedmark.mark.getCenter()) <= MAX_SQRDISTANCE_TWO_WIFIMARKS) {
                             lwmark = new LinkableWifiMark(wmark.mark);
                             lwmark.parent = storedmark;
                             lwmark.totalCost = storedmark.totalCost + wmark.totalCost;
@@ -442,9 +445,5 @@ public class WiFiLocator {
             this.mark = mark;
             totalCost = cost;
         }
-    }
-
-    public static float distanceXYsqr(Footprint a, Footprint b) {
-        return (float) (Math.pow((a.getCenter().x - b.getCenter().x), 2) + Math.pow((a.getCenter().y - b.getCenter().y), 2));
     }
 }

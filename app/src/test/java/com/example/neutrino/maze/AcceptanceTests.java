@@ -2,9 +2,11 @@ package com.example.neutrino.maze;
 
 import android.graphics.PointF;
 
+import com.example.neutrino.maze.core.WiFiLocator;
 import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 import com.example.neutrino.maze.floorplan.Wall;
+import com.example.neutrino.maze.rendering.VectorHelper;
 import com.example.neutrino.maze.util.CommonHelper;
 import com.opencsv.CSVWriter;
 
@@ -282,7 +284,7 @@ public class AcceptanceTests {
         for (Fingerprint mark1 : marks) {
             for (Fingerprint mark2 : marks) {
                 final float dissimilarity = WiFiLocator.dissimilarity(mark1.getFingerprint(), mark2.getFingerprint());
-                final double  distance = Math.sqrt(WiFiLocator.distanceXYsqr(mark1, mark2));
+                final double  distance = Math.sqrt(VectorHelper.squareDistance(mark1.getCenter(), mark2.getCenter()));
                 csvWriter.writeNext(new String[] {String.valueOf(mark1.instanceId), String.valueOf(mark2.instanceId), String.valueOf(distance), String.valueOf(dissimilarity)});
             }
         }
@@ -304,7 +306,7 @@ public class AcceptanceTests {
             String[] row = new String[Fingerprint.instanceNum];
 
             for (Fingerprint mark2 : marks) {
-                final double distance = Math.sqrt(WiFiLocator.distanceXYsqr(mark1, mark2));
+                final double distance = Math.sqrt(VectorHelper.squareDistance(mark1.getCenter(), mark2.getCenter()));
                 float difference = Float.POSITIVE_INFINITY;
 
                 if (distance <= 70) {

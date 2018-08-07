@@ -53,7 +53,7 @@ public class LocationMark extends FloorPlanPrimitiveBase {
     }
 
     @Override
-    protected int getVerticesNum() {
+    protected int getVerticesDataLength() {
         return VERTICES_DATA_LENGTH;
     }
 

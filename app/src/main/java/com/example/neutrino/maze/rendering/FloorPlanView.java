@@ -4,26 +4,30 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
+import android.support.v4.util.Pair;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AlertDialog;
+import android.text.method.SingleLineTransformationMethod;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.widget.EditText;
 
 import com.example.neutrino.maze.AppSettings;
+import com.example.neutrino.maze.core.IMainView;
+import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
+import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
+import com.example.neutrino.maze.floorplan.IMoveable;
 import com.example.neutrino.maze.floorplan.Path;
 import com.example.neutrino.maze.floorplan.Tag;
+import com.example.neutrino.maze.floorplan.transitions.Teleport;
 import com.example.neutrino.maze.rendering.FloorPlanRenderer.IWallLengthChangedListener;
-import com.example.neutrino.maze.rendering.FloorPlanRenderer.IFloorplanLoadCompleteListener;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
+import com.example.neutrino.maze.util.IFuckingSimpleCallback;
 
 import java.util.List;
 
-import static com.example.neutrino.maze.rendering.FloorPlanView.MapOperation.MOVE;
+import static com.example.neutrino.maze.core.IMainView.MapOperation.MOVE;
 
 /**
  * Created by neutrino on 7/2/2016.
@@ -37,7 +41,6 @@ public class FloorPlanView extends GLSurfaceView {
     private final PointF mCurrentLocation = new PointF();
     private boolean mHandlingTagCreation = false;
     private Path mPath;
-    private PointF mPointToShow;
 
     public FloorPlanView(Context context) {
         this(context, null);
@@ -46,7 +49,7 @@ public class FloorPlanView extends GLSurfaceView {
     public FloorPlanView(Context context, AttributeSet attrs) {
         super(context,attrs);
         if (!isInEditMode()) {
-            mRenderer = new FloorPlanRenderer();
+            mRenderer = new FloorPlanRenderer(getContext());
             init(context, attrs);
         }
     }
@@ -59,14 +62,6 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.setGlView(this);
         setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
         mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
-        mRenderer.setOnFloorplanLoadCompleteListener(new IFloorplanLoadCompleteListener() {
-            @Override
-            public void onFloorplanLoadComplete() {
-                if (mPointToShow != null) {
-                    centerToPoint(mPointToShow);
-                }
-            }
-        });
     }
 
     public void drawDistribution(PointF mean, float stdev) {
@@ -92,18 +87,20 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.highlightCentroidMarks(centroidMarks);
     }
 
-    public void rescaleMap(float scaleFactor) {
-        mRenderer.rescaleFloorplan(scaleFactor);
+//    public void rescaleMap(float scaleFactor) {
+//        mRenderer.rescaleFloorplan(scaleFactor);
+//    }
+
+    public IMainView.MapOperation mapOperation = MOVE;
+    public IMainView.MapOperand operand;
+
+    public void setElementFactory(IMainView.IElementFactory elementFactory) {
+        mRenderer.setElementFactory(elementFactory);
     }
 
-    public enum MapOperation {
-        MOVE, ADD, REMOVE, SET_LOCATION
+    public void clearRenderedElements() {
+        mRenderer.clearRenderedElements();
     }
-    public MapOperation mapOperation = MOVE;
-    public enum MapOperand {
-        WALL, SHORT_WALL, BOUNDARIES, LOCATION_TAG
-    }
-    public MapOperand operand;
 
     public enum Operation {
         NONE, ADD_WALL, REMOVE_WALL, ADD_TAG, SET_LOCATION
@@ -144,6 +141,9 @@ public class FloorPlanView extends GLSurfaceView {
         int yPos = (int) MotionEventCompat.getY(event, index);
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+                // Achtung! this is for the case if continuation of current gesture will be panning
+                mRenderer.handleStartPan(xPos, yPos);
+
                 switch (mapOperation) {
                     case MOVE: // move existing wall if under tap location
                         mRenderer.handleStartDrag(xPos, yPos, mapOperation, operand);
@@ -157,10 +157,15 @@ public class FloorPlanView extends GLSurfaceView {
                         case WALL:
                             mDragStarted = true;
                             mRenderer.handleStartDrag(xPos, yPos, mapOperation, operand);
+//                            mRenderer.getFloorPlan().setSketchDirty(true); // Need to flush it
                             break;
                         case SHORT_WALL:
                             break;
                         case BOUNDARIES:
+                            break;
+                        case TELEPORT:
+                            mHandlingTagCreation = true;
+                            askForTeleportNumber(xPos, yPos);
                             break;
                         case LOCATION_TAG:
                             mHandlingTagCreation = true;
@@ -198,31 +203,100 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     private void askForTagName(final int x, final int y) {
-        final EditText input = new EditText(AppSettings.appActivity);
+        final EditText input = new EditText(getContext());
+
+        // This allows only one line. Even if "Enter" is pressed it will put space instead new line
+        // However in the string a new line will still be present!
+        input.setMaxLines(1);
+        input.setTransformationMethod(new SingleLineTransformationMethod());
+
         String dialogTitle = "New tag";
         String okButtonCaption = "Add";
-        PointF worldPoint = new PointF();
+        final PointF worldPoint = new PointF();
         mRenderer.windowToWorld(x, y, worldPoint);
 
-        final Tag tagAtTapLocation = mRenderer.getTagHavingPoint(worldPoint.x, worldPoint.y);
-        if (tagAtTapLocation != null) {
-            input.setText(tagAtTapLocation.getLabel());
+        // TODO: Tags should migrate to Floor
+        final Pair<IRenderGroup, IMoveable> tagInfo = mRenderer.findObjectHavingPoint(worldPoint, Tag.class);
+        if (tagInfo != null) {
+            Tag foundTag = (Tag)tagInfo.second;
+            input.setText(foundTag.getLabel());
             dialogTitle = "Change tag";
             okButtonCaption = "Change";
         }
 
-        new AlertDialog.Builder(AppSettings.appActivity)
+        new AlertDialog.Builder(getContext())
                 .setTitle(dialogTitle)
                 .setView(input)
 //                .setMessage("Paste in the link of an image to moustachify!")
                 .setPositiveButton(okButtonCaption, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
-                        if (tagAtTapLocation == null) {
-                            mRenderer.createNewTag(x, y, input.getText().toString());
-                        } else {
-                            tagAtTapLocation.setLabel(input.getText().toString());
-                            mRenderer.calculateTagBoundaries(tagAtTapLocation);
+                        // System.lineSeparator() requires API LEVEL 19
+                        final String tagLabel = input.getText().toString().replace(System.getProperty("line.separator"), " ");
+                        Tag tagAtTapLocation;
+
+                        if (tagInfo == null) { // New tag?
+                            tagAtTapLocation = mRenderer.createNewTag(worldPoint, tagLabel);
+                        } else { // existing tag
+                            tagAtTapLocation = (Tag)tagInfo.second;
+                            tagAtTapLocation.setLabel(tagLabel);
+                            IRenderGroup tagGroup = tagInfo.first;
+                            tagGroup.setChangedElement(tagAtTapLocation);
                         }
+
+                        mRenderer.calculateTagBoundaries(tagAtTapLocation);
+
+                        mHandlingTagCreation = false;
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        mHandlingTagCreation = false;
+                    }
+                })
+                .show();
+    }
+
+    private void askForTeleportNumber(final int x, final int y) {
+        final EditText input = new EditText(getContext());
+
+        // This allows only one line. Even if "Enter" is pressed it will put space instead new line
+        // However in the string a new line will still be present!
+        input.setMaxLines(1);
+        input.setTransformationMethod(new SingleLineTransformationMethod());
+
+        String dialogTitle = "New teleport";
+        String okButtonCaption = "Add";
+        final PointF worldPoint = new PointF();
+        mRenderer.windowToWorld(x, y, worldPoint);
+
+        // TODO: Tags should migrate to Floor
+        final Pair<IRenderGroup, IMoveable> teleportInfo = mRenderer.findObjectHavingPoint(worldPoint, Teleport.class);
+        if (teleportInfo != null) {
+            // Existing teleport
+            Teleport foundTeleport = (Teleport) teleportInfo.second;
+            input.setText(foundTeleport.getLabel());
+            dialogTitle = "Change teleport id";
+            okButtonCaption = "Change";
+        }
+
+        new AlertDialog.Builder(getContext())
+                .setTitle(dialogTitle)
+                .setView(input)
+                .setPositiveButton(okButtonCaption, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        // System.lineSeparator() requires API LEVEL 19
+                        String teleportId = input.getText().toString().replace(System.getProperty("line.separator"), "");
+                        Teleport teleportAtTapLocation;
+
+                        if (teleportInfo == null) { // New teleport?
+                            teleportAtTapLocation = mRenderer.createNewTeleport(worldPoint, teleportId);
+                        } else { // Existing teleport
+                            teleportAtTapLocation = (Teleport) teleportInfo.second;
+                            teleportAtTapLocation.setLabel(teleportId);
+                            IRenderGroup teleportGroup = teleportInfo.first;
+                            teleportGroup.setChangedElement(teleportAtTapLocation);
+                        }
+                        mRenderer.calculateTagBoundaries(teleportAtTapLocation);
                         mHandlingTagCreation = false;
                     }
                 })
@@ -298,21 +372,30 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
-    public void plot(FloorPlan floorPlan, PointF pointToShow) {
-        mPointToShow = pointToShow;
-        mRenderer.setFloorPlan(floorPlan.getSketch());
-        mRenderer.setTags(floorPlan.getTags());
-        mRenderer.performQueuedTask();
+    public ElementsRenderGroup renderElementsGroup(List<? extends IFloorPlanPrimitive> elements) {
+        return mRenderer.renderElements(elements);
     }
 
-    public void plot(List<? extends IFloorPlanPrimitive> floorplan, PointF pointToShow) {
-        mPointToShow = pointToShow;
-        mRenderer.setFloorPlan((List<IFloorPlanPrimitive>) floorplan);
-        mRenderer.performQueuedTask();
+    public TextRenderGroup renderTagsGroup(List<? extends Tag> tags) {
+        return mRenderer.renderTags(tags);
+    }
+
+    public void plot(FloorPlan floorPlan, PointF pointToShow) {
+        mRenderer.renderElements(floorPlan.getSketch());
+//        mRenderer.setTags(floorPlan.getTags());
+        centerToPoint(pointToShow);
     }
 
     public void setOnWallLengthChangedListener(IWallLengthChangedListener listener) {
         mRenderer.setOnWallLengthChangedListener(listener);
+    }
+
+    public void setOnWallLengthDisplay(IWallLengthChangedListener listener) {
+        mRenderer.setOnWallLengthStartChangingListener(listener);
+    }
+
+    public void setOnWallLengthHide(IFuckingSimpleCallback callback) {
+        mRenderer.setOnWallLengthEndChangingListener(callback);
     }
 
     public void putStep(float x, float y) {
@@ -326,13 +409,13 @@ public class FloorPlanView extends GLSurfaceView {
         mRenderer.windowToWorld(x, y, worldLocation);
 
         if (mNewLocationListener != null) {
-            mNewLocationListener.onLocationPlaced(worldLocation);
+            mNewLocationListener.onLocationSetByUser(worldLocation);
         }
     }
 
     // This method is used when you want to set location programmatically
     public void setLocation(float x, float y) {
-        if (mRenderer.isFloorPlanSet()) { // otherwise no need to show current location
+        if (!mRenderer.isSketchEmpty()) { // otherwise no need to show current location
             mCurrentLocation.set(x, y);
             mRenderer.drawLocationMarkAt(mCurrentLocation);
         }
@@ -366,22 +449,22 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     public interface IOnLocationPlacedListener {
-        void onLocationPlaced(PointF location);
+        void onLocationSetByUser(PointF location);
     }
     private IOnLocationPlacedListener mNewLocationListener = null;
     public void setOnLocationPlacedListener(IOnLocationPlacedListener listener) {
         this.mNewLocationListener = listener;
     }
 
-    public Fingerprint placeWiFiMarkAt(PointF center, WiFiFingerprint wiFiFingerprint) {
-        return mRenderer.putMark(center.x, center.y, wiFiFingerprint);
+    public void placeFingerprint(Fingerprint fingerprint) {
+        mRenderer.putFingerprint(fingerprint);
     }
 
     public void clearFloorPlan() {
         Runnable glRunnable = new Runnable() {
             @Override
             public void run() {
-                mRenderer.clearFloorPlan();
+                mRenderer.clearSketch();
                 requestRender();
             }
         };

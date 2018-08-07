@@ -3,8 +3,8 @@ package com.example.neutrino.maze.ui;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import com.example.neutrino.maze.Locator;
-import com.example.neutrino.maze.WiFiLocator;
+import com.example.neutrino.maze.core.Locator;
+import com.example.neutrino.maze.core.WiFiLocator;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
 
@@ -30,7 +30,9 @@ public class LoadFloorPlanTask extends AsyncTask<String, Void, FloorPlan> {
         if (jsonString != null) {
             List<Object> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
             floorPlan = FloorPlan.build(floorplan);
-            WiFiLocator.getInstance().setFingerprintsMap(floorPlan.getFingerprints());
+            // All this class is dead code
+            // TODO: remove it
+//            WiFiLocator.getInstance().setFingerprintsMap(floorPlan.getFingerprints());
             Locator.getInstance(mContext).setFloorPlan(floorPlan);
         }
         return floorPlan;

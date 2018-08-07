@@ -23,6 +23,7 @@ public class GlRenderBuffer {
     public static final int INDICES_BUFFER_SIZE_FACTOR = 4; // we allocate indices buffer 4
     private static final int BUFFERS_COUNT = 1;
     private static final int STRIDE = (COORDS_PER_VERTEX + COLORS_PER_VERTEX) * SIZE_OF_FLOAT;
+    static final int DEFAULT_BUFFER_VERTICES_NUM = 65536;
 
     private final FloatBuffer mVerticesBuffer;
     private final ShortBuffer mIndicesBuffer;

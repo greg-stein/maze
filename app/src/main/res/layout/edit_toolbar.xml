@@ -34,6 +34,7 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_margin="@dimen/fab_margin"
+            app:backgroundTint="@color/colorEditMode"
             android:src="@drawable/ic_mode_edit_white_24dp"
             app:fabSize="mini" />
 
@@ -48,15 +49,20 @@
         android:minHeight="?attr/actionBarSize"
         app:theme="@style/Base.Theme.AppCompat.CompactMenu">
 
+
         <Spinner
             android:id="@+id/add_spinner"
             android:layout_width="50dp"
             android:layout_height="50dp" />
+
+        <TextView
+            android:id="@+id/txt_wall_length"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:visibility="gone"/>
         <!--android:background="@android:drawable/btn_default"-->
 
     </android.support.v7.widget.Toolbar>
 
 </com.github.fafaldo.fabtoolbar.widget.FABToolbarLayout>
-
-
-    

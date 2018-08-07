@@ -47,9 +47,7 @@ public class TagsAdapter extends RecyclerView.Adapter<TagsAdapter.TagsHolder> {
 
     public void updateListData(List<Tag> newData) {
         listData.clear();
-        synchronized (FloorPlan.mTagsListLocker) {
-            listData.addAll(newData);
-        }
+        listData.addAll(newData);
         notifyDataSetChanged();
     }
 

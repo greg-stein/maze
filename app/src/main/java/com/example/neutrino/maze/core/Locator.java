@@ -1,13 +1,10 @@
-package com.example.neutrino.maze;
+package com.example.neutrino.maze.core;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
-import com.example.neutrino.maze.SensorListener.IStepDetectedListener;
-import com.example.neutrino.maze.WiFiLocator.WiFiFingerprint;
-import com.example.neutrino.maze.WifiScanner.IFingerprintAvailableListener;
+import com.example.neutrino.maze.AppSettings;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
 import com.example.neutrino.maze.floorplan.Wall;
@@ -21,7 +18,7 @@ import java.util.List;
  * Created by Greg Stein on 4/11/2017.
  */
 
-public class Locator implements IFingerprintAvailableListener, IStepDetectedListener, IDeviceRotationListener {
+public class Locator implements WifiScanner.IFingerprintAvailableListener, SensorListener.IStepDetectedListener, SensorListener.IDeviceRotationListener {
     private static final float DEFAULT_STEP_LENGTH = 0.68f; // human average step: 78cm
     private static final int WINDOW_SIZE = 3;
     private static final int MAX_VARIANCES_NUM = 4;
@@ -44,6 +41,7 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     private WifiScanner mWifiScanner;
     private SensorListener mSensorListener;
     private WiFiLocator mWifiLocator;
+    private LiftDetector mLiftDetector;
     private boolean mUseWifiScanner;
     private MovingAveragePointsQueue mLastLocations = new MovingAveragePointsQueue(WINDOW_SIZE);
     private PointF mCurrentLocation = new PointF(Float.MAX_VALUE, Float.MAX_VALUE);
@@ -59,10 +57,12 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
         mWifiScanner = WifiScanner.getInstance(context);
         mSensorListener = SensorListener.getInstance(context);
         mWifiLocator = WiFiLocator.getInstance();
+        mLiftDetector = LiftDetector.getInstance();
 
         mWifiScanner.addFingerprintAvailableListener(this);
         mSensorListener.addStepDetectedListener(this);
         mSensorListener.addDeviceRotationListener(this);
+        mSensorListener.addGravityChangedListener(mLiftDetector);
         mUseWifiScanner = true;
 
         SharedPreferences settings = context.getSharedPreferences(
@@ -93,6 +93,10 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
         } else {
             mWifiScanner.removeFingerprintAvailableListener(this);
         }
+    }
+
+    public FloorPlan getFloorPlan() {
+        return mFloorPlan;
     }
 
     public interface IDistributionUpdatedListener {
@@ -152,7 +156,7 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
     }
 
     @Override
-    public void onFingerprintAvailable(WiFiFingerprint fingerprint) {
+    public void onFingerprintAvailable(WiFiLocator.WiFiFingerprint fingerprint) {
         if (fingerprint.size() == 0) return; // cannot estimate location based on nothing
 
         // For debugging while not in HaifaMall
@@ -243,10 +247,11 @@ public class Locator implements IFingerprintAvailableListener, IStepDetectedList
 
     public void resetLocationTo(PointF location) {
         mCurrentLocation.set(location.x, location.y);
-        emitLocationUpdatedEvent(location);
+        emitLocationUpdatedEvent(mCurrentLocation);
     }
 
     public PointF getLocation() {
         return mCurrentLocation;
     }
+
 }

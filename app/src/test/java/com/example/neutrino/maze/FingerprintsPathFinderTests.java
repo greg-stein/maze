@@ -1,5 +1,6 @@
 package com.example.neutrino.maze;
 
+import android.content.res.Resources;
 import android.graphics.PointF;
 import android.graphics.RectF;
 
@@ -12,6 +13,7 @@ import com.example.neutrino.maze.navigation.GridCell;
 import com.example.neutrino.maze.navigation.FingerprintsPathFinder;
 import com.example.neutrino.maze.navigation.PathFinderBase;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jgrapht.WeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.junit.Test;
@@ -23,6 +25,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.allOf;
@@ -68,6 +71,24 @@ public class FingerprintsPathFinderTests {
         List<Object> objects = FloorPlanSerializer.deserializeFloorPlan(jsonString);
         FloorPlan floorPlan = FloorPlan.build(objects);
         return floorPlan;
+    }
+
+    private List<Object> loadObjectsFromRes(String resourceFile) {
+        String jsonString = null;
+        try {
+            ClassLoader classLoader = getClass().getClassLoader();
+            // Get json file from test resources: app/src/test/resources
+            InputStream in_s = classLoader.getResourceAsStream(resourceFile);
+
+            byte[] b = new byte[in_s.available()];
+            in_s.read(b);
+            jsonString = new String(b);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        List<Object> objects = FloorPlanSerializer.deserializeFloorPlan(jsonString);
+        return objects;
     }
 
     private static <T> T invokeMethod(Object pathFinder, String methodName, Object... params) {
@@ -133,7 +154,8 @@ public class FingerprintsPathFinderTests {
         sketch.add(new Wall(0, 0, 40, 40));
         sketch.add(new Wall(0, 40, 40, 0));
 
-        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan);
+        List<Fingerprint> fingerprints = new ArrayList<>();
+        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan, fingerprints);
 
         invokeMethod(pathFinder, "initGrid");
 
@@ -249,7 +271,7 @@ public class FingerprintsPathFinderTests {
         sketch.add(new Wall(0, 0, 40, 40));
         sketch.add(new Wall(0, 40, 40, 0));
 
-        List<Fingerprint> fingerprints = floorPlan.getFingerprints();
+        List<Fingerprint> fingerprints = new ArrayList<>();
         // head
         fingerprints.add(new Fingerprint(22, 7, null));
         fingerprints.add(new Fingerprint(22, 13, null));
@@ -282,7 +304,7 @@ public class FingerprintsPathFinderTests {
         fingerprints.add(new Fingerprint(10, 12, null));
         fingerprints.add(new Fingerprint(12, 17, null));
 
-        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan);
+        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan, fingerprints);
         invokeMethod(pathFinder, "initGrid");
         invokeMethod(pathFinder, "assignPointsToCells");
 
@@ -337,7 +359,8 @@ public class FingerprintsPathFinderTests {
         sketch.add(r = new Wall(40, 40, 0, 40));
         sketch.add(s = new Wall(0, 40, 0, 0));
 
-        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan);
+        List<Fingerprint> fingerprints = new ArrayList<>();
+        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan, fingerprints);
         invokeMethod(pathFinder, "initGrid");
         invokeMethod(pathFinder, "assignObstaclesToCells");
 
@@ -384,7 +407,7 @@ public class FingerprintsPathFinderTests {
     public void buildGraphStressTest() {
         FloorPlan floorPlan = FloorPlan.build();
 
-        List<Fingerprint> fingerprints = floorPlan.getFingerprints();
+        List<Fingerprint> fingerprints = new ArrayList<>();
         // head
         fingerprints.add(new Fingerprint(22, 7, null));
         fingerprints.add(new Fingerprint(22, 13, null));
@@ -441,7 +464,7 @@ public class FingerprintsPathFinderTests {
         sketch.add(new Wall(40, 40, 0, 40));
         sketch.add(new Wall(0, 40, 0, 0));
 
-        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan);
+        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan, fingerprints);
         invokeMethod(pathFinder, "initGrid");
         invokeMethod(pathFinder, "assignPointsToCells");
         invokeMethod(pathFinder, "assignObstaclesToCells");
@@ -454,7 +477,7 @@ public class FingerprintsPathFinderTests {
     public void buildGraphTest() {
         FloorPlan floorPlan = FloorPlan.build();
 
-        List<Fingerprint> fingerprints = floorPlan.getFingerprints();
+        List<Fingerprint> fingerprints = new ArrayList<>();
         fingerprints.add(new Fingerprint(5, 5, null));
         fingerprints.add(new Fingerprint(20, 5, null));
         fingerprints.add(new Fingerprint(35, 5, null));
@@ -474,7 +497,7 @@ public class FingerprintsPathFinderTests {
         sketch.add(new Wall(40, 40, 0, 40));
         sketch.add(new Wall(0, 40, 0, 0));
 
-        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan);
+        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan, fingerprints);
         invokeMethod(pathFinder, "initGrid");
         invokeMethod(pathFinder, "assignPointsToCells");
         invokeMethod(pathFinder, "assignObstaclesToCells");
@@ -489,7 +512,7 @@ public class FingerprintsPathFinderTests {
     public void constructPathTest() {
         FloorPlan floorPlan = FloorPlan.build();
 
-        List<Fingerprint> fingerprints = floorPlan.getFingerprints();
+        List<Fingerprint> fingerprints = new ArrayList<>();
         fingerprints.add(new Fingerprint(5, 5, null));
         fingerprints.add(new Fingerprint(20, 5, null));
         fingerprints.add(new Fingerprint(35, 5, null));
@@ -509,7 +532,7 @@ public class FingerprintsPathFinderTests {
         sketch.add(new Wall(40, 40, 0, 40));
         sketch.add(new Wall(0, 40, 0, 0));
 
-        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan);
+        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan, fingerprints);
         invokeMethod(pathFinder, "initGrid");
         invokeMethod(pathFinder, "assignPointsToCells");
         invokeMethod(pathFinder, "assignObstaclesToCells");
@@ -529,7 +552,7 @@ public class FingerprintsPathFinderTests {
     public void findClosestVertexTest() {
         FloorPlan floorPlan = FloorPlan.build();
 
-        List<Fingerprint> fingerprints = floorPlan.getFingerprints();
+        List<Fingerprint> fingerprints = new ArrayList<>();
         fingerprints.add(new Fingerprint(5, 5, null));
         fingerprints.add(new Fingerprint(20, 5, null));
         fingerprints.add(new Fingerprint(35, 5, null));
@@ -547,7 +570,7 @@ public class FingerprintsPathFinderTests {
         sketch.add(new Wall(40, 40, 0, 40));
         sketch.add(new Wall(0, 40, 0, 0));
 
-        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan);
+        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan, fingerprints);
         invokeMethod(pathFinder, "initGrid");
         invokeMethod(pathFinder, "assignPointsToCells");
         invokeMethod(pathFinder, "assignObstaclesToCells");
@@ -562,7 +585,8 @@ public class FingerprintsPathFinderTests {
     @Test
     public void realStressTest() {
         FloorPlan floorPlan = getFloorPlanFromRes("haifa_mall_detailed_tags.json");
-        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan);
+        List<Fingerprint> fingerprints = (List<Fingerprint>)(List<?>)loadObjectsFromRes("radio_map.json");
+        FingerprintsPathFinder pathFinder = new FingerprintsPathFinder(floorPlan, fingerprints);
 
         // pathFinder.init(); Does that:
         long start = System.nanoTime();

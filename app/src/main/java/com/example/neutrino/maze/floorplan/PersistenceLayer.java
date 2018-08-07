@@ -18,8 +18,42 @@ import java.io.ObjectOutputStream;
 public class PersistenceLayer {
     private static final String LOCAL_FLOOR_PLAN_STORE = "floorplan.wad";
 
-    public static void saveFloorPlan(String serializedFloorPlan) {
-        Context context = AppSettings.appActivity;
+    public static void save(Context context, String data, String store) {
+        FileOutputStream fos;
+        ObjectOutputStream os;
+
+        try {
+            fos = context.openFileOutput(store, Context.MODE_PRIVATE);
+            os = new ObjectOutputStream(fos);
+            os.writeObject(data);
+            os.close();
+            fos.close();
+        } catch (IOException e) {
+            Toast.makeText(context, "Error saving data locally.", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+    }
+
+    public static String load(Context context, String store) {
+        String data = null;
+        FileInputStream fis;
+        ObjectInputStream is;
+
+        try {
+            fis = context.openFileInput(store);
+            is = new ObjectInputStream(fis);
+            data = (String) is.readObject();
+            is.close();
+            fis.close();
+        } catch (IOException | ClassNotFoundException e) {
+            Toast.makeText(context, "Error loading data from store.", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+
+        return data;
+    }
+
+    public static void saveFloorPlan(Context context, String serializedFloorPlan) {
         FileOutputStream fos;
 
         try {
@@ -35,8 +69,7 @@ public class PersistenceLayer {
     }
 
     @Nullable
-    public static String loadFloorPlan() {
-        Context context = AppSettings.appActivity;
+    public static String loadFloorPlan(Context context) {
         String floorplan = null;
         FileInputStream fis;
 

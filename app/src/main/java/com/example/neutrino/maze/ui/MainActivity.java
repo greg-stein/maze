@@ -1,13 +1,7 @@
 package com.example.neutrino.maze.ui;
 
-import android.Manifest;
-import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
@@ -17,168 +11,122 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import android.text.InputType;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.Locator;
-import com.example.neutrino.maze.Locator.ILocationUpdatedListener;
-import com.example.neutrino.maze.Mapper;
 import com.example.neutrino.maze.R;
-import com.example.neutrino.maze.SensorListener;
-import com.example.neutrino.maze.StepCalibratorService;
-import com.example.neutrino.maze.WiFiLocator;
-import com.example.neutrino.maze.WifiScanner;
+import com.example.neutrino.maze.core.IFloorChangedHandler;
+import com.example.neutrino.maze.core.IMainView;
+import com.example.neutrino.maze.core.IMazePresenter;
+import com.example.neutrino.maze.core.MazeClient;
+import com.example.neutrino.maze.core.WiFiLocator;
+import com.example.neutrino.maze.floorplan.Building;
+import com.example.neutrino.maze.floorplan.Fingerprint;
 import com.example.neutrino.maze.floorplan.FloorPlan;
 import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.Path;
 import com.example.neutrino.maze.floorplan.Tag;
 import com.example.neutrino.maze.floorplan.Wall;
+import com.example.neutrino.maze.rendering.FloorPlanRenderer;
 import com.example.neutrino.maze.rendering.FloorPlanView;
 import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
+import com.example.neutrino.maze.rendering.ElementsRenderGroup;
+import com.example.neutrino.maze.rendering.TextRenderGroup;
+import com.example.neutrino.maze.util.IFuckingSimpleCallback;
+import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
+import com.example.neutrino.maze.util.PermissionsHelper;
 import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
 import com.github.fafaldo.fabtoolbar.widget.FABToolbarLayout;
 import com.lapism.searchview.SearchView;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static com.example.neutrino.maze.SensorListener.IDeviceRotationListener;
 import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
 
-public class MainActivity extends AppCompatActivity implements IDeviceRotationListener,
-        ILocationUpdatedListener, IOnLocationPlacedListener, Locator.IDistributionUpdatedListener, VectorizeDialog.ICompleteVectorizationHandler {
-    public static final int PERMISSION_LOCATION_REQUEST_CODE = 613;
-
+public class MainActivity extends AppCompatActivity implements IOnLocationPlacedListener, VectorizeDialog.ICompleteVectorizationHandler, IMainView {
     // GUI-related fields
     private SearchView uiSearchView;
     private RecyclerView uiRecView;
     private LinearLayout uiRecPanel;
     private View uiRecPanelSpacer;
     private TagsAdapter mAdapter;
+    private FloorPlanView uiFloorPlanView;
+    private FloatingActionButton uiFabFindMeOnMap;
 
+    private TextView txtWallLength;
     private FABToolbarLayout uiToolbarLayout;
     private Toolbar uiToolbar;
     private FloatingActionButton uiFabEditMode;
+    private FloatingActionButton uiFabUploadChanges;
     private Spinner uiAddSpinner;
     private static final List<Pair<String, Integer>> addSpinnerData = new ArrayList<>();
+
     static {
         addSpinnerData.add(new Pair<>("Wall", R.drawable.ic_wall_black_24dp));
         addSpinnerData.add(new Pair<>("Short wall", R.drawable.ic_view_stream_black_24dp));
         addSpinnerData.add(new Pair<>("Place boundaries", R.drawable.ic_format_shapes_black_24dp));
         addSpinnerData.add(new Pair<>("Location tag", R.drawable.ic_map_marker_plus_black_24dp));
+        addSpinnerData.add(new Pair<>("Teleport", R.drawable.ic_elevator_black_24dp));
         addSpinnerData.add(new Pair<>("", R.drawable.ic_add_white_24dp));
     }
 
-    private FloorPlanView uiFloorPlanView;
-    private FloatingActionButton uiFabFindMeOnMap;
     // Map north angle
     private float mMapNorth = 0.0f;
-
     private boolean mIsMapRotationLocked = false;
-
     private float mDegreeOffset;
     private float mCurrentDegree = 0f;
     private FloorPlan mFloorPlan = FloorPlan.build();
-    private SensorListener mSensorListener;
-    private WifiScanner mWifiScanner;
-    private Locator mLocator;
-    private Mapper mMapper;
 
-    private WiFiLocator mWiFiLocator = WiFiLocator.getInstance();
-
+    private UiMode mUiMode = UiMode.MAP_VIEW_MODE;
     private boolean mAutoScanEnabled = false;
     private Menu mEditMenu;
-    private StepCalibratorService mStepCalibratorService;
-    private Intent mStepCalibratorServiceIntent;
 
-    private static boolean letDieSilently = false;
-    public static boolean locationPermissionsGranted = false;
+    private IFloorChangedHandler mFloorChangedHandler;
+    private float mCurrentWallLength;
 
-    public static boolean requestPermissions(Context context) {
-        if (!locationPermissionsGranted(context)) {
-            letDieSilently = true;
-            // Request permissions
-            if (context instanceof Activity) {
-                final Activity activity = (Activity) context;
-
-                if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_COARSE_LOCATION) ||
-                        ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-                    // Show user justification why these permissions are needed
-                    new android.app.AlertDialog.Builder(context).
-                        setCancelable(true).
-                        setTitle("Permissions necessary").
-                        setMessage("We need your permission to get LOCATION for using in open areas " +
-                                "and for calibrating positioning methods").
-                        setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                ActivityCompat.requestPermissions(
-                                      activity,
-                                      new String[] { Manifest.permission.ACCESS_COARSE_LOCATION,
-                                                     Manifest.permission.ACCESS_FINE_LOCATION},
-                                      PERMISSION_LOCATION_REQUEST_CODE);
-                            }
-                        }).
-                        show();
-                } else {
-                    ActivityCompat.requestPermissions(
-                            activity,
-                            new String[] { Manifest.permission.ACCESS_COARSE_LOCATION,
-                                           Manifest.permission.ACCESS_FINE_LOCATION},
-                            PERMISSION_LOCATION_REQUEST_CODE);
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public static boolean locationPermissionsGranted(Context context) {
-        return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED;
-    }
+    private IMazePresenter mPresenter;
+    private IFuckingSimpleGenericCallback<UiMode> mUiModeChangedListener;
+    private IFuckingSimpleGenericCallback<Boolean> mMapperEnabledChangedListener;
+    private IAsyncIdProvider mBuildingIdProvider;
+    private IAsyncIdProvider mFloorIdProvider;
+    private IAsyncSimilarBuildingsFinder mBuildingsFinder;
+    private IAsyncBuildingCreator mBuildingCreator;
+    private IFuckingSimpleGenericCallback<Building> mBuildingUpdater;
+    private IFuckingSimpleGenericCallback<Boolean> mLocateMeEnabledChangedListener;
+    private boolean mLocateMeEnabled = false;
+    private boolean mUploadButtonVisible;
+    private IFuckingSimpleCallback mUploadButtonClickListener;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_LOCATION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PERMISSION_GRANTED) {
-                locationPermissionsGranted = true;
-                // reload activity
-            } else {
-                Toast.makeText(this, "Maze was not allowed to use location. Hence it couldn't " +
-                                "function properly and will be closed. Please consider " +
-                                "granting it needed permissions.",
-                        Toast.LENGTH_LONG).show();
-                locationPermissionsGranted = false;
-            }
-            finish();
+        if (PermissionsHelper.handleLocationPermissions(this, requestCode, grantResults)) {
+            this.finish();
         }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mPresenter = new MazeClient(this, this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -195,32 +143,18 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         uiFloorPlanView = (FloorPlanView) findViewById(R.id.ui_MapContainer);
         uiFabFindMeOnMap = (FloatingActionButton) findViewById(R.id.fab_find_me_on_map);
+        uiFabUploadChanges = (FloatingActionButton) findViewById(R.id.fab_upload_changes);
+        txtWallLength = (TextView) findViewById(R.id.txt_wall_length);
 //        uiFabRemoveLastFingerprint = (FloatingActionButton) findViewById(R.id.fab_remove_last_fingerprint);
 
-        AppSettings.init(this);
         mFabAlpha = getAlphaFromRes();
 
-        locationPermissionsGranted = requestPermissions(this);
-
-        // TODO: instead of just killing the app, consider reloading activity when the permission is granted.
-        if (!locationPermissionsGranted) return;
-
         // initialize your android device sensor capabilities
-        mWifiScanner = WifiScanner.getInstance(this);
-        mSensorListener = SensorListener.getInstance(this);
-        mSensorListener.addDeviceRotationListener(this);
-        mLocator = Locator.getInstance(this);
-        mLocator.addLocationUpdatedListener(this);
         if (AppSettings.inDebug) {
 //            mLocator.addDistributionUpdatedListener(this);
         }
-        mMapper = Mapper.getInstance(this);
 
-        if (AppSettings.inDebug) {
-            mMapper.setFloorPlanView(uiFloorPlanView);
-        }
-
-        mAdapter = new TagsAdapter(AppSettings.appActivity);
+        mAdapter = new TagsAdapter(this);
         uiRecView.setAdapter(mAdapter);
 
         ImageSpinnerAdapter adapter =
@@ -233,41 +167,16 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         setUiListeners();
 
-        mStepCalibratorService = new StepCalibratorService(this);
-        mStepCalibratorServiceIntent = new Intent(this, mStepCalibratorService.getClass());
-
-
-        if (!isMyServiceRunning(mStepCalibratorService.getClass())) {
-            startService(mStepCalibratorServiceIntent);
-        }
-    }
-
-    // TODO: Move this to StepCalibratorService as static method
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                Log.i ("isMyServiceRunning?", true+"");
-                return true;
-            }
-        }
-        Log.i ("isMyServiceRunning?", false+"");
-        return false;
+        // TODO: commented-out temporarily
+//        mFloorWatcher = FloorWatcher.getInstance(this);
+//        mFloorWatcher.addOnFloorChangedListener(mFloorChangedHandler);
+        mPresenter.onCreate();
     }
 
     @Override
     protected void onDestroy() {
-        if (!letDieSilently) {
-            stopService(mStepCalibratorServiceIntent);
-        }
-        mLocator.onDestroy();
-        Log.i("MAINACT", "onDestroy!");
+        mPresenter.onDestroy();
         super.onDestroy();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode,resultCode,data);
     }
 
     private void showTheImage(Bitmap b) {
@@ -284,8 +193,14 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     public void onBackPressed() {
         if (uiToolbarLayout.isToolbar()) {
             uiToolbarLayout.hide();
-            uiFabFindMeOnMap.animate().translationYBy(uiToolbar.getHeight());
+            uiFabFindMeOnMap.show();
+            uiFabUploadChanges.hide();
             uiFloorPlanView.setFloorplanEditMode(false);
+            mUiMode = UiMode.MAP_VIEW_MODE;
+            emitUiModeChangedEvent(mUiMode);
+        } else {
+            // Exit the app
+            finish();
         }
     }
 
@@ -314,28 +229,33 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         switch (id) {
             case R.id.btn_move:
-                uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.MOVE;
+                uiFloorPlanView.mapOperation = IMainView.MapOperation.MOVE;
                 break;
 
             case R.id.btn_delete:
-                uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.REMOVE;
+                uiFloorPlanView.mapOperation = IMainView.MapOperation.REMOVE;
                 break;
 
             case R.id.btn_lock_rotation:
                 if (mIsMapRotationLocked) {
                     mMapNorth = mDegreeOffset;
-                    mLocator.setNorth(mMapNorth);
+                    mPresenter.setMapNorth(mMapNorth);
                 }
                 mIsMapRotationLocked = !mIsMapRotationLocked;
                 break;
 
             case R.id.btn_set_location:
-                uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.SET_LOCATION;
+                uiFloorPlanView.mapOperation = IMainView.MapOperation.SET_LOCATION;
                 break;
 
             case R.id.btn_vectorize_floorplan:
-                VectorizeDialog newFragment = new VectorizeDialog();
-                newFragment.show(getFragmentManager(), "vectorize_dialog");
+                if (Building.isFloorDefined()) {
+                    VectorizeDialog newFragment = new VectorizeDialog();
+                    newFragment.show(getFragmentManager(), "vectorize_dialog");
+                } else {
+                    Toast.makeText(this, "Before creating floor plan you should create " +
+                            "building with at least single floor", Toast.LENGTH_LONG).show();
+                }
                 break;
 
             case R.id.btn_erase_floorplan:
@@ -359,16 +279,39 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             case R.id.btn_autoscan:
                 mAutoScanEnabled = !mAutoScanEnabled;
                 if (mAutoScanEnabled) {
-                    mMapper.enable();
+                    emitMapperEnabledChangedEvent(true);
                 } else {
-                    mMapper.disable();
+                    emitMapperEnabledChangedEvent(false);
                 }
                 break;
-                // Here come the rest of menu items
 
             case R.id.btn_new_floorplan:
-                NewFloorDialog nfd = new NewFloorDialog(this);
-                nfd.show();
+                 showBuildingEditDialog();
+                break;
+
+            case R.id.btn_set_scale:
+                AlertDialog.Builder scaleDialogBuilder = new AlertDialog.Builder(this);
+                final EditText input = new EditText(this);
+                input.setInputType(InputType.TYPE_CLASS_NUMBER);
+                input.setText(txtWallLength.getText());
+
+                scaleDialogBuilder
+                        .setTitle("Set real length to scale floor plan")
+                        .setView(input)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                final float realLength = Float.parseFloat(input.getText().toString());
+//                                uiFloorPlanView.rescaleMap(realLength/mCurrentWallLength);
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.cancel();
+                            }
+                        })
+                        .show();
                 break;
 
             default:
@@ -382,6 +325,18 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         return true;
     }
 
+    @Override
+    public void showBuildingEditDialog() {
+        NewFloorDialog nfd = new NewFloorDialog(this);
+        nfd.setBuildingIdProvider(mBuildingIdProvider);
+        nfd.setBuildingCreator(mBuildingCreator);
+        nfd.setBuildingUpdater(mBuildingUpdater);
+        nfd.setFloorIdProvider(mFloorIdProvider);
+        nfd.setFloorChangedHandler(mFloorChangedHandler);
+        nfd.setSimilarBuildingsFinder(mBuildingsFinder);
+        nfd.show();
+    }
+
     private void setUiListeners() {
 //        uiToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
 //            @Override
@@ -390,25 +345,37 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 //            }
 //        });
 
+        uiFabUploadChanges.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mUploadButtonClickListener != null) {
+                    mUploadButtonClickListener.onNotified();
+                }
+            }
+        });
+
         uiAddSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 switch (position) {
                     case 0:
-                        uiFloorPlanView.operand = FloorPlanView.MapOperand.WALL;
+                        uiFloorPlanView.operand = IMainView.MapOperand.WALL;
                         break;
                     case 1:
-                        uiFloorPlanView.operand = FloorPlanView.MapOperand.SHORT_WALL;
+                        uiFloorPlanView.operand = IMainView.MapOperand.SHORT_WALL;
                         break;
                     case 2:
-                        uiFloorPlanView.operand = FloorPlanView.MapOperand.BOUNDARIES;
+                        uiFloorPlanView.operand = IMainView.MapOperand.BOUNDARIES;
                         break;
                     case 3:
-                        uiFloorPlanView.operand = FloorPlanView.MapOperand.LOCATION_TAG;
+                        uiFloorPlanView.operand = IMainView.MapOperand.LOCATION_TAG;
+                        break;
+                    case 4:
+                        uiFloorPlanView.operand = IMainView.MapOperand.TELEPORT;
                         break;
                 }
-                if (position < 4) {
-                    uiFloorPlanView.mapOperation = FloorPlanView.MapOperation.ADD;
+                if (position < 5) {
+                    uiFloorPlanView.mapOperation = IMainView.MapOperation.ADD;
                 }
 
                 invalidateOptionsMenu();
@@ -423,9 +390,16 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiFabEditMode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                uiFabFindMeOnMap.animate().translationYBy(-uiToolbar.getHeight());
+                uiFabFindMeOnMap.hide();
                 uiToolbarLayout.show();
+                if (mUploadButtonVisible) {
+                    uiFabUploadChanges.show();
+                } else {
+                    uiFabUploadChanges.hide();
+                }
                 uiFloorPlanView.setFloorplanEditMode(true);
+                mUiMode = UiMode.MAP_EDIT_MODE;
+                emitUiModeChangedEvent(mUiMode);
             }
         });
 
@@ -434,11 +408,11 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             public void onItemClick(Tag t) {
                 uiSearchView.close(true);
                 // tag "enter" from res location:
-                PointF enter = new PointF(244.76593f, 55.589268f);
-                List<PointF> pathPoints = mFloorPlan.getPathFinder().constructPath(enter, t.getLocation());
+//                PointF enter = new PointF(244.76593f, 55.589268f);
+//                List<PointF> pathPoints = mFloorPlan.getPathFinder().constructPath(enter, t.getLocation());
 //                List<PointF> pathPoints = pathFinder.constructPath(mLocator.getLocation(), t.getLocation());
-                Path path = new Path(pathPoints);
-                uiFloorPlanView.renderPath(path);
+//                Path path = new Path(pathPoints);
+//                uiFloorPlanView.renderPath(path);
             }
         });
 
@@ -451,7 +425,8 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                mAdapter.updateListData(mFloorPlan.searchMostSimilarTags(newText, 20));
+                if (Building.current == null) return false;
+                mAdapter.updateListData(Building.current.searchMostSimilarTags(newText, 20));
                 return true;
             }
         });
@@ -459,11 +434,13 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiSearchView.setOnOpenCloseListener(new SearchView.OnOpenCloseListener() {
             @Override
             public boolean onOpen() {
+                mAdapter.updateListData(Building.current.searchMostSimilarTags(null, 20));
                 uiRecPanel.setVisibility(View.VISIBLE);
                 uiRecPanelSpacer.setVisibility(View.VISIBLE);
 
                 // Hide fabs
                 uiFabFindMeOnMap.hide();
+                uiFabEditMode.hide();
                 return true;
             }
 
@@ -474,18 +451,19 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
                 /// Show fabs
                 uiFabFindMeOnMap.show(mPreserveAlphaOnShow);
+                uiFabEditMode.show(mPreserveAlphaOnShow);
                 return true;
             }
         });
 
-//        uiWallLengthText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+//        txtWallLength.setOnEditorActionListener(new EditText.OnEditorActionListener() {
 //            @Override
 //            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 //                if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
 //                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-//                    imm.hideSoftInputFromWindow(uiWallLengthText.getWindowToken(), 0);
+//                    imm.hideSoftInputFromWindow(txtWallLength.getWindowToken(), 0);
 //
-//                    float realLength = Float.parseFloat(uiWallLengthText.getText().toString());
+//                    float realLength = Float.parseFloat(txtWallLength.getText().toString());
 //                    uiFloorPlanView.rescaleMap(realLength/mCurrentWallLength);
 //
 //                    return true;
@@ -505,7 +483,14 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
         uiFabFindMeOnMap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                uiFloorPlanView.centerToLocation();
+                mLocateMeEnabled = !mLocateMeEnabled;
+                if (mLocateMeEnabled) {
+//                    uiFloorPlanView.centerToLocation();
+                    exciteFab(uiFabFindMeOnMap);
+                } else {
+                    calmFab(uiFabFindMeOnMap);
+                }
+                mLocateMeEnabledChangedListener.onNotify(mLocateMeEnabled);
             }
         });
 
@@ -514,79 +499,74 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 //        uiFabDeleteWall.setOnLongClickListener(new View.OnLongClickListener() {
 //            @Override
 //            public boolean onLongClick(View view) {
-//                uiFloorPlanView.clearFloorPlan();
+//                uiFloorPlanView.clearSketch();
 //                return false;
 //            }
 //        });
 
         uiFloorPlanView.setOnLocationPlacedListener(this);
 
-//        uiFloorPlanView.setOnWallLengthChangedListener(new FloorPlanRenderer.IWallLengthChangedListener() {
-//            @Override
-//            public void onWallLengthChanged(float wallLength) {
-//                mCurrentWallLength = wallLength;
-//                uiWallLengthText.setText(String.format(Locale.US,"%.2f", wallLength));
-//            }
-//        });
-
-        ViewTreeObserver vto = uiFloorPlanView.getViewTreeObserver();
-        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        uiFloorPlanView.setOnWallLengthChangedListener(new FloorPlanRenderer.IWallLengthChangedListener() {
             @Override
-            public void onGlobalLayout() {
-//                String jsonString = PersistenceLayer.loadFloorPlan();
-
-                String jsonString = null;
-                try {
-                    Resources res = getResources();
-                    InputStream in_s = res.openRawResource(R.raw.floorplan_greg_home_2nd_floor);
-
-                    byte[] b = new byte[in_s.available()];
-                    in_s.read(b);
-                    jsonString = new String(b);
-                } catch (Exception e) {
-                     e.printStackTrace();
-                }
-
-                new LoadFloorPlanTask(MainActivity.this).onFinish(new LoadFloorPlanTask.AsyncResponse() {
-                    @Override
-                    public void onFinish(FloorPlan floorPlan) {
-                        mFloorPlan = floorPlan;
-                        mLocator.setFloorPlan(mFloorPlan);
-                        mMapper.setFloorPlan(mFloorPlan);
-
-                        mAdapter.updateListData(floorPlan.getTags());
-
-                        // Find point that should be visible after the floorplan is loaded
-                        PointF pointToShow = null;
-
-                        List<IFloorPlanPrimitive> sketch = mFloorPlan.getSketch();
-                        for (IFloorPlanPrimitive primitive : sketch) {
-                            if (primitive instanceof Wall) {
-                                pointToShow = ((Wall)primitive).getStart();
-                                break;
-                            }
-                        }
-                        // The main work is done on GL thread!
-                        uiFloorPlanView.plot(floorPlan, pointToShow);
-                    }
-                }).execute(jsonString);
-
-//                if (MazeServer.connectionAvailable(getApplicationContext())) {
-//                    MazeServer server = new MazeServer(getApplicationContext());
-//                    server.downloadFloorPlan(new MazeServer.AsyncResponse() {
-//                        @Override
-//                        public void processFinish(String jsonString) {
-//                            uiFloorPlanView.setFloorPlanAsJSon(jsonString);
-//                        }
-//                    });
-//                } else {
-//                    Toast.makeText(getApplicationContext(), "No Internet connection", Toast.LENGTH_SHORT).show();
-//                }
-
-                uiFloorPlanView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+           public void onWallLengthChanged(float wallLength) {
+                mCurrentWallLength = wallLength;
+                txtWallLength.setText(String.format(Locale.US,"%.2fm", wallLength));
             }
         });
 
+        uiFloorPlanView.setOnWallLengthDisplay(new FloorPlanRenderer.IWallLengthChangedListener() {
+            @Override
+            public void onWallLengthChanged(float wallLength) {
+                txtWallLength.setVisibility(View.VISIBLE);
+                uiAddSpinner.setVisibility(View.GONE);
+                mCurrentWallLength = wallLength;
+                txtWallLength.setText(String.format(Locale.US,"%.2fm", wallLength));
+            }
+        });
+
+        uiFloorPlanView.setOnWallLengthHide(new IFuckingSimpleCallback() {
+            @Override
+            public void onNotified() {
+                txtWallLength.setVisibility(View.GONE);
+                uiAddSpinner.setVisibility(View.VISIBLE);
+            }
+        });
+
+//        ViewTreeObserver vto = uiFloorPlanView.getViewTreeObserver();
+//        vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+//            @Override
+//            public void onGlobalLayout() {
+//                // TODO: Floor Id should be recieved from NewFloorPlanDialog or from server
+//                String jsonString = MazeServerMock.getInstance(MainActivity.this).downloadFloorPlanJson("mock");
+//
+//                // TODO: This code shgould be removed as it appears in onFloorChanged event handler
+//                new LoadFloorPlanTask(MainActivity.this).onFinish(new LoadFloorPlanTask.AsyncResponse() {
+//                    @Override
+//                    public void onFinish(FloorPlan floorPlan) {
+//                        mFloorPlan = floorPlan;
+//                        mLocator.setFloorPlan(mFloorPlan);
+//                        mMapper.setFloorPlan(mFloorPlan);
+//
+//                        mAdapter.updateListData(floorPlan.getTags());
+//
+//                        // Find point that should be visible after the floorplan is loaded
+//                        PointF pointToShow = null;
+//
+//                        List<IFloorPlanPrimitive> sketch = mFloorPlan.getSketch();
+//                        for (IFloorPlanPrimitive primitive : sketch) {
+//                            if (primitive instanceof Wall) {
+//                                pointToShow = ((Wall)primitive).getStart();
+//                                break;
+//                            }
+//                        }
+//                        // The main work is done on GL thread!
+//                        uiFloorPlanView.plot(floorPlan, pointToShow);
+//                    }
+//                }).execute(jsonString);
+//
+//                uiFloorPlanView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+//            }
+//        });
     }
 
     private FloatingActionButton.OnVisibilityChangedListener mPreserveAlphaOnShow = new FloatingActionButton.OnVisibilityChangedListener() {
@@ -596,6 +576,7 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
             fab.setAlpha(mFabAlpha);
         }
     };
+
     private float mFabAlpha;
     private float getAlphaFromRes() {
         TypedValue outValue = new TypedValue();
@@ -608,7 +589,6 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     private void calmFab(FloatingActionButton fab) {
         fab.setBackgroundTintList(ColorStateList.valueOf(AppSettings.accentColor));
     }
-
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void updateActionsUiStates() {
         MenuItem btnMove = uiToolbar.getMenu().getItem(0);
@@ -644,26 +624,16 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (locationPermissionsGranted(this)) {
-            mSensorListener.addDeviceRotationListener(this);
-            mWifiScanner.onActivityResume();
-        }
+        mPresenter.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
-        // to stop the listener and save battery
-        if (locationPermissionsGranted(this)) {
-            mSensorListener.removeDeviceRotationListener(this);
-            mWifiScanner.onActivityPause();
-        }
+        mPresenter.onPause();
     }
 
-    @Override
-    public void onDeviceRotated(double orientation) {
+    public void setMapRotation(double orientation) {
         float degree = (float) (orientation - mMapNorth);
 
         mDegreeOffset = degree - mCurrentDegree;
@@ -674,7 +644,87 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     }
 
     @Override
-    public void onLocationUpdated(PointF location) {
+    public UiMode getUiMode() {
+        return mUiMode;
+    }
+
+    @Override
+    public void askUserToCreateBuilding(final IFuckingSimpleGenericCallback<Boolean> userAnswerHandler) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Looks like this building is not in Maze. Do you want to aMaze it?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        userAnswerHandler.onNotify(true);
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        userAnswerHandler.onNotify(false);
+                    }
+                }).show();
+
+    }
+
+    @Override
+    public void setUiModeChangedListener(IFuckingSimpleGenericCallback<UiMode> listener) {
+        mUiModeChangedListener = listener;
+    }
+
+    @Override
+    public void setMapperEnabledChangedListener(IFuckingSimpleGenericCallback<Boolean> listener) {
+        mMapperEnabledChangedListener = listener;
+    }
+
+    @Override
+    public void renderFingeprint(Fingerprint fingerprint) {
+        uiFloorPlanView.placeFingerprint(fingerprint);
+    }
+
+    @Override
+    public void setElementFactory(IElementFactory factory) {
+        uiFloorPlanView.setElementFactory(factory);
+    }
+
+    @Override
+    public void setBuildingIdProvider(IAsyncIdProvider buildingIdProvider) {
+        mBuildingIdProvider = buildingIdProvider;
+    }
+
+    @Override
+    public void setFloorIdProvider(IAsyncIdProvider floorIdProvider) {
+        mFloorIdProvider = floorIdProvider;
+    }
+
+    @Override
+    public void setSimilarBuildingsFinder(IAsyncSimilarBuildingsFinder buildingsFinder) {
+        mBuildingsFinder = buildingsFinder;
+    }
+
+    @Override
+    public void setBuildingCreator(IAsyncBuildingCreator buildingCreator) {
+        mBuildingCreator = buildingCreator;
+    }
+
+    @Override
+    public void setBuildingUpdater(IFuckingSimpleGenericCallback<Building> buildingUpdater) {
+        mBuildingUpdater = buildingUpdater;
+    }
+
+    private void emitUiModeChangedEvent(UiMode newMode) {
+        if (mUiModeChangedListener != null) {
+            mUiModeChangedListener.onNotify(newMode);
+        }
+    }
+
+    private void emitMapperEnabledChangedEvent(boolean enabled) {
+        if (mMapperEnabledChangedListener != null) {
+            mMapperEnabledChangedListener.onNotify(enabled);
+        }
+    }
+
+    public void updateLocation(PointF location) {
         uiFloorPlanView.setLocation(location);
 
         if (AppSettings.inDebug) {
@@ -683,12 +733,11 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
     }
 
     @Override
-    public void onLocationPlaced(PointF location) {
-        mLocator.resetLocationTo(location);
+    public void onLocationSetByUser(PointF location) {
+        mPresenter.setLocationByUser(location);
     }
 
-    @Override
-    public void onDistributionUpdated(PointF mean, float stdev) {
+    public void drawDistribution(PointF mean, float stdev) {
         uiFloorPlanView.drawDistribution(mean, stdev);
     }
 
@@ -701,9 +750,80 @@ public class MainActivity extends AppCompatActivity implements IDeviceRotationLi
 
         // TODO: Add possibility to augment existing floor plan with another parts instead of clearing
         List<IFloorPlanPrimitive> walls = FloorplanVectorizer.translateToWalls(segments);
+        // TODO: Instead  of setting sketch, new floor plan should be instantiated. This is because
+        // TODO: the collection of elements is kept threadsafe within floorplan.
         mFloorPlan.setSketch(walls);
 
         PointF pointToShow = ((Wall)walls.get(0)).getStart(); // we know it is a wall
-        uiFloorPlanView.plot(walls, pointToShow);
+        uiFloorPlanView.plot(mFloorPlan, pointToShow);
+    }
+
+    @Override
+    public void init() {
+
+    }
+
+    @Override
+    public ElementsRenderGroup createElementsRenderGroup(List<? extends IFloorPlanPrimitive> elements) {
+        ElementsRenderGroup floorPlanGroup = uiFloorPlanView.renderElementsGroup(elements);
+
+        return floorPlanGroup;
+    }
+
+    @Override
+    public TextRenderGroup createTextRenderGroup(List<? extends Tag> tags) {
+        TextRenderGroup tagsGroup = uiFloorPlanView.renderTagsGroup(tags);
+
+        return tagsGroup;
+    }
+
+    @Override
+    public void centerMapView(PointF point) {
+        uiFloorPlanView.centerToPoint(point);
+    }
+
+    @Override
+    public void setTags(List<Tag> tags) {
+        mAdapter.updateListData(tags);
+    }
+
+    @Override
+    public void setFloorChangedHandler(IFloorChangedHandler floorChangedHandler) {
+        mFloorChangedHandler = floorChangedHandler;
+    }
+
+    @Override
+    public void setOnLocateMeEnabledChangedListener(IFuckingSimpleGenericCallback<Boolean> listener) {
+        mLocateMeEnabledChangedListener = listener;
+    }
+
+    @Override
+    public void setUploadButtonVisibility(boolean visible) {
+        mUploadButtonVisible = visible;
+        // TODO: See this note below? It shouldn't be here.
+        // NOTE: This is hack/patch/shitty code. WTF?! MainActivity should know that this is coming
+        // from non-UI thread? (actually coming from GL thread)
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mUiMode == UiMode.MAP_EDIT_MODE) {
+                    if (mUploadButtonVisible) {
+                        uiFabUploadChanges.show();
+                    } else {
+                        uiFabUploadChanges.hide();
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    public void setUploadButtonClickListener(IFuckingSimpleCallback listener) {
+        mUploadButtonClickListener = listener;
+    }
+
+    @Override
+    public void clearRenderedElements() {
+        uiFloorPlanView.clearRenderedElements();
     }
 }

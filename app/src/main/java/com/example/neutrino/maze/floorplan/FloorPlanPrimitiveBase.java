@@ -11,22 +11,24 @@ import java.util.Arrays;
  * Created by Greg Stein on 9/22/2016.
  */
 public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
+    public static final int ALPHA = 128;
+    public static final int OPAQUE = 255;
     protected transient final float mVertices[];
     protected transient final short mIndices[];
 
-    protected abstract int getVerticesNum();
+    protected abstract int getVerticesDataLength();
 
     protected abstract int getIndicesNum();
 
     private transient GlRenderBuffer mGlBuffer;
 
     protected FloorPlanPrimitiveBase() {
-        mVertices = new float[getVerticesNum()];
+        mVertices = new float[getVerticesDataLength()];
         mIndices = new short[getIndicesNum()];
     }
 
-    protected FloorPlanPrimitiveBase(int verticesNum, int indicesNum) {
-        mVertices = new float[verticesNum];
+    protected FloorPlanPrimitiveBase(int verticesDataLen, int indicesNum) {
+        mVertices = new float[verticesDataLen];
         mIndices = new short[indicesNum];
     }
 
@@ -62,7 +64,7 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
 
     @Override
     public int getVerticesDataSize() {
-        return getVerticesNum() * (GlRenderBuffer.COORDS_PER_VERTEX + GlRenderBuffer.COLORS_PER_VERTEX) * GlRenderBuffer.SIZE_OF_FLOAT;
+        return getVerticesDataLength() * (GlRenderBuffer.COORDS_PER_VERTEX + GlRenderBuffer.COLORS_PER_VERTEX) * GlRenderBuffer.SIZE_OF_FLOAT;
     }
 
     @Override
@@ -70,8 +72,8 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
         return getIndicesNum() * GlRenderBuffer.SIZE_OF_SHORT;
     }
 
-    private int mColor;
-    private final float[] mColor4f = new float[GlRenderBuffer.COLORS_PER_VERTEX];
+    private transient int mColor;
+    private transient final float[] mColor4f = new float[GlRenderBuffer.COLORS_PER_VERTEX];
 
     @Override
     public int getColor() {
@@ -141,7 +143,14 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
 
     @Override
     public void rewriteToBuffer() {
-        mGlBuffer.updateSingleObject(this);
+        // This check is required mainly because if there is no buffer set we cannot render this
+        // element. BUT, this invariant should be enforced at instantiation. We have it here just
+        // because at the event of new element creation, we still didn't set the buffer, but this
+        // method is called from handleMoveStart(), which in turn called from handleStartDrag()
+        // This code/design smells!
+        if (mGlBuffer != null) {
+            mGlBuffer.updateSingleObject(this);
+        }
     }
 
     @Override
