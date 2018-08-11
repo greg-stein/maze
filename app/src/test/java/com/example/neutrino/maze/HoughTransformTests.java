@@ -118,13 +118,13 @@ public class HoughTransformTests {
         assertTrue(lsnew.get(0).end.equals(11,0));
         assertTrue(lsnew.get(1).start.equals(21,0));
         assertTrue(lsnew.get(1).end.equals(30, 0));
-        assertTrue(lsnew.get(2).start.equals(1,1));
-        assertTrue(lsnew.get(2).end.equals(4,4));
-        assertTrue(lsnew.get(3).start.equals(7,7));
-        assertTrue(lsnew.get(3).end.equals(20,20));
-        assertTrue(lsnew.get(4).start.equals(0,-7));
-        assertTrue(lsnew.get(4).end.equals(0,-2));
-        assertTrue(lsnew.get(5).start.equals(0,2));
-        assertTrue(lsnew.get(5).end.equals(0, 22));
+        assertTrue(lsnew.get(4).start.equals(1,1));
+        assertTrue(lsnew.get(4).end.equals(4,4));
+        assertTrue(lsnew.get(5).start.equals(7,7));
+        assertTrue(lsnew.get(5).end.equals(20,20));
+        assertTrue(lsnew.get(2).start.equals(0,-7));
+        assertTrue(lsnew.get(2).end.equals(0,-2));
+        assertTrue(lsnew.get(3).start.equals(0,2));
+        assertTrue(lsnew.get(3).end.equals(0, 22));
     }
 }

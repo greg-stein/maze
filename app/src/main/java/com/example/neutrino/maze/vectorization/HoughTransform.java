@@ -359,7 +359,7 @@ public class HoughTransform {
             // Note that +90 and -90 degrees are counted as the same
             if (slope + 90 < MAX_ANGLE_DIFFERENCE || 90 - slope < MAX_ANGLE_DIFFERENCE) {
                 currentSlope = -90;
-            } else if (slope - currentSlope > MAX_ANGLE_DIFFERENCE) {
+            } else if (Math.abs(slope - currentSlope) > MAX_ANGLE_DIFFERENCE) {
                 currentSlope = slope;
             }
             if (segmentsBySlope.get(currentSlope) == null) {
