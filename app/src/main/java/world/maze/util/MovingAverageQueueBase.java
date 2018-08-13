@@ -1,7 +1,6 @@
-package com.example.neutrino.maze.util;
+package world.maze.util;
 
 import java.util.ArrayDeque;
-import java.util.Queue;
 
 /**
  * Created by Greg Stein on 3/6/2017.

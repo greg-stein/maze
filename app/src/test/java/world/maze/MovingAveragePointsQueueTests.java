@@ -1,8 +1,8 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.util.MovingAveragePointsQueue;
+import world.maze.util.MovingAveragePointsQueue;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

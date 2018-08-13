@@ -1,19 +1,17 @@
-package com.example.neutrino.maze;
+package world.maze;
 
-import android.content.res.Resources;
 import android.graphics.PointF;
 import android.graphics.RectF;
 
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.navigation.GridCell;
-import com.example.neutrino.maze.navigation.FingerprintsPathFinder;
-import com.example.neutrino.maze.navigation.PathFinderBase;
+import world.maze.floorplan.Fingerprint;
+import world.maze.floorplan.FloorPlan;
+import world.maze.floorplan.FloorPlanSerializer;
+import world.maze.floorplan.IFloorPlanPrimitive;
+import world.maze.floorplan.Wall;
+import world.maze.navigation.GridCell;
+import world.maze.navigation.FingerprintsPathFinder;
+import world.maze.navigation.PathFinderBase;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jgrapht.WeightedGraph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.junit.Test;

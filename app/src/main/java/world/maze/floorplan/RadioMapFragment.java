@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.floorplan;
+package world.maze.floorplan;
 
 import java.util.List;
 

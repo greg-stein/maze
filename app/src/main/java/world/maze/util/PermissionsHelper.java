@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.util;
+package world.maze.util;
 
 import android.Manifest;
 import android.app.Activity;

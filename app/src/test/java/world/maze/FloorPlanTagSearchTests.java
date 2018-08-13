@@ -1,23 +1,19 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.floorplan.Building;
-import com.example.neutrino.maze.floorplan.Floor;
-import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
-import com.example.neutrino.maze.floorplan.Tag;
+import world.maze.floorplan.Building;
+import world.maze.floorplan.Floor;
+import world.maze.floorplan.Tag;
 import com.opencsv.CSVReader;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.closeTo;

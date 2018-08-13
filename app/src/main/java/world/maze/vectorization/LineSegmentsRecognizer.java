@@ -1,14 +1,14 @@
-package com.example.neutrino.maze.vectorization;
+package world.maze.vectorization;
 
 import android.graphics.Color;
 import android.graphics.Point;
 
-import com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
+import world.maze.vectorization.HoughTransform.LineSegment;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.neutrino.maze.vectorization.PixelBuffer.CORNER;
+import static world.maze.vectorization.PixelBuffer.CORNER;
 
 /**
  * Created by Greg Stein on 1/18/2017.

@@ -1,8 +1,8 @@
- package com.example.neutrino.maze.util;
+ package world.maze.util;
 
 import android.net.wifi.ScanResult;
 
-import com.example.neutrino.maze.core.WiFiLocator.WiFiFingerprint;
+import world.maze.core.WiFiLocator.WiFiFingerprint;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

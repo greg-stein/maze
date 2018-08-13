@@ -1,9 +1,9 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.Point;
 
-import com.example.neutrino.maze.vectorization.PixelBuffer;
-import com.example.neutrino.maze.vectorization.PixelBufferChunk;
+import world.maze.vectorization.PixelBuffer;
+import world.maze.vectorization.PixelBufferChunk;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

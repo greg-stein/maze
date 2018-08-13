@@ -1,12 +1,11 @@
-package com.example.neutrino.maze.core;
+package world.maze.core;
 
 import android.net.wifi.ScanResult;
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.Footprint;
-import com.example.neutrino.maze.rendering.VectorHelper;
+import world.maze.AppSettings;
+import world.maze.floorplan.Fingerprint;
+import world.maze.rendering.VectorHelper;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

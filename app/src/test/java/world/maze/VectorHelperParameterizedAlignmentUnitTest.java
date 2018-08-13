@@ -1,8 +1,8 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.rendering.VectorHelper;
+import world.maze.rendering.VectorHelper;
 
 import org.junit.Before;
 import org.junit.Test;

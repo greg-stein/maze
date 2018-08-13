@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         multiDexEnabled true
-        applicationId "com.example.neutrino.maze"
+        applicationId "world.maze"
         minSdkVersion 16
         targetSdkVersion 25
         versionCode 1

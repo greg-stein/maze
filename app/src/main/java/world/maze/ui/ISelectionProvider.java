@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.ui;
+package world.maze.ui;
 
 /**
  * Created by Greg Stein on 7/6/2017.

@@ -1,8 +1,8 @@
-package com.example.neutrino.maze.rendering;
+package world.maze.rendering;
 
 import android.opengl.GLES20;
 
-import com.example.neutrino.maze.AppSettings;
+import world.maze.AppSettings;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

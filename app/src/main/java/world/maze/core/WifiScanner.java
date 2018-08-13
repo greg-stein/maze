@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.core;
+package world.maze.core;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,10 +7,8 @@ import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 
-import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.util.MovingAverageScanResultsQueue;
+import world.maze.util.MovingAverageScanResultsQueue;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;

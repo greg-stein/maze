@@ -1,8 +1,8 @@
-package com.example.neutrino.maze.floorplan;
+package world.maze.floorplan;
 
 import android.graphics.RectF;
 
-import com.example.neutrino.maze.rendering.GlRenderBuffer;
+import world.maze.rendering.GlRenderBuffer;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;

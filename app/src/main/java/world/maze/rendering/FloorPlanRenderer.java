@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.rendering;
+package world.maze.rendering;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,17 +10,17 @@ import android.opengl.GLU;
 import android.opengl.Matrix;
 import android.support.v4.util.Pair;
 
-import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.core.IMainView;
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.Footprint;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.IMoveable;
-import com.example.neutrino.maze.floorplan.LocationMark;
-import com.example.neutrino.maze.floorplan.Tag;
-import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.floorplan.transitions.Teleport;
-import com.example.neutrino.maze.util.IFuckingSimpleCallback;
+import world.maze.AppSettings;
+import world.maze.core.IMainView;
+import world.maze.floorplan.Fingerprint;
+import world.maze.floorplan.Footprint;
+import world.maze.floorplan.IFloorPlanPrimitive;
+import world.maze.floorplan.IMoveable;
+import world.maze.floorplan.LocationMark;
+import world.maze.floorplan.Tag;
+import world.maze.floorplan.Wall;
+import world.maze.floorplan.transitions.Teleport;
+import world.maze.util.IFuckingSimpleCallback;
 
 import java.io.IOException;
 import java.io.InputStream;

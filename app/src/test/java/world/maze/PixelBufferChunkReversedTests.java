@@ -1,11 +1,11 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.Color;
 import android.graphics.Point;
 
-import com.example.neutrino.maze.vectorization.ImageArray;
-import com.example.neutrino.maze.vectorization.PixelBufferChunk;
-import com.example.neutrino.maze.vectorization.PixelBufferChunkReversed;
+import world.maze.vectorization.ImageArray;
+import world.maze.vectorization.PixelBufferChunk;
+import world.maze.vectorization.PixelBufferChunkReversed;
 
 import junit.framework.Assert;
 

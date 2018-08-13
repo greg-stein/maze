@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.rendering;
+package world.maze.rendering;
 
 
 class TextureRegion {

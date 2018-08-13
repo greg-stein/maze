@@ -1,10 +1,8 @@
-package com.example.neutrino.maze.floorplan;
+package world.maze.floorplan;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
-
-import com.example.neutrino.maze.AppSettings;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

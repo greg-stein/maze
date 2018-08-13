@@ -1,15 +1,14 @@
-package com.example.neutrino.maze.core;
+package world.maze.core;
 
 
 import android.support.v4.util.Pair;
 
-import com.example.neutrino.maze.floorplan.Building;
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.RadioMapFragment;
-import com.example.neutrino.maze.util.IFuckingSimpleCallback;
-import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
-import com.example.neutrino.maze.core.WiFiLocator.WiFiFingerprint;
+import world.maze.floorplan.Building;
+import world.maze.floorplan.FloorPlan;
+import world.maze.floorplan.RadioMapFragment;
+import world.maze.util.IFuckingSimpleCallback;
+import world.maze.util.IFuckingSimpleGenericCallback;
+import world.maze.core.WiFiLocator.WiFiFingerprint;
 
 import java.util.List;
 

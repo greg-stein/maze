@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.util;
+package world.maze.util;
 
 import java.util.ArrayList;
 import java.util.Iterator;

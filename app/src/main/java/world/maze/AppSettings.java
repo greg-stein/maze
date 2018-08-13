@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.content.Context;
 import android.support.v4.content.ContextCompat;

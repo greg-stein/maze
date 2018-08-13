@@ -1,10 +1,10 @@
-package com.example.neutrino.maze.navigation;
+package world.maze.navigation;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.rendering.VectorHelper;
+import world.maze.floorplan.Fingerprint;
+import world.maze.floorplan.FloorPlan;
+import world.maze.rendering.VectorHelper;
 
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;

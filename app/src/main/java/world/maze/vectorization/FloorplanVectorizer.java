@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.vectorization;
+package world.maze.vectorization;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -9,11 +9,10 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.os.AsyncTask;
 
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.rendering.VectorHelper;
-import com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
-import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.floorplan.Wall;
+import world.maze.floorplan.IFloorPlanPrimitive;
+import world.maze.rendering.VectorHelper;
+import world.maze.vectorization.HoughTransform.LineSegment;
+import world.maze.floorplan.Wall;
 
 import java.util.ArrayList;
 import java.util.Collection;

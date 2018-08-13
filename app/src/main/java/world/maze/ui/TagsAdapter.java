@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.ui;
+package world.maze.ui;
 
 import android.content.Context;
 import android.os.Build;
@@ -10,10 +10,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.R;
-import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.Tag;
+import world.maze.AppSettings;
+import world.maze.R;
+import world.maze.floorplan.Tag;
 
 import java.util.ArrayList;
 import java.util.List;

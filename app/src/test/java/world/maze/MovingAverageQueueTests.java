@@ -1,10 +1,10 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.net.wifi.ScanResult;
 import android.os.Parcel;
 
-import com.example.neutrino.maze.core.WiFiLocator;
-import com.example.neutrino.maze.util.MovingAverageScanResultsQueue;
+import world.maze.core.WiFiLocator;
+import world.maze.util.MovingAverageScanResultsQueue;
 import com.google.common.collect.Iterables;
 
 import org.junit.Test;

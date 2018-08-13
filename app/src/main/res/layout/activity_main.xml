@@ -7,7 +7,7 @@
                                                  android:fitsSystemWindows="true"
                                                  android:clipChildren="false"
                                                  android:clipToPadding="false"
-                                                 tools:context="com.example.neutrino.maze.ui.MainActivity">
+                                                 tools:context="world.maze.ui.MainActivity">
 
     <include layout="@layout/content_main" />
 

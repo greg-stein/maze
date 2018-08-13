@@ -1,8 +1,8 @@
-package com.example.neutrino.maze.floorplan;
+package world.maze.floorplan;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.AppSettings;
+import world.maze.AppSettings;
 
 /**
  * Created by Greg Stein on 5/14/2017.

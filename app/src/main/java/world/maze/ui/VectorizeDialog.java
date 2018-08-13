@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.ui;
+package world.maze.ui;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -27,12 +27,12 @@ import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
-import com.example.neutrino.maze.R;
-import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
-import com.example.neutrino.maze.vectorization.HoughTransform;
-import com.example.neutrino.maze.vectorization.ImageArray;
-import com.example.neutrino.maze.vectorization.LineSegmentsRecognizer;
-import com.example.neutrino.maze.vectorization.Thinning;
+import world.maze.R;
+import world.maze.vectorization.FloorplanVectorizer;
+import world.maze.vectorization.HoughTransform;
+import world.maze.vectorization.ImageArray;
+import world.maze.vectorization.LineSegmentsRecognizer;
+import world.maze.vectorization.Thinning;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +43,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import static android.app.Activity.RESULT_OK;
-import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
+import static world.maze.vectorization.HoughTransform.LineSegment;
 
 /**
  * Created by Greg Stein on 7/11/2017.

@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -7,10 +7,10 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.support.test.filters.MediumTest;
 
-import com.example.neutrino.maze.vectorization.HoughTransform;
-import com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
-import com.example.neutrino.maze.vectorization.ImageArray;
-import com.example.neutrino.maze.vectorization.LineSegmentsRecognizer;
+import world.maze.vectorization.HoughTransform;
+import world.maze.vectorization.HoughTransform.LineSegment;
+import world.maze.vectorization.ImageArray;
+import world.maze.vectorization.LineSegmentsRecognizer;
 import com.google.gson.Gson;
 
 import org.junit.Test;

@@ -1,9 +1,9 @@
-package com.example.neutrino.maze.floorplan;
+package world.maze.floorplan;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
 
-import com.example.neutrino.maze.AppSettings;
+import world.maze.AppSettings;
 
 import java.util.ArrayList;
 import java.util.List;

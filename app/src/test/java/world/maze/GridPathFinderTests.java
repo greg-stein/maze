@@ -1,12 +1,12 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
-import com.example.neutrino.maze.navigation.FingerprintsPathFinder;
-import com.example.neutrino.maze.navigation.GridPathFinder;
-import com.example.neutrino.maze.navigation.PathFinderBase;
+import world.maze.floorplan.FloorPlan;
+import world.maze.floorplan.FloorPlanSerializer;
+import world.maze.navigation.FingerprintsPathFinder;
+import world.maze.navigation.GridPathFinder;
+import world.maze.navigation.PathFinderBase;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,14 +18,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Objects;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.hamcrest.collection.IsArrayContainingInOrder.arrayContaining;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.closeTo;

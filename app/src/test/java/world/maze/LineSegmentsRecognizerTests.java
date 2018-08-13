@@ -1,14 +1,14 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.Color;
 import android.graphics.Point;
 
-import com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
-import com.example.neutrino.maze.vectorization.ImageArray;
-import com.example.neutrino.maze.vectorization.LineSegmentsRecognizer;
-import com.example.neutrino.maze.vectorization.PixelBufferChunk;
-import com.example.neutrino.maze.vectorization.PixelBuffer;
-import com.example.neutrino.maze.vectorization.PixelBufferChunkReversed;
+import world.maze.vectorization.HoughTransform.LineSegment;
+import world.maze.vectorization.ImageArray;
+import world.maze.vectorization.LineSegmentsRecognizer;
+import world.maze.vectorization.PixelBufferChunk;
+import world.maze.vectorization.PixelBuffer;
+import world.maze.vectorization.PixelBufferChunkReversed;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,22 +1,17 @@
-package com.example.neutrino.maze.ui;
+package world.maze.ui;
 
 import android.content.Context;
-import android.support.annotation.IdRes;
-import android.support.annotation.LayoutRes;
-import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
-import com.example.neutrino.maze.R;
+import world.maze.R;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Greg Stein on 6/13/2017.

@@ -1,9 +1,9 @@
-package com.example.neutrino.maze;
+package world.maze;
 
-import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
-import com.example.neutrino.maze.floorplan.LocationMark;
-import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.floorplan.Fingerprint;
+import world.maze.floorplan.FloorPlanSerializer;
+import world.maze.floorplan.LocationMark;
+import world.maze.floorplan.Wall;
+import world.maze.floorplan.Fingerprint;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

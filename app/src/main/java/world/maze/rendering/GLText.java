@@ -7,7 +7,7 @@
 // origin, and the (x,y) positions are relative to that, as well as the
 // bottom-left of the string to render.
 
-package com.example.neutrino.maze.rendering;
+package world.maze.rendering;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;

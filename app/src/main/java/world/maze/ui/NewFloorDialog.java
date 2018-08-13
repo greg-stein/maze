@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.ui;
+package world.maze.ui;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -34,14 +34,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.R;
-import com.example.neutrino.maze.core.IFloorChangedHandler;
-import com.example.neutrino.maze.core.IMainView;
-import com.example.neutrino.maze.floorplan.Building;
-import com.example.neutrino.maze.floorplan.Floor;
-import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
-import com.example.neutrino.maze.util.PermissionsHelper;
+import world.maze.AppSettings;
+import world.maze.R;
+import world.maze.core.IFloorChangedHandler;
+import world.maze.core.IMainView;
+import world.maze.floorplan.Building;
+import world.maze.floorplan.Floor;
+import world.maze.util.IFuckingSimpleGenericCallback;
+import world.maze.util.PermissionsHelper;
 
 import org.apache.commons.lang3.math.NumberUtils;
 

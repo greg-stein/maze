@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.vectorization;
+package world.maze.vectorization;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;

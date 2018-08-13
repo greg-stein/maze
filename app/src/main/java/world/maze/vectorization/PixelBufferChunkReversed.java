@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.vectorization;
+package world.maze.vectorization;
 
 /**
  * Created by Greg Stein on 1/23/2017.

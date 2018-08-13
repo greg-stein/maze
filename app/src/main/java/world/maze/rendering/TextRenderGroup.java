@@ -1,9 +1,9 @@
-package com.example.neutrino.maze.rendering;
+package world.maze.rendering;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.floorplan.IMoveable;
-import com.example.neutrino.maze.floorplan.Tag;
+import world.maze.floorplan.IMoveable;
+import world.maze.floorplan.Tag;
 
 import java.util.ArrayList;
 import java.util.List;

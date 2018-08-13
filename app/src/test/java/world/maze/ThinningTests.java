@@ -1,10 +1,10 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.Color;
 import android.graphics.Point;
 
-import com.example.neutrino.maze.vectorization.ImageArray;
-import com.example.neutrino.maze.vectorization.Thinning;
+import world.maze.vectorization.ImageArray;
+import world.maze.vectorization.Thinning;
 
 import org.junit.Rule;
 import org.junit.Test;

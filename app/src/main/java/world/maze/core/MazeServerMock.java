@@ -1,19 +1,19 @@
-package com.example.neutrino.maze.core;
+package world.maze.core;
 
 import android.content.Context;
 import android.content.res.Resources;
 import android.support.v4.util.Pair;
 
-import com.example.neutrino.maze.R;
-import com.example.neutrino.maze.floorplan.Building;
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.Floor;
-import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
-import com.example.neutrino.maze.floorplan.RadioMapFragment;
-import com.example.neutrino.maze.floorplan.Tag;
-import com.example.neutrino.maze.util.IFuckingSimpleCallback;
-import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
+import world.maze.R;
+import world.maze.floorplan.Building;
+import world.maze.floorplan.Fingerprint;
+import world.maze.floorplan.Floor;
+import world.maze.floorplan.FloorPlan;
+import world.maze.floorplan.FloorPlanSerializer;
+import world.maze.floorplan.RadioMapFragment;
+import world.maze.floorplan.Tag;
+import world.maze.util.IFuckingSimpleCallback;
+import world.maze.util.IFuckingSimpleGenericCallback;
 
 import java.io.InputStream;
 import java.util.ArrayList;

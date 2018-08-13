@@ -1,13 +1,13 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.core.WiFiLocator;
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.FloorPlanSerializer;
-import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.rendering.VectorHelper;
-import com.example.neutrino.maze.util.CommonHelper;
+import world.maze.core.WiFiLocator;
+import world.maze.floorplan.Fingerprint;
+import world.maze.floorplan.FloorPlanSerializer;
+import world.maze.floorplan.Wall;
+import world.maze.rendering.VectorHelper;
+import world.maze.util.CommonHelper;
 import com.opencsv.CSVWriter;
 
 import org.apache.commons.math3.stat.StatUtils;

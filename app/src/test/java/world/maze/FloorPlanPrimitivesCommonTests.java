@@ -1,10 +1,10 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.RectF;
 
-import com.example.neutrino.maze.floorplan.Footprint;
-import com.example.neutrino.maze.floorplan.LocationMark;
-import com.example.neutrino.maze.floorplan.Wall;
+import world.maze.floorplan.Footprint;
+import world.maze.floorplan.LocationMark;
+import world.maze.floorplan.Wall;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

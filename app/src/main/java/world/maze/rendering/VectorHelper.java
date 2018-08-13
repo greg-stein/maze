@@ -1,12 +1,9 @@
-package com.example.neutrino.maze.rendering;
+package world.maze.rendering;
 
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
-
-import org.apache.commons.math3.geometry.euclidean.twod.SubLine;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 /**
  * Created by Greg Stein on 8/7/2016.

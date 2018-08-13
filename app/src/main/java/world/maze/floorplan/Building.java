@@ -1,11 +1,11 @@
-package com.example.neutrino.maze.floorplan;
+package world.maze.floorplan;
 
 import android.annotation.TargetApi;
 import android.graphics.PointF;
 import android.os.Build;
 
-import com.example.neutrino.maze.floorplan.transitions.ITeleport;
-import com.example.neutrino.maze.floorplan.transitions.Teleport;
+import world.maze.floorplan.transitions.ITeleport;
+import world.maze.floorplan.transitions.Teleport;
 
 import org.simmetrics.StringMetric;
 import org.simmetrics.metrics.StringMetrics;

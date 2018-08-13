@@ -1,8 +1,8 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.Point;
 
-import com.example.neutrino.maze.vectorization.HoughTransform;
+import world.maze.vectorization.HoughTransform;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

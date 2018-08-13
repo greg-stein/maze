@@ -1,11 +1,11 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.support.test.filters.MediumTest;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.Wall;
+import world.maze.floorplan.FloorPlan;
+import world.maze.floorplan.IFloorPlanPrimitive;
+import world.maze.floorplan.Wall;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
-import java.io.Console;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

@@ -1,9 +1,7 @@
-package com.example.neutrino.maze.floorplan;
+package world.maze.floorplan;
 
 import android.support.annotation.Nullable;
-import android.support.v4.graphics.ColorUtils;
 
-import com.example.neutrino.maze.AppSettings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;

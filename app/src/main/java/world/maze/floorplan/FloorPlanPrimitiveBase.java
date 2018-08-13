@@ -1,7 +1,7 @@
-package com.example.neutrino.maze.floorplan;
+package world.maze.floorplan;
 
-import com.example.neutrino.maze.rendering.GlRenderBuffer;
-import com.example.neutrino.maze.rendering.VectorHelper;
+import world.maze.rendering.GlRenderBuffer;
+import world.maze.rendering.VectorHelper;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;

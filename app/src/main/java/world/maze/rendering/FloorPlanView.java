@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.rendering;
+package world.maze.rendering;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,21 +13,21 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.widget.EditText;
 
-import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.core.IMainView;
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.IMoveable;
-import com.example.neutrino.maze.floorplan.Path;
-import com.example.neutrino.maze.floorplan.Tag;
-import com.example.neutrino.maze.floorplan.transitions.Teleport;
-import com.example.neutrino.maze.rendering.FloorPlanRenderer.IWallLengthChangedListener;
-import com.example.neutrino.maze.util.IFuckingSimpleCallback;
+import world.maze.AppSettings;
+import world.maze.core.IMainView;
+import world.maze.floorplan.Fingerprint;
+import world.maze.floorplan.FloorPlan;
+import world.maze.floorplan.IFloorPlanPrimitive;
+import world.maze.floorplan.IMoveable;
+import world.maze.floorplan.Path;
+import world.maze.floorplan.Tag;
+import world.maze.floorplan.transitions.Teleport;
+import world.maze.rendering.FloorPlanRenderer.IWallLengthChangedListener;
+import world.maze.util.IFuckingSimpleCallback;
 
 import java.util.List;
 
-import static com.example.neutrino.maze.core.IMainView.MapOperation.MOVE;
+import static world.maze.core.IMainView.MapOperation.MOVE;
 
 /**
  * Created by neutrino on 7/2/2016.

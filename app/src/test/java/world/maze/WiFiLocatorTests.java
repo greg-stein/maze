@@ -1,9 +1,9 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.core.WiFiLocator;
-import com.example.neutrino.maze.floorplan.Fingerprint;
+import world.maze.core.WiFiLocator;
+import world.maze.floorplan.Fingerprint;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

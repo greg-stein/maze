@@ -1,10 +1,9 @@
-package com.example.neutrino.maze.navigation;
+package world.maze.navigation;
 
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.graphics.RectF;
 
-import com.example.neutrino.maze.floorplan.Wall;
+import world.maze.floorplan.Wall;
 
 import java.util.HashSet;
 

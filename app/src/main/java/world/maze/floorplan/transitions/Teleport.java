@@ -1,16 +1,15 @@
-package com.example.neutrino.maze.floorplan.transitions;
+package world.maze.floorplan.transitions;
 
-import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.RectF;
 
-import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.core.WiFiLocator;
-import com.example.neutrino.maze.floorplan.Floor;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.Ring;
-import com.example.neutrino.maze.floorplan.Tag;
-import com.example.neutrino.maze.rendering.GlRenderBuffer;
+import world.maze.AppSettings;
+import world.maze.core.WiFiLocator;
+import world.maze.floorplan.Floor;
+import world.maze.floorplan.IFloorPlanPrimitive;
+import world.maze.floorplan.Ring;
+import world.maze.floorplan.Tag;
+import world.maze.rendering.GlRenderBuffer;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;

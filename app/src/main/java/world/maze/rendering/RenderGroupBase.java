@@ -1,8 +1,7 @@
-package com.example.neutrino.maze.rendering;
+package world.maze.rendering;
 
-import com.example.neutrino.maze.core.IMainView;
-import com.example.neutrino.maze.floorplan.IMoveable;
-import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
+import world.maze.core.IMainView;
+import world.maze.floorplan.IMoveable;
 
 /**
  * Created by Greg Stein on 3/1/2018.

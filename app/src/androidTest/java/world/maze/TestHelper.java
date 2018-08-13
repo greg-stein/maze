@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

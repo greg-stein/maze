@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

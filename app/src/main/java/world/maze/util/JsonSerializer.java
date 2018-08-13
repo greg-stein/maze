@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.util;
+package world.maze.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

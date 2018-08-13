@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.core;
+package world.maze.core;
 
 import android.app.ActivityManager;
 import android.app.Service;
@@ -13,8 +13,7 @@ import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 
-import com.example.neutrino.maze.ui.MainActivity;
-import com.example.neutrino.maze.util.PermissionsHelper;
+import world.maze.util.PermissionsHelper;
 
 /**
  * Created by Greg Stein on 8/30/2017.
@@ -229,7 +228,7 @@ public class StepCalibratorService extends Service implements LocationListener, 
             jobDone();
         } else if (mLocationPermissionsGranted ) {
             // Schedule resurrection of this service if we have permissions and job is not done
-            Intent broadcastIntent = new Intent("com.example.neutrino.maze.RestartSensor");
+            Intent broadcastIntent = new Intent("world.maze.RestartSensor");
             sendBroadcast(broadcastIntent);
         }
         saveToConfig(this);

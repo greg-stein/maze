@@ -1,6 +1,6 @@
-package com.example.neutrino.maze.core;
+package world.maze.core;
 
-import com.example.neutrino.maze.floorplan.Floor;
+import world.maze.floorplan.Floor;
 
 /**
  * Created by Greg Stein on 10/6/2017.

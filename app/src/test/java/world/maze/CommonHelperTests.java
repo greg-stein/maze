@@ -1,12 +1,9 @@
-package com.example.neutrino.maze;
+package world.maze;
 
-import android.os.Build;
-
-import com.example.neutrino.maze.floorplan.Building;
-import com.example.neutrino.maze.floorplan.Floor;
-import com.example.neutrino.maze.util.CommonHelper;
+import world.maze.floorplan.Building;
+import world.maze.floorplan.Floor;
+import world.maze.util.CommonHelper;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +18,6 @@ import java.util.UUID;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.hasItemInArray;
-import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.collection.IsArrayContainingInOrder.arrayContaining;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;

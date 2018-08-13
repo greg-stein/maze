@@ -1,11 +1,11 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.Bitmap;
 import android.support.test.filters.MediumTest;
 
-import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
-import com.example.neutrino.maze.vectorization.ImageArray;
-import com.example.neutrino.maze.vectorization.Thinning;
+import world.maze.vectorization.FloorplanVectorizer;
+import world.maze.vectorization.ImageArray;
+import world.maze.vectorization.Thinning;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

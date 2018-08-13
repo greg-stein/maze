@@ -1,13 +1,13 @@
-package com.example.neutrino.maze.navigation;
+package world.maze.navigation;
 
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-import com.example.neutrino.maze.util.CommonHelper;
-import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.rendering.VectorHelper;
+import world.maze.util.CommonHelper;
+import world.maze.floorplan.FloorPlan;
+import world.maze.floorplan.Wall;
+import world.maze.rendering.VectorHelper;
 
 import org.jgrapht.WeightedGraph;
 import org.jgrapht.alg.DijkstraShortestPath;

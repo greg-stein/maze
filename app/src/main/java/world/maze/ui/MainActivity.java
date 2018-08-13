@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.ui;
+package world.maze.ui;
 
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
@@ -30,28 +30,28 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.R;
-import com.example.neutrino.maze.core.IFloorChangedHandler;
-import com.example.neutrino.maze.core.IMainView;
-import com.example.neutrino.maze.core.IMazePresenter;
-import com.example.neutrino.maze.core.MazeClient;
-import com.example.neutrino.maze.core.WiFiLocator;
-import com.example.neutrino.maze.floorplan.Building;
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.Tag;
-import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.rendering.FloorPlanRenderer;
-import com.example.neutrino.maze.rendering.FloorPlanView;
-import com.example.neutrino.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
-import com.example.neutrino.maze.rendering.ElementsRenderGroup;
-import com.example.neutrino.maze.rendering.TextRenderGroup;
-import com.example.neutrino.maze.util.IFuckingSimpleCallback;
-import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
-import com.example.neutrino.maze.util.PermissionsHelper;
-import com.example.neutrino.maze.vectorization.FloorplanVectorizer;
+import world.maze.AppSettings;
+import world.maze.R;
+import world.maze.core.IFloorChangedHandler;
+import world.maze.core.IMainView;
+import world.maze.core.IMazePresenter;
+import world.maze.core.MazeClient;
+import world.maze.core.WiFiLocator;
+import world.maze.floorplan.Building;
+import world.maze.floorplan.Fingerprint;
+import world.maze.floorplan.FloorPlan;
+import world.maze.floorplan.IFloorPlanPrimitive;
+import world.maze.floorplan.Tag;
+import world.maze.floorplan.Wall;
+import world.maze.rendering.FloorPlanRenderer;
+import world.maze.rendering.FloorPlanView;
+import world.maze.rendering.FloorPlanView.IOnLocationPlacedListener;
+import world.maze.rendering.ElementsRenderGroup;
+import world.maze.rendering.TextRenderGroup;
+import world.maze.util.IFuckingSimpleCallback;
+import world.maze.util.IFuckingSimpleGenericCallback;
+import world.maze.util.PermissionsHelper;
+import world.maze.vectorization.FloorplanVectorizer;
 import com.github.fafaldo.fabtoolbar.widget.FABToolbarLayout;
 import com.lapism.searchview.SearchView;
 
@@ -60,7 +60,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
-import static com.example.neutrino.maze.vectorization.HoughTransform.LineSegment;
+import static world.maze.vectorization.HoughTransform.LineSegment;
 
 public class MainActivity extends AppCompatActivity implements IOnLocationPlacedListener, VectorizeDialog.ICompleteVectorizationHandler, IMainView {
     // GUI-related fields

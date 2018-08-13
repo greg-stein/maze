@@ -1,4 +1,4 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.support.test.filters.MediumTest;
 import android.support.test.runner.AndroidJUnit4;

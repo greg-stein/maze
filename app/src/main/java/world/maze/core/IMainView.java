@@ -1,16 +1,16 @@
-package com.example.neutrino.maze.core;
+package world.maze.core;
 
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.floorplan.Building;
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.IMoveable;
-import com.example.neutrino.maze.floorplan.Tag;
-import com.example.neutrino.maze.rendering.ElementsRenderGroup;
-import com.example.neutrino.maze.rendering.TextRenderGroup;
-import com.example.neutrino.maze.util.IFuckingSimpleCallback;
-import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
+import world.maze.floorplan.Building;
+import world.maze.floorplan.Fingerprint;
+import world.maze.floorplan.IFloorPlanPrimitive;
+import world.maze.floorplan.IMoveable;
+import world.maze.floorplan.Tag;
+import world.maze.rendering.ElementsRenderGroup;
+import world.maze.rendering.TextRenderGroup;
+import world.maze.util.IFuckingSimpleCallback;
+import world.maze.util.IFuckingSimpleGenericCallback;
 
 import java.util.List;
 

@@ -1,15 +1,15 @@
-package com.example.neutrino.maze.core;
+package world.maze.core;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.rendering.VectorHelper;
-import com.example.neutrino.maze.util.MovingAveragePointsQueue;
+import world.maze.AppSettings;
+import world.maze.floorplan.FloorPlan;
+import world.maze.floorplan.IFloorPlanPrimitive;
+import world.maze.floorplan.Wall;
+import world.maze.rendering.VectorHelper;
+import world.maze.util.MovingAveragePointsQueue;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,12 +1,11 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
 
-import com.example.neutrino.maze.rendering.VectorHelper;
+import world.maze.rendering.VectorHelper;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;

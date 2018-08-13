@@ -1,32 +1,32 @@
-package com.example.neutrino.maze.core;
+package world.maze.core;
 
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.support.v4.util.Pair;
 
-import com.example.neutrino.maze.AppSettings;
-import com.example.neutrino.maze.core.SensorListener.IDeviceRotationListener;
-import com.example.neutrino.maze.floorplan.Building;
-import com.example.neutrino.maze.floorplan.Fingerprint;
-import com.example.neutrino.maze.floorplan.Floor;
-import com.example.neutrino.maze.floorplan.FloorPlan;
-import com.example.neutrino.maze.floorplan.IFloorPlanPrimitive;
-import com.example.neutrino.maze.floorplan.IMoveable;
-import com.example.neutrino.maze.floorplan.RadioMapFragment;
-import com.example.neutrino.maze.floorplan.Tag;
-import com.example.neutrino.maze.floorplan.Wall;
-import com.example.neutrino.maze.floorplan.transitions.Teleport;
-import com.example.neutrino.maze.rendering.ElementsRenderGroup;
-import com.example.neutrino.maze.rendering.TextRenderGroup;
-import com.example.neutrino.maze.util.IFuckingSimpleCallback;
-import com.example.neutrino.maze.util.IFuckingSimpleGenericCallback;
-import com.example.neutrino.maze.util.PermissionsHelper;
+import world.maze.AppSettings;
+import world.maze.core.SensorListener.IDeviceRotationListener;
+import world.maze.floorplan.Building;
+import world.maze.floorplan.Fingerprint;
+import world.maze.floorplan.Floor;
+import world.maze.floorplan.FloorPlan;
+import world.maze.floorplan.IFloorPlanPrimitive;
+import world.maze.floorplan.IMoveable;
+import world.maze.floorplan.RadioMapFragment;
+import world.maze.floorplan.Tag;
+import world.maze.floorplan.Wall;
+import world.maze.floorplan.transitions.Teleport;
+import world.maze.rendering.ElementsRenderGroup;
+import world.maze.rendering.TextRenderGroup;
+import world.maze.util.IFuckingSimpleCallback;
+import world.maze.util.IFuckingSimpleGenericCallback;
+import world.maze.util.PermissionsHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.neutrino.maze.core.Locator.*;
+import static world.maze.core.Locator.*;
 
 /**
  * Created by Greg Stein on 10/31/2017.

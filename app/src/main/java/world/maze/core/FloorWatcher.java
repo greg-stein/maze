@@ -1,12 +1,12 @@
-package com.example.neutrino.maze.core;
+package world.maze.core;
 
 import android.content.Context;
 import android.graphics.PointF;
 
-import com.example.neutrino.maze.floorplan.Building;
-import com.example.neutrino.maze.floorplan.transitions.ITeleport;
-import com.example.neutrino.maze.floorplan.transitions.Teleport;
-import com.example.neutrino.maze.rendering.VectorHelper;
+import world.maze.floorplan.Building;
+import world.maze.floorplan.transitions.ITeleport;
+import world.maze.floorplan.transitions.Teleport;
+import world.maze.rendering.VectorHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;

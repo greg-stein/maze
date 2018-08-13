@@ -1,6 +1,6 @@
-package com.example.neutrino.maze;
+package world.maze;
 
-import com.example.neutrino.maze.core.LiftDetector;
+import world.maze.core.LiftDetector;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

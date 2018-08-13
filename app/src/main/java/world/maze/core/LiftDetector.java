@@ -1,4 +1,4 @@
-package com.example.neutrino.maze.core;
+package world.maze.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;

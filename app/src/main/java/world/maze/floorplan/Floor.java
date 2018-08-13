@@ -1,7 +1,6 @@
-package com.example.neutrino.maze.floorplan;
+package world.maze.floorplan;
 
-import com.example.neutrino.maze.floorplan.transitions.ITeleport;
-import com.example.neutrino.maze.floorplan.transitions.Teleport;
+import world.maze.floorplan.transitions.Teleport;
 
 import java.util.ArrayList;
 import java.util.Collections;

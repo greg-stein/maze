@@ -1,11 +1,11 @@
-package com.example.neutrino.maze;
+package world.maze;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.support.v4.util.Pair;
 
-import com.example.neutrino.maze.core.WiFiLocator;
-import com.example.neutrino.maze.floorplan.Fingerprint;
+import world.maze.core.WiFiLocator;
+import world.maze.floorplan.Fingerprint;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.TreeSet;
 
-import static com.example.neutrino.maze.core.WiFiLocator.WiFiFingerprint;
+import static world.maze.core.WiFiLocator.WiFiFingerprint;
 
 /**
  * Created by Greg Stein on 4/9/2017.

@@ -1,11 +1,11 @@
-package com.example.neutrino.maze.floorplan;
+package world.maze.floorplan;
 
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.support.v4.graphics.ColorUtils;
 
-import com.example.neutrino.maze.rendering.GlRenderBuffer;
-import com.example.neutrino.maze.rendering.VectorHelper;
+import world.maze.rendering.GlRenderBuffer;
+import world.maze.rendering.VectorHelper;
 
 /**
  * Created by Greg Stein on 3/26/2018.
