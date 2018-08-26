@@ -36,7 +36,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private Context mContext;
     private final IMainView mMainView;
     private WifiScanner mWifiScanner = null;
-    private IMazeServer mMazeServer;
+    private IDataKeep mMazeServer;
     private Locator mLocator;
     private Mapper mMapper;
     private boolean mMapperLastState;
@@ -295,7 +295,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 //            @Override
 //            public void onFloorChanged(Floor floor) {
 //                if (Building.current.getCurrentFloor().getId() != floor.getId()) {
-//                    final IMazeServer mazeServer = MazeServerMock.getInstance(MainActivity.this);
+//                    final IDataKeep mazeServer = MazeServerMock.getInstance(MainActivity.this);
 //                    String jsonString = mazeServer.downloadFloorPlanJson(floor.getId());
 //                    // TODO: load new floor plan, tags, teleports, ...
 //

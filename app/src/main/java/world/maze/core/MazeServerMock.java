@@ -23,7 +23,7 @@ import java.util.List;
  * Created by Greg Stein on 9/30/2017.
  */
 
-public class MazeServerMock implements IMazeServer {
+public class MazeServerMock implements IDataKeep {
     public static final String BUILDING_STORE = "building.wad";
 
     // These objects mimic objects came from DB
@@ -42,9 +42,9 @@ public class MazeServerMock implements IMazeServer {
         // 4. write in this class static initializer that reads all the data from resources
         // writing/saving data - ?? - next stage is working with internal storage
 
-    private static IMazeServer instance = null;
+    private static IDataKeep instance = null;
     private static final Object mutex = new Object();
-    public static IMazeServer getInstance(Context context) {
+    public static IDataKeep getInstance(Context context) {
         if (instance == null) {
             synchronized (mutex) {
                 if (instance == null) {
