@@ -1,4 +1,4 @@
-package world.maze.core;
+package world.maze.data;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import world.maze.core.WiFiLocator;
 import world.maze.floorplan.Building;
 import world.maze.floorplan.FloorPlan;
 import world.maze.floorplan.RadioMapFragment;

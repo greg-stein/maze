@@ -1,4 +1,4 @@
-package world.maze.core;
+package world.maze.data;
 
 
 import world.maze.floorplan.Building;

@@ -7,6 +7,7 @@ import android.support.v4.util.Pair;
 
 import world.maze.AppSettings;
 import world.maze.core.SensorListener.IDeviceRotationListener;
+import world.maze.data.IDataKeep;
 import world.maze.floorplan.Building;
 import world.maze.floorplan.Fingerprint;
 import world.maze.floorplan.Floor;

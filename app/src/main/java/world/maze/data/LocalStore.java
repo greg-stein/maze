@@ -1,7 +1,8 @@
-package world.maze.core;
+package world.maze.data;
 
 import android.support.v4.util.Pair;
 
+import world.maze.core.WiFiLocator;
 import world.maze.floorplan.Building;
 import world.maze.floorplan.FloorPlan;
 import world.maze.floorplan.RadioMapFragment;
