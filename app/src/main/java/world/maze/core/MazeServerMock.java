@@ -5,7 +5,7 @@ import android.content.res.Resources;
 import android.support.v4.util.Pair;
 
 import world.maze.R;
-import world.maze.data.IDataKeep;
+import world.maze.data.IDataKeeper;
 import world.maze.floorplan.Building;
 import world.maze.floorplan.Fingerprint;
 import world.maze.floorplan.Floor;
@@ -24,7 +24,7 @@ import java.util.List;
  * Created by Greg Stein on 9/30/2017.
  */
 
-public class MazeServerMock implements IDataKeep {
+public class MazeServerMock implements IDataKeeper {
     public static final String BUILDING_STORE = "building.wad";
 
     // These objects mimic objects came from DB
@@ -43,9 +43,9 @@ public class MazeServerMock implements IDataKeep {
         // 4. write in this class static initializer that reads all the data from resources
         // writing/saving data - ?? - next stage is working with internal storage
 
-    private static IDataKeep instance = null;
+    private static IDataKeeper instance = null;
     private static final Object mutex = new Object();
-    public static IDataKeep getInstance(Context context) {
+    public static IDataKeeper getInstance(Context context) {
         if (instance == null) {
             synchronized (mutex) {
                 if (instance == null) {

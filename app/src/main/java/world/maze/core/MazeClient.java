@@ -7,7 +7,7 @@ import android.support.v4.util.Pair;
 
 import world.maze.AppSettings;
 import world.maze.core.SensorListener.IDeviceRotationListener;
-import world.maze.data.IDataKeep;
+import world.maze.data.IDataKeeper;
 import world.maze.floorplan.Building;
 import world.maze.floorplan.Fingerprint;
 import world.maze.floorplan.Floor;
@@ -37,7 +37,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private Context mContext;
     private final IMainView mMainView;
     private WifiScanner mWifiScanner = null;
-    private IDataKeep mMazeServer;
+    private IDataKeeper mMazeServer;
     private Locator mLocator;
     private Mapper mMapper;
     private boolean mMapperLastState;
@@ -296,7 +296,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 //            @Override
 //            public void onFloorChanged(Floor floor) {
 //                if (Building.current.getCurrentFloor().getId() != floor.getId()) {
-//                    final IDataKeep mazeServer = MazeServerMock.getInstance(MainActivity.this);
+//                    final IDataKeeper mazeServer = MazeServerMock.getInstance(MainActivity.this);
 //                    String jsonString = mazeServer.downloadFloorPlanJson(floor.getId());
 //                    // TODO: load new floor plan, tags, teleports, ...
 //

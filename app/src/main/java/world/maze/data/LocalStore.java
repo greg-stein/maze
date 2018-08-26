@@ -15,7 +15,7 @@ import java.util.List;
  * Created by Greg Stein on 8/11/2018.
  */
 
-public class LocalStore implements IDataKeep {
+public class LocalStore implements IDataKeeper {
     @Override
     public void findSimilarBuildings(String pattern, IFuckingSimpleGenericCallback<List<Building>> buildingsAcquiredCallback) {
 
