@@ -67,6 +67,8 @@ public interface IMainView {
 
     void clearRenderedElements();
 
+    void displayError(String s, boolean exit);
+
     enum UiMode { MAP_VIEW_MODE, MAP_EDIT_MODE}
 
     enum MapOperation {

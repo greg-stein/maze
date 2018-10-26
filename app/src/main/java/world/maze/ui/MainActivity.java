@@ -826,4 +826,10 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     public void clearRenderedElements() {
         uiFloorPlanView.clearRenderedElements();
     }
+
+    @Override
+    public void displayError(String s, boolean exit) {
+        Toast.makeText(this, s, Toast.LENGTH_LONG);
+        if (exit) finishAffinity();
+    }
 }
