@@ -70,4 +70,9 @@ public class LocalStore implements IDataKeeper {
     public void downloadRadioMapTileAsync(String floorId, WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<RadioMapFragment> onRadioTileReceived) {
 
     }
+
+    @Override
+    public Collection<String> getBuildingIds() {
+        return Arrays.asList(mBuildingIds);
+    }
 }

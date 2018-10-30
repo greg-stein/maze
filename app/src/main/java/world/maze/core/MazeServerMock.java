@@ -6,6 +6,7 @@ import android.support.v4.util.Pair;
 
 import world.maze.R;
 import world.maze.data.IDataKeeper;
+import world.maze.data.IDataProvider;
 import world.maze.floorplan.Building;
 import world.maze.floorplan.Fingerprint;
 import world.maze.floorplan.Floor;
@@ -198,6 +199,11 @@ public class MazeServerMock implements IDataKeeper {
         if (floorId.equals(dbFloor1.getId())) {
             onRadioTileReceived.onNotify(dbRadioMap1);
         }
+    }
+
+    @Override
+    public Iterable<String> getBuildingIds() {
+        return null;
     }
 
 }

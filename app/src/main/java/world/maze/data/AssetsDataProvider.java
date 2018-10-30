@@ -77,4 +77,9 @@ public class AssetsDataProvider implements IDataProvider {
     public void downloadRadioMapTileAsync(String floorId, WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<RadioMapFragment> onRadioTileReceived) {
 
     }
+
+    @Override
+    public Iterable<String> getBuildingIds() {
+        return Arrays.asList(mBuildingIds);
+    }
 }

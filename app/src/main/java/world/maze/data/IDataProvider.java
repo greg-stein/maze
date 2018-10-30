@@ -2,6 +2,7 @@ package world.maze.data;
 
 import android.support.v4.util.Pair;
 
+import java.util.Collection;
 import java.util.List;
 
 import world.maze.core.WiFiLocator;
@@ -26,4 +27,6 @@ public interface IDataProvider {
     void downloadFloorPlanAsync(String floorId, IFuckingSimpleGenericCallback<FloorPlan> onFloorPlanReceived);
 
     void downloadRadioMapTileAsync(String floorId, WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<RadioMapFragment> onRadioTileReceived);
+
+    Iterable<String> getBuildingIds(); // Read only collection of buildings that this provider holds
 }
