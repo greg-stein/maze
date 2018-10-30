@@ -25,7 +25,7 @@ import java.util.List;
  * Created by Greg Stein on 9/30/2017.
  */
 
-public class MazeServerMock implements IDataKeeper {
+public class MazeServerMock implements IDataProvider, IDataKeeper {
     public static final String BUILDING_STORE = "building.wad";
 
     // These objects mimic objects came from DB
@@ -44,9 +44,9 @@ public class MazeServerMock implements IDataKeeper {
         // 4. write in this class static initializer that reads all the data from resources
         // writing/saving data - ?? - next stage is working with internal storage
 
-    private static IDataKeeper instance = null;
+    private static MazeServerMock instance = null;
     private static final Object mutex = new Object();
-    public static IDataKeeper getInstance(Context context) {
+    public static MazeServerMock getInstance(Context context) {
         if (instance == null) {
             synchronized (mutex) {
                 if (instance == null) {

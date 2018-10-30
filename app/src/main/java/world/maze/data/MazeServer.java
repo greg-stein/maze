@@ -5,9 +5,17 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v4.util.Pair;
 import android.widget.Toast;
 
 import world.maze.R;
+import world.maze.core.WiFiLocator;
+import world.maze.floorplan.Building;
+import world.maze.floorplan.FloorPlan;
+import world.maze.floorplan.RadioMapFragment;
+import world.maze.util.IFuckingSimpleCallback;
+import world.maze.util.IFuckingSimpleGenericCallback;
+
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
@@ -23,11 +31,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.util.List;
 
 /**
  * Created by Greg Stein on 9/9/2016.
  */
-public class MazeServer {
+public class MazeServer  implements IDataProvider, IDataKeeper {
     private static final String POST_METHOD = "POST";
     private static URL mUrl;
     private static final MazeServer instance = new MazeServer();
@@ -64,6 +73,66 @@ public class MazeServer {
         }
 
         return result.toString();
+    }
+
+    @Override
+    public void createBuildingAsync(IFuckingSimpleGenericCallback<String> onBuildingCreated) {
+
+    }
+
+    @Override
+    public void createBuildingAsync(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback) {
+
+    }
+
+    @Override
+    public void createFloorAsync(IFuckingSimpleGenericCallback<String> onFloorCreated) {
+
+    }
+
+    @Override
+    public void upload(Building building, IFuckingSimpleCallback onDone) {
+
+    }
+
+    @Override
+    public void upload(FloorPlan floorPlan, IFuckingSimpleCallback onDone) {
+
+    }
+
+    @Override
+    public void upload(RadioMapFragment radioMap, IFuckingSimpleCallback onDone) {
+
+    }
+
+    @Override
+    public void findSimilarBuildings(String pattern, IFuckingSimpleGenericCallback<List<Building>> buildingsAcquiredCallback) {
+
+    }
+
+    @Override
+    public void getBuildingAsync(String buildingId, IFuckingSimpleGenericCallback<Building> onBuildingReceived) {
+
+    }
+
+    @Override
+    public void findCurrentBuildingAndFloorAsync(WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<Pair<String, String>> callback) {
+
+    }
+
+    @Override
+    public void downloadFloorPlanAsync(String floorId, IFuckingSimpleGenericCallback<FloorPlan> onFloorPlanReceived) {
+
+    }
+
+    @Override
+    public void downloadRadioMapTileAsync(String floorId, WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<RadioMapFragment> onRadioTileReceived) {
+
+    }
+
+    @Override
+    public Iterable<String> getBuildingIds() {
+        return null;
     }
 
     public interface AsyncResponse {

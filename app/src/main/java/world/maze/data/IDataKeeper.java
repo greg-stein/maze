@@ -13,7 +13,7 @@ import world.maze.util.IFuckingSimpleGenericCallback;
  * Represents read-write data store. IDataProvider is read-only.
  */
 
-public interface IDataKeeper extends IDataProvider {
+public interface IDataKeeper {
     void createBuildingAsync(IFuckingSimpleGenericCallback<String> onBuildingCreated);
     void createBuildingAsync(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback);
     void createFloorAsync(IFuckingSimpleGenericCallback<String> onFloorCreated);
