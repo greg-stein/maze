@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (PermissionsHelper.handleLocationPermissions(this, requestCode, grantResults)) {
+        if (PermissionsHelper.onRequestPermissionsResult(this, requestCode, grantResults)) {
             this.finish();
         }
     }
