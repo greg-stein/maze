@@ -1,13 +1,22 @@
 package world.maze.core;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.PointF;
+import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
+import android.util.Log;
 
 import world.maze.AppSettings;
 import world.maze.core.SensorListener.IDeviceRotationListener;
-import world.maze.data.IDataKeeper;
+import world.maze.data.DataAggregator;
+import world.maze.data.IDataProvider;
+import world.maze.data.LocalStore;
 import world.maze.floorplan.Building;
 import world.maze.floorplan.Fingerprint;
 import world.maze.floorplan.Floor;
@@ -24,9 +33,13 @@ import world.maze.util.IFuckingSimpleCallback;
 import world.maze.util.IFuckingSimpleGenericCallback;
 import world.maze.util.PermissionsHelper;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static world.maze.core.Locator.*;
 
 /**
@@ -37,7 +50,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private Context mContext;
     private final IMainView mMainView;
     private WifiScanner mWifiScanner = null;
-    private IDataKeeper mMazeServer;
+    private DataAggregator mDataAggregator;
+    private List<IDataProvider> mDataProviders = new ArrayList<>();
     private Locator mLocator;
     private Mapper mMapper;
     private boolean mMapperLastState;
@@ -67,7 +81,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             // building and floor
             mWifiScanner.removeFingerprintAvailableListener(mFirstFingerprintAvailableListener);
             // TODO: check whether it makes sense to acquire several fingerprints and average them
-            mMazeServer.findCurrentBuildingAndFloorAsync(fingerprint, new IFuckingSimpleGenericCallback<Pair<String, String>>() {
+            mDataAggregator.findCurrentBuildingAndFloorAsync(fingerprint, new IFuckingSimpleGenericCallback<Pair<String, String>>() {
 
                 @Override
                 public void onNotify(Pair<String, String> buildingAndFloorIds) {
@@ -134,8 +148,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
             // TODO: what if this condition is NOT met? What will happen to mRadioTileReceived && mFloorPlanReceived?
             if (Building.current.getCurrentFloor() == null || !Building.current.getCurrentFloor().getId().equals(mFloorId)) {
-                mMazeServer.downloadFloorPlanAsync(mFloorId, mOnFloorPlanReceived);
-                mMazeServer.downloadRadioMapTileAsync(mFloorId, mFingerprint, mOnRadioTileReceived);
+                mDataAggregator.downloadFloorPlanAsync(mFloorId, mOnFloorPlanReceived);
+                mDataAggregator.downloadRadioMapTileAsync(mFloorId, mFingerprint, mOnRadioTileReceived);
             }
         }
     }
@@ -184,7 +198,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
             // Do we need to update building struct?
             if (Building.current == null || !Building.current.getId().equals(mBuildingId)) {
-                mMazeServer.getBuildingAsync(mBuildingId, mOnBuildingReceived);
+                mDataAggregator.getBuildingAsync(mBuildingId, mOnBuildingReceived);
             }
 
             super.update(buildingAndFloorIds);
@@ -339,6 +353,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         // TODO: instead of just killing the app, consider reloading activity when the permission is granted.
         if (!PermissionsHelper.requestPermissions(mContext)) return;
+//        testLocalStorage();
 
         if (mStepCalibratorEnabled) {
             mStepCalibratorService = new StepCalibratorService(mContext);
@@ -348,7 +363,16 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mContext.startService(mStepCalibratorServiceIntent);
             }
         }
-        mMazeServer = MazeServerMock.getInstance(mContext);
+
+        try {
+            mDataAggregator = DataAggregator.getInstance(mContext);
+            final LocalStore localStore = new LocalStore();
+            localStore.init(mContext);
+            mDataAggregator.addDataProvider(localStore);
+            mDataAggregator.setDataKeeper(localStore);
+        } catch (IOException e) {
+            mMainView.displayError("Failed to initialize local store (possibly no access to external storage).", true);
+        }
 
         if (mWifiScanner == null) {
             mWifiScanner = WifiScanner.getInstance(mContext);
@@ -358,6 +382,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mLocator = getInstance(mContext);
         mMapper = Mapper.getInstance(mContext);
         mMapperLastState = mMapper.isEnabled();
+
         mSensorListener = SensorListener.getInstance(mContext);
         mFloorWatcher = FloorWatcher.getInstance(mContext);
         // Occurs when floor change is recognized
@@ -365,6 +390,47 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         mMainView.setElementFactory(mElementFactory);
         setUiHandlers();
+    }
+
+    private void testLocalStorage() {
+        try {
+            boolean hasPermission = (ContextCompat.checkSelfPermission(mContext,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+
+            if (!hasPermission) {
+                ActivityCompat.requestPermissions((Activity)mContext,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        PermissionsHelper.PERMISSION_WRITE_EXTERNAL_STORAGE_REQUEST_CODE);
+            }
+
+            File storageLoc = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM); //context.getExternalFilesDir(null);
+            File newDir = new File(storageLoc, mContext.getApplicationContext().getApplicationInfo().loadLabel(
+                    mContext.getApplicationContext().getPackageManager()) + "/");
+            if (newDir.isDirectory()) {
+                //direcoty exist
+            } else {
+                Log.d("MAKE DIR", newDir.mkdirs() + "");
+            }
+
+            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) return;
+            File testDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/test/");
+            final String externalStorageState = Environment.getExternalStorageState();
+            Log.d("STATE", externalStorageState);
+            if (Environment.MEDIA_MOUNTED.equals(externalStorageState)) {
+                Log.d("PATH", testDir.getAbsolutePath());
+                if (!testDir.exists()) {
+                    Log.d("MAKE DIRS", testDir.mkdirs() + "");
+                    Log.d("MAKE DIR", testDir.mkdir() + "");
+                }
+                File aFile = new File(testDir, "somefile");
+                FileOutputStream fos = new FileOutputStream(aFile);
+                fos.write("data".getBytes());
+                fos.close();
+            }
+        } catch (IOException e){
+            String msg = e.getMessage();
+            Log.d("ERROR", msg);
+        }
     }
 
     private void setUiHandlers() {
@@ -418,12 +484,12 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 // TODO: Upload changes in floor plan, radio map, tags, teleports, ...
                 if (mFloorPlan.isSketchDirty()) {
                     mFloorPlanUploadRequested = true;
-                    mMazeServer.upload(mFloorPlan, mFloorPlanOnUploadDone);
+                    mDataAggregator.upload(mFloorPlan, mFloorPlanOnUploadDone);
                 }
 
                 if (Building.current.isDirty()) {
                     mBuildingUploadRequested = true;
-                    mMazeServer.upload(Building.current, mBuildingOnUploadDone);
+                    mDataAggregator.upload(Building.current, mBuildingOnUploadDone);
                 }
 
                 // New fingerprints were added?
@@ -431,7 +497,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                     mRadioMapUploadRequested = true;
                     Floor currentFloor = Building.current.getCurrentFloor();
                     RadioMapFragment newRadioMapFragment = new RadioMapFragment(mAugmentedRadioMap, currentFloor.getId());
-                    mMazeServer.upload(newRadioMapFragment, mRadioMapOnUploadDone);
+                    mDataAggregator.upload(newRadioMapFragment, mRadioMapOnUploadDone);
                 }
             }
         });
@@ -473,28 +539,28 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mMainView.setBuildingIdProvider(new IMainView.IAsyncIdProvider() {
             @Override
             public void generateId(IFuckingSimpleGenericCallback<String> idGeneratedCallback) {
-                mMazeServer.createBuildingAsync(idGeneratedCallback);
+                mDataAggregator.createBuildingAsync(idGeneratedCallback);
             }
         });
 
         mMainView.setFloorIdProvider(new IMainView.IAsyncIdProvider() {
             @Override
             public void generateId(IFuckingSimpleGenericCallback<String> idGeneratedCallback) {
-                mMazeServer.createFloorAsync(idGeneratedCallback);
+                mDataAggregator.createFloorAsync(idGeneratedCallback);
             }
         });
         
         mMainView.setSimilarBuildingsFinder(new IMainView.IAsyncSimilarBuildingsFinder() {
             @Override
             public void findBuildings(String pattern, IFuckingSimpleGenericCallback<List<Building>> buildingsAcquiredCallback) {
-                mMazeServer.findSimilarBuildings(pattern, buildingsAcquiredCallback);
+                mDataAggregator.findSimilarBuildings(pattern, buildingsAcquiredCallback);
             }
         });
 
         mMainView.setBuildingCreator(new IMainView.IAsyncBuildingCreator() {
             @Override
             public void createBuilding(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback) {
-                mMazeServer.createBuildingAsync(name, type, address, buildingCreatedCallback);
+                mDataAggregator.createBuildingAsync(name, type, address, buildingCreatedCallback);
 
                 mFloorPlanRenderGroup = mMainView.createElementsRenderGroup(null);
                 mFloorPlanRenderGroup.setVisible(true);
@@ -521,7 +587,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mMainView.setBuildingUpdater(new IFuckingSimpleGenericCallback<Building>() {
             @Override
             public void onNotify(Building building) {
-                mMazeServer.upload(building, new IFuckingSimpleCallback() {
+                mDataAggregator.upload(building, new IFuckingSimpleCallback() {
                     @Override
                     public void onNotified() {
                         // Do nothing. Maybe indicate in UI that building has been updated on server?

@@ -6,6 +6,7 @@ import android.support.v4.util.Pair;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,10 +23,6 @@ import world.maze.util.JsonSerializer;
  */
 
 public class AssetsDataProvider implements IDataProvider {
-    public static final String FLORPLANS_SUBDIR = "/floorplans";
-    public static final String RADIOMAPS_SUBDIR = "/radiomaps";
-    public static final String BUILDINGS_SUBDIR = "/buildings";
-    public static final String JSON_EXT = ".json";
     private String[] mFloorplanIds;
     private String[] mRadioMapIds;
     private String[] mBuildingIds;
@@ -38,13 +35,13 @@ public class AssetsDataProvider implements IDataProvider {
 
     public void init() throws IOException {
         final AssetManager assets = mContext.getAssets();
-        mFloorplanIds = assets.list(FLORPLANS_SUBDIR);
-        mRadioMapIds = assets.list(RADIOMAPS_SUBDIR);
-        mBuildingIds = assets.list(BUILDINGS_SUBDIR);
+        mFloorplanIds = assets.list(DataAggregator.FLORPLANS_SUBDIR);
+        mRadioMapIds = assets.list(DataAggregator.RADIOMAPS_SUBDIR);
+        mBuildingIds = assets.list(DataAggregator.BUILDINGS_SUBDIR);
 
         mBuildingsCache.clear();
         for (String buildingId: mBuildingIds) {
-            InputStream iStream = assets.open(BUILDINGS_SUBDIR + "/" + buildingId + JSON_EXT);
+            InputStream iStream = assets.open(DataAggregator.BUILDINGS_SUBDIR + "/" + buildingId + DataAggregator.JSON_EXT);
             byte[] bytes = new byte[iStream.available()];
             iStream.read(bytes);
             String buildingJson = new String(bytes);
