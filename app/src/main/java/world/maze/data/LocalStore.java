@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -154,6 +155,9 @@ public class LocalStore implements IDataProvider, IDataKeeper {
 
     @Override
     public Collection<String> getBuildingIds() {
+        if (null == mBuildingIds) {
+            return new ArrayList<>(); // empty collection
+        }
         return Arrays.asList(mBuildingIds);
     }
 }
