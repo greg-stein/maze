@@ -6,8 +6,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 
+import world.maze.ui.IUserNotifier;
 import world.maze.util.MovingAverageScanResultsQueue;
+import world.maze.util.PermissionsHelper;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +30,9 @@ public class WifiScanner extends BroadcastReceiver {
             synchronized (mutex) {
                 if (instance == null) {
                     instance = new WifiScanner(context);
+                    if (context instanceof IUserNotifier) { // hack
+                        instance.setUserNotifier((IUserNotifier) context);
+                    }
                 }
             }
         }
@@ -38,6 +44,12 @@ public class WifiScanner extends BroadcastReceiver {
     private List<ScanResult> mLastScan;
     private WifiManager mWifiManager;
     private boolean mIsEnabled = true;
+
+    public void setUserNotifier(IUserNotifier userNotifier) {
+        mUserNotifier = userNotifier;
+    }
+
+    private IUserNotifier mUserNotifier;
 
     protected WifiScanner(Context context) {
         mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -63,15 +75,50 @@ public class WifiScanner extends BroadcastReceiver {
     public WiFiLocator.WiFiFingerprint getLastFingerprint() { return WiFiLocator.WiFiFingerprint.build(mQueue.getLastItem());}
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
         if (intent.getAction() == WifiManager.SCAN_RESULTS_AVAILABLE_ACTION) {
-            mLastScan = mWifiManager.getScanResults();
-            if (mIsEnabled) mWifiManager.startScan();
 
-            mQueue.add(mLastScan);
+            if (PermissionsHelper.coarseLocationPermissionsGranted(context)) {
+                enqueueScan();
+            } else {
+                if (PermissionsHelper.requestCoarseLocationPermission(context)) {
+                    AsyncTask<Void, Void, Boolean> permissionsWaiter = new AsyncTask<Void, Void, Boolean>() {
+                        @Override
+                        protected Boolean doInBackground(Void... voids) {
+                            return PermissionsHelper.waitForCoarseLocationPermission(context);
+                        }
 
-            emitWiFiFingerprintAvailableEvent(mQueue.getSumFingerprint(), mQueue.getCounters());
+                        // Runs on UI thread
+                        @Override
+                        protected void onPostExecute(Boolean result) {
+                            if (true == result) {
+                                enqueueScan();
+                            } else {
+                                // Permission was denied
+                                mUserNotifier.displayTragicError("Critical permission denied!",
+                                        "You have denied critical permission (WRITE_EXTERNAL_PERMISSION)." +
+                                                " This time the app will quit. Please consider giving the permission when the app starts next time.");
+                            }
+                        }
+                    };
+                    permissionsWaiter.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null);
+                } else {
+                    // Permission was disabled
+                    mUserNotifier.displayTragicError("Critical permission disabled!",
+                            "You have disabled us from asking for WRITE_EXTERNAL_PERMISSION." +
+                                    " The app will be closed now. Please consider giving it manually.");
+                }
+            }
         }
+    }
+
+    public void enqueueScan() {
+        mLastScan = mWifiManager.getScanResults();
+        if (mIsEnabled) mWifiManager.startScan();
+
+        mQueue.add(mLastScan);
+
+        emitWiFiFingerprintAvailableEvent(mQueue.getSumFingerprint(), mQueue.getCounters());
     }
 
     public interface IFingerprintAvailableListener {

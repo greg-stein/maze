@@ -483,7 +483,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
     private void getCurrentAddress() {
         mLocationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-        if (PermissionsHelper.locationPermissionsGranted(getContext())) {
+        if (PermissionsHelper.fineLocationPermissionsGranted(getContext())) {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, mLocationListener);
         }
     }

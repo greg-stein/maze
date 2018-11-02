@@ -2,15 +2,24 @@ package world.maze.core;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PointF;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
 import android.util.Log;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import world.maze.AppSettings;
 import world.maze.core.SensorListener.IDeviceRotationListener;
@@ -33,14 +42,9 @@ import world.maze.util.IFuckingSimpleCallback;
 import world.maze.util.IFuckingSimpleGenericCallback;
 import world.maze.util.PermissionsHelper;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static world.maze.core.Locator.*;
+import static world.maze.core.Locator.ILocationUpdatedListener;
+import static world.maze.core.Locator.getInstance;
 
 /**
  * Created by Greg Stein on 10/31/2017.
@@ -351,27 +355,53 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     public void onCreate() {
         AppSettings.init(mContext);
 
-        // TODO: instead of just killing the app, consider reloading activity when the permission is granted.
-        if (!PermissionsHelper.requestPermissions(mContext)) return;
+//        PermissionsHelper.requestPermissions2(mContext);
 //        testLocalStorage();
 
         if (mStepCalibratorEnabled) {
-            mStepCalibratorService = new StepCalibratorService(mContext);
-            mStepCalibratorServiceIntent = new Intent(mContext, mStepCalibratorService.getClass());
+            if (!PermissionsHelper.fineLocationPermissionsGranted(mContext)) {
+                PermissionsHelper.requestFineLocationPermission(mContext);
+                if (PermissionsHelper.waitForFineLocationPermission(mContext)) {
+                    mStepCalibratorService = new StepCalibratorService(mContext);
+                    mStepCalibratorServiceIntent = new Intent(mContext, mStepCalibratorService.getClass());
 
-            if (!StepCalibratorService.isRunning(mContext)) {
-                mContext.startService(mStepCalibratorServiceIntent);
+                    if (!StepCalibratorService.isRunning(mContext)) {
+                        mContext.startService(mStepCalibratorServiceIntent);
+                    }
+                }
             }
         }
 
-        try {
-            mDataAggregator = DataAggregator.getInstance(mContext);
-            final LocalStore localStore = new LocalStore();
-            localStore.init(mContext);
-            mDataAggregator.addDataProvider(localStore);
-            mDataAggregator.setDataKeeper(localStore);
-        } catch (IOException e) {
-            mMainView.displayError("Failed to initialize local store (possibly no access to external storage).", true);
+        if (PermissionsHelper.externalStoragePermissionGranted(mContext)) {
+            initDataAggregator();
+        } else {
+            if (PermissionsHelper.requestStoragePermission(mContext)) {
+                AsyncTask<Void, Void, Boolean> permissionsWaiter = new AsyncTask<Void, Void, Boolean>() {
+                    @Override
+                    protected Boolean doInBackground(Void... voids) {
+                        return PermissionsHelper.waitForStoragePermission(mContext);
+                    }
+
+                    // Runs on UI thread
+                    @Override
+                    protected void onPostExecute(Boolean result) {
+                        if (true == result) {
+                            initDataAggregator();
+                        } else {
+                            // Permission was denied
+                            mMainView.displayTragicError("Critical permission denied!",
+                                    "You have denied critical permission (WRITE_EXTERNAL_PERMISSION)." +
+                                            " This time the app will quit. Please consider giving the permission when the app starts next time.");
+                        }
+                    }
+                };
+                permissionsWaiter.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null);
+            } else {
+                // Permission was disabled
+                mMainView.displayTragicError("Critical permission disabled!",
+                        "You have disabled us from asking for WRITE_EXTERNAL_PERMISSION." +
+                                " The app will be closed now. Please consider giving it manually.");
+            }
         }
 
         if (mWifiScanner == null) {
@@ -390,6 +420,18 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         mMainView.setElementFactory(mElementFactory);
         setUiHandlers();
+    }
+
+    public void initDataAggregator() {
+        try {
+            mDataAggregator = DataAggregator.getInstance(mContext);
+            final LocalStore localStore = new LocalStore();
+            localStore.init(mContext);
+            mDataAggregator.addDataProvider(localStore);
+            mDataAggregator.setDataKeeper(localStore);
+        } catch (IOException e) {
+            mMainView.displayError("Failed to initialize local store (possibly no access to external storage).", true);
+        }
     }
 
     private void testLocalStorage() {
@@ -599,9 +641,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
     @Override
     public void onResume() {
-        if (PermissionsHelper.locationPermissionsGranted(mContext)) {
-            mWifiScanner.onResume(mContext);
-        }
+        mWifiScanner.onResume(mContext);
         mLocator.addLocationUpdatedListener(this);
         mSensorListener.addDeviceRotationListener(this);
         mMapper.setOnNewFingerprintListener(this);
@@ -611,9 +651,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     @Override
     public void onPause() {
         // to stop the listener and save battery
-        if (PermissionsHelper.locationPermissionsGranted(mContext)) {
-            mWifiScanner.onPause(mContext);
-        }
+        mWifiScanner.onPause(mContext);
 
         mLocator.removeLocationUpdatedListener(this);
         mSensorListener.removeDeviceRotationListener(this);
@@ -624,11 +662,15 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     @Override
     public void onDestroy() {
         if (mStepCalibratorEnabled) {
+            if (!PermissionsHelper.fineLocationPermissionsGranted(mContext)) {
+                PermissionsHelper.requestFineLocationPermission(mContext);
+                if (!PermissionsHelper.waitForFineLocationPermission(mContext)) {
+                    mMainView.displayError("Maze will exit now", true);
+                }
+            }
             // In case the permissions were granted previous time the app was running, we can
             // start the service. The service will start by stopping it :) Because this forces restart.
-            if (PermissionsHelper.permissionsWereAlreadyGranted) {
-                mContext.stopService(mStepCalibratorServiceIntent); // This will resurrect the service
-            }
+            mContext.stopService(mStepCalibratorServiceIntent); // This will resurrect the service
         }
         mWifiScanner.removeFingerprintAvailableListener(mFirstFingerprintAvailableListener);
         if (mLocator != null) {

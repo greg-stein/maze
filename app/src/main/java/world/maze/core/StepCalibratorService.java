@@ -102,7 +102,7 @@ public class StepCalibratorService extends Service implements LocationListener, 
         mSensorListener.addStepDetectedListener(this);
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        mLocationPermissionsGranted = PermissionsHelper.locationPermissionsGranted(this);
+        mLocationPermissionsGranted = PermissionsHelper.fineLocationPermissionsGranted(this);
         if (!mLocationPermissionsGranted || calibrationCriteriaSatisfied()) {
             // Kill this service as without GPS it is impossible to calibrate user's step length
             stopSelf();
