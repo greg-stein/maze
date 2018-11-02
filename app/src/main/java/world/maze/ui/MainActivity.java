@@ -119,9 +119,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (PermissionsHelper.onRequestPermissionsResult(this, requestCode, grantResults)) {
-            this.finish();
-        }
+        PermissionsHelper.onRequestPermissionsResult(this, requestCode, permissions, grantResults);
     }
 
     @Override
@@ -831,5 +829,20 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     public void displayError(String s, boolean exit) {
         Toast.makeText(this, s, Toast.LENGTH_LONG);
         if (exit) finishAffinity();
+    }
+
+    @Override
+    public void displayTragicError(String title, String message) {
+        new android.app.AlertDialog.Builder(this).
+                setCancelable(false).
+                setTitle(title).
+                setMessage(message).
+                setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        finishAffinity();
+                    }
+                }).
+                show();
     }
 }

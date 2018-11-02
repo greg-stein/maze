@@ -18,7 +18,7 @@ import java.util.List;
  * Created by Greg Stein on 10/31/2017.
  */
 
-public interface IMainView {
+public interface IMainView extends world.maze.ui.IUserNotifier {
     void init();
 
     ElementsRenderGroup createElementsRenderGroup(List<? extends IFloorPlanPrimitive> elements);
@@ -66,8 +66,6 @@ public interface IMainView {
     void setUploadButtonClickListener(IFuckingSimpleCallback listener);
 
     void clearRenderedElements();
-
-    void displayError(String s, boolean exit);
 
     enum UiMode { MAP_VIEW_MODE, MAP_EDIT_MODE}
 
