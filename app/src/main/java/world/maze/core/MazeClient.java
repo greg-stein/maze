@@ -355,54 +355,29 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     public void onCreate() {
         AppSettings.init(mContext);
 
-//        PermissionsHelper.requestPermissions2(mContext);
 //        testLocalStorage();
 
         if (mStepCalibratorEnabled) {
-            if (!PermissionsHelper.fineLocationPermissionsGranted(mContext)) {
-                PermissionsHelper.requestFineLocationPermission(mContext);
-                if (PermissionsHelper.waitForFineLocationPermission(mContext)) {
-                    mStepCalibratorService = new StepCalibratorService(mContext);
-                    mStepCalibratorServiceIntent = new Intent(mContext, mStepCalibratorService.getClass());
+            PermissionsHelper.handlePermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION, true,
+                    "Please grant us fine location permission so we can calibrate our methods for indoor positioning.", mMainView, new IFuckingSimpleCallback() {
+                        @Override
+                        public void onNotified() {
+                            mStepCalibratorService = new StepCalibratorService(mContext);
+                            mStepCalibratorServiceIntent = new Intent(mContext, mStepCalibratorService.getClass());
 
-                    if (!StepCalibratorService.isRunning(mContext)) {
-                        mContext.startService(mStepCalibratorServiceIntent);
-                    }
-                }
-            }
-        }
-
-        if (PermissionsHelper.externalStoragePermissionGranted(mContext)) {
-            initDataAggregator();
-        } else {
-            if (PermissionsHelper.requestStoragePermission(mContext)) {
-                AsyncTask<Void, Void, Boolean> permissionsWaiter = new AsyncTask<Void, Void, Boolean>() {
-                    @Override
-                    protected Boolean doInBackground(Void... voids) {
-                        return PermissionsHelper.waitForStoragePermission(mContext);
-                    }
-
-                    // Runs on UI thread
-                    @Override
-                    protected void onPostExecute(Boolean result) {
-                        if (true == result) {
-                            initDataAggregator();
-                        } else {
-                            // Permission was denied
-                            mMainView.displayTragicError("Critical permission denied!",
-                                    "You have denied critical permission (WRITE_EXTERNAL_PERMISSION)." +
-                                            " This time the app will quit. Please consider giving the permission when the app starts next time.");
+                            if (!StepCalibratorService.isRunning(mContext)) {
+                                mContext.startService(mStepCalibratorServiceIntent);
+                            }
                         }
-                    }
-                };
-                permissionsWaiter.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null);
-            } else {
-                // Permission was disabled
-                mMainView.displayTragicError("Critical permission disabled!",
-                        "You have disabled us from asking for WRITE_EXTERNAL_PERMISSION." +
-                                " The app will be closed now. Please consider giving it manually.");
-            }
+                    });
         }
+
+        PermissionsHelper.handlePermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE, true,
+                "Please grant us access to external storage. We well store there newly created maps and data.", mMainView, new IFuckingSimpleCallback() {
+                    @Override
+                    public void onNotified() {
+                        initDataAggregator();                    }
+                });
 
         if (mWifiScanner == null) {
             mWifiScanner = WifiScanner.getInstance(mContext);
@@ -436,15 +411,6 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
     private void testLocalStorage() {
         try {
-            boolean hasPermission = (ContextCompat.checkSelfPermission(mContext,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
-
-            if (!hasPermission) {
-                ActivityCompat.requestPermissions((Activity)mContext,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        PermissionsHelper.PERMISSION_WRITE_EXTERNAL_STORAGE_REQUEST_CODE);
-            }
-
             File storageLoc = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM); //context.getExternalFilesDir(null);
             File newDir = new File(storageLoc, mContext.getApplicationContext().getApplicationInfo().loadLabel(
                     mContext.getApplicationContext().getPackageManager()) + "/");
@@ -662,15 +628,11 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     @Override
     public void onDestroy() {
         if (mStepCalibratorEnabled) {
-            if (!PermissionsHelper.fineLocationPermissionsGranted(mContext)) {
-                PermissionsHelper.requestFineLocationPermission(mContext);
-                if (!PermissionsHelper.waitForFineLocationPermission(mContext)) {
-                    mMainView.displayError("Maze will exit now", true);
-                }
+            if (StepCalibratorService.isRunning(mContext)) {
+                // In case the permissions were granted previous time the app was running, we can
+                // start the service. The service will start by stopping it :) Because this forces restart.
+                mContext.stopService(mStepCalibratorServiceIntent); // This will resurrect the service
             }
-            // In case the permissions were granted previous time the app was running, we can
-            // start the service. The service will start by stopping it :) Because this forces restart.
-            mContext.stopService(mStepCalibratorServiceIntent); // This will resurrect the service
         }
         mWifiScanner.removeFingerprintAvailableListener(mFirstFingerprintAvailableListener);
         if (mLocator != null) {

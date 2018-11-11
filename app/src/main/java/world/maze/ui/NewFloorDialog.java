@@ -1,5 +1,6 @@
 package world.maze.ui;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -40,6 +41,7 @@ import world.maze.core.IFloorChangedHandler;
 import world.maze.core.IMainView;
 import world.maze.floorplan.Building;
 import world.maze.floorplan.Floor;
+import world.maze.util.IFuckingSimpleCallback;
 import world.maze.util.IFuckingSimpleGenericCallback;
 import world.maze.util.PermissionsHelper;
 
@@ -246,7 +248,14 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
         btnGuessAddress.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getCurrentAddress();
+                PermissionsHelper.handlePermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION, false,
+                        "Please grant Fine Location permission, so we can find out the address of the building automatically.",
+                        (MainActivity) getOwnerActivity(), new IFuckingSimpleCallback() {
+                            @Override
+                            public void onNotified() {
+                                getCurrentAddress();
+                            }
+                        });
             }
         });
 
@@ -483,9 +492,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
     private void getCurrentAddress() {
         mLocationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-        if (PermissionsHelper.fineLocationPermissionsGranted(getContext())) {
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, mLocationListener);
-        }
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, mLocationListener);
     }
 
     public void setFloorChangedHandler(IFloorChangedHandler floorChangedHandler) {

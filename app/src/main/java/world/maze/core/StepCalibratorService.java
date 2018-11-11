@@ -1,10 +1,12 @@
 package world.maze.core;
 
+import android.Manifest;
 import android.app.ActivityManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -12,6 +14,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 
 import world.maze.util.PermissionsHelper;
 
@@ -28,7 +31,7 @@ public class StepCalibratorService extends Service implements LocationListener, 
     public static final int CALIBRATION_DISTANCE = 1000; // m
     private static final float SHORTEST_POSSIBLE_STEP = 0.58f; // 58cm - 2% of population has shorter stride
     private static final float LONGEST_POSSIBLE_STEP = 0.94f;  // 94cm - 2% of population has longer stride
-//    http://n.saunier.free.fr/saunier/stock/saunier11pedestrian-stride.pdf
+    //    http://n.saunier.free.fr/saunier/stock/saunier11pedestrian-stride.pdf
 //    http://homepage.stat.uiowa.edu/~mbognar/applets/normal.html
     public static final double GPS_ACCURACY = 5.0; // meters. Minimum acceptable accuracy
     public static final String STR_CALIBRATOR_WALKED_DISTANCE = "calibratorWalkedDistance";
@@ -86,7 +89,9 @@ public class StepCalibratorService extends Service implements LocationListener, 
         return false;
     }
 
-    public StepCalibratorService() {}
+    public StepCalibratorService() {
+    }
+
     public StepCalibratorService(Context applicationContext) {
         super();
     }
@@ -102,15 +107,16 @@ public class StepCalibratorService extends Service implements LocationListener, 
         mSensorListener.addStepDetectedListener(this);
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        mLocationPermissionsGranted = PermissionsHelper.fineLocationPermissionsGranted(this);
-        if (!mLocationPermissionsGranted || calibrationCriteriaSatisfied()) {
+        if (calibrationCriteriaSatisfied()) {
             // Kill this service as without GPS it is impossible to calibrate user's step length
             stopSelf();
             return;
         }
 
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                GPS_MIN_TIME, GPS_MIN_DISTANCE, this);
+        if (PermissionsHelper.hasPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                    GPS_MIN_TIME, GPS_MIN_DISTANCE, this);
+        }
     }
 
     @Override

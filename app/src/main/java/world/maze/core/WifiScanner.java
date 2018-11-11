@@ -1,5 +1,6 @@
 package world.maze.core;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 
 import world.maze.ui.IUserNotifier;
+import world.maze.util.IFuckingSimpleCallback;
 import world.maze.util.MovingAverageScanResultsQueue;
 import world.maze.util.PermissionsHelper;
 
@@ -25,6 +27,8 @@ public class WifiScanner extends BroadcastReceiver {
 
     private static WifiScanner instance = null;
     private static final Object mutex = new Object();
+    private boolean mAskedForCoarseLocationPermission;
+
     public static WifiScanner getInstance(Context context) {
         if (instance == null) {
             synchronized (mutex) {
@@ -78,36 +82,16 @@ public class WifiScanner extends BroadcastReceiver {
     public void onReceive(final Context context, Intent intent) {
         if (intent.getAction() == WifiManager.SCAN_RESULTS_AVAILABLE_ACTION) {
 
-            if (PermissionsHelper.coarseLocationPermissionsGranted(context)) {
-                enqueueScan();
-            } else {
-                if (PermissionsHelper.requestCoarseLocationPermission(context)) {
-                    AsyncTask<Void, Void, Boolean> permissionsWaiter = new AsyncTask<Void, Void, Boolean>() {
-                        @Override
-                        protected Boolean doInBackground(Void... voids) {
-                            return PermissionsHelper.waitForCoarseLocationPermission(context);
-                        }
-
-                        // Runs on UI thread
-                        @Override
-                        protected void onPostExecute(Boolean result) {
-                            if (true == result) {
+            if (!mAskedForCoarseLocationPermission) {
+                mAskedForCoarseLocationPermission = true;
+                PermissionsHelper.handlePermission(context, Manifest.permission.ACCESS_COARSE_LOCATION, true,
+                        "Please grant us coarse location permission to scan WiFi points for our indoor location method.", mUserNotifier, new IFuckingSimpleCallback() {
+                            @Override
+                            public void onNotified() {
+                                mAskedForCoarseLocationPermission = false;
                                 enqueueScan();
-                            } else {
-                                // Permission was denied
-                                mUserNotifier.displayTragicError("Critical permission denied!",
-                                        "You have denied critical permission (WRITE_EXTERNAL_PERMISSION)." +
-                                                " This time the app will quit. Please consider giving the permission when the app starts next time.");
                             }
-                        }
-                    };
-                    permissionsWaiter.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null);
-                } else {
-                    // Permission was disabled
-                    mUserNotifier.displayTragicError("Critical permission disabled!",
-                            "You have disabled us from asking for WRITE_EXTERNAL_PERMISSION." +
-                                    " The app will be closed now. Please consider giving it manually.");
-                }
+                        });
             }
         }
     }
