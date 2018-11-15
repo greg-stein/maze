@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static world.maze.data.DataAggregator.JSON_EXT;
+
 /**
  * Created by Greg Stein on 8/11/2018.
  */
@@ -52,22 +54,31 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         if (Environment.MEDIA_MOUNTED.equals(externalStorageState)) {
             final String dataRoot = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/" + DATA_ROOT + "/";
             mFloorplansDir = new File(dataRoot + DataAggregator.FLORPLANS_SUBDIR);
-            mFloorplanIds = Lists.newArrayList(listInitDirectory(mFloorplansDir));
+            mFloorplanIds = listInitDirectory(mFloorplansDir);
             mRadiomapsDir = new File(dataRoot + DataAggregator.RADIOMAPS_SUBDIR);
-            mRadioMapIds = Lists.newArrayList(listInitDirectory(mRadiomapsDir));
+            mRadioMapIds = listInitDirectory(mRadiomapsDir);
             mBuildingsDir = new File(dataRoot + DataAggregator.BUILDINGS_SUBDIR);
-            mBuildingIds = Lists.newArrayList(listInitDirectory(mBuildingsDir));
+            mBuildingIds = listInitDirectory(mBuildingsDir);
 
             mContext = context;
         }
     }
 
-    private static String[] listInitDirectory(File dir) throws IOException {
+    private static  List<String> listInitDirectory(File dir) throws IOException {
+        List<String> buildingIds = new ArrayList<>();
+
         if (!dir.exists()) {
             if (!dir.mkdirs()) throw new IOException("Failed to create directory path.");
-            return new String[0];
+            return buildingIds;
         }
-        return dir.list();
+
+        String[] dirContents = dir.list();
+        for (String fileName : dirContents) {
+            // extract filename without extension
+            buildingIds.add(fileName.substring(0, fileName.lastIndexOf(JSON_EXT)));
+        }
+
+        return buildingIds;
     }
 
     public static void save(Context context, String data, String directory, String filename) {
@@ -132,7 +143,7 @@ public class LocalStore implements IDataProvider, IDataKeeper {
 
     private void saveBuilding(Building building) {
         String json = JsonSerializer.serialize(building);
-        save(mContext, json, mBuildingsDir.getAbsolutePath(), building.getId() + ".json");
+        save(mContext, json, mBuildingsDir.getAbsolutePath(), building.getId() + JSON_EXT);
         mBuildingIds.add(building.getId());
     }
 
