@@ -589,7 +589,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mRadioMapRenderGroup.setVisible(false);
 
                 mFloorPlan = FloorPlan.build();
-          }
+                mLocator.setFloorPlan(mFloorPlan);
+            }
         });
 
         mMainView.setBuildingUpdater(new IFuckingSimpleGenericCallback<Building>() {
