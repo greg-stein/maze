@@ -61,8 +61,8 @@ public class PermissionsHelper {
     public static void handlePermission(Context context, final String permission, final boolean isCritical, String rationale,
                                         final IUserNotifier userNotifier, final IFuckingSimpleCallback onPermissionGranted) {
 
-        if (!(context instanceof Activity)) return;
-        final Activity activity = (Activity) context;
+        final Activity activity = CommonHelper.extractActivity(context);
+        if (null == activity) return;
 
         if (ActivityCompat.checkSelfPermission(context, permission) == PERMISSION_GRANTED) {
             onPermissionGranted.onNotified();
