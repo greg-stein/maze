@@ -687,8 +687,9 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         // Clean up all floor-related data like radio map, floor plan, tags, ...
         mMainView.clearRenderedElements();
-        mFloorPlan.clear();
-        mRadioMapFragment.clear();
+
+        if (mFloorPlan != null) mFloorPlan.clear();
+        if (mRadioMapFragment != null) mRadioMapFragment.clear();
 
         // Load new data from newFloor, render
         WiFiLocator.WiFiFingerprint lastFingerprint = mWifiScanner.getLastFingerprint();
