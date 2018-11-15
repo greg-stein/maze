@@ -16,7 +16,7 @@ import world.maze.util.IFuckingSimpleGenericCallback;
 public interface IDataKeeper {
     void createBuildingAsync(IFuckingSimpleGenericCallback<String> onBuildingCreated);
     void createBuildingAsync(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback);
-    void createFloorAsync(IFuckingSimpleGenericCallback<String> onFloorCreated);
+    void createFloorAsync(String buildingId, IFuckingSimpleGenericCallback<String> onFloorCreated);
     void upload(Building building, IFuckingSimpleCallback onDone);
     void upload(FloorPlan floorPlan, IFuckingSimpleCallback onDone);
     void upload(RadioMapFragment radioMap, IFuckingSimpleCallback onDone);

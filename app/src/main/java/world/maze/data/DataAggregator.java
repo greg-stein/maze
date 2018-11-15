@@ -80,8 +80,8 @@ public class DataAggregator implements IDataProvider, IDataKeeper {
     }
 
     @Override
-    public void createFloorAsync(IFuckingSimpleGenericCallback<String> onFloorCreated) {
-        mDataKeeper.createFloorAsync(onFloorCreated);
+    public void createFloorAsync(String buildingId, IFuckingSimpleGenericCallback<String> onFloorCreated) {
+        mDataKeeper.createFloorAsync(buildingId, onFloorCreated);
     }
 
     @Override

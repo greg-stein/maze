@@ -554,7 +554,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mMainView.setFloorIdProvider(new IMainView.IAsyncIdProvider() {
             @Override
             public void generateId(IFuckingSimpleGenericCallback<String> idGeneratedCallback) {
-                mDataAggregator.createFloorAsync(idGeneratedCallback);
+                mDataAggregator.createFloorAsync(Building.current.getId(), idGeneratedCallback);
             }
         });
         

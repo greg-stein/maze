@@ -86,7 +86,7 @@ public class MazeServer  implements IDataProvider, IDataKeeper {
     }
 
     @Override
-    public void createFloorAsync(IFuckingSimpleGenericCallback<String> onFloorCreated) {
+    public void createFloorAsync(String buildingId, IFuckingSimpleGenericCallback<String> onFloorCreated) {
 
     }
 
