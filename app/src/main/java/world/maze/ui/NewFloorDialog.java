@@ -1,6 +1,7 @@
 package world.maze.ui;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -90,6 +91,7 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
     public NewFloorDialog(@NonNull Context context) {
         super(context);
+        setOwnerActivity((Activity) context);
     }
 
     @Override
