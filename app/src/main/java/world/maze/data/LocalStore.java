@@ -1,9 +1,12 @@
 package world.maze.data;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
 import android.support.v4.util.Pair;
 import android.widget.Toast;
+
+import com.google.common.collect.Lists;
 
 import world.maze.core.WiFiLocator;
 import world.maze.floorplan.Building;
@@ -11,6 +14,7 @@ import world.maze.floorplan.FloorPlan;
 import world.maze.floorplan.RadioMapFragment;
 import world.maze.util.IFuckingSimpleCallback;
 import world.maze.util.IFuckingSimpleGenericCallback;
+import world.maze.util.JsonSerializer;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,7 +25,9 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Greg Stein on 8/11/2018.
@@ -31,24 +37,28 @@ public class LocalStore implements IDataProvider, IDataKeeper {
 
     public static final String DATA_ROOT = "maze";
 
-    private String[] mFloorplanIds;
-    private String[] mRadioMapIds;
-    private String[] mBuildingIds;
+    private List<String> mFloorplanIds;
+    private List<String> mRadioMapIds;
+    private List<String> mBuildingIds;
 
     private File mFloorplansDir;
     private File mRadiomapsDir;
     private File mBuildingsDir;
+
+    private Context mContext;
 
     public void init(Context context) throws IOException {
         final String externalStorageState = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(externalStorageState)) {
             final String dataRoot = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + "/" + DATA_ROOT + "/";
             mFloorplansDir = new File(dataRoot + DataAggregator.FLORPLANS_SUBDIR);
-            mFloorplanIds = listInitDirectory(mFloorplansDir);
+            mFloorplanIds = Lists.newArrayList(listInitDirectory(mFloorplansDir));
             mRadiomapsDir = new File(dataRoot + DataAggregator.RADIOMAPS_SUBDIR);
-            mRadioMapIds = listInitDirectory(mRadiomapsDir);
+            mRadioMapIds = Lists.newArrayList(listInitDirectory(mRadiomapsDir));
             mBuildingsDir = new File(dataRoot + DataAggregator.BUILDINGS_SUBDIR);
-            mBuildingIds = listInitDirectory(mBuildingsDir);
+            mBuildingIds = Lists.newArrayList(listInitDirectory(mBuildingsDir));
+
+            mContext = context;
         }
     }
 
@@ -105,12 +115,25 @@ public class LocalStore implements IDataProvider, IDataKeeper {
 
     @Override
     public void createBuildingAsync(IFuckingSimpleGenericCallback<String> onBuildingCreated) {
-
+        String buildingId = UUID.randomUUID().toString();
+        Building building = new Building();
+        building.setID(buildingId);
+        saveBuilding(building);
+        onBuildingCreated.onNotify(buildingId);
     }
 
     @Override
     public void createBuildingAsync(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback) {
+        String buildingId = UUID.randomUUID().toString();
+        Building building = new Building(name, type, address, buildingId);
+        saveBuilding(building);
+        buildingCreatedCallback.onNotify(building);
+    }
 
+    private void saveBuilding(Building building) {
+        String json = JsonSerializer.serialize(building);
+        save(mContext, json, mBuildingsDir.getAbsolutePath(), building.getId() + ".json");
+        mBuildingIds.add(building.getId());
     }
 
     @Override
@@ -158,6 +181,6 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         if (null == mBuildingIds) {
             return new ArrayList<>(); // empty collection
         }
-        return Arrays.asList(mBuildingIds);
+        return Collections.unmodifiableList(mBuildingIds);
     }
 }
