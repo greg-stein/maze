@@ -149,7 +149,8 @@ public class LocalStore implements IDataProvider, IDataKeeper {
 
     @Override
     public void createFloorAsync(String buildingId, IFuckingSimpleGenericCallback<String> onFloorCreated) {
-
+        String floorId = UUID.randomUUID().toString();
+        onFloorCreated.onNotify(floorId);
     }
 
     @Override
