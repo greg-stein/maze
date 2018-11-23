@@ -144,6 +144,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mMainView.centerMapView(mFloorPlan.getCenter());
                 // Locator uses floor plan for collision detection
                 mLocator.setFloorPlan(mFloorPlan);
+
             }
         }
 
@@ -527,20 +528,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mMainView.setUiModeChangedListener(new IFuckingSimpleGenericCallback<IMainView.UiMode>() {
             @Override
             public void onNotify(IMainView.UiMode uiMode) {
-                if (mRadioMapRenderGroup != null) {
-                    switch (uiMode) {
-                        case MAP_VIEW_MODE:
-                            mRadioMapRenderGroup.setVisible(false);
-                            mTeleportsElementsRenderGroup.setVisible(false);
-                            mTeleportsLabelsRenderGroup.setVisible(false);
-                            break;
-                        case MAP_EDIT_MODE:
-                            mRadioMapRenderGroup.setVisible(true);
-                            mTeleportsElementsRenderGroup.setVisible(true);
-                            mTeleportsLabelsRenderGroup.setVisible(true);
-                            break;
-                    }
-                }
+                updateRenderGroupsVisibility(uiMode);
             }
         });
 
@@ -580,13 +568,11 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
                 // These groups are visible in Edit Mode only
                 mTeleportsLabelsRenderGroup = mMainView.createTextRenderGroup(null);
-                mTeleportsLabelsRenderGroup.setVisible(false);
                 mTeleportsElementsRenderGroup = mMainView.createElementsRenderGroup(null);
-                mTeleportsElementsRenderGroup.setVisible(false);
                 mTeleportsElementsRenderGroup.setChangedListener(mTeleportsChangedListener);
-
                 mRadioMapRenderGroup = mMainView.createElementsRenderGroup(null);
-                mRadioMapRenderGroup.setVisible(false);
+                mAugmentedRadioMapRenderGroup = mMainView.createElementsRenderGroup(null);
+                updateRenderGroupsVisibility(mMainView.getUiMode());
 
                 mFloorPlan = FloorPlan.build();
                 mLocator.setFloorPlan(mFloorPlan);
@@ -604,6 +590,23 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 });
             }
         });
+    }
+
+    public void updateRenderGroupsVisibility(IMainView.UiMode uiMode) {
+        switch (uiMode) {
+            case MAP_VIEW_MODE:
+                if (mRadioMapRenderGroup != null) mRadioMapRenderGroup.setVisible(false);
+                if (mRadioMapRenderGroup != null) mAugmentedRadioMapRenderGroup.setVisible(false);
+                if (mTeleportsElementsRenderGroup != null) mTeleportsElementsRenderGroup.setVisible(false);
+                if (mTeleportsLabelsRenderGroup!= null) mTeleportsLabelsRenderGroup.setVisible(false);
+                break;
+            case MAP_EDIT_MODE:
+                if (mRadioMapRenderGroup != null) mRadioMapRenderGroup.setVisible(true);
+                if (mRadioMapRenderGroup != null) mAugmentedRadioMapRenderGroup.setVisible(true);
+                if (mTeleportsElementsRenderGroup != null) mTeleportsElementsRenderGroup.setVisible(true);
+                if (mTeleportsLabelsRenderGroup!= null) mTeleportsLabelsRenderGroup.setVisible(true);
+                break;
+        }
     }
 
     @Override
@@ -678,8 +681,6 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     @Override
     public void onFloorChanged(Floor newFloor) {
         final Floor currentFloor = Building.current.getCurrentFloor();
-
-        // If on the same floor - it wasn't really changed
         if (currentFloor != null && currentFloor.getId().equals(newFloor.getId())) return;
 
         // NOTE: All changes that were not uploaded to the server and saved are discarded!
