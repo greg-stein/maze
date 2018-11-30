@@ -195,4 +195,10 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         }
         return Collections.unmodifiableList(mBuildingIds);
     }
+
+    @Override
+    public boolean hasId(String id) {
+        // REMARK: general id hold by this store. mFloorplanIds and mRadioMapIds has same ids.
+        return mBuildingIds.contains(id) || mFloorplanIds.contains(id) || mRadioMapIds.contains(id);
+    }
 }

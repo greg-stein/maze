@@ -184,4 +184,13 @@ public class DataAggregator implements IDataProvider, IDataKeeper {
     public Iterable<String> getBuildingIds() {
         return mBuildingToDataProviderMap.keySet();
     }
+
+    @Override
+    public boolean hasId(String id) {
+        for (IDataProvider dataProvider : mDataProviders) {
+            if (dataProvider.hasId(id)) return true;
+        }
+
+        return false;
+    }
 }

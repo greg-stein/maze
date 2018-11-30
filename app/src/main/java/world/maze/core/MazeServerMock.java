@@ -206,4 +206,9 @@ public class MazeServerMock implements IDataProvider, IDataKeeper {
         return null;
     }
 
+    @Override
+    public boolean hasId(String id) {
+        return false;
+    }
+
 }

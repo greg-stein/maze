@@ -135,6 +135,11 @@ public class MazeServer  implements IDataProvider, IDataKeeper {
         return null;
     }
 
+    @Override
+    public boolean hasId(String id) {
+        return false;
+    }
+
     public interface AsyncResponse {
         void processFinish(String jsonString);
     }

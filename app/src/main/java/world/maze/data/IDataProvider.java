@@ -29,4 +29,6 @@ public interface IDataProvider {
     void downloadRadioMapTileAsync(String floorId, WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<RadioMapFragment> onRadioTileReceived);
 
     Iterable<String> getBuildingIds(); // Read only collection of buildings that this provider holds
+
+    boolean hasId(String id);
 }

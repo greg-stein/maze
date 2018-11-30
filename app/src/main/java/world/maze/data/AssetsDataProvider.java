@@ -79,4 +79,9 @@ public class AssetsDataProvider implements IDataProvider {
     public Iterable<String> getBuildingIds() {
         return Arrays.asList(mBuildingIds);
     }
+
+    @Override
+    public boolean hasId(String id) {
+        return false; // TODO
+    }
 }
