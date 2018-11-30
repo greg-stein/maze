@@ -144,7 +144,6 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mMainView.centerMapView(mFloorPlan.getCenter());
                 // Locator uses floor plan for collision detection
                 mLocator.setFloorPlan(mFloorPlan);
-
             }
         }
 
@@ -496,6 +495,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                     mDataAggregator.upload(mFloorPlan, mFloorPlanOnUploadDone);
                 }
 
+
                 if (Building.current.isDirty()) {
                     mBuildingUploadRequested = true;
                     mDataAggregator.upload(Building.current, mBuildingOnUploadDone);
@@ -574,7 +574,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mAugmentedRadioMapRenderGroup = mMainView.createElementsRenderGroup(null);
                 updateRenderGroupsVisibility(mMainView.getUiMode());
 
-                mFloorPlan = FloorPlan.build();
+                mFloorPlan = FloorPlan.build(); // BUG
                 mLocator.setFloorPlan(mFloorPlan);
             }
         });
@@ -682,9 +682,6 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     public void onFloorChanged(Floor newFloor) {
         final Floor currentFloor = Building.current.getCurrentFloor();
         if (currentFloor != null && currentFloor.getId().equals(newFloor.getId())) return;
-
-        // NOTE: All changes that were not uploaded to the server and saved are discarded!
-        Building.current.setCurrentFloor(newFloor);
 
         // Clean up all floor-related data like radio map, floor plan, tags, ...
         mMainView.clearRenderedElements();
