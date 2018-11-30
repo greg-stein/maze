@@ -75,8 +75,25 @@ public class DataAggregator implements IDataProvider, IDataKeeper {
     }
 
     @Override
-    public void createBuildingAsync(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback) {
-        mDataKeeper.createBuildingAsync(name, type, address, buildingCreatedCallback);
+    public void createBuildingAsync(String name, String type, String address, final IFuckingSimpleGenericCallback<Building> buildingCreatedCallback) {
+        mDataKeeper.createBuildingAsync(name, type, address, new IFuckingSimpleGenericCallback<Building>() {
+            @Override
+            public void onNotify(Building building) {
+                // If data keeper is also data provider, it will hold the building
+                if (mDataKeeper instanceof IDataProvider) {
+                    mCurrentDataProvider = (IDataProvider) mDataKeeper;
+                } else {
+                    // Find who holds newly created building
+                    for (IDataProvider dataProvider : mDataProviders) {
+                        if (dataProvider.hasId(building.getId())) {
+                            mCurrentDataProvider = dataProvider;
+                            break;
+                        }
+                    }
+                }
+                buildingCreatedCallback.onNotify(building);
+            }
+        });
     }
 
     @Override
