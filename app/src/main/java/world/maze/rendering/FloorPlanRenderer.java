@@ -531,9 +531,11 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
 
     public void clearSketch() {
         for (IRenderGroup group : mRenderGroups) {
+            group.setVisible(false);
             group.clear();
             group.glDeallocate();
         }
+        mRenderGroups.clear();
     }
 
     // TODO: This method should be moved elsewhere (maybe into controller)
@@ -648,9 +650,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
 
         return null;
-    }
-
-    public void clearRenderedElements() {
     }
 
     /**

@@ -822,7 +822,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
 
     @Override
     public void clearRenderedElements() {
-        uiFloorPlanView.clearRenderedElements();
+        uiFloorPlanView.clearFloorPlan();
     }
 
     @Override

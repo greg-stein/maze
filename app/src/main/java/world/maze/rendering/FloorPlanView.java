@@ -99,7 +99,7 @@ public class FloorPlanView extends GLSurfaceView {
     }
 
     public void clearRenderedElements() {
-        mRenderer.clearRenderedElements();
+        mRenderer.clearSketch();
     }
 
     public enum Operation {
@@ -465,7 +465,6 @@ public class FloorPlanView extends GLSurfaceView {
             @Override
             public void run() {
                 mRenderer.clearSketch();
-                requestRender();
             }
         };
         queueEvent(glRunnable);
