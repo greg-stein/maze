@@ -182,7 +182,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     private final float[] mScratch = new float[16];
 
     @Override
-    public void onDrawFrame(GL10 gl) {
+    public synchronized void onDrawFrame(GL10 gl) {
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
 
@@ -219,7 +219,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         mRenderGroups.add(group); // Lock could be required
     }
 
-    public ElementsRenderGroup renderElements(List<? extends IFloorPlanPrimitive> elements) {
+    public synchronized ElementsRenderGroup renderElements(List<? extends IFloorPlanPrimitive> elements) {
         final ElementsRenderGroup newGroup = new ElementsRenderGroup(elements);
         mRenderGroups.add(newGroup);
 
@@ -274,7 +274,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public boolean isSketchEmpty() {return mRenderGroups == null || mRenderGroups.isEmpty() || mRenderGroups.get(0).isEmpty();}
+    public synchronized boolean isSketchEmpty() {return mRenderGroups == null || mRenderGroups.isEmpty() || mRenderGroups.get(0).isEmpty();}
 
     public float getAngle() {
         return mAngle;
@@ -529,7 +529,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         });
     }
 
-    public void clearSketch() {
+    public synchronized void clearSketch() {
         for (IRenderGroup group : mRenderGroups) {
             group.setVisible(false);
             group.clear();
@@ -630,7 +630,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
     }
 
     // Returns IMoveable element under given coords and its render group
-    public Pair<IRenderGroup, IMoveable> findObjectHavingPoint(PointF p) {
+    public synchronized Pair<IRenderGroup, IMoveable> findObjectHavingPoint(PointF p) {
         for (IRenderGroup group : mRenderGroups) {
             final IMoveable elementHavingPoint = group.findElementHavingPoint(p);
             if (elementHavingPoint != null) {
@@ -641,7 +641,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         return null;
     }
 
-    public Pair<IRenderGroup, IMoveable> findObjectHavingPoint(PointF p, Class objectType) {
+    public synchronized Pair<IRenderGroup, IMoveable> findObjectHavingPoint(PointF p, Class objectType) {
         for (IRenderGroup group : mRenderGroups) {
             final IMoveable elementHavingPoint = group.findElementHavingPoint(p);
             if (elementHavingPoint != null && objectType.isInstance(elementHavingPoint)) {
