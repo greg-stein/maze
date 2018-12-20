@@ -21,6 +21,7 @@ public class FloorPlan {
 
     public FloorPlan(String floorId) {
         this.mFloorId = floorId;
+        this.mSketch = new ArrayList<>();
     }
 
     public FloorPlan() {
