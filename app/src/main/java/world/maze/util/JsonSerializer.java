@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.Type;
 
 /**
  * Created by Greg Stein on 9/26/2016.
@@ -22,9 +23,13 @@ public class JsonSerializer {
     }
 
     public static <T> T deserialize(String jsonString, Class<T> klazz) {
+        return deserialize(jsonString, klazz);
+    }
+
+    public static <T> T deserialize(String jsonString, Type type) {
         if (gson == null)
             gson = new GsonBuilder().create();
-        T entity = gson.fromJson(jsonString, klazz);
+        T entity = gson.fromJson(jsonString, type);
 
         return entity;
     }

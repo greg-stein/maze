@@ -1,15 +1,15 @@
 package world.maze.data;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Environment;
 import android.support.v4.util.Pair;
 import android.widget.Toast;
 
-import com.google.common.collect.Lists;
+import com.google.gson.reflect.TypeToken;
 
 import world.maze.core.WiFiLocator;
 import world.maze.floorplan.Building;
+import world.maze.floorplan.Fingerprint;
 import world.maze.floorplan.FloorPlan;
 import world.maze.floorplan.RadioMapFragment;
 import world.maze.util.IFuckingSimpleCallback;
@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -99,15 +100,14 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         }
     }
 
-    public static String load(Context context, String store) {
+    public static String load(Context context, String directory, String filename) {
         String data = null;
         FileInputStream fis;
         ObjectInputStream is;
 
         try {
-//            if (aFile.exists() && aFile.isFile()) {
-//            }
-            fis = context.openFileInput(store);
+            File aFile = new File(directory, filename);
+            fis = new FileInputStream(aFile);
             is = new ObjectInputStream(fis);
             data = (String) is.readObject();
             is.close();
@@ -120,6 +120,35 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         return data;
     }
 
+    private void save(Building building) {
+        String json = JsonSerializer.serialize(building);
+        save(mContext, json, mBuildingsDir.getAbsolutePath(), building.getId() + JSON_EXT);
+        mBuildingIds.add(building.getId());
+    }
+
+    private void save(FloorPlan floorPlan) {
+        String json = JsonSerializer.serialize(floorPlan);
+        save(mContext, json, mFloorplansDir.getAbsolutePath(), floorPlan.getFloorId() + JSON_EXT);
+        mFloorplanIds.add(floorPlan.getFloorId());
+    }
+
+    private void save(RadioMapFragment radioMapFragment) {
+        String floorId = radioMapFragment.getFloorId();
+
+        // Do we have fingerprints on this floor?
+        if (mRadioMapIds.contains(floorId)) {
+            String jsonString = load(mContext, mRadiomapsDir.getAbsolutePath(), floorId + JSON_EXT);
+            Type listType = new TypeToken<List<Fingerprint>>() {}.getType();
+            List<Fingerprint> existingFingerprints = JsonSerializer.deserialize(jsonString, listType);
+            radioMapFragment.add(existingFingerprints);
+        } else {
+            mRadioMapIds.add(floorId);
+        }
+
+        String json = JsonSerializer.serialize(radioMapFragment);
+        save(mContext, json, mRadiomapsDir.getAbsolutePath(), floorId + JSON_EXT);
+    }
+
     @Override
     public void findSimilarBuildings(String pattern, IFuckingSimpleGenericCallback<List<Building>> buildingsAcquiredCallback) {
 
@@ -130,7 +159,7 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         String buildingId = UUID.randomUUID().toString();
         Building building = new Building();
         building.setID(buildingId);
-        saveBuilding(building);
+        save(building);
         onBuildingCreated.onNotify(buildingId);
     }
 
@@ -138,35 +167,38 @@ public class LocalStore implements IDataProvider, IDataKeeper {
     public void createBuildingAsync(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback) {
         String buildingId = UUID.randomUUID().toString();
         Building building = new Building(name, type, address, buildingId);
-        saveBuilding(building);
+        save(building);
         buildingCreatedCallback.onNotify(building);
-    }
-
-    private void saveBuilding(Building building) {
-        String json = JsonSerializer.serialize(building);
-        save(mContext, json, mBuildingsDir.getAbsolutePath(), building.getId() + JSON_EXT);
-        mBuildingIds.add(building.getId());
     }
 
     @Override
     public void createFloorAsync(String buildingId, IFuckingSimpleGenericCallback<String> onFloorCreated) {
         String floorId = UUID.randomUUID().toString();
+        // Well, yes, this is tricky. This function is called when we are about to create a new floor
+        // Hence at this point we also create FloorPlan structure and RadioMap for the floor. These
+        // will be requested a bit later when FloorChanged event will be fired.
+        save(new FloorPlan(floorId));
+        save(new RadioMapFragment(null, floorId));
+
         onFloorCreated.onNotify(floorId);
     }
 
     @Override
     public void upload(Building building, IFuckingSimpleCallback onDone) {
-
+        save(building);
+        onDone.onNotified();
     }
 
     @Override
     public void upload(FloorPlan floorPlan, IFuckingSimpleCallback onDone) {
-
+        save(floorPlan);
+        onDone.onNotified();
     }
 
     @Override
     public void upload(RadioMapFragment radioMap, IFuckingSimpleCallback onDone) {
-
+        save(radioMap);
+        onDone.onNotified();
     }
 
     @Override
@@ -181,12 +213,12 @@ public class LocalStore implements IDataProvider, IDataKeeper {
 
     @Override
     public void downloadFloorPlanAsync(String floorId, IFuckingSimpleGenericCallback<FloorPlan> onFloorPlanReceived) {
-
+        onFloorPlanReceived.onNotify(new FloorPlan(floorId));
     }
 
     @Override
     public void downloadRadioMapTileAsync(String floorId, WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<RadioMapFragment> onRadioTileReceived) {
-
+        onRadioTileReceived.onNotify(new RadioMapFragment(new ArrayList<Fingerprint>(), floorId));
     }
 
     @Override

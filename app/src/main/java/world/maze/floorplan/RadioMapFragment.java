@@ -1,5 +1,6 @@
 package world.maze.floorplan;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -30,6 +31,10 @@ public class RadioMapFragment {
 
     public void addFingerprint(Fingerprint fingerprint) {
         mFingerprints.add(fingerprint);
+    }
+
+    public void add(Collection<Fingerprint> fingerprints) {
+        mFingerprints.addAll(fingerprints);
     }
 
     public List<IFloorPlanPrimitive> getFingerprintsAsIFloorPlanElements() {
