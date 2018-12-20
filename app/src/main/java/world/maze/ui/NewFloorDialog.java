@@ -268,9 +268,6 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
                 mFloorsAdapter.notifyDataSetChanged();
                 if (mUpdateFloorNameInList) {
                     txtFloor.setText(mBuildingFloors.get(position).getName(), TextView.BufferType.EDITABLE);
-                    if (Building.current != null) {
-                        Building.current.setCurrentFloor(mBuildingFloors.get(position));
-                    }
                 }
             }
         });
