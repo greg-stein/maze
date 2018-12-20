@@ -84,6 +84,8 @@ public class FloorPlan {
 
     public PointF getCenter() {
         final RectF boundaries = getBoundaries();
+
+        if (null == boundaries) return new PointF();
         PointF floorPlanCenter = new PointF(boundaries.centerX(), boundaries.centerY());
 
         return floorPlanCenter;
