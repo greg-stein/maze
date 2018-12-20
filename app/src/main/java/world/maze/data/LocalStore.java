@@ -23,10 +23,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static world.maze.data.DataAggregator.JSON_EXT;
@@ -39,9 +40,9 @@ public class LocalStore implements IDataProvider, IDataKeeper {
 
     public static final String DATA_ROOT = "maze";
 
-    private List<String> mFloorplanIds;
-    private List<String> mRadioMapIds;
-    private List<String> mBuildingIds;
+    private Set<String> mFloorplanIds;
+    private Set<String> mRadioMapIds;
+    private Set<String> mBuildingIds;
 
     private File mFloorplansDir;
     private File mRadiomapsDir;
@@ -64,8 +65,8 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         }
     }
 
-    private static  List<String> listInitDirectory(File dir) throws IOException {
-        List<String> buildingIds = new ArrayList<>();
+    private static Set<String> listInitDirectory(File dir) throws IOException {
+        Set<String> buildingIds = new HashSet<>();
 
         if (!dir.exists()) {
             if (!dir.mkdirs()) throw new IOException("Failed to create directory path.");
@@ -193,7 +194,7 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         if (null == mBuildingIds) {
             return new ArrayList<>(); // empty collection
         }
-        return Collections.unmodifiableList(mBuildingIds);
+        return Collections.unmodifiableSet(mBuildingIds);
     }
 
     @Override
