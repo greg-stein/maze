@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class FloorPlanSerializer {
 
-    private static final Type TYPE = (new TypeToken<List<Object>>() {}).getType();
+    public static final Type TYPE = (new TypeToken<List<Object>>() {}).getType();
 
     public static String serializeFloorPlan(List<Object> floorPlan) {
         GsonBuilder builder = new GsonBuilder();

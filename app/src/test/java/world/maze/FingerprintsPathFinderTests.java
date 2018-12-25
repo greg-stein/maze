@@ -67,7 +67,7 @@ public class FingerprintsPathFinderTests {
         }
 
         List<Object> objects = FloorPlanSerializer.deserializeFloorPlan(jsonString);
-        FloorPlan floorPlan = FloorPlan.build(objects);
+        FloorPlan floorPlan = new FloorPlan(objects);
         return floorPlan;
     }
 

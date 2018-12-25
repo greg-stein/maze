@@ -15,8 +15,8 @@ import java.util.List;
  */
 public class FloorPlan {
     private List<IFloorPlanPrimitive> mSketch;
-    private List<Teleport> mTeleports; // TODO: remove
-    private boolean mIsSketchDirty = false;
+    private transient List<Teleport> mTeleports; // TODO: remove
+    private transient boolean mIsSketchDirty = false;
     private String mFloorId;
 
     public FloorPlan(String floorId) {
@@ -28,19 +28,11 @@ public class FloorPlan {
 
     }
 
-    public static FloorPlan build(List<Object> entities) {
-        FloorPlan floorPlan = new FloorPlan();
-        floorPlan.mTeleports = CommonHelper.extractObjects(Teleport.class, entities);
-//        List<Wall> walls = FloorplanVectorizer.connect(CommonHelper.extractObjects(Wall.class, entities));
-
-        // Remove location marks from floorplan
+    public FloorPlan(List<Object> entities) {
         CommonHelper.extractObjects(LocationMark.class, entities);
         // Achtung! Synchronized!
-        floorPlan.mSketch = Collections.synchronizedList(
+        mSketch = Collections.synchronizedList(
                 CommonHelper.extractObjects(IFloorPlanPrimitive.class, entities));
-//        floorPlan.mSketch.addAll(walls);
-
-        return floorPlan;
     }
 
     public static FloorPlan build() {
@@ -48,18 +40,6 @@ public class FloorPlan {
         floorPlan.mSketch = Collections.synchronizedList(new ArrayList<IFloorPlanPrimitive>());
 
         return floorPlan;
-    }
-
-    public List<Object> disassemble() {
-
-        int entitiesNum =
-                ((mSketch != null) ? mSketch.size() : 0);
-
-        List<Object> result = new ArrayList<>(entitiesNum);
-
-        if (mSketch != null) result.addAll(mSketch);
-
-        return result;
     }
 
     public String getFloorId() {

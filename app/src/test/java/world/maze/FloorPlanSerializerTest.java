@@ -1,10 +1,13 @@
 package world.maze;
 
+import world.maze.floorplan.FloorPlan;
 import world.maze.floorplan.FloorPlanSerializer;
 import world.maze.floorplan.LocationMark;
 import world.maze.floorplan.Wall;
 import world.maze.floorplan.Fingerprint;
+import world.maze.util.JsonSerializer;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -27,6 +30,24 @@ import static org.junit.Assert.assertThat;
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest=Config.NONE, sdk = 23)
 public class FloorPlanSerializerTest {
+
+    @Test
+    public void emptyFloorPlanDeserializationTest() {
+        String jsonString = "{\"mFloorId\":\"0225fcd1-8c41-4600-849a-1c8c4af2c825\",\"mIsSketchDirty\":false}";
+        FloorPlan floorPlan = JsonSerializer.deserialize(jsonString, FloorPlan.class);
+
+        assertNotNull(floorPlan);
+        assertThat(floorPlan.getFloorId(), equalTo("0225fcd1-8c41-4600-849a-1c8c4af2c825"));
+    }
+
+    @Test
+    public void emptyFloorPlanSerializationTest() {
+        FloorPlan floorPlan = new FloorPlan("0225fcd1-8c41-4600-849a-1c8c4af2c825");
+        String jsonString = JsonSerializer.serialize(floorPlan);
+
+        assertNotNull(jsonString);
+        assertThat(jsonString, equalTo("{\"mSketch\":[],\"mFloorId\":\"0225fcd1-8c41-4600-849a-1c8c4af2c825\"}"));
+    }
 
     @Test
     public void FloorplanDescriptorSerializationTest() {

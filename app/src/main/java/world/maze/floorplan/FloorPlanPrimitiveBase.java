@@ -22,6 +22,8 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
 
     private transient GlRenderBuffer mGlBuffer;
 
+    private transient boolean mIsRemoved;
+
     protected FloorPlanPrimitiveBase() {
         mVertices = new float[getVerticesDataLength()];
         mIndices = new short[getIndicesNum()];
@@ -71,8 +73,8 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     public int getIndicesDataSize() {
         return getIndicesNum() * GlRenderBuffer.SIZE_OF_SHORT;
     }
-
     private transient int mColor;
+
     private transient final float[] mColor4f = new float[GlRenderBuffer.COLORS_PER_VERTEX];
 
     @Override
@@ -99,8 +101,6 @@ public abstract class FloorPlanPrimitiveBase implements IFloorPlanPrimitive {
     public int getIndexBufferPosition() {
         return mIndexBufferPosition;
     }
-
-    private boolean mIsRemoved;
 
     @Override
     public void setRemoved(boolean removed) {

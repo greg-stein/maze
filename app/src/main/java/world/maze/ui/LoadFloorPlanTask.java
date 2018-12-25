@@ -3,9 +3,12 @@ package world.maze.ui;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import world.maze.core.IFloorChangedHandler;
 import world.maze.core.Locator;
 import world.maze.floorplan.FloorPlan;
 import world.maze.floorplan.FloorPlanSerializer;
+import world.maze.floorplan.IFloorPlanPrimitive;
+import world.maze.util.JsonSerializer;
 
 import java.util.List;
 
@@ -27,11 +30,7 @@ public class LoadFloorPlanTask extends AsyncTask<String, Void, FloorPlan> {
 
         FloorPlan floorPlan = null;
         if (jsonString != null) {
-            List<Object> floorplan = FloorPlanSerializer.deserializeFloorPlan(jsonString);
-            floorPlan = FloorPlan.build(floorplan);
-            // All this class is dead code
-            // TODO: remove it
-//            WiFiLocator.getInstance().setFingerprintsMap(floorPlan.getFingerprints());
+            floorPlan = JsonSerializer.deserialize(jsonString, FloorPlan.class);
             Locator.getInstance(mContext).setFloorPlan(floorPlan);
         }
         return floorPlan;

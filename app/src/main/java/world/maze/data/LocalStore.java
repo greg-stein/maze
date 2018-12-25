@@ -149,6 +149,12 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         save(mContext, json, mRadiomapsDir.getAbsolutePath(), floorId + JSON_EXT);
     }
 
+    private FloorPlan loadFloorPlan(String floorId) {
+        String jsonString = load(mContext, mFloorplansDir.getAbsolutePath(), floorId + JSON_EXT);
+        FloorPlan floorPlan = JsonSerializer.deserialize(jsonString, FloorPlan.class);
+        return floorPlan;
+    }
+
     @Override
     public void findSimilarBuildings(String pattern, IFuckingSimpleGenericCallback<List<Building>> buildingsAcquiredCallback) {
 
@@ -213,7 +219,8 @@ public class LocalStore implements IDataProvider, IDataKeeper {
 
     @Override
     public void downloadFloorPlanAsync(String floorId, IFuckingSimpleGenericCallback<FloorPlan> onFloorPlanReceived) {
-        onFloorPlanReceived.onNotify(new FloorPlan(floorId));
+        FloorPlan floorPlan = loadFloorPlan(floorId);
+        onFloorPlanReceived.onNotify(floorPlan /*new FloorPlan(floorId)*/);
     }
 
     @Override

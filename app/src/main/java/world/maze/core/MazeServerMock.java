@@ -67,7 +67,7 @@ public class MazeServerMock implements IDataProvider, IDataKeeper {
         floors.add(dbFloor2 = new Floor("2", "floor_id_2"));
         dbBuilding.setFloors(floors);
 
-        dbFloor1Plan = FloorPlan.build(loadFromRes(R.raw.haifa_mall_detailed_tags));
+        dbFloor1Plan = new FloorPlan(loadFromRes(R.raw.haifa_mall_detailed_tags));
         List<Fingerprint> fingerprints = (List<Fingerprint>)(List<?>)loadFromRes(R.raw.radio_map);
         List<Tag> tagsFloor1 = (List<Tag>)(List<?>)loadFromRes(R.raw.tags);
         dbRadioMap1 = new RadioMapFragment(fingerprints, dbFloor1.getId());
