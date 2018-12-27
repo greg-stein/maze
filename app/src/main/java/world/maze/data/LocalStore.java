@@ -134,18 +134,22 @@ public class LocalStore implements IDataProvider, IDataKeeper {
 
     private void save(RadioMapFragment radioMapFragment) {
         String floorId = radioMapFragment.getFloorId();
+        RadioMapFragment existingFragment;
 
         // Do we have fingerprints on this floor?
         if (mRadioMapIds.contains(floorId)) {
+            // Yes => add new fingerprints to the old ones we already have
             String jsonString = load(mContext, mRadiomapsDir.getAbsolutePath(), floorId + JSON_EXT);
-            Type listType = new TypeToken<List<Fingerprint>>() {}.getType();
-            List<Fingerprint> existingFingerprints = JsonSerializer.deserialize(jsonString, listType);
-            radioMapFragment.add(existingFingerprints);
+            existingFragment = JsonSerializer.deserialize(jsonString, RadioMapFragment.class);
+            radioMapFragment.add(existingFragment.getFingerprints());
         } else {
             mRadioMapIds.add(floorId);
+            // No existing fragment found, so make it point to the given one (it will be saved)
+            existingFragment = radioMapFragment;
         }
 
-        String json = JsonSerializer.serialize(radioMapFragment);
+        // Save new fragment
+        String json = JsonSerializer.serialize(existingFragment);
         save(mContext, json, mRadiomapsDir.getAbsolutePath(), floorId + JSON_EXT);
     }
 
