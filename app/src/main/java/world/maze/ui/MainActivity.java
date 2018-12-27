@@ -55,6 +55,8 @@ import world.maze.vectorization.FloorplanVectorizer;
 import com.github.fafaldo.fabtoolbar.widget.FABToolbarLayout;
 import com.lapism.searchview.SearchView;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -762,7 +764,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     }
 
     @Override
-    public ElementsRenderGroup createElementsRenderGroup(List<? extends IFloorPlanPrimitive> elements) {
+    public ElementsRenderGroup createElementsRenderGroup(Collection<? extends IFloorPlanPrimitive> elements) {
         ElementsRenderGroup floorPlanGroup = uiFloorPlanView.renderElementsGroup(elements);
 
         return floorPlanGroup;

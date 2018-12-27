@@ -12,6 +12,7 @@ import world.maze.rendering.TextRenderGroup;
 import world.maze.util.IFuckingSimpleCallback;
 import world.maze.util.IFuckingSimpleGenericCallback;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -21,7 +22,7 @@ import java.util.List;
 public interface IMainView extends world.maze.ui.IUserNotifier {
     void init();
 
-    ElementsRenderGroup createElementsRenderGroup(List<? extends IFloorPlanPrimitive> elements);
+    ElementsRenderGroup createElementsRenderGroup(Collection<? extends IFloorPlanPrimitive> elements);
 
     TextRenderGroup createTextRenderGroup(List<? extends Tag> tags);
 

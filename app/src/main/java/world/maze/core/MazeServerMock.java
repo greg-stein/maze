@@ -20,6 +20,7 @@ import world.maze.util.IFuckingSimpleGenericCallback;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Greg Stein on 9/30/2017.
@@ -150,7 +151,7 @@ public class MazeServerMock implements IDataProvider, IDataKeeper {
 
     @Override
     public void upload(RadioMapFragment radioMap, IFuckingSimpleCallback onDone) {
-        final List<Fingerprint> fingerprints = radioMap.getFingerprints();
+        final Set<Fingerprint> fingerprints = radioMap.getFingerprints();
 
         if (radioMap.getFloorId().equals(dbFloor1.getId())) {
             for (Fingerprint fingerprint : fingerprints) {

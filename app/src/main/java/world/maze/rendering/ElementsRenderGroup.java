@@ -6,6 +6,7 @@ import world.maze.floorplan.IFloorPlanPrimitive;
 import world.maze.floorplan.IMoveable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -19,7 +20,7 @@ public class ElementsRenderGroup extends RenderGroupBase {
     private List<IFloorPlanPrimitive> mElementsNotRenderedYet = new ArrayList<>();
     private boolean mReadyForRender;
 
-    public ElementsRenderGroup(List<? extends IFloorPlanPrimitive> elements) {
+    public ElementsRenderGroup(Collection<? extends IFloorPlanPrimitive> elements) {
         if (elements != null) {
             mElementsNotRenderedYet.addAll(elements);
         }

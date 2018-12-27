@@ -25,6 +25,7 @@ import world.maze.util.IFuckingSimpleCallback;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -219,7 +220,7 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         mRenderGroups.add(group); // Lock could be required
     }
 
-    public synchronized ElementsRenderGroup renderElements(List<? extends IFloorPlanPrimitive> elements) {
+    public synchronized ElementsRenderGroup renderElements(Collection<? extends IFloorPlanPrimitive> elements) {
         final ElementsRenderGroup newGroup = new ElementsRenderGroup(elements);
         mRenderGroups.add(newGroup);
 

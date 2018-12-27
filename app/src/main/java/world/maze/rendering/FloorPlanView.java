@@ -25,6 +25,7 @@ import world.maze.floorplan.transitions.Teleport;
 import world.maze.rendering.FloorPlanRenderer.IWallLengthChangedListener;
 import world.maze.util.IFuckingSimpleCallback;
 
+import java.util.Collection;
 import java.util.List;
 
 import static world.maze.core.IMainView.MapOperation.MOVE;
@@ -372,7 +373,7 @@ public class FloorPlanView extends GLSurfaceView {
         }
     }
 
-    public ElementsRenderGroup renderElementsGroup(List<? extends IFloorPlanPrimitive> elements) {
+    public ElementsRenderGroup renderElementsGroup(Collection<? extends IFloorPlanPrimitive> elements) {
         return mRenderer.renderElements(elements);
     }
 
