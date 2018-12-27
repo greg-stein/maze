@@ -445,4 +445,19 @@ public class WiFiLocator {
             totalCost = cost;
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        WiFiLocator that = (WiFiLocator) o;
+
+        return mFingerprints.equals(that.mFingerprints);
+    }
+
+    @Override
+    public int hashCode() {
+        return mFingerprints.hashCode();
+    }
 }

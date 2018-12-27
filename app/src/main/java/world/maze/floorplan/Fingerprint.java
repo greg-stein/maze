@@ -49,4 +49,20 @@ public class Fingerprint extends CircleBase {
     public WiFiFingerprint getFingerprint() {
         return mWiFiFingerprint;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        Fingerprint that = (Fingerprint) o;
+
+        return mWiFiFingerprint.equals(that.mWiFiFingerprint);
+    }
+
+    @Override
+    public int hashCode() {
+        return mWiFiFingerprint.hashCode();
+    }
 }
