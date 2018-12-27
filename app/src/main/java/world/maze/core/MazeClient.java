@@ -557,25 +557,6 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             @Override
             public void createBuilding(String name, String type, String address, IFuckingSimpleGenericCallback<Building> buildingCreatedCallback) {
                 mDataAggregator.createBuildingAsync(name, type, address, buildingCreatedCallback);
-
-                mFloorPlanRenderGroup = mMainView.createElementsRenderGroup(null);
-                mFloorPlanRenderGroup.setVisible(true);
-                mFloorPlanRenderGroup.setChangedListener(mFloorPlanChangedListener);
-
-                mTagsRenderGroup = mMainView.createTextRenderGroup(null);
-                mTagsRenderGroup.setVisible(true);
-                mTagsRenderGroup.setChangedListener(mTagsChangedListener);
-
-                // These groups are visible in Edit Mode only
-                mTeleportsLabelsRenderGroup = mMainView.createTextRenderGroup(null);
-                mTeleportsElementsRenderGroup = mMainView.createElementsRenderGroup(null);
-                mTeleportsElementsRenderGroup.setChangedListener(mTeleportsChangedListener);
-                mRadioMapRenderGroup = mMainView.createElementsRenderGroup(null);
-                mAugmentedRadioMapRenderGroup = mMainView.createElementsRenderGroup(null);
-                updateRenderGroupsVisibility(mMainView.getUiMode());
-
-                mFloorPlan = FloorPlan.build(); // BUG
-                mLocator.setFloorPlan(mFloorPlan);
             }
         });
 
@@ -685,13 +666,36 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         // Clean up all floor-related data like radio map, floor plan, tags, ...
         mMainView.clearRenderedElements();
-
         if (mFloorPlan != null) mFloorPlan.clear();
         if (mRadioMapFragment != null) mRadioMapFragment.clear();
+        if (mAugmentedRadioMap != null) mAugmentedRadioMap.clear();
+
+        createNewRenderGroups(newFloor.getId());
 
         // Load new data from newFloor, render
         WiFiLocator.WiFiFingerprint lastFingerprint = mWifiScanner.getLastFingerprint();
         FloorUpdater floorUpdater = new FloorUpdater(lastFingerprint);
         floorUpdater.update(new Pair<String, String>(null, newFloor.getId()));
+    }
+
+    private void createNewRenderGroups(String floorId) {
+        mFloorPlanRenderGroup = mMainView.createElementsRenderGroup(null);
+        mFloorPlanRenderGroup.setVisible(true);
+        mFloorPlanRenderGroup.setChangedListener(mFloorPlanChangedListener);
+
+        mTagsRenderGroup = mMainView.createTextRenderGroup(null);
+        mTagsRenderGroup.setVisible(true);
+        mTagsRenderGroup.setChangedListener(mTagsChangedListener);
+
+        // These groups are visible in Edit Mode only
+        mTeleportsLabelsRenderGroup = mMainView.createTextRenderGroup(null);
+        mTeleportsElementsRenderGroup = mMainView.createElementsRenderGroup(null);
+        mTeleportsElementsRenderGroup.setChangedListener(mTeleportsChangedListener);
+        mRadioMapRenderGroup = mMainView.createElementsRenderGroup(null);
+        mAugmentedRadioMapRenderGroup = mMainView.createElementsRenderGroup(null);
+        updateRenderGroupsVisibility(mMainView.getUiMode());
+
+        mFloorPlan = new FloorPlan(floorId);
+        mLocator.setFloorPlan(mFloorPlan);
     }
 }
