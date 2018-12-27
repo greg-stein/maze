@@ -373,7 +373,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         }
 
         PermissionsHelper.handlePermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE, true,
-                "Please grant us access to external storage. We well store there newly created maps and data.", mMainView, new IFuckingSimpleCallback() {
+                "Please grant us access to external storage. We will store there newly created maps and data.", mMainView, new IFuckingSimpleCallback() {
                     @Override
                     public void onNotified() {
                         initDataAggregator();                    }
@@ -577,13 +577,13 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         switch (uiMode) {
             case MAP_VIEW_MODE:
                 if (mRadioMapRenderGroup != null) mRadioMapRenderGroup.setVisible(false);
-                if (mRadioMapRenderGroup != null) mAugmentedRadioMapRenderGroup.setVisible(false);
+                if (mAugmentedRadioMapRenderGroup != null) mAugmentedRadioMapRenderGroup.setVisible(false);
                 if (mTeleportsElementsRenderGroup != null) mTeleportsElementsRenderGroup.setVisible(false);
                 if (mTeleportsLabelsRenderGroup!= null) mTeleportsLabelsRenderGroup.setVisible(false);
                 break;
             case MAP_EDIT_MODE:
                 if (mRadioMapRenderGroup != null) mRadioMapRenderGroup.setVisible(true);
-                if (mRadioMapRenderGroup != null) mAugmentedRadioMapRenderGroup.setVisible(true);
+                if (mAugmentedRadioMapRenderGroup != null) mAugmentedRadioMapRenderGroup.setVisible(true);
                 if (mTeleportsElementsRenderGroup != null) mTeleportsElementsRenderGroup.setVisible(true);
                 if (mTeleportsLabelsRenderGroup!= null) mTeleportsLabelsRenderGroup.setVisible(true);
                 break;
