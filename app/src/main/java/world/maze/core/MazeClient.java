@@ -281,7 +281,10 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private IMainView.IRenderGroupChangedListener mFingerprintsChangedListener = new IMainView.IRenderGroupChangedListener() {
         @Override
         public void onElementAdd(IMoveable element) {
-            mAugmentedRadioMap.add((Fingerprint) element);
+            final Fingerprint fingerprint = (Fingerprint) element;
+            mAugmentedRadioMap.add(fingerprint);
+            Building.current.addMacs(fingerprint.getFingerprint().keySet());
+            Building.current.setDirty(true);
             mMainView.setUploadButtonVisibility(true);
         }
 

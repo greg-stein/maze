@@ -49,6 +49,10 @@ public class Building {
         initTeleportsMap();
     }
 
+    public void addMacs(Set<String> macs) {
+        if (macs != null) mAccessPoints.addAll(macs);
+    }
+
     public static boolean isFloorDefined() {
         return Building.current != null && Building.current.mCurrentFloor != null;
     }
