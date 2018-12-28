@@ -134,23 +134,26 @@ public class LocalStore implements IDataProvider, IDataKeeper {
 
     private void save(RadioMapFragment radioMapFragment) {
         String floorId = radioMapFragment.getFloorId();
-        RadioMapFragment existingFragment;
 
         // Do we have fingerprints on this floor?
         if (mRadioMapIds.contains(floorId)) {
             // Yes => add new fingerprints to the old ones we already have
             String jsonString = load(mContext, mRadiomapsDir.getAbsolutePath(), floorId + JSON_EXT);
-            existingFragment = JsonSerializer.deserialize(jsonString, RadioMapFragment.class);
+            RadioMapFragment existingFragment = JsonSerializer.deserialize(jsonString, RadioMapFragment.class);
             radioMapFragment.add(existingFragment.getFingerprints());
         } else {
             mRadioMapIds.add(floorId);
-            // No existing fragment found, so make it point to the given one (it will be saved)
-            existingFragment = radioMapFragment;
         }
 
         // Save new fragment
-        String json = JsonSerializer.serialize(existingFragment);
+        String json = JsonSerializer.serialize(radioMapFragment);
         save(mContext, json, mRadiomapsDir.getAbsolutePath(), floorId + JSON_EXT);
+    }
+
+    private RadioMapFragment loadRadioMapFragment(String floorId, WiFiLocator.WiFiFingerprint fingerprint) {
+        String jsonString = load(mContext, mRadiomapsDir.getAbsolutePath(), floorId + JSON_EXT);
+        RadioMapFragment existingFragment = JsonSerializer.deserialize(jsonString, RadioMapFragment.class);
+        return existingFragment;
     }
 
     private FloorPlan loadFloorPlan(String floorId) {
@@ -229,7 +232,8 @@ public class LocalStore implements IDataProvider, IDataKeeper {
 
     @Override
     public void downloadRadioMapTileAsync(String floorId, WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<RadioMapFragment> onRadioTileReceived) {
-        onRadioTileReceived.onNotify(new RadioMapFragment(new ArrayList<Fingerprint>(), floorId));
+        RadioMapFragment radioMapFragment = loadRadioMapFragment(floorId, fingerprint);
+        onRadioTileReceived.onNotify(radioMapFragment);
     }
 
     @Override

@@ -117,6 +117,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                         onCompleteDataReceive();
                     }
                 };
+
         private IFuckingSimpleGenericCallback<FloorPlan> mOnFloorPlanReceived = new IFuckingSimpleGenericCallback<FloorPlan>() {
             @Override
             public void onNotify(FloorPlan floorPlan) {
@@ -138,9 +139,12 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mTeleportsElementsRenderGroup.setVisible(false);
                 mTagsRenderGroup.setChangedListener(mTagsChangedListener);
                 mFloorPlanRenderGroup.setChangedListener(mFloorPlanChangedListener);
+                mRadioMapRenderGroup.setChangedListener(mFingerprintsChangedListener);
                 // Render the floor plan
                 mFloorPlanRenderGroup.setVisible(true);
                 mTagsRenderGroup.setVisible(true);
+                updateRenderGroupsVisibility(mMainView.getUiMode());
+
                 mMainView.centerMapView(mFloorPlan.getCenter());
                 // Locator uses floor plan for collision detection
                 mLocator.setFloorPlan(mFloorPlan);
@@ -270,6 +274,25 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         public void onElementRemoved(IMoveable element) {
             Building.current.getCurrentFloor().removeTag((Tag) element);
             Building.current.setDirty(true);
+            mMainView.setUploadButtonVisibility(true);
+        }
+    };
+
+    private IMainView.IRenderGroupChangedListener mFingerprintsChangedListener = new IMainView.IRenderGroupChangedListener() {
+        @Override
+        public void onElementAdd(IMoveable element) {
+            mAugmentedRadioMap.add((Fingerprint) element);
+            mMainView.setUploadButtonVisibility(true);
+        }
+
+        @Override
+        public void onElementChange(IMoveable element) {
+            mMainView.setUploadButtonVisibility(true);
+        }
+
+        @Override
+        public void onElementRemoved(IMoveable element) {
+            mAugmentedRadioMap.remove(element);
             mMainView.setUploadButtonVisibility(true);
         }
     };
@@ -493,12 +516,14 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 if (mFloorPlan.isSketchDirty()) {
                     mFloorPlanUploadRequested = true;
                     mDataAggregator.upload(mFloorPlan, mFloorPlanOnUploadDone);
+                    mFloorPlan.setSketchDirty(false);
                 }
 
 
                 if (Building.current.isDirty()) {
                     mBuildingUploadRequested = true;
                     mDataAggregator.upload(Building.current, mBuildingOnUploadDone);
+                    Building.current.setDirty(false);
                 }
 
                 // New fingerprints were added?
@@ -655,7 +680,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         // TODO: It should not be the case that any newly created fingerprint is added to the radiomap
         // TODO: Instead, we should examine fingerprint's quality and only after that add it to SEPARATE
         // TODO: collection which later will be uploaded to server.
-        mAugmentedRadioMap.add(fingerprint);
+
+        // This call will trigger event that will put new fingerprint to mAugmentedRadioMap
         mAugmentedRadioMapRenderGroup.addElement(fingerprint);
     }
 
@@ -693,6 +719,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mTeleportsElementsRenderGroup.setChangedListener(mTeleportsChangedListener);
         mRadioMapRenderGroup = mMainView.createElementsRenderGroup(null);
         mAugmentedRadioMapRenderGroup = mMainView.createElementsRenderGroup(null);
+        mAugmentedRadioMapRenderGroup.setChangedListener(mFingerprintsChangedListener);
         updateRenderGroupsVisibility(mMainView.getUiMode());
 
         mFloorPlan = new FloorPlan(floorId);
