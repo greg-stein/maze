@@ -150,6 +150,12 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         save(mContext, json, mRadiomapsDir.getAbsolutePath(), floorId + JSON_EXT);
     }
 
+    private Building loadBuilding(String buildingId) {
+        String jsonString = load(mContext, mBuildingsDir.getAbsolutePath(), buildingId + JSON_EXT);
+        Building building = JsonSerializer.deserialize(jsonString, Building.class);
+        return building;
+    }
+
     private RadioMapFragment loadRadioMapFragment(String floorId, WiFiLocator.WiFiFingerprint fingerprint) {
         String jsonString = load(mContext, mRadiomapsDir.getAbsolutePath(), floorId + JSON_EXT);
         RadioMapFragment existingFragment = JsonSerializer.deserialize(jsonString, RadioMapFragment.class);
@@ -216,12 +222,13 @@ public class LocalStore implements IDataProvider, IDataKeeper {
 
     @Override
     public void getBuildingAsync(String buildingId, IFuckingSimpleGenericCallback<Building> onBuildingReceived) {
-
+        Building building = loadBuilding(buildingId);
+        onBuildingReceived.onNotify(building);
     }
 
     @Override
     public void findCurrentBuildingAndFloorAsync(WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<Pair<String, String>> callback) {
-
+        
     }
 
     @Override
