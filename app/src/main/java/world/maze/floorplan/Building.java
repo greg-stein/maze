@@ -31,7 +31,6 @@ public class Building {
     private String mType;
     private String mID;
     private List<Floor> mFloors;
-    private Set<String> mAccessPoints; // TODO: HashSet<Long>
 
     private transient Floor mCurrentFloor;
     private transient Map<String, List<ITeleport>> mTeleportsById = new HashMap<>();
@@ -45,12 +44,7 @@ public class Building {
         this.mAddress = address;
         this.mType = type;
         this.mID = id;
-        mAccessPoints = new HashSet<>();
         initTeleportsMap();
-    }
-
-    public void addMacs(Set<String> macs) {
-        if (macs != null) mAccessPoints.addAll(macs);
     }
 
     public static boolean isFloorDefined() {

@@ -283,7 +283,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         public void onElementAdd(IMoveable element) {
             final Fingerprint fingerprint = (Fingerprint) element;
             mAugmentedRadioMap.add(fingerprint);
-            Building.current.addMacs(fingerprint.getFingerprint().keySet());
+            Building.current.getCurrentFloor().addMacs(fingerprint.getFingerprint().keySet());
             Building.current.setDirty(true);
             mMainView.setUploadButtonVisibility(true);
         }

@@ -4,7 +4,9 @@ import world.maze.floorplan.transitions.Teleport;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Greg Stein on 7/5/2017.
@@ -17,6 +19,8 @@ public class Floor {
     private String mId; // TODO: this should be changed to ObjectId later
     private List<Teleport> mTeleports;
     private List<Tag> mTags;
+    private Set<String> mAccessPoints; // TODO: HashSet<Long>
+    private transient boolean mIsSelected;
 
     public Floor() {}
 
@@ -25,9 +29,12 @@ public class Floor {
         mId = id;
         mTags = new ArrayList<>();
         mTeleports = new ArrayList<>();
+        mAccessPoints = new HashSet<>();
     }
 
-    private transient boolean mIsSelected;
+    public void addMacs(Set<String> macs) {
+        if (macs != null) mAccessPoints.addAll(macs);
+    }
 
     public String getName() {
         return mName;
