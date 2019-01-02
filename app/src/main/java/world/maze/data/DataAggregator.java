@@ -160,9 +160,10 @@ public class DataAggregator implements IDataProvider, IDataKeeper {
                         // Not empty building and floor
                         if (null == mFoundBuildingAndFloor) {               // first update?
                             mFoundBuildingAndFloor = foundBuildingAndFloor;
-                            callback.onNotify(mFoundBuildingAndFloor);
                             mCurrentDataProvider = dataProvider; // remember data provider that holds current building
-                        }                                        // it will hold the floor data as well
+                                                                 // it will hold the floor data as well
+                            callback.onNotify(mFoundBuildingAndFloor);
+                        }
                     }
                 }
 
