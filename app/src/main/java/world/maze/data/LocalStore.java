@@ -10,8 +10,10 @@ import com.google.gson.reflect.TypeToken;
 import world.maze.core.WiFiLocator;
 import world.maze.floorplan.Building;
 import world.maze.floorplan.Fingerprint;
+import world.maze.floorplan.Floor;
 import world.maze.floorplan.FloorPlan;
 import world.maze.floorplan.RadioMapFragment;
+import world.maze.util.CommonHelper;
 import world.maze.util.IFuckingSimpleCallback;
 import world.maze.util.IFuckingSimpleGenericCallback;
 import world.maze.util.JsonSerializer;
@@ -226,9 +228,33 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         onBuildingReceived.onNotify(building);
     }
 
+    // Achtung! This method assumes that there are little buildings stored locally. The implementation
+    // is really slow!
     @Override
     public void findCurrentBuildingAndFloorAsync(WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<Pair<String, String>> callback) {
-        
+        Building mostSuitableBuilding = null;
+        Floor mostSuitableFloor = null;
+
+        Set<String> fingerprintMacs = new HashSet<>(fingerprint.keySet()); // MAC addresses from fingerprint
+        int maxIntersectionSize = 0;
+
+        for (String buildingId : mBuildingIds) {
+            Building building = loadBuilding(buildingId);
+            for (Floor floor : building.getFloors()) {
+                // TODO: This is naive implementation. Use maximum WiFi level instead
+                int intersectionSize = CommonHelper.intersectionSize(fingerprintMacs, floor.getMacs());
+                if (intersectionSize > maxIntersectionSize) {
+                    maxIntersectionSize = intersectionSize;
+                    mostSuitableFloor = floor;
+                    mostSuitableBuilding = building;
+                }
+            }
+        }
+
+        if (mostSuitableBuilding != null && mostSuitableFloor != null) {
+            callback.onNotify(new Pair<>(mostSuitableBuilding.getId(), mostSuitableFloor.getId()));
+            return;
+        }
     }
 
     @Override

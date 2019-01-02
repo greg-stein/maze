@@ -86,4 +86,8 @@ public class Floor {
     public void removeTeleport(Teleport teleport) {
         mTeleports.remove(teleport);
     }
+
+    public Set<String> getMacs() {
+        return mAccessPoints;
+    }
 }
