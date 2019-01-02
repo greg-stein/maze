@@ -7,6 +7,7 @@ import android.content.ContextWrapper;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Greg Stein on 11/23/2016.
@@ -49,5 +50,26 @@ public class CommonHelper {
         }
 
         return result;
+    }
+
+    public static <T> int intersectionSize(Set<T> set1, Set<T> set2) {
+        Set<T> smallerSet;
+        Set<T> largerSet;
+
+        if (set1.size() <= set2.size()) {
+            smallerSet = set1;
+            largerSet = set2;
+        } else {
+            smallerSet = set2;
+            largerSet = set1;
+        }
+
+        int count = 0;
+        for (T element : smallerSet) {
+            if (largerSet.contains(element)) {
+                count++;
+            }
+        }
+        return count;
     }
 }

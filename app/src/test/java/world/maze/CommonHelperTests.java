@@ -12,10 +12,13 @@ import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.hamcrest.collection.IsArrayContainingInOrder.arrayContaining;
@@ -130,5 +133,27 @@ public class CommonHelperTests {
         assertNotNull(doubles);
         assertThat(doubles, hasSize(2));
         assertThat(objects, hasSize(objectsNum));
+    }
+
+    @Test
+    public void inetersectSizeGenericTest() {
+        Set<String> set1 = new HashSet<>();
+        Set<String> set2 = new HashSet<>();
+
+        set1.add("abc");
+        set1.add("def");
+        set1.add("ghi");
+        set1.add("jkl");
+        set1.add("mno");
+
+        set2.add("abc");
+        set2.add("ghi");
+        set2.add("jkl");
+        set2.add("pqr");
+        set2.add("stu");
+
+        int intersectSize = CommonHelper.intersectionSize(set1, set2);
+
+        assertThat(intersectSize, is(equalTo(3)));
     }
 }
