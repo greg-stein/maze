@@ -36,8 +36,11 @@ public class AssetsDataProvider implements IDataProvider {
     public void init() throws IOException {
         final AssetManager assets = mContext.getAssets();
         mFloorplanIds = assets.list(DataAggregator.FLORPLANS_SUBDIR);
+        clearExtention(mFloorplanIds);
         mRadioMapIds = assets.list(DataAggregator.RADIOMAPS_SUBDIR);
+        clearExtention(mRadioMapIds);
         mBuildingIds = assets.list(DataAggregator.BUILDINGS_SUBDIR);
+        clearExtention(mBuildingIds);
 
         mBuildingsCache.clear();
         for (String buildingId: mBuildingIds) {
@@ -47,6 +50,16 @@ public class AssetsDataProvider implements IDataProvider {
             String buildingJson = new String(bytes);
             Building building = JsonSerializer.deserialize(buildingJson, Building.class);
             mBuildingsCache.put(buildingId, building);
+        }
+    }
+
+    private void clearExtention(String[] strings) {
+        if (strings == null) return;
+
+        for (int i = 0; i < strings.length; i++) {
+            int extensionStartPos = strings[i].indexOf(DataAggregator.JSON_EXT);
+            if (-1 == extensionStartPos) continue;
+            strings[i] = strings[i].substring(0, extensionStartPos);
         }
     }
 

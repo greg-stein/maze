@@ -23,6 +23,7 @@ import java.util.List;
 
 import world.maze.AppSettings;
 import world.maze.core.SensorListener.IDeviceRotationListener;
+import world.maze.data.AssetsDataProvider;
 import world.maze.data.DataAggregator;
 import world.maze.data.IDataProvider;
 import world.maze.data.LocalStore;
@@ -426,6 +427,11 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     public void initDataAggregator() {
         try {
             mDataAggregator = DataAggregator.getInstance(mContext);
+
+            final AssetsDataProvider assetsDataProvider = new AssetsDataProvider(mContext);
+            assetsDataProvider.init();
+            mDataAggregator.addDataProvider(assetsDataProvider);
+
             final LocalStore localStore = new LocalStore();
             localStore.init(mContext);
             mDataAggregator.addDataProvider(localStore);
