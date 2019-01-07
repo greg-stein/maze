@@ -2,6 +2,7 @@ package world.maze.data;
 
 import android.content.Context;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 import android.widget.Toast;
 
@@ -93,7 +94,8 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         }
     }
 
-    public static String load(Context context, String directory, String filename) {
+    @NonNull
+    public String load(Context context, String directory, String filename) {
         String data = null;
         FileInputStream fis;
 

@@ -71,12 +71,12 @@ public class AssetsDataProvider implements IDataProvider {
     }
 
     @NonNull
-    public String load(String buildingId, String subDir) {
-        final AssetManager assets = mContext.getAssets();
+    public String load(Context context, String directory, String filename) {
+        final AssetManager assets = context.getAssets();
         InputStream iStream;
         byte[] bytes = null;
         try {
-            iStream = assets.open(subDir + "/" + buildingId + DataAggregator.JSON_EXT);
+            iStream = assets.open(directory + "/" + filename);
             bytes = new byte[0];
             bytes = new byte[iStream.available()];
             iStream.read(bytes);
@@ -87,17 +87,17 @@ public class AssetsDataProvider implements IDataProvider {
     }
 
     private Building loadBuilding(String buildingId) {
-        String buildingJson = load(buildingId, DataAggregator.BUILDINGS_SUBDIR);
+        String buildingJson = load(mContext, DataAggregator.BUILDINGS_SUBDIR, buildingId + DataAggregator.JSON_EXT);
         return JsonSerializer.deserialize(buildingJson, Building.class);
     }
 
     private FloorPlan loadFloorPlan(String floorId) {
-        String floorJson = load(floorId, DataAggregator.FLORPLANS_SUBDIR);
+        String floorJson = load(mContext, DataAggregator.FLORPLANS_SUBDIR, floorId + DataAggregator.JSON_EXT);
         return JsonSerializer.deserialize(floorJson, FloorPlan.class);
     }
 
     private RadioMapFragment loadRadioMapFragment(String floorId, WiFiLocator.WiFiFingerprint fingerprint) {
-        String radioMapJson = load(floorId, DataAggregator.RADIOMAPS_SUBDIR);
+        String radioMapJson = load(mContext, DataAggregator.RADIOMAPS_SUBDIR, floorId + DataAggregator.JSON_EXT);
         return JsonSerializer.deserialize(radioMapJson, RadioMapFragment.class);
     }
 
