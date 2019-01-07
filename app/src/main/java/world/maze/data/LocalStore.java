@@ -5,26 +5,11 @@ import android.os.Environment;
 import android.support.v4.util.Pair;
 import android.widget.Toast;
 
-import com.google.gson.reflect.TypeToken;
-
-import world.maze.core.WiFiLocator;
-import world.maze.floorplan.Building;
-import world.maze.floorplan.Fingerprint;
-import world.maze.floorplan.Floor;
-import world.maze.floorplan.FloorPlan;
-import world.maze.floorplan.RadioMapFragment;
-import world.maze.util.CommonHelper;
-import world.maze.util.IFuckingSimpleCallback;
-import world.maze.util.IFuckingSimpleGenericCallback;
-import world.maze.util.JsonSerializer;
-
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +17,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import world.maze.core.WiFiLocator;
+import world.maze.floorplan.Building;
+import world.maze.floorplan.Floor;
+import world.maze.floorplan.FloorPlan;
+import world.maze.floorplan.RadioMapFragment;
+import world.maze.util.CommonHelper;
+import world.maze.util.IFuckingSimpleCallback;
+import world.maze.util.IFuckingSimpleGenericCallback;
+import world.maze.util.JsonSerializer;
 
 import static world.maze.data.DataAggregator.JSON_EXT;
 
@@ -86,16 +81,12 @@ public class LocalStore implements IDataProvider, IDataKeeper {
     }
 
     public static void save(Context context, String data, String directory, String filename) {
-        FileOutputStream fos;
-        ObjectOutputStream os;
-
         try {
             File aFile = new File(directory, filename);
-            fos = new FileOutputStream(aFile, false);
-            os = new ObjectOutputStream(fos);
-            os.writeObject(data);
-            os.close();
-            fos.close();
+            FileWriter fileWriter = new FileWriter(aFile);
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+            bufferedWriter.write(data);
+            bufferedWriter.close();
         } catch (IOException e) {
             Toast.makeText(context, "Error saving data locally.", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
@@ -105,16 +96,16 @@ public class LocalStore implements IDataProvider, IDataKeeper {
     public static String load(Context context, String directory, String filename) {
         String data = null;
         FileInputStream fis;
-        ObjectInputStream is;
 
         try {
             File aFile = new File(directory, filename);
+            int fileSize = (int)aFile.length();
+            byte[] bytes = new byte[fileSize];
             fis = new FileInputStream(aFile);
-            is = new ObjectInputStream(fis);
-            data = (String) is.readObject();
-            is.close();
+            fis.read(bytes);
+            data = new String(bytes);
             fis.close();
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             Toast.makeText(context, "Error loading data from store.", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
