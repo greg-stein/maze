@@ -432,10 +432,10 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
             assetsDataProvider.init();
             mDataAggregator.addDataProvider(assetsDataProvider);
 
-            final LocalStore localStore = new LocalStore();
-            localStore.init(mContext);
-            mDataAggregator.addDataProvider(localStore);
-            mDataAggregator.setDataKeeper(localStore);
+//            final LocalStore localStore = new LocalStore();
+//            localStore.init(mContext);
+//            mDataAggregator.addDataProvider(localStore);
+//            mDataAggregator.setDataKeeper(localStore);
         } catch (IOException e) {
             mMainView.displayError("Failed to initialize local store (possibly no access to external storage).", true);
         }
