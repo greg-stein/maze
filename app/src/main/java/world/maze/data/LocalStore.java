@@ -35,19 +35,13 @@ import static world.maze.data.DataAggregator.JSON_EXT;
  * Created by Greg Stein on 8/11/2018.
  */
 
-public class LocalStore implements IDataProvider, IDataKeeper {
+public class LocalStore extends LocalStorageDataProvider implements IDataProvider, IDataKeeper {
 
     public static final String DATA_ROOT = "maze";
-
-    private Set<String> mFloorplanIds;
-    private Set<String> mRadioMapIds;
-    private Set<String> mBuildingIds;
 
     private File mFloorplansDir;
     private File mRadiomapsDir;
     private File mBuildingsDir;
-
-    private Context mContext;
 
     public void init(Context context) throws IOException {
         final String externalStorageState = Environment.getExternalStorageState();
@@ -95,7 +89,8 @@ public class LocalStore implements IDataProvider, IDataKeeper {
     }
 
     @NonNull
-    public String load(Context context, String directory, String filename) {
+    @Override
+    protected String load(Context context, String directory, String filename) {
         String data = null;
         FileInputStream fis;
 
@@ -113,6 +108,24 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         }
 
         return data;
+    }
+
+    @Override
+    protected Building loadBuilding(String buildingId) {
+        String jsonString = load(mContext, mBuildingsDir.getAbsolutePath(), buildingId + JSON_EXT);
+        return JsonSerializer.deserialize(jsonString, Building.class);
+    }
+
+    @Override
+    protected RadioMapFragment loadRadioMapFragment(String floorId, WiFiLocator.WiFiFingerprint fingerprint) {
+        String jsonString = load(mContext, mRadiomapsDir.getAbsolutePath(), floorId + JSON_EXT);
+        return JsonSerializer.deserialize(jsonString, RadioMapFragment.class);
+    }
+
+    @Override
+    protected FloorPlan loadFloorPlan(String floorId) {
+        String jsonString = load(mContext, mFloorplansDir.getAbsolutePath(), floorId + JSON_EXT);
+        return JsonSerializer.deserialize(jsonString, FloorPlan.class);
     }
 
     private void save(Building building) {
@@ -143,29 +156,6 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         // Save new fragment
         String json = JsonSerializer.serialize(radioMapFragment);
         save(mContext, json, mRadiomapsDir.getAbsolutePath(), floorId + JSON_EXT);
-    }
-
-    private Building loadBuilding(String buildingId) {
-        String jsonString = load(mContext, mBuildingsDir.getAbsolutePath(), buildingId + JSON_EXT);
-        Building building = JsonSerializer.deserialize(jsonString, Building.class);
-        return building;
-    }
-
-    private RadioMapFragment loadRadioMapFragment(String floorId, WiFiLocator.WiFiFingerprint fingerprint) {
-        String jsonString = load(mContext, mRadiomapsDir.getAbsolutePath(), floorId + JSON_EXT);
-        RadioMapFragment existingFragment = JsonSerializer.deserialize(jsonString, RadioMapFragment.class);
-        return existingFragment;
-    }
-
-    private FloorPlan loadFloorPlan(String floorId) {
-        String jsonString = load(mContext, mFloorplansDir.getAbsolutePath(), floorId + JSON_EXT);
-        FloorPlan floorPlan = JsonSerializer.deserialize(jsonString, FloorPlan.class);
-        return floorPlan;
-    }
-
-    @Override
-    public void findSimilarBuildings(String pattern, IFuckingSimpleGenericCallback<List<Building>> buildingsAcquiredCallback) {
-
     }
 
     @Override
@@ -215,64 +205,4 @@ public class LocalStore implements IDataProvider, IDataKeeper {
         onDone.onNotified();
     }
 
-    @Override
-    public void getBuildingAsync(String buildingId, IFuckingSimpleGenericCallback<Building> onBuildingReceived) {
-        Building building = loadBuilding(buildingId);
-        onBuildingReceived.onNotify(building);
-    }
-
-    // Achtung! This method assumes that there are little buildings stored locally. The implementation
-    // is really slow!
-    @Override
-    public void findCurrentBuildingAndFloorAsync(WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<Pair<String, String>> callback) {
-        Building mostSuitableBuilding = null;
-        Floor mostSuitableFloor = null;
-
-        Set<String> fingerprintMacs = new HashSet<>(fingerprint.keySet()); // MAC addresses from fingerprint
-        int maxIntersectionSize = 0;
-
-        for (String buildingId : mBuildingIds) {
-            Building building = loadBuilding(buildingId);
-            for (Floor floor : building.getFloors()) {
-                // TODO: This is naive implementation. Use maximum WiFi level instead
-                int intersectionSize = CommonHelper.intersectionSize(fingerprintMacs, floor.getMacs());
-                if (intersectionSize > maxIntersectionSize) {
-                    maxIntersectionSize = intersectionSize;
-                    mostSuitableFloor = floor;
-                    mostSuitableBuilding = building;
-                }
-            }
-        }
-
-        if (mostSuitableBuilding != null && mostSuitableFloor != null) {
-            callback.onNotify(new Pair<>(mostSuitableBuilding.getId(), mostSuitableFloor.getId()));
-            return;
-        }
-    }
-
-    @Override
-    public void downloadFloorPlanAsync(String floorId, IFuckingSimpleGenericCallback<FloorPlan> onFloorPlanReceived) {
-        FloorPlan floorPlan = loadFloorPlan(floorId);
-        onFloorPlanReceived.onNotify(floorPlan /*new FloorPlan(floorId)*/);
-    }
-
-    @Override
-    public void downloadRadioMapTileAsync(String floorId, WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<RadioMapFragment> onRadioTileReceived) {
-        RadioMapFragment radioMapFragment = loadRadioMapFragment(floorId, fingerprint);
-        onRadioTileReceived.onNotify(radioMapFragment);
-    }
-
-    @Override
-    public Collection<String> getBuildingIds() {
-        if (null == mBuildingIds) {
-            return new ArrayList<>(); // empty collection
-        }
-        return Collections.unmodifiableSet(mBuildingIds);
-    }
-
-    @Override
-    public boolean hasId(String id) {
-        // REMARK: general id hold by this store. mFloorplanIds and mRadioMapIds has same ids.
-        return mBuildingIds.contains(id) || mFloorplanIds.contains(id) || mRadioMapIds.contains(id);
-    }
 }

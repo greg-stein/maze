@@ -28,7 +28,7 @@ import world.maze.util.JsonSerializer;
  * Created by Greg Stein on 8/22/2018.
  */
 
-public class AssetsDataProvider implements IDataProvider {
+public class AssetsDataProvider extends LocalStorageDataProvider implements IDataProvider {
     private Set<String> mFloorplanIds;
     private Set<String> mRadioMapIds;
     private Set<String> mBuildingIds;
@@ -71,7 +71,8 @@ public class AssetsDataProvider implements IDataProvider {
     }
 
     @NonNull
-    public String load(Context context, String directory, String filename) {
+    @Override
+    protected String load(Context context, String directory, String filename) {
         final AssetManager assets = context.getAssets();
         InputStream iStream;
         byte[] bytes = null;
@@ -86,17 +87,20 @@ public class AssetsDataProvider implements IDataProvider {
         return new String(bytes);
     }
 
-    private Building loadBuilding(String buildingId) {
+    @Override
+    protected Building loadBuilding(String buildingId) {
         String buildingJson = load(mContext, DataAggregator.BUILDINGS_SUBDIR, buildingId + DataAggregator.JSON_EXT);
         return JsonSerializer.deserialize(buildingJson, Building.class);
     }
 
-    private FloorPlan loadFloorPlan(String floorId) {
+    @Override
+    protected FloorPlan loadFloorPlan(String floorId) {
         String floorJson = load(mContext, DataAggregator.FLORPLANS_SUBDIR, floorId + DataAggregator.JSON_EXT);
         return JsonSerializer.deserialize(floorJson, FloorPlan.class);
     }
 
-    private RadioMapFragment loadRadioMapFragment(String floorId, WiFiLocator.WiFiFingerprint fingerprint) {
+    @Override
+    protected RadioMapFragment loadRadioMapFragment(String floorId, WiFiLocator.WiFiFingerprint fingerprint) {
         String radioMapJson = load(mContext, DataAggregator.RADIOMAPS_SUBDIR, floorId + DataAggregator.JSON_EXT);
         return JsonSerializer.deserialize(radioMapJson, RadioMapFragment.class);
     }
@@ -154,14 +158,6 @@ public class AssetsDataProvider implements IDataProvider {
     public void downloadRadioMapTileAsync(String floorId, WiFiLocator.WiFiFingerprint fingerprint, IFuckingSimpleGenericCallback<RadioMapFragment> onRadioTileReceived) {
         RadioMapFragment radioMap = loadRadioMapFragment(floorId, fingerprint);
         onRadioTileReceived.onNotify(radioMap);
-    }
-
-    @Override
-    public Iterable<String> getBuildingIds() {
-        if (null == mBuildingIds) {
-            return new ArrayList<>(); // empty collection
-        }
-        return Collections.unmodifiableSet(mBuildingIds);
     }
 
     @Override
