@@ -1,5 +1,6 @@
 package world.maze.ui;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -14,18 +15,24 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.menu.MenuBuilder;
+import android.support.v7.view.menu.MenuPopupHelper;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.TypedValue;
+import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+//import android.widget.PopupMenu;
+import android.support.v7.widget.PopupMenu;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,8 +61,6 @@ import world.maze.util.PermissionsHelper;
 import world.maze.vectorization.FloorplanVectorizer;
 import com.github.fafaldo.fabtoolbar.widget.FABToolbarLayout;
 import com.lapism.searchview.SearchView;
-
-import org.apache.commons.lang3.tuple.ImmutableTriple;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -117,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     private boolean mLocateMeEnabled = false;
     private boolean mUploadButtonVisible;
     private IFuckingSimpleCallback mUploadButtonClickListener;
+    private MenuPopupHelper mSearchMenu;
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -170,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         // TODO: commented-out temporarily
 //        mFloorWatcher = FloorWatcher.getInstance(this);
 //        mFloorWatcher.addOnFloorChangedListener(mFloorChangedHandler);
+        buildSearchMenu();
         mPresenter.onCreate();
     }
 
@@ -218,6 +225,34 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
             updateActionsUiStates();
         }
         return super.onPrepareOptionsMenu(menu);
+    }
+
+    @SuppressLint("RestrictedApi") // Don't think you need it? try to remove it
+    private void buildSearchMenu() {
+        MenuBuilder menuBuilder = new MenuBuilder(this);
+        MenuInflater menuInflater = new MenuInflater(this);
+        menuInflater.inflate(R.menu.search_bar_menu, menuBuilder);
+        mSearchMenu = new MenuPopupHelper(this, menuBuilder, uiSearchView);
+        mSearchMenu.setForceShowIcon(true);
+
+        menuBuilder.setCallback(new MenuBuilder.Callback() {
+            @Override
+            public boolean onMenuItemSelected(MenuBuilder menu, MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.mi_about:
+                        // Show about screen
+                        return true;
+                    case R.id.mi_instant_feedback:
+                        // Dima, put your code here
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+
+            @Override
+            public void onMenuModeChange(MenuBuilder menu) {}
+        });
     }
 
     @Override
@@ -417,6 +452,15 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         });
 
         uiSearchView.setHint("Search Maze");
+
+        uiSearchView.setOnMenuClickListener(new SearchView.OnMenuClickListener() {
+            @Override
+            @SuppressLint("RestrictedApi")
+            public void onMenuClick() {
+                mSearchMenu.show();
+            }
+        });
+
         uiSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
