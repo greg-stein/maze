@@ -2,11 +2,13 @@ package world.maze.ui;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -62,6 +64,7 @@ import world.maze.vectorization.FloorplanVectorizer;
 import com.github.fafaldo.fabtoolbar.widget.FABToolbarLayout;
 import com.lapism.searchview.SearchView;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -244,6 +247,18 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
                         return true;
                     case R.id.mi_instant_feedback:
                         // Dima, put your code here
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+
+                        try {
+                            String url = "https://api.whatsapp.com/send?phone="+ "+972545426544" +"&text=" + URLEncoder.encode("MAZE is the BEST APP EVER but MAIN DEVELOPER is a GOIDOI", "UTF-8");
+                            i.setPackage("com.whatsapp");
+                            i.setData(Uri.parse(url));
+                            if (i.resolveActivity(getPackageManager()) != null) {
+                                startActivity(i);
+                            }
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
                         return true;
                     default:
                         return false;
