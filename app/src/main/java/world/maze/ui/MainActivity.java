@@ -549,7 +549,10 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
                 } else {
                     calmFab(uiFabFindMeOnMap);
                 }
-                mLocateMeEnabledChangedListener.onNotify(mLocateMeEnabled);
+
+                if (mLocateMeEnabledChangedListener != null) {
+                    mLocateMeEnabledChangedListener.onNotify(mLocateMeEnabled);
+                }
             }
         });
 
@@ -787,7 +790,7 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         uiFloorPlanView.setLocation(location);
 
         if (AppSettings.inDebug) {
-            uiFloorPlanView.highlightCentroidMarks(WiFiLocator.centroidMarks);
+             uiFloorPlanView.highlightCentroidMarks(WiFiLocator.centroidMarks);
         }
     }
 
@@ -827,6 +830,11 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         ElementsRenderGroup floorPlanGroup = uiFloorPlanView.renderElementsGroup(elements);
 
         return floorPlanGroup;
+    }
+
+    @Override
+    public void updateElement(IFloorPlanPrimitive element) {
+        uiFloorPlanView.redrawElement(element);
     }
 
     @Override

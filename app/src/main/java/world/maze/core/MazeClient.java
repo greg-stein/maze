@@ -1,17 +1,12 @@
 package world.maze.core;
 
 import android.Manifest;
-import android.app.Activity;
-import android.app.DatePickerDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.PointF;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
 import android.util.Log;
 
@@ -26,14 +21,15 @@ import world.maze.core.SensorListener.IDeviceRotationListener;
 import world.maze.data.AssetsDataProvider;
 import world.maze.data.DataAggregator;
 import world.maze.data.IDataProvider;
-import world.maze.data.LocalStore;
 import world.maze.floorplan.Building;
 import world.maze.floorplan.Fingerprint;
 import world.maze.floorplan.Floor;
 import world.maze.floorplan.FloorPlan;
 import world.maze.floorplan.IFloorPlanPrimitive;
 import world.maze.floorplan.IMoveable;
+import world.maze.floorplan.LocationMark;
 import world.maze.floorplan.RadioMapFragment;
+import world.maze.floorplan.Ring;
 import world.maze.floorplan.Tag;
 import world.maze.floorplan.Wall;
 import world.maze.floorplan.transitions.Teleport;
@@ -72,6 +68,9 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
     private TextRenderGroup mTagsRenderGroup;
     private TextRenderGroup mTeleportsLabelsRenderGroup;
     private ElementsRenderGroup mTeleportsElementsRenderGroup;
+    // This group holds elements that are not part of data model. Like user location marker.
+    private ElementsRenderGroup mAuxiliaryRenderGroup;
+    private Ring mLocationMark = null;
 
     private StepCalibratorService mStepCalibratorService;
     private boolean mStepCalibratorEnabled = false; // temporary change to disable StepCalibratorService
@@ -113,6 +112,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                     @Override
                     public void onNotify(RadioMapFragment wiFiFingerprints) {
                         mRadioMapFragment = wiFiFingerprints;
+                        mLocator.setRadioMapFragment(wiFiFingerprints);
                         mRadioMapRenderGroup = mMainView.createElementsRenderGroup(mRadioMapFragment.getFingerprintsAsIFloorPlanElements());
                         mRadioTileReceived = true;
                         onCompleteDataReceive();
@@ -186,8 +186,6 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 if (Building.current != null) mFloorWatcher.enable(mContext);
             }
         }
-
-        public boolean mFloorToBeUpdated = false;
 
         public void update(Pair<String, String> buildingAndFloorIds) {
             mBuildingId = buildingAndFloorIds.first;
@@ -548,7 +546,9 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
         mMainView.setOnLocateMeEnabledChangedListener(new IFuckingSimpleGenericCallback<Boolean>() {
             @Override
             public void onNotify(Boolean locatorEnabled) {
-                mLocator.useWifiScanner(locatorEnabled);
+                // TODO: If locatorEnabled, we should "track" user movement on the map, i.e. on new
+                // TODO: location - center it
+                // TODO: If not, don't center on new loacation
             }
         });
 
@@ -680,7 +680,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
     @Override
     public void onLocationUpdated(PointF location) {
-        mMainView.updateLocation(location); // draw new location on map
+        drawUserLocation(location);
     }
 
     // This callback is executed when mapper is active and it obtained a new fingerprint
@@ -733,5 +733,21 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         mFloorPlan = new FloorPlan(floorId);
         mLocator.setFloorPlan(mFloorPlan);
+    }
+
+    private void drawUserLocation(PointF location) {
+        // This render group can be common for all floors and buildings
+        if (null == mAuxiliaryRenderGroup) {
+            mAuxiliaryRenderGroup = mMainView.createElementsRenderGroup(null);
+            mAuxiliaryRenderGroup.setVisible(true);
+        }
+        if (null == mLocationMark) {
+            mLocationMark = new Ring(location.x, location.y, 1f, 3f, 24);
+            mLocationMark.setColor(Color.RED);
+            mAuxiliaryRenderGroup.addElement(mLocationMark);
+        }
+
+        mLocationMark.setCenter(location.x, location.y);
+        mMainView.updateElement(mLocationMark);
     }
 }

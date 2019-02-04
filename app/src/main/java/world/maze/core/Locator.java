@@ -7,6 +7,7 @@ import android.graphics.PointF;
 import world.maze.AppSettings;
 import world.maze.floorplan.FloorPlan;
 import world.maze.floorplan.IFloorPlanPrimitive;
+import world.maze.floorplan.RadioMapFragment;
 import world.maze.floorplan.Wall;
 import world.maze.rendering.VectorHelper;
 import world.maze.util.MovingAveragePointsQueue;
@@ -245,6 +246,12 @@ public class Locator implements WifiScanner.IFingerprintAvailableListener, Senso
         this.mFloorPlan = floorPlan;
     }
 
+    public void setRadioMapFragment(RadioMapFragment fragment) {
+        if (mWifiLocator != null) {
+            mWifiLocator.setFingerprintsMap(fragment.getFingerprints());
+        }
+    }
+
     public void resetLocationTo(PointF location) {
         mCurrentLocation.set(location.x, location.y);
         emitLocationUpdatedEvent(mCurrentLocation);
@@ -253,5 +260,4 @@ public class Locator implements WifiScanner.IFingerprintAvailableListener, Senso
     public PointF getLocation() {
         return mCurrentLocation;
     }
-
 }

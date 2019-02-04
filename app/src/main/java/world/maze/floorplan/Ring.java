@@ -38,6 +38,10 @@ public class Ring extends FloorPlanPrimitiveBase {
         mOuterRadius = outerRadius;
     }
 
+    // NOTE: Achtung this constructor is buggy. It calls default constructor of FloorPlanPrimitiveBase
+    // NOTE: and that constructor calls getVerticesDataLength() and getIndicesNum() virtual methods
+    // NOTE: which will return 0 because mSegmentsNum is not yet initialized at the time.
+    // TODO: Either remove or fix
     public Ring() {
         mCenter = new PointF(DEFAULT_CENTER_SOURCE, DEFAULT_CENTER_SOURCE);
         mInnerRadius = DEFAULT_RADIUS_SOURCE/2;

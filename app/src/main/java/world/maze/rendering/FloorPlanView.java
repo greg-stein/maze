@@ -418,7 +418,6 @@ public class FloorPlanView extends GLSurfaceView {
     public void setLocation(float x, float y) {
         if (!mRenderer.isSketchEmpty()) { // otherwise no need to show current location
             mCurrentLocation.set(x, y);
-            mRenderer.drawLocationMarkAt(mCurrentLocation);
         }
     }
 
@@ -442,11 +441,6 @@ public class FloorPlanView extends GLSurfaceView {
         PointF worldLocation = new PointF();
         mRenderer.windowToWorld(x, y, worldLocation);
         centerToPoint(worldLocation);
-    }
-
-    public void putLocationMarkAt(PointF location) {
-        mRenderer.drawLocationMarkAt(location);
-        centerToPoint(location);
     }
 
     public interface IOnLocationPlacedListener {
@@ -478,6 +472,11 @@ public class FloorPlanView extends GLSurfaceView {
 
         mPath = path;
         mRenderer.addPrimitive(path);
+    }
+
+    public void redrawElement(final IFloorPlanPrimitive element) {
+        element.updateVertices();
+        mRenderer.renderPrimitive(element);
     }
 }
 

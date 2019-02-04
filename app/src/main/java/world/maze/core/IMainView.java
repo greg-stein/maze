@@ -24,6 +24,8 @@ public interface IMainView extends world.maze.ui.IUserNotifier {
 
     ElementsRenderGroup createElementsRenderGroup(Collection<? extends IFloorPlanPrimitive> elements);
 
+    void updateElement(IFloorPlanPrimitive element);
+
     TextRenderGroup createTextRenderGroup(List<? extends Tag> tags);
 
     void centerMapView(PointF point);

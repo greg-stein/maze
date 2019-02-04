@@ -101,7 +101,7 @@ public class WiFiLocator {
         }
     }
 
-    private List<Fingerprint> mFingerprints;
+    private Set<Fingerprint> mFingerprints;
     private WiFiFingerprint currentWiFiFingerprint = null;
     public FingerprintHistory currentHistory = null; //TODO: no encapsulation!
 
@@ -109,7 +109,7 @@ public class WiFiLocator {
         currentHistory.add(fingerprint);
     }
 
-    public void setFingerprintsMap(List<Fingerprint> map) {
+    public void setFingerprintsMap(Set<Fingerprint> map) {
         mFingerprints = map;
     }
 
@@ -243,7 +243,7 @@ public class WiFiLocator {
         return intersection.size() * 2 - fingerprintAps.size() - refFpAps.size();
     }
 
-    public static List<Fingerprint> getMarksWithSameAps2(List<Fingerprint> fingerprints, WiFiFingerprint fingerprint) {
+    public static List<Fingerprint> getMarksWithSameAps2(Set<Fingerprint> fingerprints, WiFiFingerprint fingerprint) {
         NavigableMap<Integer, List<Fingerprint>> fingerprintsByScore = new TreeMap<>(Collections.<Integer>reverseOrder());
 
         for (Fingerprint f : fingerprints) {
@@ -272,9 +272,9 @@ public class WiFiLocator {
     // full set of wifi mFingerprints until only those containing all APs in the fingerprint remain.
     // If at some point we get to an empty list, we assume a 'rogue' mark and re-use the list from
     // the previous step.
-    public static List<Fingerprint> getMarksWithSameAps(List<Fingerprint> fingerprints, WiFiFingerprint fingerprint) {
-        List<Fingerprint> previousMarks = fingerprints;
-        List<Fingerprint> relevantMarks = new ArrayList<>();
+    public static Set<Fingerprint> getMarksWithSameAps(Set<Fingerprint> fingerprints, WiFiFingerprint fingerprint) {
+        Set<Fingerprint> previousMarks = fingerprints;
+        Set<Fingerprint> relevantMarks = new HashSet<>();
 
         for (String mac : fingerprint.keySet()) {
             for (Fingerprint mark : previousMarks) {
@@ -285,7 +285,7 @@ public class WiFiLocator {
             }
             if (!relevantMarks.isEmpty()) {  // If new list is non-empty, use it for next step
                 previousMarks = relevantMarks;
-                relevantMarks = new ArrayList<>();
+                relevantMarks = new HashSet<>();
             }
         }
 
@@ -347,7 +347,7 @@ public class WiFiLocator {
         LinkableWifiMark wmark, lwmark;
 
         for (WiFiFingerprint fingerprint : currentHistory) {
-            List<Fingerprint> fingerprints = getMarksWithSameAps(mFingerprints, fingerprint);
+            Set<Fingerprint> fingerprints = getMarksWithSameAps(mFingerprints, fingerprint);
             maxDistance = 0;
             minDistance = Float.MAX_VALUE;
 

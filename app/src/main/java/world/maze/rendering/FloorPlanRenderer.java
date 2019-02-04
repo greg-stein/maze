@@ -480,24 +480,6 @@ public class FloorPlanRenderer implements GLSurfaceView.Renderer {
         addPrimitive(fingerprint);
     }
 
-    public void drawLocationMarkAt(final PointF currentLocation) {
-        if (mLocationMark == null) {
-            mLocationMark = new LocationMark(currentLocation);
-            mLocationMark.setColor(AppSettings.locationMarkColor);
-            addPrimitive(mLocationMark);
-        }
-        else {
-            mLocationMark.setCenter(currentLocation);
-            mLocationMark.updateVertices();
-            runOnGlThread(new Runnable() {
-                @Override
-                public void run() {
-                    mLocationMark.rewriteToBuffer();
-                }
-            });
-        }
-    }
-
     public void drawDistribution(final PointF mean, final float stdev) {
         if (AppSettings.inDebug) {
             float innerRadius = Math.max(0, stdev - 1);
