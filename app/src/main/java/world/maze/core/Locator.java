@@ -205,6 +205,9 @@ public class Locator implements WifiScanner.IFingerprintAvailableListener, Senso
     }
 
     private boolean hitObstacle(PointF current, PointF next) {
+        // If no floor plan is set, no obstacle is hit
+        if (null == mFloorPlan || mFloorPlan.getSketch() == null) return false;
+
         List<IFloorPlanPrimitive> sketch = mFloorPlan.getSketch();
         for (IFloorPlanPrimitive primitive : sketch) {
             if (primitive instanceof Wall) {
