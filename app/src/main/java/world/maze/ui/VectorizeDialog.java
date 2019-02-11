@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import world.maze.BuildConfig;
 import world.maze.R;
 import world.maze.vectorization.FloorplanVectorizer;
 import world.maze.vectorization.HoughTransform;
@@ -247,7 +249,8 @@ public class VectorizeDialog extends DialogFragment {
                     try {
                         File imageFile = File.createTempFile(IMAGE_FILENAME, ".jpg", storageDir);
                         mCurrentImagePath = imageFile.getAbsolutePath();
-                        Uri imageFileUri = Uri.fromFile(imageFile);
+                        Uri imageFileUri = FileProvider.getUriForFile(getActivity(),
+                                BuildConfig.APPLICATION_ID + ".provider", imageFile);
                         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageFileUri);
                         startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                     } catch (IOException e) {
