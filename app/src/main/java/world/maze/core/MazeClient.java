@@ -570,8 +570,16 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         mMainView.setUiModeChangedListener(new IFuckingSimpleGenericCallback<IMainView.UiMode>() {
             @Override
-            public void onNotify(IMainView.UiMode uiMode) {
-                updateRenderGroupsVisibility(uiMode);
+            public void onNotify(IMainView.UiMode newUiMode) {
+                updateRenderGroupsVisibility(newUiMode);
+
+                if (newUiMode == IMainView.UiMode.MAP_VIEW_MODE) {
+                    //remember last state of mapper in 
+                    mMapperLastState = mMapper.isEnabled();
+                    mMapper.setEnabled(false);
+                } else if (newUiMode == IMainView.UiMode.MAP_EDIT_MODE) {
+                    mMapper.setEnabled(mMapperLastState);
+                }
             }
         });
 
