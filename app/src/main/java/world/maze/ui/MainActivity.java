@@ -653,26 +653,33 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     }
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void updateActionsUiStates() {
+        // TODO: Fix ugly magic numbers
         MenuItem btnMove = uiToolbar.getMenu().getItem(0);
         MenuItem btnRemove = uiToolbar.getMenu().getItem(1);
-        MenuItem btnRotationLock = uiToolbar.getMenu().getItem(6);
+        MenuItem btnRotationLock = uiToolbar.getMenu().getItem(7);
+        MenuItem btnSetLocation = uiToolbar.getMenu().getItem(2);
         switch (uiFloorPlanView.mapOperation) {
             case MOVE:
-                System.out.println("MODE: move");
                 btnMove.setIcon(getResources().getDrawable(R.drawable.ic_cursor_move_black_24dp, null));
                 btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_eraser_white_24dp, null));
+                btnSetLocation.setIcon(getResources().getDrawable(R.drawable.ic_center_focus_strong_white_24dp, null));
                 uiAddSpinner.setSelection(addSpinnerData.size() - 1);
                 break;
             case ADD:
-                System.out.println("MODE: add");
                 btnMove.setIcon(getResources().getDrawable(R.drawable.ic_cursor_move_white_24dp, null));
                 btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_eraser_white_24dp, null));
+                btnSetLocation.setIcon(getResources().getDrawable(R.drawable.ic_center_focus_strong_white_24dp, null));
                 break;
             case REMOVE:
-                System.out.println("MODE: remove");
                 btnMove.setIcon(getResources().getDrawable(R.drawable.ic_cursor_move_white_24dp, null));
                 btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_eraser_black_24dp, null));
+                btnSetLocation.setIcon(getResources().getDrawable(R.drawable.ic_center_focus_strong_white_24dp, null));
                 uiAddSpinner.setSelection(addSpinnerData.size() - 1);
+                break;
+            case SET_LOCATION:
+                btnMove.setIcon(getResources().getDrawable(R.drawable.ic_cursor_move_white_24dp, null));
+                btnRemove.setIcon(getResources().getDrawable(R.drawable.ic_eraser_white_24dp, null));
+                btnSetLocation.setIcon(getResources().getDrawable(R.drawable.baseline_center_focus_strong_black_24, null));
                 break;
         }
 

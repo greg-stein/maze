@@ -15,6 +15,12 @@
         app:showAsAction="always"/>
 
     <item
+        android:id="@+id/btn_set_location"
+        android:icon="@drawable/ic_center_focus_strong_white_24dp"
+        android:title="Set Location"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/btn_undo"
         android:icon="@drawable/ic_undo_white_24dp"
         android:title="Undo"
@@ -42,12 +48,6 @@
         android:id="@+id/btn_lock_rotation"
         android:icon="@drawable/ic_screen_lock_rotation_white_24dp"
         android:title="Lock Map Rotation"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/btn_set_location"
-        android:icon="@drawable/ic_center_focus_strong_white_24dp"
-        android:title="Set Location"
         app:showAsAction="always" />
 
     <item
