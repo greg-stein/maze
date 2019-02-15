@@ -30,6 +30,8 @@ public interface IMainView extends world.maze.ui.IUserNotifier {
 
     void centerMapView(PointF point);
 
+    void setEditingFloorPlanEnabled(boolean isEnabled);
+
     void setTags(List<Tag> tags);
 
     void updateLocation(PointF location);

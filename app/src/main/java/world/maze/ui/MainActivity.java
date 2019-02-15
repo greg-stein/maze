@@ -850,6 +850,11 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     }
 
     @Override
+    public void setEditingFloorPlanEnabled(boolean isEnabled) {
+        uiAddSpinner.setEnabled(isEnabled);
+    }
+
+    @Override
     public void setTags(List<Tag> tags) {
         mAdapter.updateListData(tags);
     }

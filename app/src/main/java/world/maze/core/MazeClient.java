@@ -150,6 +150,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mMainView.centerMapView(mFloorPlan.getCenter());
                 // Locator uses floor plan for collision detection
                 mLocator.setFloorPlan(mFloorPlan);
+                mMainView.setEditingFloorPlanEnabled(true);
             }
         }
 
@@ -421,6 +422,8 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         mMainView.setElementFactory(mElementFactory);
         setUiHandlers();
+        // On start, disable possibility to change floor plan (create new walls etc)
+        mMainView.setEditingFloorPlanEnabled(false);
     }
 
     public void initDataAggregator() {
@@ -734,6 +737,7 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
 
         mFloorPlan = new FloorPlan(floorId);
         mLocator.setFloorPlan(mFloorPlan);
+        mMainView.setEditingFloorPlanEnabled(true);
     }
 
     private void drawUserLocation(PointF location) {
