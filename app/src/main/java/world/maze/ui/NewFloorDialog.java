@@ -82,7 +82,6 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
     private BuildingsAdapter mBuildingsAdapter;
     private boolean mIsBuildingDirty = false;
     private IFloorChangedHandler mFloorChangedHandler;
-    private IMainView.IAsyncIdProvider mBuildingIdProvider;
     private IMainView.IAsyncIdProvider mFloorIdProvider;
     private IMainView.IAsyncSimilarBuildingsFinder mSimilarBuildingsFinder;
     private IMainView.IAsyncBuildingCreator mBuildingCreator;
@@ -422,10 +421,6 @@ public class NewFloorDialog extends Dialog implements ISelectionProvider {
 
     public void setBuildingUpdater(IFuckingSimpleGenericCallback<Building> buildingUpdater) {
         mBuildingUpdater = buildingUpdater;
-    }
-
-    public void setBuildingIdProvider(IMainView.IAsyncIdProvider buildingIdProvider) {
-        mBuildingIdProvider = buildingIdProvider;
     }
 
     public void setFloorIdProvider(IMainView.IAsyncIdProvider floorIdProvider) {

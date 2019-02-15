@@ -378,7 +378,6 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
     @Override
     public void showBuildingEditDialog() {
         NewFloorDialog nfd = new NewFloorDialog(this);
-        nfd.setBuildingIdProvider(mBuildingIdProvider);
         nfd.setBuildingCreator(mBuildingCreator);
         nfd.setBuildingUpdater(mBuildingUpdater);
         nfd.setFloorIdProvider(mFloorIdProvider);
