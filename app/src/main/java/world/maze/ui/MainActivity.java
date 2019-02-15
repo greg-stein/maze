@@ -656,7 +656,6 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
         // TODO: Fix ugly magic numbers
         MenuItem btnMove = uiToolbar.getMenu().getItem(0);
         MenuItem btnRemove = uiToolbar.getMenu().getItem(1);
-        MenuItem btnRotationLock = uiToolbar.getMenu().getItem(7);
         MenuItem btnSetLocation = uiToolbar.getMenu().getItem(2);
         switch (uiFloorPlanView.mapOperation) {
             case MOVE:
@@ -683,10 +682,18 @@ public class MainActivity extends AppCompatActivity implements IOnLocationPlaced
                 break;
         }
 
+        MenuItem btnRotationLock = uiToolbar.getMenu().getItem(7);
         if (mIsMapRotationLocked) {
             btnRotationLock.getIcon().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
         } else {
             btnRotationLock.getIcon().clearColorFilter();
+        }
+
+        MenuItem btnAutoscanMode = uiToolbar.getMenu().getItem(8);
+        if (mAutoScanEnabled) {
+            btnAutoscanMode.getIcon().setColorFilter(Color.DKGRAY, PorterDuff.Mode.MULTIPLY);
+        } else {
+            btnAutoscanMode.getIcon().clearColorFilter();
         }
     }
 
