@@ -47,7 +47,13 @@
         android:layout_height="70dp"
         android:layout_alignParentBottom="true"
         android:minHeight="?attr/actionBarSize"
-        app:theme="@style/Base.Theme.AppCompat.CompactMenu">
+        app:theme="@style/Base.Theme.AppCompat.CompactMenu"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStart="0dp"
+        android:contentInsetRight="0dp"
+        android:contentInsetEnd="0dp"
+        app:contentInsetRight="0dp"
+        app:contentInsetEnd="0dp" >
 
 
         <Spinner
@@ -58,6 +64,7 @@
         <TextView
             android:id="@+id/txt_wall_length"
             android:layout_width="wrap_content"
+            android:maxLines="1"
             android:layout_height="wrap_content"
             android:ems="10"
             android:visibility="gone"/>

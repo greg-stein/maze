@@ -2,35 +2,29 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <group
-        android:id="@+id/grp_edit"
-        android:checkableBehavior="single"
-        android:layout_alignParentLeft="true">
+    <item
+        android:id="@+id/btn_move"
+        android:icon="@drawable/ic_cursor_move_black_24dp"
+        android:title="Move"
+        app:showAsAction="always"/>
 
-        <item
-            android:id="@+id/btn_move"
-            android:icon="@drawable/ic_cursor_move_black_24dp"
-            android:title="Move"
-            app:showAsAction="always"/>
+    <item
+        android:id="@+id/btn_delete"
+        android:icon="@drawable/ic_eraser_white_24dp"
+        android:title="Delete"
+        app:showAsAction="always"/>
 
-        <item
-            android:id="@+id/btn_delete"
-            android:icon="@drawable/ic_eraser_white_24dp"
-            android:title="Delete"
-            app:showAsAction="always"/>
-
-    </group>
     <item
         android:id="@+id/btn_undo"
         android:icon="@drawable/ic_undo_white_24dp"
         android:title="Undo"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/btn_redo"
         android:icon="@drawable/ic_redo_white_24dp"
         android:title="Redo"
-        app:showAsAction="always" />
+        app:showAsAction="never" />
 
     <item
         android:id="@+id/btn_vectorize_floorplan"
@@ -54,13 +48,13 @@
         android:id="@+id/btn_set_location"
         android:icon="@drawable/ic_center_focus_strong_white_24dp"
         android:title="Set Location"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/btn_autoscan"
         android:icon="@drawable/ic_directions_walk_white_24dp"
         android:title="Autoscan Mode"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/btn_new_floorplan"
@@ -72,6 +66,6 @@
         android:id="@+id/btn_set_scale"
         android:icon="@drawable/ic_icons8_floor_plan_24_white"
         android:title="Set scale"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
 </menu>
