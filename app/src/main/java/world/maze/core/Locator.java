@@ -22,7 +22,7 @@ import java.util.List;
 public class Locator implements WifiScanner.IFingerprintAvailableListener, SensorListener.IStepDetectedListener, SensorListener.IDeviceRotationListener {
     private static final float DEFAULT_STEP_LENGTH = 0.68f; // human average step: 78cm
     private static final int WINDOW_SIZE = 3;
-    private static final int MAX_VARIANCES_NUM = 4;
+    private static final int MAX_VARIANCES_NUM = 9;
 
     private static Locator instance = null;
     private static final Object mutex = new Object();
@@ -44,6 +44,7 @@ public class Locator implements WifiScanner.IFingerprintAvailableListener, Senso
     private WiFiLocator mWifiLocator;
     private LiftDetector mLiftDetector;
     private boolean mUseWifiScanner;
+    // This queue holds locations estimated by WiFi locator only.
     private MovingAveragePointsQueue mLastLocations = new MovingAveragePointsQueue(WINDOW_SIZE);
     private PointF mCurrentLocation = new PointF(Float.MAX_VALUE, Float.MAX_VALUE);
     private double mCurrentDegree;
