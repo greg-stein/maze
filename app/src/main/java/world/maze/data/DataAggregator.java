@@ -84,12 +84,7 @@ public class DataAggregator implements IDataProvider, IDataKeeper {
                     mCurrentDataProvider = (IDataProvider) mDataKeeper;
                 } else {
                     // Find who holds newly created building
-                    for (IDataProvider dataProvider : mDataProviders) {
-                        if (dataProvider.hasId(building.getId())) {
-                            mCurrentDataProvider = dataProvider;
-                            break;
-                        }
-                    }
+                    mCurrentDataProvider = findProviderHoldingId(building.getId());
                 }
                 buildingCreatedCallback.onNotify(building);
             }
@@ -131,6 +126,15 @@ public class DataAggregator implements IDataProvider, IDataKeeper {
             return;
         }
 
+        // If this provider doesn't hold the id - find one that does
+        if (!mCurrentDataProvider.hasId(buildingId)) {
+            IDataProvider candidateProvider = findProviderHoldingId(buildingId);
+            if (candidateProvider == null) {
+                onBuildingReceived.onNotify(null);
+                return;
+            }
+            mCurrentDataProvider = candidateProvider;
+        }
         mCurrentDataProvider.getBuildingAsync(buildingId, onBuildingReceived);
     }
 
@@ -184,6 +188,15 @@ public class DataAggregator implements IDataProvider, IDataKeeper {
             return;
         }
 
+        // If this provider doesn't hold the id - find one that does
+        if (!mCurrentDataProvider.hasId(floorId)) {
+            IDataProvider candidateProvider = findProviderHoldingId(floorId);
+            if (candidateProvider == null) {
+                onFloorPlanReceived.onNotify(null);
+                return;
+            }
+            mCurrentDataProvider = candidateProvider;
+        }
         mCurrentDataProvider.downloadFloorPlanAsync(floorId, onFloorPlanReceived);
     }
 
@@ -195,6 +208,15 @@ public class DataAggregator implements IDataProvider, IDataKeeper {
             return;
         }
 
+        // If this provider doesn't hold the id - find one that does
+        if (!mCurrentDataProvider.hasId(floorId)) {
+            IDataProvider candidateProvider = findProviderHoldingId(floorId);
+            if (candidateProvider == null) {
+                onRadioTileReceived.onNotify(null);
+                return;
+            }
+            mCurrentDataProvider = candidateProvider;
+        }
         mCurrentDataProvider.downloadRadioMapTileAsync(floorId, fingerprint, onRadioTileReceived);
     }
 
@@ -210,5 +232,17 @@ public class DataAggregator implements IDataProvider, IDataKeeper {
         }
 
         return false;
+    }
+
+    private IDataProvider findProviderHoldingId(String id) {
+        IDataProvider provider = null;
+        for (IDataProvider dataProvider : mDataProviders) {
+            if (dataProvider.hasId(id)) {
+                provider = dataProvider;
+                break;
+            }
+        }
+
+        return provider;
     }
 }
