@@ -115,6 +115,9 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                         mRadioMapFragment = wiFiFingerprints;
                         mLocator.setRadioMapFragment(wiFiFingerprints);
                         mRadioMapRenderGroup = mMainView.createElementsRenderGroup(mRadioMapFragment.getFingerprintsAsIFloorPlanElements());
+                        // TODO: Ask user if he/she wants to discard currently added fingerprints
+                        // TODO: Remove previous group and deallocate it
+                        mAugmentedRadioMapRenderGroup = mMainView.createElementsRenderGroup(null);
                         mRadioTileReceived = true;
                         onCompleteDataReceive();
                     }
@@ -141,7 +144,9 @@ public class MazeClient implements IMazePresenter, ILocationUpdatedListener, IDe
                 mTeleportsElementsRenderGroup.setVisible(false);
                 mTagsRenderGroup.setChangedListener(mTagsChangedListener);
                 mFloorPlanRenderGroup.setChangedListener(mFloorPlanChangedListener);
-                mRadioMapRenderGroup.setChangedListener(mFingerprintsChangedListener);
+                // Only augmented render group is being changed.
+                // TODO: What about removing existing fingerprints from current radio map?
+                mAugmentedRadioMapRenderGroup.setChangedListener(mFingerprintsChangedListener);
                 // Render the floor plan
                 mFloorPlanRenderGroup.setVisible(true);
                 mTagsRenderGroup.setVisible(true);
