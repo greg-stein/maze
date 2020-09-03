@@ -2,7 +2,7 @@
 
 Maze is currently in MVP state. Minimum Viable Product. It has the minimum functionality to map and navigate inside buildings. Currently it uses following methods:
  - **WiFi-fingerprinting** - this method is used for estimating initial location (when you open the app), and to fix the dead reckoning when it collects too much drift.
- - **Dead reconing** - inertial navigation in mobile phones is useless. It is so erratic. So what we do instead is estimating direction of movement and detecting steps. We have a calibration service that measures average length of step of the user when he walks outside. This is done without user interaction.
+ - **Dead reckoning** - inertial navigation in mobile phones is useless. It is so erratic. So what we do instead is estimating direction of movement and detecting steps. We have a calibration service that measures average length of step of the user when he walks outside. This is done without user interaction.
  
  From the experience we can say that this method works very well in most situations.
 
