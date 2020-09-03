@@ -1,18 +1,23 @@
-# README #
+# Maze #
 
-Current status: POC - WIP. No other work planned. We are THIS close to IDC POC readiness
+Maze is currently in MVP state. Minimum Viable Product. It has the minimum functionality to map and navigate inside buildings. Currently it uses following methods:
+ - **WiFi-fingerprinting** - this method is used for estimating initial location (when you open the app), and to fix the dead reckoning when it collects too much drift.
+ - **Dead reconing** - inertial navigation in mobile phones is useless. It is so erratic. So what we do instead is estimating direction of movement and detecting steps. We have a calibration service that measures average length of step of the user when he walks outside. This is done without user interaction.
+ 
+ From the experience we can say that this method works very well in most situations.
 
-### Plan for POC ###
+We are currently working on documentation and refactoring to allow easy development of other methods for estimating indoor location. 
 
-* Create hello world sample app - **DONE**
-* Implement scan for accessible HS and acquire signal strength + MAC addresses - **DONE**
-* Implement map rotation depending on Magnetic (!) North - **DONE**
-* "Walking simulation": tap screen for moving forward - **DONE**
-* Add person indicator on map - **DONE**
-* Walking on map according to Pedometer (HW for POC - will work only on Nexus) - **DONE**
-* Asynchronous Wifi scan including all APs - **DONE**
-* Fix griding (separation of map into tiles, consistency during moving from cell to cell, incl. map rotation) **DONE**
-* Draw cells whose signal values were set **DONE**
-* Persistency - serialize/deserialize SigMap into file **DONE**
-* Actual THE THING - find correct location (cell) according to signals scan **DONE**
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+### Maturity
+Maze is developed with MVP (=Model-View-Presenter) approach. It has high level of modularity and mostly the code is clean. We have unit tests that run locally on host machine and also on the device. Map engine is based on OpenGl rendering.
+
+### How to use Maze App ###
+1. Create building and floor in App UI
+2. Take a picture of an emergency evacuation plan. The picture will be vectorized and a map will be generated.
+3. Start mapping. Simply walk around, Maze will record WiFi fingerprints.
+4. Tap on Upload button
+
+### Contributions
+**Feel free to contribute.**
+We need Mobile, Fullstack, UX, DB... Everyone! The tasks will be populated to make it easy grabbing one and working on it.
+For any questions please contact me: gregory.stein@maze.world
