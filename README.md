@@ -1,4 +1,4 @@
-# Maze #
+![Maze](https://github.com/greg-stein/maze/blob/master/maze-logo.png?raw=true)
 
 Maze is currently in MVP state. Minimum Viable Product. It has the minimum functionality to map and navigate inside buildings. Currently it uses following methods:
  - **WiFi-fingerprinting** - this method is used for estimating initial location (when you open the app), and to fix the dead reckoning when it collects too much drift.
